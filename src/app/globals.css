@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand — Center Quest institutional palette (see DISENIO.md) */
+  --brand-celeste: #74c3d5;
+  --brand-petroleo: #3f738d;
+  --brand-verde: #80bc00;
+  --brand-gris: #d6d1ca;
+
+  --background: #fbfaf7;
+  --foreground: #0f2028;
+  --muted: #5c6b77;
+  --border: #e4e0d8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-celeste: var(--brand-celeste);
+  --color-petroleo: var(--brand-petroleo);
+  --color-verde: var(--brand-verde);
+  --color-gris: var(--brand-gris);
+
+  --font-heading: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Ambient cursor-following elements: only on devices with a real pointer */
+.pointer-fine-only {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pointer-fine-only {
+    display: block;
+  }
+}
