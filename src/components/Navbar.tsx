@@ -100,9 +100,13 @@ export default function Navbar() {
           <a
             href="#"
             onClick={stop}
-            className="hidden rounded-lg bg-petroleo px-5 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-[color-mix(in_srgb,var(--brand-petroleo)_88%,black)] hover:shadow-[0_8px_20px_-8px_rgba(63,115,141,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:block"
+            className="group/cta relative hidden overflow-hidden rounded-lg bg-petroleo px-5 py-2 text-sm font-semibold text-white transition-[transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:block"
           >
-            Contact us
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10"
+            />
+            <span className="relative z-10">Contact us</span>
           </a>
 
           {/* mobile toggle */}

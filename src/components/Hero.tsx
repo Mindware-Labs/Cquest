@@ -388,17 +388,23 @@ export default function Hero() {
         >
           <a
             href="#services"
-            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg bg-petroleo px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-white transition-all duration-300 hover:-translate-y-px hover:bg-[color-mix(in_srgb,var(--brand-petroleo)_86%,black)] hover:shadow-[0_10px_28px_-8px_rgba(63,115,141,0.6)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg bg-petroleo px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-white shadow-[0_2px_8px_-2px_rgba(63,115,141,0.3)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(63,115,141,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
           >
+            {/* Shimmer sweep */}
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-full"
             />
-            Explore our services
+            {/* Darkening overlay */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover:bg-black/10"
+            />
+            <span className="relative z-10">Explore our services</span>
             <svg
               aria-hidden
               viewBox="0 0 16 16"
-              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+              className="relative z-10 h-3.5 w-3.5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
@@ -410,9 +416,13 @@ export default function Hero() {
           </a>
           <a
             href="#contact"
-            className="inline-flex items-center rounded-lg border border-foreground/12 px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-foreground/75 transition-all duration-300 hover:-translate-y-px hover:border-petroleo/25 hover:text-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+            className="group/ghost relative inline-flex items-center overflow-hidden rounded-lg border border-foreground/12 px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-foreground/75 transition-[transform,border-color,color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-petroleo/30 hover:text-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
           >
-            Talk to our team
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-[color-mix(in_srgb,var(--brand-petroleo)_6%,transparent)] opacity-0 transition-opacity duration-400 ease-out group-hover/ghost:opacity-100"
+            />
+            <span className="relative z-10">Talk to our team</span>
           </a>
         </motion.div>
 

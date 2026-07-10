@@ -72,7 +72,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
             <li key={label}>
               <a
                 href={`#${label.toLowerCase()}`}
-                className="relative block rounded-full px-5 py-2.5 text-[0.9375rem] font-medium text-white/75 transition-colors duration-300 after:absolute after:inset-x-5 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-celeste after:transition-transform after:duration-300 after:ease-out hover:text-white hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+                className="relative block rounded-full px-5 py-2.5 text-[0.9375rem] font-medium text-white/90 transition-colors duration-300 after:absolute after:inset-x-5 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-celeste after:transition-transform after:duration-300 after:ease-out hover:text-white hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
               >
                 {label}
               </a>
@@ -83,9 +83,10 @@ function HeroNav({ reduced }: { reduced: boolean }) {
         {/* Solid, high-contrast — this is a real action, not a quiet secondary link */}
         <a
           href="#contact"
-          className="hidden touch-manipulation rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_4px_16px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_8px_22px_-6px_color-mix(in_srgb,var(--brand-celeste)_65%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
+          className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground transition-[transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
         >
-          Contact us
+          <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Contact us</span>
+          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-lg bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
         </a>
 
         {/* Mobile toggle — links are unreachable below md without this */}
@@ -160,101 +161,22 @@ function HeroNav({ reduced }: { reduced: boolean }) {
   );
 }
 
-type Metric = { value: string; label: string };
-
-// NOTE: "98% CSAT" and "100K+ tickets" are placeholders — swap for real,
-// verifiable figures before this ships. Coverage and industries-served are
-// already true elsewhere on the site.
-const METRICS: Metric[] = [
-  { value: "24/7", label: "Coverage" },
-  { value: "98%", label: "CSAT*" },
-  { value: "5+", label: "Industries" },
-  { value: "100K+", label: "Tickets*" },
-];
-
-function TrustMetrics() {
-  return (
-    <motion.dl
-      variants={rise}
-      className="mt-12 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-white/12 pt-7 md:flex md:items-stretch md:gap-0"
-    >
-      {METRICS.map((m, i) => (
-        <div
-          key={m.label}
-          className={`md:pr-10 ${
-            i > 0 ? "md:border-l md:border-white/12 md:pl-10" : ""
-          }`}
-        >
-          <dt className="sr-only">{m.label}</dt>
-          <dd className="font-heading text-2xl font-bold tabular-nums leading-none text-white sm:text-[1.75rem]">
-            {m.value}
-          </dd>
-          {/* aria-hidden: the sr-only <dt> already names this metric */}
-          <dd
-            aria-hidden
-            className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-white/60"
-          >
-            {m.label}
-          </dd>
-        </div>
-      ))}
-    </motion.dl>
-  );
-}
-
-/* ─── Brand signature — concentric arcs echoing the logo's twin circles,
-   cropped at the left edge, restrained enough to read as identity ─── */
-function BrandArc({ reduced }: { reduced: boolean }) {
-  return (
-    <motion.svg
-      aria-hidden
-      viewBox="0 0 400 400"
-      className="pointer-events-none absolute -left-36 bottom-6 hidden h-[26rem] w-[26rem] lg:block"
-      initial={reduced ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1.4, delay: 1, ease: EASE_OUT }}
-    >
-      <motion.g
-        animate={reduced ? undefined : { rotate: 360 }}
-        transition={{ duration: 240, repeat: Infinity, ease: "linear" }}
-        style={{ transformBox: "fill-box", transformOrigin: "center" }}
-      >
-        <circle
-          cx="200"
-          cy="200"
-          r="180"
-          fill="none"
-          stroke="var(--brand-celeste)"
-          strokeOpacity="0.32"
-          strokeWidth="1.25"
-          strokeDasharray="4 14"
-          strokeLinecap="round"
-        />
-        <circle
-          cx="200"
-          cy="200"
-          r="140"
-          fill="none"
-          stroke="var(--brand-celeste)"
-          strokeOpacity="0.18"
-          strokeWidth="1"
-        />
-      </motion.g>
-    </motion.svg>
-  );
-}
-
-/* ─── Hero — full-bleed photo, dark scrim, bold uppercase headline ─── */
+/* ─── Hero — full-bleed photo, dark scrim, bold uppercase headline.
+   One strong message: headline, subhead, CTAs, one line of social proof —
+   no sidebars, no ornament competing for attention. ─── */
 export default function HeroImage() {
   const reduced = useReducedMotion() ?? false;
 
   return (
-    <section className="relative isolate flex min-h-svh flex-col overflow-hidden bg-ink text-white">
+    <section
+      id="hero"
+      className="relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
+    >
       {/* Background photo — slow Ken Burns drift for a touch of cinema.
           easeInOut so the reversal breathes instead of snapping. */}
       <motion.div
         aria-hidden
-        className="absolute inset-0 will-change-transform"
+        className="absolute inset-0"
         initial={{ scale: 1 }}
         animate={reduced ? undefined : { scale: 1.08 }}
         transition={{
@@ -275,14 +197,14 @@ export default function HeroImage() {
         />
       </motion.div>
 
-      {/* Scrim — dark on the left where copy sits, opened up further so
-          faces, monitors and office depth stay visible on the right */}
+      {/* Scrim — dark on the left where copy sits. Front-loaded so the
+          right side of the photo (the person, the office) can breathe. */}
       <div
         aria-hidden
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(90deg, color-mix(in srgb, var(--ink) 93%, transparent) 0%, color-mix(in srgb, var(--ink) 85%, transparent) 22%, color-mix(in srgb, var(--ink) 60%, transparent) 42%, color-mix(in srgb, var(--ink) 28%, transparent) 58%, color-mix(in srgb, var(--ink) 10%, transparent) 72%, transparent 84%)",
+            "linear-gradient(90deg, color-mix(in srgb, var(--ink) 90%, transparent) 0%, color-mix(in srgb, var(--ink) 78%, transparent) 20%, color-mix(in srgb, var(--ink) 50%, transparent) 38%, color-mix(in srgb, var(--ink) 20%, transparent) 54%, color-mix(in srgb, var(--ink) 6%, transparent) 66%, transparent 78%)",
         }}
       />
       <div
@@ -306,37 +228,19 @@ export default function HeroImage() {
         }}
       />
 
-      {/* Film grain — kills digital sterility on the large dark gradient */}
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
-      />
-
-      <BrandArc reduced={reduced} />
       <HeroNav reduced={reduced} />
 
-      {/* Content — entrance gated on reduced motion (Motion animates via JS,
-          so the global CSS reduced-motion net doesn't cover it) */}
+      {/* Content — vertically centered with a slight downward bias */}
       <motion.div
         variants={container}
         initial={reduced ? false : "hidden"}
         animate="visible"
-        className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-16 sm:px-12 lg:px-16"
+        className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-28 sm:px-12 sm:pt-32 lg:px-16"
       >
-        {/* Eyebrow — editorial kicker anchoring the headline */}
-        <motion.p
-          variants={rise}
-          className="mb-6 flex items-center gap-3 text-[0.75rem] font-semibold uppercase tracking-[0.24em] text-celeste/90"
+        <h1
+          style={{ textWrap: "balance" } as React.CSSProperties}
+          className="font-heading max-w-[38rem] text-[clamp(2.3rem,5.4vw,4.25rem)] font-extrabold uppercase leading-[1.05] tracking-[-0.01em]"
         >
-          <span aria-hidden className="inline-block h-px w-10 bg-celeste/60" />
-          Trusted Operations Partner
-        </motion.p>
-
-        <h1 className="font-heading max-w-2xl text-balance text-[clamp(2.3rem,5.4vw,4.25rem)] font-extrabold uppercase leading-[1.05] tracking-[-0.01em]">
           <span className="block overflow-hidden pb-[0.08em]">
             <motion.span
               variants={reduced ? rise : lineReveal}
@@ -357,7 +261,7 @@ export default function HeroImage() {
 
         <motion.p
           variants={rise}
-          className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/80"
+          className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/90"
         >
           Customer support, technical support and business process
           outsourcing solutions tailored for growing companies.
@@ -369,14 +273,19 @@ export default function HeroImage() {
         >
           <a
             href="#services"
-            className="group inline-flex touch-manipulation items-center gap-3 rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_10px_30px_-8px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+            className="group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_color-mix(in_srgb,var(--brand-celeste)_45%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
-            Explore services
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-transform duration-300 group-hover:translate-x-0.5">
+            {/* White fill sweeps in from left on hover */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+            />
+            <span className="relative z-10">Explore services</span>
+            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:shadow-[0_0_12px_color-mix(in_srgb,var(--brand-celeste)_35%,transparent)]">
               <svg
                 aria-hidden
                 viewBox="0 0 16 16"
-                className="h-3.5 w-3.5"
+                className="h-3.5 w-3.5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-px"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -389,41 +298,36 @@ export default function HeroImage() {
           </a>
           <a
             href="#contact"
-            className="touch-manipulation text-[0.9375rem] font-medium text-white/70 underline decoration-white/30 underline-offset-[6px] transition-colors duration-300 hover:text-white hover:decoration-celeste focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+            className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             Talk to our team
+            <span
+              aria-hidden
+              className="absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-celeste transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:scale-x-100"
+            />
           </a>
         </motion.div>
 
-        <TrustMetrics />
+        {/* Social proof — one understated line, not a metrics grid */}
+        <motion.p
+          variants={rise}
+          className="mt-10 flex items-center gap-2 border-t border-white/12 pt-6 text-[0.875rem] text-white/80"
+        >
+          <svg
+            aria-hidden
+            viewBox="0 0 16 16"
+            className="h-3.5 w-3.5 shrink-0 text-celeste"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M2.5 8.5 6 12l7.5-8" />
+          </svg>
+          Trusted across 5 industries · 24/7 operational coverage
+        </motion.p>
       </motion.div>
-
-      {/* Right-edge scrim — a narrow dark band so the vertical tagline stays
-          legible over the photo's bright window light */}
-      <div
-        aria-hidden
-        className="absolute inset-y-0 right-0 z-[5] hidden w-16 lg:block"
-        style={{
-          background:
-            "linear-gradient(270deg, color-mix(in srgb, var(--ink) 48%, transparent) 0%, color-mix(in srgb, var(--ink) 20%, transparent) 55%, transparent 100%)",
-        }}
-      />
-
-      {/* Edge tagline — runs vertically down the right edge, clear of both
-          the nav and the photo's focal point; an editorial signature, not a caption */}
-      <motion.span
-        initial={reduced ? false : { opacity: 0, x: 8 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.9, delay: 1.1, ease: EASE_OUT }}
-        className="absolute right-5 top-1/2 z-10 hidden -translate-y-1/2 items-center gap-3 text-[0.6875rem] font-semibold uppercase tracking-[0.3em] text-white [writing-mode:vertical-rl] lg:flex"
-        style={{
-          textShadow:
-            "0 1px 8px color-mix(in srgb, var(--ink) 90%, transparent)",
-        }}
-      >
-        <span aria-hidden className="inline-block h-10 w-px bg-white/60" />
-        24/7 Global Support
-      </motion.span>
     </section>
   );
 }
