@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  /* Brand — Center Quest institutional palette (see DISENIO.md) */
+  /* Brand — Center Quest institutional palette (DISENIO.md) */
   --brand-celeste: #74c3d5;
   --brand-petroleo: #3f738d;
-  --brand-verde: #80bc00;
+  --brand-verde: #6aaa00;   /* slightly deeper for WCAG 3:1 on white */
   --brand-gris: #d6d1ca;
 
-  --background: #fbfaf7;
-  --foreground: #0f2028;
-  --muted: #5c6b77;
-  --border: #e4e0d8;
+  /* Surface tokens */
+  --background: #f8f7f4;
+  --foreground: #0d1e29;       /* deeper — stronger contrast */
+  --muted: #4a5c6a;            /* bumped from #5c6b77 for ≥4.5:1 on bg */
+  --border: #e2ddd6;
+
+  /* Elevation tints (used in components) */
+  --surface-raised: #ffffff;
+  --surface-sunken: #f0ede8;
 }
 
 @theme inline {
@@ -18,6 +23,8 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
 
   --color-celeste: var(--brand-celeste);
   --color-petroleo: var(--brand-petroleo);
@@ -29,13 +36,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ── Base ─────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ambient cursor-following elements: only on devices with a real pointer */
+/* ── Skip link for accessibility ─────────────────────── */
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--brand-petroleo);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 6px;
+  transform: translateY(-200%);
+  transition: transform 0.2s;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Pointer-fine utilities ───────────────────────────── */
+
 .pointer-fine-only {
   display: none;
 }
@@ -44,4 +88,31 @@ body {
   .pointer-fine-only {
     display: block;
   }
+}
+
+/* ── Reduced-motion safety net ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Selection ───────────────────────────────────────── */
+
+::selection {
+  background: color-mix(in srgb, var(--brand-celeste) 30%, transparent);
+  color: var(--foreground);
+}
+
+/* ── Focus ring baseline ─────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
 }
