@@ -59,8 +59,11 @@ function HeroNav({ reduced }: { reduced: boolean }) {
             alt="Center Quest"
             width={412}
             height={304}
-            className="h-12 w-auto drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)] sm:h-14"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="h-12 w-auto sm:h-14"
+            style={{
+              filter:
+                "brightness(0) invert(1) drop-shadow(0 1px 6px color-mix(in srgb, var(--ink) 60%, transparent))",
+            }}
           />
         </a>
 
@@ -80,7 +83,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
         {/* Solid, high-contrast — this is a real action, not a quiet secondary link */}
         <a
           href="#contact"
-          className="hidden touch-manipulation rounded-lg bg-celeste px-5 py-2.5 text-sm font-semibold text-foreground shadow-[0_4px_16px_-4px_rgba(116,195,213,0.5)] transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_8px_22px_-6px_rgba(116,195,213,0.65)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
+          className="hidden touch-manipulation rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_4px_16px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_8px_22px_-6px_color-mix(in_srgb,var(--brand-celeste)_65%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
         >
           Contact us
         </a>
@@ -173,20 +176,24 @@ function TrustMetrics() {
   return (
     <motion.dl
       variants={rise}
-      className="mt-12 flex flex-wrap items-stretch gap-y-5 border-t border-white/12 pt-7"
+      className="mt-12 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-white/12 pt-7 md:flex md:items-stretch md:gap-0"
     >
       {METRICS.map((m, i) => (
         <div
           key={m.label}
-          className={`pr-8 sm:pr-10 ${
-            i > 0 ? "border-l border-white/12 pl-8 sm:pl-10" : ""
+          className={`md:pr-10 ${
+            i > 0 ? "md:border-l md:border-white/12 md:pl-10" : ""
           }`}
         >
           <dt className="sr-only">{m.label}</dt>
           <dd className="font-heading text-2xl font-bold tabular-nums leading-none text-white sm:text-[1.75rem]">
             {m.value}
           </dd>
-          <dd className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-white/45">
+          {/* aria-hidden: the sr-only <dt> already names this metric */}
+          <dd
+            aria-hidden
+            className="mt-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-white/60"
+          >
             {m.label}
           </dd>
         </div>
@@ -262,7 +269,7 @@ export default function HeroImage() {
           alt=""
           fill
           priority
-          quality={90}
+          quality={75}
           sizes="100vw"
           className="object-cover object-[70%_center]"
         />
@@ -312,10 +319,11 @@ export default function HeroImage() {
       <BrandArc reduced={reduced} />
       <HeroNav reduced={reduced} />
 
-      {/* Content */}
+      {/* Content — entrance gated on reduced motion (Motion animates via JS,
+          so the global CSS reduced-motion net doesn't cover it) */}
       <motion.div
         variants={container}
-        initial="hidden"
+        initial={reduced ? false : "hidden"}
         animate="visible"
         className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-16 sm:px-12 lg:px-16"
       >
@@ -361,7 +369,7 @@ export default function HeroImage() {
         >
           <a
             href="#services"
-            className="group inline-flex touch-manipulation items-center gap-3 rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_10px_30px_-8px_rgba(116,195,213,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+            className="group inline-flex touch-manipulation items-center gap-3 rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground transition-[transform,background-color,box-shadow] duration-300 hover:-translate-y-px hover:bg-white hover:shadow-[0_10px_30px_-8px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             Explore services
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-transform duration-300 group-hover:translate-x-0.5">
@@ -408,7 +416,10 @@ export default function HeroImage() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.9, delay: 1.1, ease: EASE_OUT }}
         className="absolute right-5 top-1/2 z-10 hidden -translate-y-1/2 items-center gap-3 text-[0.6875rem] font-semibold uppercase tracking-[0.3em] text-white [writing-mode:vertical-rl] lg:flex"
-        style={{ textShadow: "0 1px 8px rgba(4,7,10,0.9)" }}
+        style={{
+          textShadow:
+            "0 1px 8px color-mix(in srgb, var(--ink) 90%, transparent)",
+        }}
       >
         <span aria-hidden className="inline-block h-10 w-px bg-white/60" />
         24/7 Global Support
