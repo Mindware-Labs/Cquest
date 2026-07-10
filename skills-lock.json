@@ -19,6 +19,12 @@
       "skillPath": ".agents/skills/impeccable/SKILL.md",
       "computedHash": "a0de0cab25a37c9a1a787aa4b690b1f7cfaa6d7ac83a8424f66863b457d9d668"
     },
+    "motion-background": {
+      "source": "iart-ai/motion-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/motion-background/SKILL.md",
+      "computedHash": "dab47844cc4ebaef944af96e75f3a9bdb6f11c4453337a145aa2a229e80fbf44"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   AnimatePresence,
@@ -9,6 +10,11 @@ import {
   useReducedMotion,
   useScroll,
 } from "motion/react";
+
+// Routes that ship their own bespoke nav or header (e.g. dark photo heroes
+// where the shared light-styled navbar reads illegibly, or the demo
+// selector) opt out of the global one.
+const SELF_NAV_ROUTES = ["/", "/hero-image"];
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -20,6 +26,7 @@ const LINKS = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const reduced = useReducedMotion() ?? false;
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -29,6 +36,8 @@ export default function Navbar() {
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
 
   const stop = (e: React.MouseEvent) => e.preventDefault();
+
+  if (SELF_NAV_ROUTES.includes(pathname)) return null;
 
   return (
     <motion.header

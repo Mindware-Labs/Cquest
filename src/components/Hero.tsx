@@ -1,12 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   motion,
-  useMotionValue,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
   type Variants,
 } from "motion/react";
@@ -53,97 +51,187 @@ const SECTORS = [
   },
 ];
 
-/* ─── Aurora orbs — committed brand color, not decorative grid ─── */
-function AuroraField({ reduced }: { reduced: boolean }) {
+/* ─── Ambient dust — fine particles drifting weightlessly, mouse-aware ───
+   No shapes, no motif — just a field of quiet points that float slowly
+   upward, wrap around, and nudge away from the cursor. Kept clear of the
+   text column by a mask cutout so they truly sit around the copy. */
+function ParticleField({ reduced }: { reduced: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+
+    type Dust = {
+      x: number;
+      y: number;
+      vy: number;
+      sway: number;
+      phase: number;
+      size: number;
+    };
+
+    let dust: Dust[] = [];
+
+    const pointer = { x: -9999, y: -9999, active: false };
+
+    function onPointerMove(e: PointerEvent) {
+      const rect = canvas!.getBoundingClientRect();
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+      pointer.active =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+    }
+    function onPointerLeave() {
+      pointer.active = false;
+    }
+    if (!reduced) {
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerleave", onPointerLeave);
+    }
+
+    function seed() {
+      const dustCount = Math.max(70, Math.min(200, Math.round((width * height) / 9500)));
+      dust = Array.from({ length: dustCount }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vy: 0.08 + Math.random() * 0.14,
+        sway: 6 + Math.random() * 10,
+        phase: Math.random() * Math.PI * 2,
+        size: 1 + Math.random() * 1.1,
+      }));
+    }
+
+    function resize() {
+      const rect = canvas!.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = width * dpr;
+      canvas!.height = height * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+    }
+
+    let raf = 0;
+    let running = true;
+    let t = 0;
+
+    const DUST_REPEL_RADIUS = 90;
+
+    function draw() {
+      ctx!.clearRect(0, 0, width, height);
+
+      for (const d of dust) {
+        if (!reduced) {
+          d.y -= d.vy;
+          if (d.y < -10) d.y = height + 10;
+
+          if (pointer.active) {
+            const dx = d.x - pointer.x;
+            const dy = d.y - pointer.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < DUST_REPEL_RADIUS && dist > 0.01) {
+              const force = (1 - dist / DUST_REPEL_RADIUS) * 3.2;
+              d.x += (dx / dist) * force;
+              d.y += (dy / dist) * force;
+            }
+          }
+        }
+        const sway = Math.sin(t * 0.01 + d.phase) * d.sway;
+        const twinkle = 0.25 + (Math.sin(t * 0.02 + d.phase) + 1) * 0.2;
+        ctx!.fillStyle = `rgba(13, 30, 41, ${twinkle})`;
+        ctx!.beginPath();
+        ctx!.arc(d.x + sway, d.y, d.size, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+
+      t += 1;
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    if (reduced) {
+      draw();
+      running = false;
+    } else {
+      raf = requestAnimationFrame(draw);
+    }
+
+    const onVisibility = () => {
+      const shouldRun = !document.hidden && !reduced;
+      if (shouldRun && !running) {
+        running = true;
+        raf = requestAnimationFrame(draw);
+      } else if (!shouldRun) {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    const io = new IntersectionObserver(([entry]) => {
+      const shouldRun = entry.isIntersecting && !document.hidden && !reduced;
+      if (shouldRun && !running) {
+        running = true;
+        raf = requestAnimationFrame(draw);
+      } else if (!shouldRun) {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    });
+    io.observe(canvas);
+
+    return () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerleave", onPointerLeave);
+      document.removeEventListener("visibilitychange", onVisibility);
+      io.disconnect();
+    };
+  }, [reduced]);
+
   return (
     <div aria-hidden className="absolute inset-0 overflow-hidden">
-      {/* Primary celeste aurora — top right */}
-      <motion.div
-        className="absolute -right-[20%] -top-[15%] h-[700px] w-[700px] rounded-full"
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
         style={{
-          background:
-            "radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--brand-celeste) 28%, transparent) 0%, color-mix(in srgb, var(--brand-celeste) 8%, transparent) 45%, transparent 70%)",
-        }}
-        animate={
-          reduced
-            ? undefined
-            : { x: [0, -30, 0], y: [0, 20, 0], scale: [1, 1.05, 1] }
-        }
-        transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* Petroleo deep aurora — bottom left */}
-      <motion.div
-        className="absolute -bottom-[30%] -left-[15%] h-[640px] w-[640px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle at 40% 60%, color-mix(in srgb, var(--brand-petroleo) 18%, transparent) 0%, color-mix(in srgb, var(--brand-petroleo) 5%, transparent) 50%, transparent 72%)",
-        }}
-        animate={
-          reduced
-            ? undefined
-            : { x: [0, 28, 0], y: [0, -18, 0], scale: [1, 1.04, 1] }
-        }
-        transition={{
-          duration: 28,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 5,
-        }}
-      />
-
-      {/* Verde accent aurora — mid left, subtle */}
-      <motion.div
-        className="absolute left-[8%] top-[55%] h-[380px] w-[380px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, color-mix(in srgb, var(--brand-verde) 10%, transparent) 0%, transparent 65%)",
-        }}
-        animate={
-          reduced
-            ? undefined
-            : { x: [0, 16, 0], y: [0, -12, 0], scale: [1, 1.06, 1] }
-        }
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 10,
-        }}
-      />
-
-      {/* Subtle noise texture */}
-      <div
-        className="absolute inset-0 opacity-[0.022]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          // True cutout around the text column — particles live around the
+          // copy, not behind it, with a soft feather so the edge isn't hard.
+          maskImage:
+            "radial-gradient(ellipse 37% 34% at 50% 46%, transparent 0%, transparent 55%, black 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 37% 34% at 50% 46%, transparent 0%, transparent 55%, black 100%)",
         }}
       />
     </div>
   );
 }
 
-/* ─── Cursor glow (fine pointer only) ─── */
-function CursorGlow({
-  x,
-  y,
-}: {
-  x: ReturnType<typeof useSpring>;
-  y: ReturnType<typeof useSpring>;
-}) {
+/* ─── Ambient backdrop — pairs the particle field with a quiet vignette ─── */
+function HeroBackdrop({ reduced }: { reduced: boolean }) {
   return (
-    <div
-      aria-hidden
-      className="pointer-fine-only pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <motion.div
-        className="absolute h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+    <div aria-hidden className="absolute inset-0 overflow-hidden">
+      <ParticleField reduced={reduced} />
+
+      <div
+        className="absolute inset-0"
         style={{
-          left: x,
-          top: y,
           background:
-            "radial-gradient(circle, color-mix(in srgb, var(--brand-celeste) 16%, transparent) 0%, transparent 65%)",
+            "radial-gradient(ellipse 100% 85% at 50% 35%, transparent 60%, color-mix(in srgb, var(--background) 45%, transparent) 100%)",
         }}
       />
     </div>
@@ -231,11 +319,6 @@ export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = useReducedMotion() ?? false;
 
-  const rawX = useMotionValue(-800);
-  const rawY = useMotionValue(-800);
-  const glowX = useSpring(rawX, { stiffness: 55, damping: 22 });
-  const glowY = useSpring(rawY, { stiffness: 55, damping: 22 });
-
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -256,16 +339,6 @@ export default function Hero() {
     <section
       ref={sectionRef}
       id="hero"
-      onPointerMove={(e) => {
-        if (reduced) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        rawX.set(e.clientX - rect.left);
-        rawY.set(e.clientY - rect.top);
-      }}
-      onPointerLeave={() => {
-        rawX.set(-800);
-        rawY.set(-800);
-      }}
       className="relative isolate flex min-h-svh flex-col overflow-hidden bg-background"
     >
       {/* Background layers */}
@@ -274,10 +347,8 @@ export default function Hero() {
         className="absolute inset-0"
         style={{ y: bgY }}
       >
-        <AuroraField reduced={reduced} />
+        <HeroBackdrop reduced={reduced} />
       </motion.div>
-
-      {!reduced && <CursorGlow x={glowX} y={glowY} />}
 
       {/* ── Main content ── */}
       <motion.div
@@ -290,7 +361,7 @@ export default function Hero() {
         {/* Live badge — replaces generic uppercase eyebrow */}
         <motion.div
           variants={rise}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-petroleo/12 bg-white/70 px-3.5 py-1.5 shadow-[0_1px_3px_rgba(15,32,40,0.06)] backdrop-blur-sm"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-petroleo/14 bg-white/75 px-3.5 py-1.5 shadow-[0_1px_3px_rgba(15,32,40,0.06),0_10px_30px_-14px_rgba(63,115,141,0.35)] backdrop-blur-md"
         >
           <SignalDot delay={0} reduced={reduced} />
           <span className="text-[11px] font-semibold tracking-wide text-petroleo/80">
@@ -317,8 +388,12 @@ export default function Hero() {
         >
           <a
             href="#services"
-            className="group inline-flex items-center gap-2 rounded-lg bg-petroleo px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-white transition-all duration-300 hover:-translate-y-px hover:bg-[color-mix(in_srgb,var(--brand-petroleo)_86%,black)] hover:shadow-[0_6px_20px_-6px_rgba(63,115,141,0.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg bg-petroleo px-6 py-[0.8125rem] text-[0.9375rem] font-semibold text-white transition-all duration-300 hover:-translate-y-px hover:bg-[color-mix(in_srgb,var(--brand-petroleo)_86%,black)] hover:shadow-[0_10px_28px_-8px_rgba(63,115,141,0.6)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
           >
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+            />
             Explore our services
             <svg
               aria-hidden

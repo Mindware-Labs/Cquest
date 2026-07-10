@@ -16,6 +16,9 @@
   /* Elevation tints (used in components) */
   --surface-raised: #ffffff;
   --surface-sunken: #f0ede8;
+
+  /* Dark ink — photo-hero scrims and dark surfaces (HeroImage) */
+  --ink: #0a1116;
 }
 
 @theme inline {
@@ -25,6 +28,7 @@
   --color-border: var(--border);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
 
   --color-celeste: var(--brand-celeste);
   --color-petroleo: var(--brand-petroleo);
