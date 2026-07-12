@@ -275,37 +275,26 @@ export default function HeroCard() {
             </motion.div>
           </div>
 
-          {/* Photo — right column, arched top like the reference */}
-          <motion.div variants={rise} className="relative">
+          {/* Photo — circular portrait on its petroleo disc */}
+          <motion.div variants={rise} className="relative mx-auto w-full max-w-75 sm:max-w-95 lg:max-w-110">
             <div
               aria-hidden
-              className="absolute -right-4 -top-4 h-24 w-24 rounded-[58%_42%_50%_50%/52%_46%_54%_48%] sm:-right-6 sm:-top-6 sm:h-32 sm:w-32"
+              className="absolute -right-2 -top-2 h-24 w-24 rounded-[58%_42%_50%_50%/52%_46%_54%_48%] sm:-right-4 sm:-top-4 sm:h-32 sm:w-32"
               style={{
                 background:
                   "linear-gradient(150deg, color-mix(in srgb, var(--brand-celeste) 80%, white), color-mix(in srgb, var(--brand-verde) 55%, #eef56a))",
                 opacity: 0.9,
               }}
             />
-            <div className="relative overflow-hidden rounded-[1.5rem] rounded-t-[45%_18%] shadow-[0_24px_50px_-20px_color-mix(in_srgb,var(--brand-petroleo)_40%,transparent)] sm:rounded-[2rem] sm:rounded-t-[48%_20%]">
+            <div className="relative aspect-square overflow-hidden rounded-full shadow-[0_24px_50px_-20px_color-mix(in_srgb,var(--brand-petroleo)_40%,transparent)]">
               <Image
-                src="/hero-image.jpeg"
-                alt="Center Quest team collaborating around a laptop"
-                width={1200}
-                height={900}
+                src="/MichelePodesta.png"
+                alt="Michele Podesta, Center Quest"
+                fill
                 priority
-                quality={80}
-                sizes="(min-width: 1024px) 560px, 100vw"
-                className="h-[300px] w-full object-cover object-center sm:h-[380px] lg:h-[420px]"
-              />
-              {/* Celeste wash ties the photo into the palette */}
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(200deg, color-mix(in srgb, var(--brand-celeste) 18%, transparent) 0%, transparent 45%)",
-                  mixBlendMode: "multiply",
-                }}
+                quality={85}
+                sizes="(min-width: 1024px) 440px, (min-width: 640px) 380px, 300px"
+                className="object-cover"
               />
             </div>
           </motion.div>

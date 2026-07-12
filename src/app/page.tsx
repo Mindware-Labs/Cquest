@@ -131,9 +131,9 @@ function CardPreview() {
               See our services
             </span>
           </div>
-          <div className="relative w-2/5 overflow-hidden rounded-lg rounded-t-[45%_30%]">
+          <div className="relative aspect-square w-2/5 self-center overflow-hidden rounded-full">
             <Image
-              src="/hero-image.jpeg"
+              src="/MichelePodesta.png"
               alt=""
               fill
               sizes="160px"
@@ -173,9 +173,9 @@ function DarkPreview() {
             Schedule a Call
           </span>
         </div>
-        <div className="relative h-[70%] w-2/5 overflow-hidden rounded-xl border border-white/10">
+        <div className="relative aspect-square w-1/3 self-center overflow-hidden rounded-full border border-white/10">
           <Image
-            src="/hero-image.jpeg"
+            src="/MichelePodesta.png"
             alt=""
             fill
             sizes="160px"
@@ -213,7 +213,7 @@ export default function DemoSelectorPage() {
           hay do
         </p>
         <p className="mt-3 max-w-md text-pretty text-[1.0625rem] leading-relaxed text-muted">
-          hay cuatro, mmg
+          hay cuatro peluchongo, mmg
         </p>
       </header>
 

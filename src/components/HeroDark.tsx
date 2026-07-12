@@ -362,24 +362,15 @@ export default function HeroDark() {
                 filter: "blur(2px)",
               }}
             />
-            <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-[0_30px_70px_-25px_rgba(0,0,0,0.8)]">
+            <div className="relative mx-auto aspect-square w-full max-w-75 overflow-hidden rounded-full border border-white/10 shadow-[0_30px_70px_-25px_rgba(0,0,0,0.8)] sm:max-w-95 lg:max-w-105">
               <Image
-                src="/hero-image.jpeg"
-                alt="Center Quest agents working at their stations"
-                width={1200}
-                height={900}
+                src="/MichelePodesta.png"
+                alt="Michele Podesta, Center Quest"
+                fill
                 priority
-                quality={80}
-                sizes="(min-width: 1024px) 580px, 100vw"
-                className="h-[300px] w-full object-cover object-center sm:h-[380px] lg:h-[420px]"
-              />
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--ink) 55%, transparent) 100%)",
-                }}
+                quality={85}
+                sizes="(min-width: 1024px) 420px, (min-width: 640px) 380px, 300px"
+                className="object-cover"
               />
             </div>
           </motion.div>
