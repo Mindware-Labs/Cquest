@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(node_modules/.bin/tsc.cmd --noEmit)",
+      "Bash(npm install *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(python shot.py)",
+      "Bash(python shot2.py)",
+      "Bash(python shot3.py)"
+    ]
+  }
+}

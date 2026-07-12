@@ -14,7 +14,7 @@ import {
 // Routes that ship their own bespoke nav or header (e.g. dark photo heroes
 // where the shared light-styled navbar reads illegibly, or the demo
 // selector) opt out of the global one.
-const SELF_NAV_ROUTES = ["/", "/hero-image"];
+const SELF_NAV_ROUTES = ["/", "/hero-image", "/hero-card", "/hero-dark"];
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
