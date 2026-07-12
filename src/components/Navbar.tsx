@@ -10,6 +10,7 @@ import {
   useReducedMotion,
   useScroll,
 } from "motion/react";
+import { useMagnetic } from "../hooks/useMagnetic";
 
 // Routes that ship their own bespoke nav or header (e.g. dark photo heroes
 // where the shared light-styled navbar reads illegibly, or the demo
@@ -31,6 +32,13 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const {
+    ref: ctaRef,
+    style: ctaStyle,
+    onMouseEnter: ctaOnMouseEnter,
+    onMouseMove: ctaOnMouseMove,
+    onMouseLeave: ctaOnMouseLeave,
+  } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
@@ -97,17 +105,25 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-3">
-          <a
+          <motion.a
+            ref={ctaRef}
             href="#"
             onClick={stop}
-            className="group/cta relative hidden overflow-hidden rounded-lg bg-petroleo px-5 py-2 text-sm font-semibold text-white transition-[transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:block"
+            onMouseEnter={ctaOnMouseEnter}
+            onMouseMove={ctaOnMouseMove}
+            onMouseLeave={ctaOnMouseLeave}
+            style={ctaStyle}
+            whileHover={{ scale: 1.045 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 420, damping: 26 }}
+            className="group/cta relative hidden overflow-hidden rounded-lg bg-petroleo px-5 py-2 text-sm font-semibold text-white shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:block"
           >
             <span
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10"
             />
             <span className="relative z-10">Contact us</span>
-          </a>
+          </motion.a>
 
           {/* mobile toggle */}
           <button

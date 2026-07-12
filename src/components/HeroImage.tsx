@@ -1,13 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
+  useAnimationControls,
+  useInView,
   useReducedMotion,
   type Variants,
 } from "motion/react";
+import heroImage from "../../public/hero-image.jpeg";
+import { useMagnetic } from "../hooks/useMagnetic";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -37,6 +41,17 @@ const lineReveal: Variants = {
   },
 };
 
+// Checkmark draws itself in after the social-proof line settles — a quiet
+// flourish instead of an infinite loop, so it doesn't compete for attention.
+const checkDraw: Variants = {
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: {
+    pathLength: 1,
+    opacity: 1,
+    transition: { duration: 0.6, ease: EASE_OUT, delay: 0.3 },
+  },
+};
+
 const NAV_LINKS = ["Services", "Industries", "About", "Contact"];
 
 /* ─── Bespoke dark nav — the shared light navbar reads illegibly here,
@@ -44,6 +59,13 @@ const NAV_LINKS = ["Services", "Industries", "About", "Contact"];
    mobile drawer so small viewports keep access to the links. ─── */
 function HeroNav({ reduced }: { reduced: boolean }) {
   const [open, setOpen] = useState(false);
+  const {
+    ref: navCtaRef,
+    style: navCtaStyle,
+    onMouseEnter: navCtaOnMouseEnter,
+    onMouseMove: navCtaOnMouseMove,
+    onMouseLeave: navCtaOnMouseLeave,
+  } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
   return (
     <motion.div
@@ -80,14 +102,24 @@ function HeroNav({ reduced }: { reduced: boolean }) {
           ))}
         </ul>
 
-        {/* Solid, high-contrast — this is a real action, not a quiet secondary link */}
-        <a
+        {/* Solid, high-contrast — this is a real action, not a quiet secondary link.
+            Magnetic pull + spring scale read as premium; the white sweep still
+            carries the color-swap payoff underneath. */}
+        <motion.a
+          ref={navCtaRef}
           href="#contact"
-          className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground transition-[transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
+          onMouseEnter={navCtaOnMouseEnter}
+          onMouseMove={navCtaOnMouseMove}
+          onMouseLeave={navCtaOnMouseLeave}
+          style={navCtaStyle}
+          whileHover={{ scale: 1.045 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 420, damping: 26 }}
+          className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_2px_10px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_color-mix(in_srgb,var(--brand-celeste)_55%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
         >
           <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Contact us</span>
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-lg bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
-        </a>
+        </motion.a>
 
         {/* Mobile toggle — links are unreachable below md without this */}
         <button
@@ -166,9 +198,39 @@ function HeroNav({ reduced }: { reduced: boolean }) {
    no sidebars, no ornament competing for attention. ─── */
 export default function HeroImage() {
   const reduced = useReducedMotion() ?? false;
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { amount: "some" });
+  const kenBurnsControls = useAnimationControls();
+  const {
+    ref: exploreCtaRef,
+    style: exploreCtaStyle,
+    onMouseEnter: exploreCtaOnMouseEnter,
+    onMouseMove: exploreCtaOnMouseMove,
+    onMouseLeave: exploreCtaOnMouseLeave,
+  } = useMagnetic<HTMLAnchorElement>(0.2, 3);
+
+  // Pause the Ken Burns drift while the hero is scrolled out of view —
+  // it was running (and burning CPU/battery) even off-screen.
+  useEffect(() => {
+    if (reduced) return;
+    if (isInView) {
+      kenBurnsControls.start({
+        scale: 1.08,
+        transition: {
+          duration: 26,
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "easeInOut",
+        },
+      });
+    } else {
+      kenBurnsControls.stop();
+    }
+  }, [isInView, reduced, kenBurnsControls]);
 
   return (
     <section
+      ref={sectionRef}
       id="hero"
       className="relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
@@ -178,20 +240,15 @@ export default function HeroImage() {
         aria-hidden
         className="absolute inset-0"
         initial={{ scale: 1 }}
-        animate={reduced ? undefined : { scale: 1.08 }}
-        transition={{
-          duration: 26,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
+        animate={reduced ? undefined : kenBurnsControls}
       >
         <Image
-          src="/hero-image.jpeg"
+          src={heroImage}
           alt=""
           fill
-          priority
-          quality={75}
+          loading="eager"
+          quality={82}
+          placeholder="blur"
           sizes="100vw"
           className="object-cover object-[70%_center]"
         />
@@ -271,9 +328,17 @@ export default function HeroImage() {
           variants={rise}
           className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4"
         >
-          <a
+          <motion.a
+            ref={exploreCtaRef}
             href="#services"
-            className="group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_color-mix(in_srgb,var(--brand-celeste)_45%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+            onMouseEnter={exploreCtaOnMouseEnter}
+            onMouseMove={exploreCtaOnMouseMove}
+            onMouseLeave={exploreCtaOnMouseLeave}
+            style={exploreCtaStyle}
+            whileHover={{ scale: 1.035 }}
+            whileTap={{ scale: 0.965 }}
+            transition={{ type: "spring", stiffness: 400, damping: 26 }}
+            className="group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             {/* White fill sweeps in from left on hover */}
             <span
@@ -281,7 +346,7 @@ export default function HeroImage() {
               className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
             />
             <span className="relative z-10">Explore services</span>
-            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:shadow-[0_0_12px_color-mix(in_srgb,var(--brand-celeste)_35%,transparent)]">
+            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:shadow-[0_0_14px_color-mix(in_srgb,var(--brand-celeste)_45%,transparent)]">
               <svg
                 aria-hidden
                 viewBox="0 0 16 16"
@@ -295,12 +360,26 @@ export default function HeroImage() {
                 <path d="M6 3.5 10.5 8 6 12.5" />
               </svg>
             </span>
-          </a>
+          </motion.a>
           <a
             href="#contact"
             className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
-            Talk to our team
+            <span className="inline-flex items-center gap-1.5">
+              Talk to our team
+              <svg
+                aria-hidden
+                viewBox="0 0 16 16"
+                className="h-3 w-3 -translate-x-1 text-celeste opacity-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:translate-x-0 group-hover/link:opacity-100"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 3.5 10.5 8 6 12.5" />
+              </svg>
+            </span>
             <span
               aria-hidden
               className="absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-celeste transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:scale-x-100"
@@ -323,7 +402,7 @@ export default function HeroImage() {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M2.5 8.5 6 12l7.5-8" />
+            <motion.path variants={checkDraw} d="M2.5 8.5 6 12l7.5-8" />
           </svg>
           Trusted across 5 industries · 24/7 operational coverage
         </motion.p>
