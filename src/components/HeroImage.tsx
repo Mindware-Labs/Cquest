@@ -1,12 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
-  useAnimationControls,
-  useInView,
   useReducedMotion,
   type Variants,
 } from "motion/react";
@@ -52,7 +50,7 @@ const checkDraw: Variants = {
   },
 };
 
-const NAV_LINKS = ["Services", "Industries", "About", "Contact"];
+const NAV_LINKS = ["Services", "Success stories", "About", "Contact"];
 
 /* ─── Bespoke dark nav — the shared light navbar reads illegibly here,
    so this hero carries its own, tuned for a photo backdrop. Includes a
@@ -117,7 +115,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
           transition={{ type: "spring", stiffness: 420, damping: 26 }}
           className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_2px_10px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_color-mix(in_srgb,var(--brand-celeste)_55%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
         >
-          <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Contact us</span>
+          <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Request a quote</span>
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-lg bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
         </motion.a>
 
@@ -182,7 +180,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
                   onClick={() => setOpen(false)}
                   className="block touch-manipulation rounded-lg bg-celeste px-5 py-3 text-center text-sm font-semibold text-foreground"
                 >
-                  Contact us
+                  Request a quote
                 </a>
               </motion.li>
             </ul>
@@ -199,8 +197,6 @@ function HeroNav({ reduced }: { reduced: boolean }) {
 export default function HeroImage() {
   const reduced = useReducedMotion() ?? false;
   const sectionRef = useRef<HTMLElement>(null);
-  const isInView = useInView(sectionRef, { amount: "some" });
-  const kenBurnsControls = useAnimationControls();
   const {
     ref: exploreCtaRef,
     style: exploreCtaStyle,
@@ -209,50 +205,25 @@ export default function HeroImage() {
     onMouseLeave: exploreCtaOnMouseLeave,
   } = useMagnetic<HTMLAnchorElement>(0.2, 3);
 
-  // Pause the Ken Burns drift while the hero is scrolled out of view —
-  // it was running (and burning CPU/battery) even off-screen.
-  useEffect(() => {
-    if (reduced) return;
-    if (isInView) {
-      kenBurnsControls.start({
-        scale: 1.08,
-        transition: {
-          duration: 26,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        },
-      });
-    } else {
-      kenBurnsControls.stop();
-    }
-  }, [isInView, reduced, kenBurnsControls]);
-
   return (
     <section
       ref={sectionRef}
       id="hero"
       className="relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
-      {/* Background photo — slow Ken Burns drift for a touch of cinema.
-          easeInOut so the reversal breathes instead of snapping. */}
-      <motion.div
-        aria-hidden
-        className="absolute inset-0"
-        initial={{ scale: 1 }}
-        animate={reduced ? undefined : kenBurnsControls}
-      >
+      {/* Background photo — static, no drift */}
+      <div aria-hidden className="absolute inset-0">
         <Image
           src={heroImage}
           alt=""
           fill
-          loading="eager"
+          priority
           quality={82}
           placeholder="blur"
           sizes="100vw"
           className="object-cover object-[70%_center]"
         />
-      </motion.div>
+      </div>
 
       {/* Scrim — dark on the left where copy sits. Front-loaded so the
           right side of the photo (the person, the office) can breathe. */}
@@ -320,8 +291,8 @@ export default function HeroImage() {
           variants={rise}
           className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/90"
         >
-          Customer support, technical support and business process
-          outsourcing solutions tailored for growing companies.
+          Call center, BPO and systems development for operations —
+          one partner across your three growth priorities.
         </motion.p>
 
         <motion.div
@@ -330,7 +301,7 @@ export default function HeroImage() {
         >
           <motion.a
             ref={exploreCtaRef}
-            href="#services"
+            href="#contact"
             onMouseEnter={exploreCtaOnMouseEnter}
             onMouseMove={exploreCtaOnMouseMove}
             onMouseLeave={exploreCtaOnMouseLeave}
@@ -345,7 +316,7 @@ export default function HeroImage() {
               aria-hidden
               className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
             />
-            <span className="relative z-10">Explore services</span>
+            <span className="relative z-10">Request a quote</span>
             <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:shadow-[0_0_14px_color-mix(in_srgb,var(--brand-celeste)_45%,transparent)]">
               <svg
                 aria-hidden
@@ -362,11 +333,11 @@ export default function HeroImage() {
             </span>
           </motion.a>
           <a
-            href="#contact"
+            href="#services"
             className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             <span className="inline-flex items-center gap-1.5">
-              Talk to our team
+              See our services
               <svg
                 aria-hidden
                 viewBox="0 0 16 16"
@@ -404,7 +375,7 @@ export default function HeroImage() {
           >
             <motion.path variants={checkDraw} d="M2.5 8.5 6 12l7.5-8" />
           </svg>
-          Trusted across 5 industries · 24/7 operational coverage
+          Call Center · BPO · Systems Development — 24/7 coverage
         </motion.p>
       </motion.div>
     </section>

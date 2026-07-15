@@ -12,10 +12,9 @@ import {
 } from "motion/react";
 import { useMagnetic } from "../hooks/useMagnetic";
 
-// Routes that ship their own bespoke nav or header (e.g. dark photo heroes
-// where the shared light-styled navbar reads illegibly, or the demo
-// selector) opt out of the global one.
-const SELF_NAV_ROUTES = ["/", "/hero-image", "/hero-card", "/hero-dark"];
+// The homepage hero ships its own bespoke dark nav (the shared light-styled
+// navbar reads illegibly over the photo), so it opts out of the global one.
+const SELF_NAV_ROUTES = ["/"];
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
