@@ -107,6 +107,53 @@ body {
   }
 }
 
+/* ── Ambient background orbs (Services section) ──────────
+   Slow, brand-tinted aurora that drifts behind content. Transform-only
+   so it stays on the compositor; the reduced-motion net above freezes it. */
+
+@keyframes cq-float-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(6%, 4%, 0) scale(1.12); }
+}
+@keyframes cq-float-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-5%, -6%, 0) scale(1.08); }
+}
+@keyframes cq-float-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-4%, 5%, 0) scale(1.1); }
+}
+
+.cq-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+/* ── Signal rings (Services section) ─────────────────────
+   Concentric hairline rings that pulse slowly outward — a call
+   radiating from the stage. Transform/opacity only; under reduced
+   motion the net above freezes them at opacity 0 (invisible). */
+
+@keyframes cq-ring {
+  0%   { transform: scale(0.55); opacity: 0; }
+  18%  { opacity: 0.5; }
+  60%  { opacity: 0.14; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+
+.cq-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 28%, transparent);
+  opacity: 0;
+  transform: scale(0.55);
+  animation: cq-ring 10.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
 /* ── Selection ───────────────────────────────────────── */
 
 ::selection {
