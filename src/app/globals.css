@@ -224,8 +224,9 @@ body {
    Left padding clears the spine. */
 .cq-service-panel {
   --svc: var(--brand-petroleo);
+  --panel-pad: clamp(1.25rem, 2.2vw, 1.75rem);
   position: relative;
-  padding-left: clamp(1.25rem, 2.2vw, 1.75rem);
+  padding-left: var(--panel-pad);
 }
 
 /* The spine: a hairline in the service colour that dissolves downward, capped
@@ -329,78 +330,148 @@ body {
   text-wrap: pretty;
 }
 
-/* ── Capability carousel (Services) ──────────────────────
-   One capability on stage at a time. The outgoing slide leaves through the
-   left edge while the next arrives from the right (Motion spring, bounce 0);
-   dots and a mono counter give position context plus direct navigation. */
+/* ── Capability deck (Services) ──────────────────────────
+   Not a sliding carousel: a depth deck. The active capability sits front; the
+   next one waits behind as a real silhouette peeking below. Advancing recedes
+   the front card (up, shrink, blur) while the incoming one emerges from the
+   ghost's position. A segmented rail — the spine's continuation — carries
+   pagination, dwell progress and accumulated position in one instrument. */
 .cq-flow {
   position: relative;
   margin-top: 1.4rem;
 }
 
-/* Clips the travelling slides. Negative margins let the slide surface clear
-   the text edge (like the old spotlight overhang) while keeping alignment. */
-.cq-flow-viewport {
+/* Stage: a fixed reading space — entries dissolve in place, the page around
+   them never moves. Full width, flush with the panel's reading edge. */
+.cq-flow-stage {
   position: relative;
-  overflow: hidden;
-  margin: 0 -0.4rem 0 -0.85rem;
-  padding: 0 0.4rem 0 0.85rem;
-  min-height: 5.5rem;
+  z-index: 1;
   display: grid;
+  min-height: 4.9rem;
+}
+
+/* ── Anchor row ──────────────────────────────────────────
+   Navigation as a quiet line of bare monoline glyphs beneath the reading
+   space, flush with the prose edge. The active one takes the service colour
+   and lights softly; the rest wait in subtle gray. No bars, no dots. */
+.cq-flow-anchors {
+  display: flex;
   align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  margin-left: -0.55rem;
 }
 
-/* The slide: a near-imperceptible service-tinted tone shift held by a 1px
-   light line, floating on a low, very soft elevation — no thick drop shadow. */
-.cq-flow-slide {
-  position: relative;
-  display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr);
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem 1.1rem 1rem 1.15rem;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--svc) 4%, white);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
-    0 16px 36px -24px rgba(13, 30, 41, 0.28),
-    0 2px 10px -6px rgba(13, 30, 41, 0.07);
-  will-change: transform;
-}
-
-/* Dwell progress on the slide's left edge — the panel's spine motif. Fills
-   top-to-bottom over the rotation interval; on hover it completes softly and
-   holds while the cycle is pinned. */
-.cq-flow-progress {
-  position: absolute;
-  left: 0;
-  top: 0.6rem;
-  bottom: 0.6rem;
-  width: 1.5px;
-  border-radius: 2px;
-  transform-origin: top;
-  background: color-mix(in srgb, var(--svc) 80%, var(--foreground));
-}
-
-/* The featured glyph: thin service-colour stroke on a soft tinted ground,
-   ringed by a fine hairline — matching the identity seal above. */
-.cq-flow-node {
-  position: relative;
+.cq-flow-anchor {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 10px;
-  color: color-mix(in srgb, var(--svc) 78%, var(--foreground));
-  background: color-mix(in srgb, var(--svc) 8%, white);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 32%, transparent);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: color-mix(in srgb, var(--foreground) 42%, transparent);
+  transition-property: color, scale, filter;
+  transition-duration: 240ms;
+  transition-timing-function: var(--ease-out);
 }
 
-.cq-flow-node svg {
-  width: 1.25rem;
-  height: 1.25rem;
-  stroke-width: 1.45;
+.cq-flow-anchor svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke-width: 1.5;
+  transition: stroke-width 240ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cq-flow-anchor:hover {
+    color: color-mix(in srgb, var(--foreground) 72%, transparent);
+    scale: 1.08;
+  }
+}
+
+/* The selected glyph steps clearly forward: full service colour, larger,
+   firmer stroke and a soft halo of its own light. */
+.cq-flow-anchor[data-active] {
+  color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
+  scale: 1.3;
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--svc) 45%, transparent));
+}
+
+.cq-flow-anchor[data-active] svg {
+  stroke-width: 1.9;
+}
+
+.cq-flow-anchor:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 2px;
+}
+
+/* ── Panel CTA ───────────────────────────────────────────
+   Solid button in the navbar's "Contact us" language, tinted per service:
+   filled surface, white semibold text, soft lift shadow, darkening hover
+   and the project's scale-on-press. Sits right of the identity block. */
+.cq-panel-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background-color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+  transition-property: background-color, box-shadow, scale;
+  transition-duration: 240ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.cq-panel-cta svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  transition: translate 240ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cq-panel-cta:hover {
+    background-color: color-mix(in srgb, var(--svc) 68%, var(--foreground));
+    box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+    scale: 1.045;
+  }
+
+  .cq-panel-cta:hover svg {
+    translate: 2px 0;
+  }
+}
+
+.cq-panel-cta:active {
+  scale: 0.96;
+}
+
+.cq-panel-cta:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 2px;
+}
+
+.cq-flow-stage > * {
+  grid-area: 1 / 1;
+}
+
+/* The entry: no box, no surface. The capability lives directly on the field,
+   in the panel's own reading flow — icon beside open-leaded prose. */
+/* The entry is pure typography now — the axis carries the icons. */
+.cq-flow-entry {
+  position: relative;
+  z-index: 1;
+  padding: 0.2rem 0;
+  will-change: transform, opacity;
 }
 
 .cq-flow-body {
@@ -409,10 +480,10 @@ body {
 
 .cq-flow-title {
   display: block;
-  font-weight: 600;
-  font-size: 0.95rem;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-weight: 650;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
   color: color-mix(in srgb, var(--svc) 42%, var(--foreground));
 }
 
@@ -443,83 +514,14 @@ body {
 }
 
 .cq-flow-desc {
-  margin-top: 0.18rem;
+  margin-top: 0.4rem;
+  max-width: 46ch;
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.7;
   color: var(--muted);
   text-wrap: pretty;
 }
 
-/* Carousel navigation: dots for direct access, mono counter for position. */
-.cq-flow-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.9rem;
-}
-
-.cq-flow-dots {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-/* Padded button extends each marker's hit area as far as the neighbouring
-   marker allows without overlapping. */
-.cq-flow-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.2rem;
-  margin: 0;
-  border: 0;
-  background: none;
-  border-radius: 9999px;
-  cursor: pointer;
-}
-
-.cq-flow-dot:focus-visible {
-  outline: 2px solid var(--svc);
-  outline-offset: 2px;
-}
-
-/* Hairline pagination: fine short strokes; the active one stretches long in
-   the service colour. */
-.cq-flow-dot > span {
-  width: 0.9rem;
-  height: 1.5px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--foreground) 20%, transparent);
-  transition-property: width, background-color;
-  transition-duration: 260ms;
-  transition-timing-function: var(--ease-out);
-}
-
-.cq-flow-dot[data-active] > span {
-  width: 2.4rem;
-  background: color-mix(in srgb, var(--svc) 85%, var(--foreground));
-}
-
-/* Position meta lives beside the pagination, quiet and light. */
-.cq-flow-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 0.9rem;
-}
-
-.cq-flow-count {
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: var(--muted);
-}
-
-.cq-flow-counter {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
 
 /* Native hover and radio selection are the disclosure mechanism, so the
    controls work without waiting for client-side JavaScript.

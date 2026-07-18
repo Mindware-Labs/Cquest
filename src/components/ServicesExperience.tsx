@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   AnimatePresence,
@@ -30,6 +31,7 @@ type Service = {
   description: string;
   color: string;
   glow: string;
+  href: string;
   details: Detail[];
 };
 
@@ -43,6 +45,7 @@ const SERVICES: Service[] = [
       "Customer support, sales and follow-up designed around the moments that matter to your customers.",
     color: "#3f738d",
     glow: "#74c3d5",
+    href: "/servicios/call-center",
     details: [
       { title: "Customer service", icon: "headset", description: "Inbound support across phone, email, chat and social media." },
       { title: "Sales", icon: "trend", description: "Outbound campaigns, telesales, lead generation and closing." },
@@ -60,6 +63,7 @@ const SERVICES: Service[] = [
       "Back office, data processing and omnichannel support under clear SLAs.",
     color: "#176c79",
     glow: "#80bc00",
+    href: "/servicios/bpo",
     details: [
       { title: "Back office", icon: "layers", description: "The repeatable work that keeps an operation moving." },
       { title: "Data processing", icon: "database", description: "Information handled accurately and consistently at scale." },
@@ -75,6 +79,7 @@ const SERVICES: Service[] = [
       "CRMs, dashboards and operations automation built around how your business actually works.",
     color: "#4b98b1",
     glow: "#d6d1ca",
+    href: "/servicios/sistemas",
     details: [
       { title: "CRMs", icon: "layout", description: "Custom systems for customer and operational relationships." },
       { title: "Dashboards", icon: "chart", description: "Operational visibility for better-informed decisions." },
@@ -165,6 +170,14 @@ function ServicePanel({
           <p className="cq-panel-eyebrow">Business line</p>
           <p className="cq-panel-label mt-0.5 text-[.95rem] font-semibold text-foreground">{service.label}</p>
         </div>
+        <Link href={service.href} className="cq-panel-cta shrink-0">
+          Explore
+          <span className="hidden sm:inline">&nbsp;{service.label}</span>
+          <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+        </Link>
       </div>
 
       <span aria-hidden className="cq-panel-label-rule relative mt-5 block" />
@@ -188,70 +201,72 @@ function ServicePanel({
         }}
       >
         <div
-          className="cq-flow-viewport"
+          className="cq-flow-stage"
           role="group"
           aria-roledescription="carousel"
           aria-label={`${service.label} capabilities`}
         >
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.div
-              key={service.details[active].title}
-              className="cq-flow-slide"
-              initial={reduced ? { opacity: 0 } : { x: "112%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={reduced ? { opacity: 0 } : { x: "-112%", opacity: 0 }}
-              transition={
-                reduced
-                  ? { duration: 0.15 }
-                  : { type: "spring", duration: 0.6, bounce: 0 }
-              }
-            >
-              {!reduced && (
-                <motion.span
-                  aria-hidden
-                  className="cq-flow-progress"
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={
-                    pinned
-                      ? { duration: 0.35, ease: "easeOut" }
-                      : { duration: CAPABILITY_DWELL_MS / 1000, ease: "linear" }
-                  }
-                />
-              )}
-              <span aria-hidden className="cq-flow-node">
-                <ServiceIcon name={service.details[active].icon} />
-              </span>
-              <div className="cq-flow-body">
-                <h3 className="cq-flow-title">{service.details[active].title}</h3>
-                <p className="cq-flow-desc">{service.details[active].description}</p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.div
+                key={service.details[active].title}
+                className="cq-flow-entry"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={
+                  reduced
+                    ? { opacity: 0, transition: { duration: 0.12 } }
+                    : { opacity: 0, y: -6, transition: { duration: 0.22, ease: "easeIn" } }
+                }
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Typographic dissolution: title, then prose, rise into place. */}
+                <div className="cq-flow-body">
+                  <motion.h3
+                    className="cq-flow-title"
+                    initial={reduced ? false : { opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={
+                      reduced
+                        ? { duration: 0.15 }
+                        : { type: "spring", duration: 0.55, bounce: 0, delay: 0.08 }
+                    }
+                  >
+                    {service.details[active].title}
+                  </motion.h3>
+                  <motion.p
+                    className="cq-flow-desc"
+                    initial={reduced ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={
+                      reduced
+                        ? { duration: 0.15 }
+                        : { type: "spring", duration: 0.6, bounce: 0, delay: 0.14 }
+                    }
+                  >
+                    {service.details[active].description}
+                  </motion.p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
         </div>
 
-        <div className="cq-flow-nav">
-          <div className="cq-flow-dots">
-            {service.details.map((detail, index) => (
-              <button
-                key={detail.title}
-                type="button"
-                className="cq-flow-dot"
-                data-active={index === active ? "" : undefined}
-                aria-label={`Show ${detail.title}`}
-                aria-current={index === active}
-                onClick={() => setActive(index)}
-              >
-                <span aria-hidden />
-              </button>
-            ))}
-          </div>
-          <div className="cq-flow-meta">
-            <span className="cq-flow-count">{service.details.length} capabilities</span>
-            <span className="cq-flow-counter" aria-hidden>
-              {String(active + 1).padStart(2, "0")} / {String(service.details.length).padStart(2, "0")}
-            </span>
-          </div>
+        {/* Anchor row: monoline glyphs in a quiet line beneath the reading
+            space. The active one takes the service colour; the rest wait in
+            subtle gray — navigation as a reading line, not a control bar. */}
+        <div className="cq-flow-anchors">
+          {service.details.map((detail, index) => (
+            <button
+              key={detail.title}
+              type="button"
+              className="cq-flow-anchor"
+              data-active={index === active ? "" : undefined}
+              aria-label={`Show ${detail.title}`}
+              aria-current={index === active}
+              onClick={() => setActive(index)}
+            >
+              <ServiceIcon name={detail.icon} />
+            </button>
+          ))}
         </div>
       </div>
     </section>
