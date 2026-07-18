@@ -149,17 +149,18 @@ function ServicePanel({ service }: { service: Service }) {
       <p className="relative mt-3 max-w-[50ch] text-[.95rem] leading-6 text-foreground/85">{service.strapline}</p>
       <p className="relative mt-2 max-w-[54ch] text-[.85rem] leading-6 text-muted">{service.description}</p>
 
-      <ul className="cq-detail-grid relative mt-6">
-        {service.details.map((detail) => (
-          <li key={detail.title} className="cq-detail">
-            <span className="cq-detail-icon mt-px shrink-0"><ServiceIcon name={detail.icon} /></span>
-            <span>
-              <span className="block text-[.9rem] font-semibold leading-tight text-foreground">{detail.title}</span>
-              <span className="mt-1 block text-[.8125rem] leading-5 text-muted">{detail.description}</span>
+      <div role="list" className="cq-flow relative mt-6">
+        <span aria-hidden className="cq-flow-rail"><span className="cq-flow-rail-pulse" /></span>
+        {service.details.map((detail, index) => (
+          <div key={detail.title} role="listitem" className="cq-flow-item" style={{ "--i": index } as CSSProperties}>
+            <span aria-hidden className="cq-flow-node"><ServiceIcon name={detail.icon} /></span>
+            <span className="cq-flow-body">
+              <span className="cq-flow-title">{detail.title}</span>
+              <span className="cq-flow-desc">{detail.description}</span>
             </span>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -219,13 +220,13 @@ export default function ServicesExperience() {
       ref={sectionRef}
       id="servicios"
       data-ambient-active={ambientActive}
-      className="cq-services relative isolate scroll-mt-6 overflow-hidden bg-[#fafdff] py-16 text-foreground sm:py-20 lg:py-24"
+      className="cq-services relative isolate scroll-mt-6 overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
     >
       <motion.div aria-hidden style={{ y: ambientY }} className="pointer-events-none absolute -inset-y-[9%] inset-x-0 overflow-hidden">
         <div className="cq-services-mesh absolute -inset-[12%]" />
-        <div className="cq-orb left-[-12rem] top-[-13rem] h-[35rem] w-[35rem] bg-celeste/28" style={{ animation: "cq-float-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
-        <div className="cq-orb bottom-[-15rem] right-[-10rem] h-[34rem] w-[34rem] bg-petroleo/18" style={{ animation: "cq-float-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
-        <div className="cq-orb left-[40%] top-[30%] h-[25rem] w-[25rem] bg-verde/10" style={{ animation: "cq-float-c 20s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb left-[-12rem] top-[-13rem] h-[36rem] w-[36rem] bg-celeste/30" style={{ animation: "cq-float-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb bottom-[-15rem] right-[-10rem] h-[34rem] w-[34rem] bg-petroleo/16" style={{ animation: "cq-float-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb left-[42%] top-[32%] h-[24rem] w-[24rem] bg-verde/8" style={{ animation: "cq-float-c 20s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
       </motion.div>
       <motion.div aria-hidden style={{ opacity: gridOpacity }} className="cq-services-grid pointer-events-none absolute inset-0" />
 
@@ -234,12 +235,14 @@ export default function ServicesExperience() {
           initial={reduced ? false : { opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.28 }}
-          transition={{ duration: reduced ? 0 : 0.8, ease: EASE_OUT }}
+          transition={{ duration: reduced ? 0 : 0.65, ease: EASE_OUT }}
           className="mx-auto max-w-[44rem] text-center"
         >
           <p className="text-sm font-semibold text-petroleo">Our services</p>
-          <h1 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground" style={{ textWrap: "balance" }}>
-            One operation. Three ways to move forward.
+          <h1 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground text-balance">
+            One operation.
+            <br />
+            Three ways to move forward.
           </h1>
           <p className="mx-auto mt-3 max-w-[56ch] text-pretty text-[.95rem] leading-6 text-muted sm:text-base">
             Explore the capability that best fits your next business move.
@@ -251,14 +254,14 @@ export default function ServicesExperience() {
             initial={reduced ? false : { opacity: 0, scale: 0.94 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.16 }}
-            transition={{ duration: reduced ? 0 : 0.9, ease: EASE_OUT, delay: reduced ? 0 : 0.1 }}
+            transition={{ duration: reduced ? 0 : 0.7, ease: EASE_OUT, delay: reduced ? 0 : 0.08 }}
             style={{ y: stageY, scale: stageScale }}
             className="relative mx-auto w-full max-w-[32rem]"
           >
             <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
-              <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/15" />
-              <div aria-hidden className="absolute inset-[20%] rounded-full border border-petroleo/10" />
-              <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/10" />
+              <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/18" />
+              <div aria-hidden className="absolute inset-[20%] rounded-full border border-celeste/30" />
+              <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/12" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <fieldset className="cq-service-orbit absolute inset-0 m-0 border-0 p-0">
@@ -285,15 +288,15 @@ export default function ServicesExperience() {
                           id={`${SERVICE_PANEL_ID}-${service.id}-label`}
                           htmlFor={`${SERVICE_PANEL_ID}-${service.id}-control`}
                           data-service-label={service.id}
+                          style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
                           className="cq-service-node group relative block -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation rounded-full text-left"
                         >
                           <span
-                            className="cq-service-sphere flex h-[3.9rem] w-[3.9rem] items-center justify-center rounded-full px-1.5 text-center text-[.58rem] font-semibold leading-[1.05] text-white transition-[filter,transform] duration-200 sm:h-[5rem] sm:w-[5rem] sm:px-2.5 sm:text-[.72rem]"
-                            style={{ background: `radial-gradient(circle at 31% 25%, rgba(255,255,255,.9) 0 4%, color-mix(in srgb, ${service.glow} 86%, white) 13%, ${service.color} 73%)`, boxShadow: "0 6px 16px -11px rgba(13,30,41,.42)" }}
+                            className="cq-service-sphere flex h-[3.9rem] w-[3.9rem] items-center justify-center rounded-full px-1.5 text-center text-[.58rem] font-semibold leading-[1.05] text-white transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] sm:h-[5rem] sm:w-[5rem] sm:px-2.5 sm:text-[.72rem]"
                           >
-                            <span className="drop-shadow-[0_1px_1px_rgba(13,30,41,.25)]">{service.label}</span>
+                            <span className="relative drop-shadow-[0_1px_1px_rgba(13,30,41,.3)]">{service.label}</span>
                           </span>
-                          <span aria-hidden className="cq-service-active-ring absolute inset-[-.3rem] rounded-full border border-white/70 opacity-0 transition-opacity duration-200" />
+                          <span aria-hidden className="cq-service-active-ring absolute inset-[-.3rem] rounded-full opacity-0 transition-opacity duration-200" />
                         </label>
                       </div>
                     </div>
@@ -301,7 +304,7 @@ export default function ServicesExperience() {
                 })}
               </fieldset>
 
-              <div className="absolute left-1/2 top-1/2 flex h-[6.4rem] w-[6.4rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3.5 shadow-[0_8px_24px_-14px_rgba(15,57,73,.42)] sm:h-[8rem] sm:w-[8rem] sm:p-4">
+              <div className="absolute left-1/2 top-1/2 flex h-[6.4rem] w-[6.4rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3.5 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16)] ring-1 ring-inset ring-petroleo/10 sm:h-[8rem] sm:w-[8rem] sm:p-4">
                 <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
               </div>
             </div>
@@ -311,9 +314,9 @@ export default function ServicesExperience() {
             initial={reduced ? false : { opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.16 }}
-            transition={{ duration: reduced ? 0 : 0.72, ease: EASE_OUT, delay: reduced ? 0 : 0.2 }}
+            transition={{ duration: reduced ? 0 : 0.6, ease: EASE_OUT, delay: reduced ? 0 : 0.16 }}
             style={{ y: panelY }}
-            className="cq-service-panels min-h-[19rem] rounded-2xl p-5 backdrop-blur-sm sm:p-7 lg:p-8"
+            className="cq-service-panels min-h-[19rem] px-1.5 py-4 sm:px-3 sm:py-5 lg:px-5 lg:py-6"
           >
             {SERVICES.map((service) => <ServicePanel key={service.id} service={service} />)}
           </motion.div>
@@ -323,7 +326,7 @@ export default function ServicesExperience() {
           initial={reduced ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: reduced ? 0 : 0.55, ease: EASE_OUT, delay: reduced ? 0 : 0.35 }}
+          transition={{ duration: reduced ? 0 : 0.5, ease: EASE_OUT, delay: reduced ? 0 : 0.28 }}
           className="mt-6 text-center text-sm text-muted lg:mt-8"
         >
           Hover, use Tab, or select a sphere to explore each capability.
