@@ -152,9 +152,9 @@ body {
    intentional field. It moves only through transforms, never by repainting. */
 .cq-services-mesh {
   background:
-    radial-gradient(43% 47% at 18% 22%, color-mix(in srgb, var(--brand-celeste) 31%, transparent) 0%, transparent 74%),
-    radial-gradient(39% 44% at 81% 24%, color-mix(in srgb, var(--brand-gris) 48%, transparent) 0%, transparent 76%),
-    radial-gradient(48% 44% at 55% 78%, color-mix(in srgb, var(--brand-verde) 15%, transparent) 0%, transparent 78%);
+    radial-gradient(43% 47% at 18% 22%, color-mix(in srgb, var(--brand-celeste) 20%, transparent) 0%, transparent 74%),
+    radial-gradient(39% 44% at 81% 24%, color-mix(in srgb, var(--brand-gris) 30%, transparent) 0%, transparent 76%),
+    radial-gradient(48% 44% at 55% 78%, color-mix(in srgb, var(--brand-verde) 9%, transparent) 0%, transparent 78%);
   animation: cq-mesh-drift 30s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   will-change: transform;
 }
@@ -365,7 +365,8 @@ body {
 }
 
 .cq-panel-description {
-  color: color-mix(in srgb, var(--foreground) 45%, var(--muted));
+  color: color-mix(in srgb, var(--foreground) 68%, var(--muted));
+  line-height: 1.75;
   text-wrap: pretty;
 }
 
@@ -377,7 +378,7 @@ body {
    pagination, dwell progress and accumulated position in one instrument. */
 .cq-flow {
   position: relative;
-  margin-top: 1.4rem;
+  margin-top: 1.85rem;
 }
 
 /* Stage: a fixed reading space — entries dissolve in place, the page around
@@ -396,6 +397,7 @@ body {
 /* Closing line: anchors left, CTA right, one shared baseline. */
 .cq-flow-foot {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -404,12 +406,15 @@ body {
 
 .cq-flow-anchors {
   display: flex;
+  flex: none;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.55rem;
   margin-left: -0.55rem;
 }
 
 .cq-flow-anchor {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -427,6 +432,45 @@ body {
   transition-timing-function: var(--ease-out);
 }
 
+/* Label on demand: a quiet tooltip that only appears on hover/focus, so the
+   row of glyphs stays clean while their function is never actually hidden. */
+.cq-flow-anchor-tip {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  translate: -50% 4px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--foreground) 92%, transparent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition-property: opacity, translate;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-out);
+  z-index: 2;
+}
+
+.cq-flow-anchor-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  translate: -50% 0;
+  border: 4px solid transparent;
+  border-top-color: color-mix(in srgb, var(--foreground) 92%, transparent);
+}
+
+.cq-flow-anchor:focus-visible .cq-flow-anchor-tip {
+  opacity: 1;
+  translate: -50% 0;
+}
+
 .cq-flow-anchor svg {
   width: 1.4rem;
   height: 1.4rem;
@@ -438,6 +482,11 @@ body {
   .cq-flow-anchor:hover {
     color: color-mix(in srgb, var(--foreground) 72%, transparent);
     scale: 1.08;
+  }
+
+  .cq-flow-anchor:hover .cq-flow-anchor-tip {
+    opacity: 1;
+    translate: -50% 0;
   }
 }
 
@@ -604,10 +653,10 @@ body {
 
 .cq-flow-desc {
   margin-top: 0.4rem;
-  max-width: 68ch;
+  max-width: 56ch;
   font-size: 0.875rem;
-  line-height: 1.7;
-  color: color-mix(in srgb, var(--foreground) 45%, var(--muted));
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--foreground) 68%, var(--muted));
   text-wrap: pretty;
 }
 
@@ -814,8 +863,7 @@ body {
   border-color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--svc) 14%, transparent),
-    0 12px 24px -8px color-mix(in srgb, var(--svc) 55%, transparent),
-    0 0 24px 4px color-mix(in srgb, var(--svc) 20%, transparent);
+    0 12px 24px -8px color-mix(in srgb, var(--svc) 50%, transparent);
   transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.12);
 }
 

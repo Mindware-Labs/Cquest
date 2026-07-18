@@ -172,15 +172,15 @@ function ServicePanel({
         </div>
       </div>
 
-      <span aria-hidden className="cq-panel-label-rule relative mt-5 block" />
+      <span aria-hidden className="cq-panel-label-rule relative mt-6 block" />
 
-      <h2 className="relative mt-6 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
+      <h2 className="relative mt-7 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
         {service.shortLabel}
       </h2>
 
-      <div className="cq-panel-summary relative mt-5">
-        <p className="cq-panel-strapline max-w-[52ch] text-[.95rem] leading-relaxed text-foreground/90">{service.strapline}</p>
-        <p className="cq-panel-description mt-2 max-w-[54ch] text-sm leading-6 text-muted">{service.description}</p>
+      <div className="cq-panel-summary relative mt-7">
+        <p className="cq-panel-strapline max-w-[46ch] text-[.95rem] leading-relaxed text-foreground/90">{service.strapline}</p>
+        <p className="cq-panel-description mt-2 max-w-[48ch] text-sm text-muted">{service.description}</p>
       </div>
 
       <div
@@ -257,6 +257,7 @@ function ServicePanel({
                 onClick={() => setActive(index)}
               >
                 <ServiceIcon name={detail.icon} />
+                <span aria-hidden className="cq-flow-anchor-tip">{detail.title}</span>
               </button>
             ))}
           </div>
@@ -313,7 +314,7 @@ export default function ServicesExperience() {
   const gridOpacity = useTransform(
     smoothProgress,
     [0, 0.28, 0.72, 1],
-    [0, 0.7, 0.7, 0],
+    [0, 0.35, 0.35, 0],
   );
   const stageY = useTransform(
     smoothProgress,
