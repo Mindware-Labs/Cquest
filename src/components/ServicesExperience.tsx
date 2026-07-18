@@ -5,7 +5,9 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   AnimatePresence,
   motion,
+  useAnimationFrame,
   useInView,
+  useMotionValue,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -261,6 +263,18 @@ export default function ServicesExperience() {
   const reduced = useReducedMotion() ?? false;
   const inView = useInView(sectionRef, { amount: 0.08 });
   const [tabVisible, setTabVisible] = useState(true);
+  const [stageHover, setStageHover] = useState(false);
+  // Armed after the first user selection so the crowning shockwave and logo
+  // pulse never fire on page load, only on interaction.
+  const [armed, setArmed] = useState(false);
+  const [pulseKey, setPulseKey] = useState(0);
+
+  /* Orbit driven in JS instead of CSS keyframes so its speed can be eased:
+     the constellation dilates to ~45% while the pointer explores the stage,
+     and winds down to a stop when the section is off-screen. */
+  const orbitAngle = useMotionValue(0);
+  const counterAngle = useTransform(orbitAngle, (v) => -v);
+  const orbitSpeed = useRef(1);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -306,6 +320,15 @@ export default function ServicesExperience() {
 
   const ambientActive = !reduced && inView && tabVisible;
 
+  useAnimationFrame((_, delta) => {
+    if (reduced) return;
+    const target = !ambientActive ? 0 : stageHover ? 0.45 : 1;
+    // Ease the speed toward its target so pauses and dilation feel organic,
+    // never a hard gear change.
+    orbitSpeed.current += (target - orbitSpeed.current) * Math.min(1, delta / 320);
+    orbitAngle.set((orbitAngle.get() + (360 / 38000) * delta * orbitSpeed.current) % 360);
+  });
+
   return (
     <section
       ref={sectionRef}
@@ -348,6 +371,12 @@ export default function ServicesExperience() {
             transition={{ duration: reduced ? 0 : 0.7, ease: EASE_OUT, delay: reduced ? 0 : 0.08 }}
             style={{ y: stageY, scale: stageScale }}
             className="relative mx-auto w-full max-w-[32rem]"
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") setStageHover(true);
+            }}
+            onPointerLeave={(event) => {
+              if (event.pointerType === "mouse") setStageHover(false);
+            }}
           >
             <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
               <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/18" />
@@ -355,7 +384,15 @@ export default function ServicesExperience() {
               <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/12" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
-              <fieldset className="cq-service-orbit absolute inset-0 m-0 border-0 p-0">
+              <motion.fieldset
+                className="cq-service-orbit absolute inset-0 m-0 border-0 p-0"
+                style={{ rotate: orbitAngle }}
+                data-armed={armed || undefined}
+                onChange={() => {
+                  setArmed(true);
+                  setPulseKey((key) => key + 1);
+                }}
+              >
                 <legend className="sr-only">Center Quest business lines</legend>
                 {SERVICES.map((service, index) => {
                   const orbit = ORBIT[index];
@@ -365,7 +402,7 @@ export default function ServicesExperience() {
                       className="absolute left-1/2 top-1/2"
                       style={{ transform: `rotate(${orbit.angle}deg) translateY(calc(${orbit.radius} * -1)) rotate(${-orbit.angle}deg)` }}
                     >
-                      <div className="cq-service-orbit-counter">
+                      <motion.div className="cq-service-orbit-counter" style={{ rotate: counterAngle }}>
                         <input
                           id={`${SERVICE_PANEL_ID}-${service.id}-control`}
                           className="cq-service-control sr-only"
@@ -380,22 +417,42 @@ export default function ServicesExperience() {
                           id={`${SERVICE_PANEL_ID}-${service.id}-label`}
                           htmlFor={`${SERVICE_PANEL_ID}-${service.id}-control`}
                           data-service-label={service.id}
-                          style={{ "--svc": service.color } as CSSProperties}
+                          style={{ "--svc": service.color, "--oi": index } as CSSProperties}
                           className="cq-service-node group relative flex -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation flex-col items-center gap-2 text-center"
+                          onPointerMove={(event) => {
+                            if (reduced || event.pointerType !== "mouse") return;
+                            const bounds = event.currentTarget.getBoundingClientRect();
+                            const dx = ((event.clientX - bounds.left) / bounds.width - 0.5) * 8;
+                            const dy = ((event.clientY - bounds.top) / bounds.height - 0.5) * 8;
+                            event.currentTarget.style.setProperty("--mx", `${dx.toFixed(1)}px`);
+                            event.currentTarget.style.setProperty("--my", `${dy.toFixed(1)}px`);
+                          }}
+                          onPointerLeave={(event) => {
+                            event.currentTarget.style.setProperty("--mx", "0px");
+                            event.currentTarget.style.setProperty("--my", "0px");
+                          }}
                         >
                           <span aria-hidden className="cq-service-ring">
                             <ServiceIcon name={service.id === "call-center" ? "headset" : service.id === "bpo" ? "layers" : "code"} />
                           </span>
                           <span className="cq-service-name">{service.id === "systems" ? "Systems" : service.label}</span>
                         </label>
-                      </div>
+                      </motion.div>
                     </div>
                   );
                 })}
-              </fieldset>
+              </motion.fieldset>
 
               <div className="absolute left-1/2 top-1/2 flex h-[6.4rem] w-[6.4rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3.5 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16)] ring-1 ring-inset ring-petroleo/10 sm:h-[8rem] sm:w-[8rem] sm:p-4">
-                <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
+                {/* Keyed remount pulses the seal each time a selection lands. */}
+                <motion.div
+                  key={pulseKey}
+                  animate={pulseKey > 0 && !reduced ? { scale: [1, 1.035, 1] } : undefined}
+                  transition={{ duration: 0.5, ease: EASE_OUT }}
+                  className="flex items-center justify-center"
+                >
+                  <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
+                </motion.div>
               </div>
             </div>
           </motion.div>

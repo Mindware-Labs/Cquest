@@ -187,23 +187,11 @@ body {
   100% { transform: scale(1.12); opacity: 0; }
 }
 
-/* The service nodes move as one constellation. The inner wrapper counters the
-   rotation so labels remain readable while they orbit. */
-@keyframes cq-orbit {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes cq-orbit-counter {
-  to { transform: rotate(-360deg); }
-}
-
-.cq-service-orbit {
-  animation: cq-orbit 38s linear infinite;
-  will-change: transform;
-}
-
+/* The constellation's rotation is driven from JS (Motion useAnimationFrame)
+   so its speed can ease — time dilation on hover, wind-down off-screen. The
+   inner wrapper counter-rotates so labels remain readable while they orbit. */
+.cq-service-orbit,
 .cq-service-orbit-counter {
-  animation: cq-orbit-counter 38s linear infinite;
   will-change: transform;
 }
 
@@ -212,8 +200,8 @@ body {
 .cq-services[data-ambient-active="false"] .cq-services-mesh,
 .cq-services[data-ambient-active="false"] .cq-orb,
 .cq-services[data-ambient-active="false"] .cq-ring,
-.cq-services[data-ambient-active="false"] .cq-service-orbit,
-.cq-services[data-ambient-active="false"] .cq-service-orbit-counter {
+.cq-services[data-ambient-active="false"] .cq-service-ring,
+.cq-services[data-ambient-active="false"] .cq-service-ring::before {
   animation-play-state: paused;
 }
 
@@ -433,13 +421,24 @@ body {
   .cq-service-node:hover .cq-service-ring {
     background: color-mix(in srgb, var(--svc) 12%, transparent);
     border-color: color-mix(in srgb, var(--svc) 62%, transparent);
-    box-shadow: 0 8px 18px -9px color-mix(in srgb, var(--svc) 42%, transparent);
-    transform: scale(1.05);
+    /* Lift below (light falls from above) plus a soft service-colour bloom —
+       light, not outline. */
+    box-shadow:
+      0 8px 18px -9px color-mix(in srgb, var(--svc) 42%, transparent),
+      0 0 18px 2px color-mix(in srgb, var(--svc) 20%, transparent);
+    transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.05);
+    transition-timing-function: cubic-bezier(0.34, 1.3, 0.5, 1);
+  }
+
+  /* The glyph wakes: a small tilt-and-rise, sprung by the organic curve. */
+  .cq-service-node:hover .cq-service-ring svg {
+    transform: translateY(-1px) rotate(-5deg) scale(1.06);
+    transition-timing-function: cubic-bezier(0.34, 1.3, 0.5, 1);
   }
 
   .cq-service-node:hover .cq-service-name {
     color: color-mix(in srgb, var(--svc) 72%, var(--foreground));
-    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 }
 
@@ -532,11 +531,12 @@ body {
    the page jump upward). visibility transitions with the opacity so hidden
    panels leave the a11y tree and stop capturing pointer events. */
 .cq-service-panel {
+  --show: 0;
   grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(8px);
+  transform: translateY(6px);
   transition:
     opacity 260ms var(--ease-out),
     transform 260ms var(--ease-out),
@@ -544,10 +544,39 @@ body {
 }
 
 .cq-service-panel[data-panel="call-center"] {
+  --show: 1;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
+}
+
+/* Layered reveal: flipping --show retargets each block's opacity/translate/
+   blur transition, and the per-child delays choreograph identity → rule →
+   headline → summary → carousel. No delay applies to the panel-level fade,
+   so exits stay soft and immediate. First paint resolves --show directly,
+   so nothing animates on page load. */
+.cq-service-panel > :not(.cq-panel-spine) {
+  opacity: var(--show);
+  translate: 0 calc((1 - var(--show)) * 10px);
+  filter: blur(calc((1 - var(--show)) * 4px));
+  transition:
+    opacity 320ms var(--ease-out),
+    translate 320ms var(--ease-out),
+    filter 320ms var(--ease-out);
+}
+
+.cq-service-panel > :nth-child(2) { transition-delay: 30ms; }
+.cq-service-panel > :nth-child(3) { transition-delay: 90ms; }
+.cq-service-panel > :nth-child(4) { transition-delay: 150ms; }
+.cq-service-panel > :nth-child(5) { transition-delay: 210ms; }
+.cq-service-panel > :nth-child(6) { transition-delay: 270ms; }
+
+/* The spine redraws top-to-bottom in the incoming service colour. */
+.cq-panel-spine {
+  transform-origin: top;
+  scale: 1 var(--show);
+  transition: scale 520ms var(--ease-out) 80ms;
 }
 
 /* NOTE: the [data-panel] qualifier on every "hide all" selector is load-bearing.
@@ -558,6 +587,7 @@ body {
    decides — and hover (declared last) wins over selection. */
 .cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel],
 .cq-services:has([data-service-control="systems"]:checked) .cq-service-panel[data-panel] {
+  --show: 0;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -565,6 +595,7 @@ body {
 
 .cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel="bpo"],
 .cq-services:has([data-service-control="systems"]:checked) .cq-service-panel[data-panel="systems"] {
+  --show: 1;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -574,6 +605,7 @@ body {
 .cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel[data-panel],
 .cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel[data-panel],
 .cq-services:has([data-service-label="systems"]:hover) .cq-service-panel[data-panel] {
+  --show: 0;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -582,6 +614,7 @@ body {
 .cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel[data-panel="call-center"],
 .cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel[data-panel="bpo"],
 .cq-services:has([data-service-label="systems"]:hover) .cq-service-panel[data-panel="systems"] {
+  --show: 1;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -593,6 +626,7 @@ body {
    ring fills with a soft tint + glow and the name lights up when the service
    is selected, hovered or focused. Colour comes from --svc on the label. */
 .cq-service-ring {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -602,17 +636,59 @@ body {
   color: var(--svc);
   background: color-mix(in srgb, var(--svc) 6%, transparent);
   border: 2px solid color-mix(in srgb, var(--svc) 42%, transparent);
+  /* Magnetic lean: --mx/--my follow the cursor (set from JS); the transition
+     retargets every pointer move, giving an organic trailing follow. */
+  transform: translate(var(--mx, 0px), var(--my, 0px));
   transition:
     transform 220ms var(--ease-out),
     background 220ms var(--ease-out),
     border-color 200ms var(--ease-out),
     box-shadow 220ms var(--ease-out),
     color 200ms var(--ease-out);
+  /* Idle breathing, phase-shifted per node (--oi) so the constellation never
+     inhales in unison. `scale` composes with the transform above. */
+  animation: cq-breathe 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: calc(var(--oi, 0) * -1.6s);
+}
+
+@keyframes cq-breathe {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.016; }
+}
+
+/* Specular sweep: a sliver of light travels the ring every ~9s, phase-shifted
+   per node — polished metal catching the room. Masked to the border band. */
+.cq-service-ring::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from 0deg,
+    transparent 0deg 68deg,
+    rgba(255, 255, 255, 0.85) 84deg,
+    transparent 102deg 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  animation: cq-specular 9.2s linear infinite;
+  animation-delay: calc(var(--oi, 0) * -3.1s);
+}
+
+@keyframes cq-specular {
+  0% { transform: rotate(0deg); opacity: 0; }
+  6% { opacity: 0.55; }
+  26% { transform: rotate(360deg); opacity: 0; }
+  100% { transform: rotate(360deg); opacity: 0; }
 }
 
 .cq-service-ring svg {
   width: 1.4rem;
   height: 1.4rem;
+  transition: transform 240ms var(--ease-out);
 }
 
 .cq-service-name {
@@ -622,7 +698,9 @@ body {
   letter-spacing: -0.01em;
   white-space: nowrap;
   color: var(--muted);
-  transition: color 200ms var(--ease-out);
+  transition:
+    color 200ms var(--ease-out),
+    letter-spacing 240ms var(--ease-out);
 }
 
 @media (min-width: 640px) {
@@ -631,20 +709,51 @@ body {
   .cq-service-name { font-size: 0.8rem; }
 }
 
+/* Crowned state: the selected node holds court — sustained scale, a wider
+   halo and a soft bloom that keeps radiating its service colour. */
 .cq-service-control:checked + .cq-service-node .cq-service-ring,
 .cq-service-control:focus-visible + .cq-service-node .cq-service-ring {
   background: color-mix(in srgb, var(--svc) 14%, transparent);
   border-color: var(--svc);
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--svc) 10%, transparent),
-    0 10px 20px -8px color-mix(in srgb, var(--svc) 45%, transparent);
-  transform: scale(1.06);
+    0 10px 22px -8px color-mix(in srgb, var(--svc) 45%, transparent),
+    0 0 22px 3px color-mix(in srgb, var(--svc) 16%, transparent);
+  transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.08);
 }
 
 .cq-service-control:checked + .cq-service-node .cq-service-name,
 .cq-service-control:focus-visible + .cq-service-node .cq-service-name {
   color: color-mix(in srgb, var(--svc) 78%, var(--foreground));
   font-weight: 600;
+}
+
+/* Coronation shockwave: a hairline ring bursts outward when a selection is
+   made. Only after the orbit is armed (first interaction) so page load stays
+   still; re-fires naturally because :checked re-matches on a fresh node. */
+.cq-service-orbit[data-armed] .cq-service-control:checked + .cq-service-node .cq-service-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1.5px solid var(--svc);
+  pointer-events: none;
+  animation: cq-shock 640ms var(--ease-out) forwards;
+}
+
+@keyframes cq-shock {
+  0% { transform: scale(1); opacity: 0.65; }
+  100% { transform: scale(2.15); opacity: 0; }
+}
+
+/* Press: the node sinks toward the surface — shadows shorten and darken, a
+   faint inner shade appears. Fast in, sprung out, always interruptible. */
+.cq-services .cq-service-node:active .cq-service-ring {
+  transform: translate(var(--mx, 0px), calc(var(--my, 0px) + 0.5px)) scale(0.96);
+  box-shadow:
+    0 3px 8px -5px color-mix(in srgb, var(--svc) 48%, transparent),
+    inset 0 1px 3px color-mix(in srgb, var(--svc) 20%, transparent);
+  transition-duration: 120ms;
 }
 
 .cq-service-control:focus-visible + .cq-service-node {
@@ -665,6 +774,17 @@ body {
   transform: scale(0.55);
   animation: cq-ring 10.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   will-change: transform, opacity;
+  transition: border-color 400ms var(--ease-out);
+}
+
+/* The signal rings radiate in the colour of the selected service — the whole
+   stage pulses from the current choice. Call Center matches the default. */
+.cq-services:has([data-service-control="bpo"]:checked) .cq-ring {
+  border-color: color-mix(in srgb, #176c79 30%, transparent);
+}
+
+.cq-services:has([data-service-control="systems"]:checked) .cq-ring {
+  border-color: color-mix(in srgb, #4b98b1 34%, transparent);
 }
 
 @keyframes cq-hero-bloom {
