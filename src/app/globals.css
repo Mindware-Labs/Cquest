@@ -23,6 +23,9 @@
   /* Motion — shared ease-out curves (mirror EASE_OUT in the components) */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Spring-like overshoot (~back-ease) for scale changes that should feel
+     weighted — settles past 100% before easing back, like a real spring. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @theme inline {
@@ -429,9 +432,11 @@ body {
   border-radius: 9999px;
   cursor: pointer;
   color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  /* Scale gets its own longer, spring-eased entry so the active glyph settles
+     with a touch of overshoot instead of a flat ease. */
   transition-property: color, scale, filter;
-  transition-duration: 240ms;
-  transition-timing-function: var(--ease-out);
+  transition-duration: 240ms, 420ms, 240ms;
+  transition-timing-function: var(--ease-out), var(--ease-spring), var(--ease-out);
 }
 
 /* Label on demand: a quiet tooltip that only appears on hover/focus, so the
@@ -702,9 +707,11 @@ body {
   opacity: var(--show);
   translate: 0 calc((1 - var(--show)) * 10px);
   filter: blur(calc((1 - var(--show)) * 4px));
+  /* Translate springs in with a touch of overshoot (weight, not just fade)
+     while opacity/blur stay on a plain ease — bouncing those would flicker. */
   transition:
     opacity 320ms var(--ease-out),
-    translate 320ms var(--ease-out),
+    translate 420ms var(--ease-spring),
     filter 320ms var(--ease-out);
 }
 
@@ -784,16 +791,20 @@ body {
     0 2px 5px -2px rgba(13, 30, 41, 0.2),
     0 7px 14px -10px color-mix(in srgb, var(--svc) 45%, transparent);
   /* Magnetic lean: --mx/--my follow the cursor (set from JS); the transition
-     retargets every pointer move, giving an organic trailing follow. */
+     retargets every pointer move, giving an organic trailing follow. Scale
+     lives on the standalone `scale` property (not `transform`) so selection
+     can spring independently of the lean's plain ease. */
   transform: translate(var(--mx, 0px), var(--my, 0px));
+  scale: 1;
   transition:
     transform 220ms var(--ease-out),
+    scale 420ms var(--ease-spring),
     background 220ms var(--ease-out),
     border-color 200ms var(--ease-out),
     box-shadow 220ms var(--ease-out),
     color 200ms var(--ease-out);
   /* Idle breathing, phase-shifted per node (--oi) so the constellation never
-     inhales in unison. `scale` composes with the transform above. */
+     inhales in unison; composes with the standalone `scale` above. */
   animation: cq-breathe 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: calc(var(--oi, 0) * -1.6s);
 }
@@ -863,10 +874,15 @@ body {
   color: #fff;
   background: color-mix(in srgb, var(--svc) 88%, var(--foreground));
   border-color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
+  /* A crisp light ring separates the crowned node from a background that can
+     otherwise share its hue (e.g. celeste orb behind a celeste-tinted node) —
+     the selection reads clearly even at low display brightness. */
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--svc) 14%, transparent),
+    0 0 0 2px var(--surface-raised),
+    0 0 0 4.5px color-mix(in srgb, var(--svc) 55%, transparent),
     0 12px 24px -8px color-mix(in srgb, var(--svc) 50%, transparent);
-  transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.12);
+  transform: translate(var(--mx, 0px), var(--my, 0px));
+  scale: 1.12;
 }
 
 .cq-service-control:checked + .cq-service-node .cq-service-name,
@@ -896,11 +912,13 @@ body {
 /* Press: the node sinks toward the surface — shadows shorten and darken, a
    faint inner shade appears. Fast in, sprung out, always interruptible. */
 .cq-services .cq-service-node:active .cq-service-ring {
-  transform: translate(var(--mx, 0px), calc(var(--my, 0px) + 0.5px)) scale(0.96);
+  transform: translate(var(--mx, 0px), calc(var(--my, 0px) + 0.5px));
+  scale: 0.96;
   box-shadow:
     0 3px 8px -5px color-mix(in srgb, var(--svc) 48%, transparent),
     inset 0 1px 3px color-mix(in srgb, var(--svc) 20%, transparent);
   transition-duration: 120ms;
+  transition-timing-function: var(--ease-out);
 }
 
 .cq-service-control:focus-visible + .cq-service-node {
@@ -916,7 +934,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 28%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--brand-petroleo) 38%, transparent);
   opacity: 0;
   transform: scale(0.55);
   animation: cq-ring 10.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
@@ -927,11 +945,11 @@ body {
 /* The signal rings radiate in the colour of the selected service — the whole
    stage pulses from the current choice. Call Center matches the default. */
 .cq-services:has([data-service-control="bpo"]:checked) .cq-ring {
-  border-color: color-mix(in srgb, #176c79 30%, transparent);
+  border-color: color-mix(in srgb, #176c79 40%, transparent);
 }
 
 .cq-services:has([data-service-control="systems"]:checked) .cq-ring {
-  border-color: color-mix(in srgb, #4b98b1 34%, transparent);
+  border-color: color-mix(in srgb, #4b98b1 44%, transparent);
 }
 
 @keyframes cq-hero-bloom {

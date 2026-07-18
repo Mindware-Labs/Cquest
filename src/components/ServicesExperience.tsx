@@ -220,7 +220,7 @@ function ServicePanel({
                     transition={
                       reduced
                         ? { duration: 0.15 }
-                        : { type: "spring", duration: 0.55, bounce: 0, delay: 0.08 }
+                        : { type: "spring", duration: 0.55, bounce: 0.2, delay: 0.08 }
                     }
                   >
                     {service.details[active].title}
@@ -232,7 +232,7 @@ function ServicePanel({
                     transition={
                       reduced
                         ? { duration: 0.15 }
-                        : { type: "spring", duration: 0.6, bounce: 0, delay: 0.14 }
+                        : { type: "spring", duration: 0.6, bounce: 0.2, delay: 0.14 }
                     }
                   >
                     {service.details[active].description}
@@ -401,9 +401,9 @@ export default function ServicesExperience() {
             }}
           >
             <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
-              <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/30" />
-              <div aria-hidden className="absolute inset-[20%] rounded-full border border-celeste/45" />
-              <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/20" />
+              <div aria-hidden className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/45" />
+              <div aria-hidden className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/60" />
+              <div aria-hidden className="absolute inset-[35%] rounded-full border border-[1.5px] border-petroleo/35" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <motion.fieldset
