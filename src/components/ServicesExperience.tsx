@@ -16,7 +16,7 @@ type ServiceId = "call-center" | "bpo" | "systems";
 type Detail = {
   title: string;
   description: string;
-  icon: "headset" | "chart" | "shield" | "pulse" | "spark" | "layers" | "database" | "messages" | "layout" | "workflow" | "code";
+  icon: "headset" | "trend" | "banknote" | "gauge" | "userplus" | "layers" | "database" | "messages" | "layout" | "chart" | "workflow" | "code";
 };
 
 type Service = {
@@ -42,10 +42,10 @@ const SERVICES: Service[] = [
     glow: "#74c3d5",
     details: [
       { title: "Customer service", icon: "headset", description: "Inbound support across phone, email, chat and social media." },
-      { title: "Sales", icon: "chart", description: "Outbound campaigns, telesales, lead generation and closing." },
-      { title: "Collections", icon: "shield", description: "Portfolio recovery and collections with professional protocols." },
-      { title: "Surveys", icon: "pulse", description: "Satisfaction studies, market polls and NPS measurement." },
-      { title: "Onboarding", icon: "spark", description: "Welcome, activation and early follow-up for new customers." },
+      { title: "Sales", icon: "trend", description: "Outbound campaigns, telesales, lead generation and closing." },
+      { title: "Collections", icon: "banknote", description: "Portfolio recovery and collections with professional protocols." },
+      { title: "Surveys", icon: "gauge", description: "Satisfaction studies, market polls and NPS measurement." },
+      { title: "Onboarding", icon: "userplus", description: "Welcome, activation and early follow-up for new customers." },
     ],
   },
   {
@@ -81,13 +81,14 @@ const SERVICES: Service[] = [
 ];
 
 const ORBIT = [
-  { angle: -90, radius: "clamp(5.6rem, 12vw, 8.6rem)" },
-  { angle: 30, radius: "clamp(5.6rem, 12vw, 8.6rem)" },
-  { angle: 150, radius: "clamp(5.6rem, 12vw, 8.6rem)" },
+  { angle: -90, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
+  { angle: 30, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
+  { angle: 150, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
 ];
 
 const SERVICE_PANEL_ID = "cq-services";
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const CAPABILITY_DWELL_MS = 3200;
 
 function ServiceIcon({ name }: { name: Detail["icon"] }) {
   const props = {
@@ -99,27 +100,50 @@ function ServiceIcon({ name }: { name: Detail["icon"] }) {
   };
 
   const paths = {
-    headset: <><path d="M4.8 13.8H3.5a1.5 1.5 0 0 1-1.5-1.5V9a5.8 5.8 0 0 1 11.6 0v3.3a1.5 1.5 0 0 1-1.5 1.5h-1.3" /><path d="M4.8 11.2h1.6v3H4.8zM11.2 11.2h-1.6v3h1.6zM9.6 15.7H7.3" /></>,
-    chart: <><path d="M3 13.5V9.8M8 13.5V6.5M13 13.5V3.5" /><path d="M2 13.5h12" /></>,
-    shield: <><path d="M8 1.8 13 4v3.7c0 3.3-2 5.5-5 6.5-3-1-5-3.2-5-6.5V4z" /><path d="m5.7 8 1.5 1.5 3.1-3.2" /></>,
-    pulse: <><path d="M2 8h2.4l1.3-3.2L8.1 12l1.8-5 1.1 1H14" /><path d="M2 2.5v11M14 2.5v11" /></>,
-    spark: <><path d="m8 1.5.9 4.1L13 6.5l-4.1.9L8 11.5l-.9-4.1L3 6.5l4.1-.9z" /><path d="m12.7 11.2.4 1.8 1.9.4-1.9.4-.4 1.9-.4-1.9-1.8-.4 1.8-.4z" /></>,
-    layers: <><path d="m8 2 6 3.2L8 8.5 2 5.2z" /><path d="m2 8.2 6 3.3 6-3.3M2 11.2l6 3.3 6-3.3" /></>,
-    database: <><ellipse cx="8" cy="3.7" rx="5.5" ry="2.2" /><path d="M2.5 3.7v4.1C2.5 9 5 10 8 10s5.5-1 5.5-2.2V3.7M2.5 7.8v4.1C2.5 13.1 5 14 8 14s5.5-.9 5.5-2.1V7.8" /></>,
-    messages: <><path d="M2 3.5h9.5v7H6l-3.2 2.3v-2.3H2z" /><path d="M6.5 12.5h.8l2.8 2v-2h2.4V7.2" /></>,
-    layout: <><rect x="2" y="2.5" width="12" height="11" rx="1" /><path d="M2 6h12M5.5 6v7.5" /></>,
-    workflow: <><rect x="2" y="2" width="4" height="3.6" rx=".6" /><rect x="10" y="10.4" width="4" height="3.6" rx=".6" /><path d="M6 3.8h2.3A1.7 1.7 0 0 1 10 5.5v4.9M10 12.2H7.7A1.7 1.7 0 0 1 6 10.5V5.6" /></>,
-    code: <><path d="m5.8 3-3.5 5 3.5 5M10.2 3l3.5 5-3.5 5M9 2.3 7 13.7" /></>,
+    headset: <><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="2.5" y="13.5" width="4" height="6.5" rx="2" /><rect x="17.5" y="13.5" width="4" height="6.5" rx="2" /><path d="M19.5 20a3 3 0 0 1-3 3h-3" /></>,
+    trend: <><path d="M22 7 13.5 15.5 8.5 10.5 2 17" /><path d="M16 7h6v6" /></>,
+    banknote: <><rect x="2.5" y="6.5" width="19" height="11" rx="2.5" /><circle cx="12" cy="12" r="2.5" /><path d="M6 12h.01M18 12h.01" /></>,
+    gauge: <><path d="M4.5 16.5a7.5 7.5 0 0 1 15 0" /><path d="M12 16.5 15.5 11.5" /><circle cx="12" cy="16.5" r="1.3" /></>,
+    userplus: <><circle cx="9.5" cy="8" r="3.5" /><path d="M3.5 20a6 6 0 0 1 12 0" /><path d="M18.5 8.5v5M16 11h5" /></>,
+    layers: <><path d="M12 3 3 8l9 5 9-5-9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 16 9 5 9-5" /></>,
+    database: <><ellipse cx="12" cy="6" rx="7.5" ry="3" /><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6" /><path d="M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6" /></>,
+    messages: <><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2Z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /></>,
+    layout: <><rect x="3" y="3" width="18" height="18" rx="2.5" /><path d="M3 9h18M9 21V9" /></>,
+    chart: <><path d="M3 21h18" /><rect x="5" y="11" width="3.4" height="7" rx="1" /><rect x="10.3" y="7" width="3.4" height="11" rx="1" /><rect x="15.6" y="13" width="3.4" height="5" rx="1" /></>,
+    workflow: <><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="13" width="8" height="8" rx="2" /><path d="M7 11v2.5A2.5 2.5 0 0 0 9.5 16H13" /></>,
+    code: <><path d="m8 6-6 6 6 6" /><path d="m16 6 6 6-6 6" /><path d="m14.5 4-5 16" /></>,
   };
 
   return (
-    <svg aria-hidden viewBox="0 0 16 16" className="h-5 w-5 shrink-0" {...props}>
+    <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 shrink-0" {...props}>
       {paths[name]}
     </svg>
   );
 }
 
-function ServicePanel({ service }: { service: Service }) {
+function ServicePanel({
+  service,
+  ambient,
+  reduced,
+}: {
+  service: Service;
+  ambient: boolean;
+  reduced: boolean;
+}) {
+  const [active, setActive] = useState(0);
+  const [pinned, setPinned] = useState(false);
+
+  // Auto-rotating capability spotlight. setTimeout (not setInterval) so every
+  // resume — after hover, tab switch or scroll-out — restarts a full dwell.
+  useEffect(() => {
+    if (reduced || !ambient || pinned) return;
+    const timer = setTimeout(
+      () => setActive((current) => (current + 1) % service.details.length),
+      CAPABILITY_DWELL_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [active, ambient, pinned, reduced, service.details.length]);
+
   return (
     <section
       id={`${SERVICE_PANEL_ID}-${service.id}-panel`}
@@ -128,39 +152,79 @@ function ServicePanel({ service }: { service: Service }) {
       className="cq-service-panel"
       style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
     >
-      <span aria-hidden className="cq-panel-orb" />
+      <span aria-hidden className="cq-panel-spine" />
 
-      <div className="relative flex items-center gap-3.5">
-        <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white ring-1 ring-inset ring-white/25"
-          style={{
-            backgroundImage: `linear-gradient(140deg, color-mix(in srgb, ${service.color} 72%, white), ${service.color})`,
-            boxShadow: `0 6px 14px -5px color-mix(in srgb, ${service.color} 55%, transparent)`,
-          }}
-        >
+      <div className="cq-panel-identity relative flex items-center gap-3">
+        <span className="cq-panel-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]">
           <ServiceIcon name={service.id === "call-center" ? "headset" : service.id === "bpo" ? "layers" : "code"} />
         </span>
-        <p className="text-sm font-semibold tracking-tight" style={{ color: `color-mix(in srgb, ${service.color} 70%, var(--foreground))` }}>{service.label}</p>
+        <div className="min-w-0 flex-1">
+          <p className="cq-panel-eyebrow">Business line</p>
+          <p className="cq-panel-label mt-0.5 text-[.95rem] font-semibold text-foreground">{service.label}</p>
+        </div>
+        <span className="cq-panel-count shrink-0">{service.details.length} capabilities</span>
       </div>
 
-      <h2 className="relative mt-4 font-heading text-[clamp(1.5rem,2.7vw,2.05rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
+      <span aria-hidden className="cq-panel-label-rule relative mt-3 block" />
+
+      <h2 className="relative mt-4 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
         {service.shortLabel}
       </h2>
-      <p className="relative mt-3 max-w-[50ch] text-[.95rem] leading-6 text-foreground/85">{service.strapline}</p>
-      <p className="relative mt-2 max-w-[54ch] text-[.85rem] leading-6 text-muted">{service.description}</p>
 
-      <div role="list" className="cq-flow relative mt-6">
-        <span aria-hidden className="cq-flow-rail"><span className="cq-flow-rail-pulse" /></span>
-        {service.details.map((detail, index) => (
-          <div key={detail.title} role="listitem" className="cq-flow-item" style={{ "--i": index } as CSSProperties}>
-            <span aria-hidden className="cq-flow-node"><ServiceIcon name={detail.icon} /></span>
-            <span className="cq-flow-body">
-              <span className="cq-flow-title">{detail.title}</span>
-              <span className="cq-flow-desc">{detail.description}</span>
-            </span>
-          </div>
-        ))}
+      <div className="cq-panel-summary relative mt-3.5">
+        <p className="cq-panel-strapline max-w-[52ch] text-[.95rem] leading-relaxed text-foreground/90">{service.strapline}</p>
+        <p className="cq-panel-description mt-1.5 max-w-[54ch] text-sm leading-6 text-muted">{service.description}</p>
       </div>
+
+      <ul
+        className="cq-flow relative"
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse") setPinned(true);
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse") setPinned(false);
+        }}
+      >
+        {service.details.map((detail, index) => {
+          const isActive = index === active;
+          return (
+            <li
+              key={detail.title}
+              className="cq-flow-item"
+              data-active={isActive ? "" : undefined}
+              style={{ "--i": index } as CSSProperties}
+              onPointerEnter={() => setActive(index)}
+            >
+              {isActive && (
+                <motion.span
+                  aria-hidden
+                  layoutId={`cq-spotlight-${service.id}`}
+                  className="cq-flow-spotlight"
+                  transition={reduced ? { duration: 0 } : { type: "spring", duration: 0.55, bounce: 0 }}
+                >
+                  {!reduced && (
+                    <motion.span
+                      className="cq-flow-progress"
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={
+                        pinned
+                          ? { duration: 0.35, ease: "easeOut" }
+                          : { duration: CAPABILITY_DWELL_MS / 1000, ease: "linear" }
+                      }
+                    />
+                  )}
+                </motion.span>
+              )}
+              <span aria-hidden className="cq-flow-node"><ServiceIcon name={detail.icon} /></span>
+              <div className="cq-flow-body">
+                <h3 className="cq-flow-title">{detail.title}</h3>
+                <p className="cq-flow-desc">{detail.description}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -283,20 +347,19 @@ export default function ServicesExperience() {
                           value={service.id}
                           defaultChecked={service.id === "call-center"}
                           data-service-control={service.id}
+                          aria-label={service.label}
                         />
                         <label
                           id={`${SERVICE_PANEL_ID}-${service.id}-label`}
                           htmlFor={`${SERVICE_PANEL_ID}-${service.id}-control`}
                           data-service-label={service.id}
-                          style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
-                          className="cq-service-node group relative block -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation rounded-full text-left"
+                          style={{ "--svc": service.color } as CSSProperties}
+                          className="cq-service-node group relative flex -translate-x-1/2 -translate-y-1/2 cursor-pointer touch-manipulation flex-col items-center gap-2 text-center"
                         >
-                          <span
-                            className="cq-service-sphere flex h-[3.9rem] w-[3.9rem] items-center justify-center rounded-full px-1.5 text-center text-[.58rem] font-semibold leading-[1.05] text-white transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] sm:h-[5rem] sm:w-[5rem] sm:px-2.5 sm:text-[.72rem]"
-                          >
-                            <span className="relative drop-shadow-[0_1px_1px_rgba(13,30,41,.3)]">{service.label}</span>
+                          <span aria-hidden className="cq-service-ring">
+                            <ServiceIcon name={service.id === "call-center" ? "headset" : service.id === "bpo" ? "layers" : "code"} />
                           </span>
-                          <span aria-hidden className="cq-service-active-ring absolute inset-[-.3rem] rounded-full opacity-0 transition-opacity duration-200" />
+                          <span className="cq-service-name">{service.id === "systems" ? "Systems" : service.label}</span>
                         </label>
                       </div>
                     </div>
@@ -316,9 +379,11 @@ export default function ServicesExperience() {
             viewport={{ once: true, amount: 0.16 }}
             transition={{ duration: reduced ? 0 : 0.6, ease: EASE_OUT, delay: reduced ? 0 : 0.16 }}
             style={{ y: panelY }}
-            className="cq-service-panels min-h-[19rem] px-1.5 py-4 sm:px-3 sm:py-5 lg:px-5 lg:py-6"
+            className="cq-service-panels min-h-[17rem]"
           >
-            {SERVICES.map((service) => <ServicePanel key={service.id} service={service} />)}
+            {SERVICES.map((service) => (
+              <ServicePanel key={service.id} service={service} ambient={ambientActive} reduced={reduced} />
+            ))}
           </motion.div>
         </div>
 
@@ -327,7 +392,7 @@ export default function ServicesExperience() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: reduced ? 0 : 0.5, ease: EASE_OUT, delay: reduced ? 0 : 0.28 }}
-          className="mt-6 text-center text-sm text-muted lg:mt-8"
+          className="mt-2 text-center text-sm text-muted lg:mt-3"
         >
           Hover, use Tab, or select a sphere to explore each capability.
         </motion.p>
