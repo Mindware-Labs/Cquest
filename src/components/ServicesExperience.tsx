@@ -49,7 +49,7 @@ const SERVICES: Service[] = [
     details: [
       { title: "Customer service", icon: "headset", description: "Inbound support across phone, email, chat and social media." },
       { title: "Sales", icon: "trend", description: "Outbound campaigns, telesales, lead generation and closing." },
-      { title: "Collections", icon: "banknote", description: "Portfolio recovery and collections with professional protocols." },
+      { title: "Collections", icon: "banknote", description: "Portfolio recovery and collections with professional protocols." },
       { title: "Surveys", icon: "gauge", description: "Satisfaction studies, market polls and NPS measurement." },
       { title: "Onboarding", icon: "userplus", description: "Welcome, activation and early follow-up for new customers." },
     ],
@@ -163,21 +163,13 @@ function ServicePanel({
       <span aria-hidden className="cq-panel-spine" />
 
       <div className="cq-panel-identity relative flex items-center gap-3">
-        <span className="cq-panel-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]">
+        <span className="cq-panel-chip flex h-11 w-11 shrink-0 items-center justify-center">
           <ServiceIcon name={service.id === "call-center" ? "headset" : service.id === "bpo" ? "layers" : "code"} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="cq-panel-eyebrow">Business line</p>
           <p className="cq-panel-label mt-0.5 text-[.95rem] font-semibold text-foreground">{service.label}</p>
         </div>
-        <Link href={service.href} className="cq-panel-cta shrink-0">
-          Explore
-          <span className="hidden sm:inline">&nbsp;{service.label}</span>
-          <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12h14" />
-            <path d="m13 6 6 6-6 6" />
-          </svg>
-        </Link>
       </div>
 
       <span aria-hidden className="cq-panel-label-rule relative mt-5 block" />
@@ -250,23 +242,37 @@ function ServicePanel({
             </AnimatePresence>
         </div>
 
-        {/* Anchor row: monoline glyphs in a quiet line beneath the reading
-            space. The active one takes the service colour; the rest wait in
-            subtle gray — navigation as a reading line, not a control bar. */}
-        <div className="cq-flow-anchors">
-          {service.details.map((detail, index) => (
-            <button
-              key={detail.title}
-              type="button"
-              className="cq-flow-anchor"
-              data-active={index === active ? "" : undefined}
-              aria-label={`Show ${detail.title}`}
-              aria-current={index === active}
-              onClick={() => setActive(index)}
-            >
-              <ServiceIcon name={detail.icon} />
-            </button>
-          ))}
+        {/* Closing line: anchor glyphs left, a fine hairline CTA right — the
+            panel ends where the reading does, with the way deeper in. */}
+        <div className="cq-flow-foot">
+          <div className="cq-flow-anchors">
+            {service.details.map((detail, index) => (
+              <button
+                key={detail.title}
+                type="button"
+                className="cq-flow-anchor"
+                data-active={index === active ? "" : undefined}
+                aria-label={`Show ${detail.title}`}
+                aria-current={index === active}
+                onClick={() => setActive(index)}
+              >
+                <ServiceIcon name={detail.icon} />
+              </button>
+            ))}
+          </div>
+          <Link href={service.href} className="cq-panel-cta shrink-0">
+            <span aria-hidden className="cq-panel-cta-sheen" />
+            <span>
+              Explore
+              <span className="hidden sm:inline">&nbsp;{service.label}</span>
+            </span>
+            <span aria-hidden className="cq-panel-cta-orb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" />
+                <path d="m13 6 6 6-6 6" />
+              </svg>
+            </span>
+          </Link>
         </div>
       </div>
     </section>
