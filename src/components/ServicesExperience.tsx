@@ -358,7 +358,7 @@ export default function ServicesExperience() {
       data-ambient-active={ambientActive}
       className="cq-services relative isolate scroll-mt-6 overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
     >
-      <motion.div aria-hidden style={{ y: ambientY }} className="pointer-events-none absolute -inset-y-[9%] inset-x-0 overflow-hidden">
+      <motion.div aria-hidden style={{ y: ambientY }} className="pointer-events-none absolute -inset-y-[9%] -inset-x-[8%] overflow-hidden">
         <div className="cq-services-mesh absolute -inset-[12%]" />
         <div className="cq-orb left-[-12rem] top-[-13rem] h-[36rem] w-[36rem] bg-celeste/30" style={{ animation: "cq-float-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
         <div className="cq-orb bottom-[-15rem] right-[-10rem] h-[34rem] w-[34rem] bg-petroleo/16" style={{ animation: "cq-float-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />

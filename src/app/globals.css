@@ -365,7 +365,7 @@ body {
 }
 
 .cq-panel-description {
-  color: color-mix(in srgb, var(--foreground) 68%, var(--muted));
+  color: color-mix(in srgb, var(--foreground) 80%, var(--muted));
   line-height: 1.75;
   text-wrap: pretty;
 }
@@ -394,14 +394,16 @@ body {
    Navigation as a quiet line of bare monoline glyphs beneath the reading
    space, flush with the prose edge. The active one takes the service colour
    and lights softly; the rest wait in subtle gray. No bars, no dots. */
-/* Closing line: anchors left, CTA right, one shared baseline. */
+/* Closing line: anchors then CTA, grouped together on one shared baseline
+   instead of pinned to opposite edges. */
 .cq-flow-foot {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: flex-start;
+  gap: 1.5rem;
   margin-top: 0.6rem;
+  padding-bottom: 0.25rem;
 }
 
 .cq-flow-anchors {
@@ -426,7 +428,7 @@ body {
   background: none;
   border-radius: 9999px;
   cursor: pointer;
-  color: color-mix(in srgb, var(--foreground) 58%, transparent);
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
   transition-property: color, scale, filter;
   transition-duration: 240ms;
   transition-timing-function: var(--ease-out);
@@ -480,7 +482,7 @@ body {
 
 @media (hover: hover) and (pointer: fine) {
   .cq-flow-anchor:hover {
-    color: color-mix(in srgb, var(--foreground) 72%, transparent);
+    color: color-mix(in srgb, var(--foreground) 82%, transparent);
     scale: 1.08;
   }
 
@@ -526,7 +528,7 @@ body {
   color: #fff;
   text-decoration: none;
   background-color: color-mix(in srgb, var(--svc) 84%, var(--foreground));
-  box-shadow: 0 2px 8px -3px color-mix(in srgb, var(--svc) 55%, transparent);
+  box-shadow: 0 2px 8px -3px color-mix(in srgb, var(--svc) 42%, transparent);
   transition-property: background-color, box-shadow, scale, translate;
   transition-duration: 260ms;
   transition-timing-function: var(--ease-out);
@@ -571,7 +573,7 @@ body {
   .cq-panel-cta:hover {
     background-color: color-mix(in srgb, var(--svc) 70%, var(--foreground));
     translate: 0 -1px;
-    box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--svc) 65%, transparent);
+    box-shadow: 0 8px 18px -9px color-mix(in srgb, var(--svc) 48%, transparent);
   }
 
   .cq-panel-cta:hover .cq-panel-cta-sheen {
@@ -656,7 +658,7 @@ body {
   max-width: 56ch;
   font-size: 0.875rem;
   line-height: 1.75;
-  color: color-mix(in srgb, var(--foreground) 68%, var(--muted));
+  color: color-mix(in srgb, var(--foreground) 80%, var(--muted));
   text-wrap: pretty;
 }
 
