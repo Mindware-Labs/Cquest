@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
+  AnimatePresence,
   motion,
   useInView,
   useReducedMotion,
@@ -162,21 +163,20 @@ function ServicePanel({
           <p className="cq-panel-eyebrow">Business line</p>
           <p className="cq-panel-label mt-0.5 text-[.95rem] font-semibold text-foreground">{service.label}</p>
         </div>
-        <span className="cq-panel-count shrink-0">{service.details.length} capabilities</span>
       </div>
 
-      <span aria-hidden className="cq-panel-label-rule relative mt-3 block" />
+      <span aria-hidden className="cq-panel-label-rule relative mt-5 block" />
 
-      <h2 className="relative mt-4 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
+      <h2 className="relative mt-6 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
         {service.shortLabel}
       </h2>
 
-      <div className="cq-panel-summary relative mt-3.5">
+      <div className="cq-panel-summary relative mt-5">
         <p className="cq-panel-strapline max-w-[52ch] text-[.95rem] leading-relaxed text-foreground/90">{service.strapline}</p>
-        <p className="cq-panel-description mt-1.5 max-w-[54ch] text-sm leading-6 text-muted">{service.description}</p>
+        <p className="cq-panel-description mt-2 max-w-[54ch] text-sm leading-6 text-muted">{service.description}</p>
       </div>
 
-      <ul
+      <div
         className="cq-flow relative"
         onPointerEnter={(event) => {
           if (event.pointerType === "mouse") setPinned(true);
@@ -185,46 +185,73 @@ function ServicePanel({
           if (event.pointerType === "mouse") setPinned(false);
         }}
       >
-        {service.details.map((detail, index) => {
-          const isActive = index === active;
-          return (
-            <li
-              key={detail.title}
-              className="cq-flow-item"
-              data-active={isActive ? "" : undefined}
-              style={{ "--i": index } as CSSProperties}
-              onPointerEnter={() => setActive(index)}
+        <div
+          className="cq-flow-viewport"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label={`${service.label} capabilities`}
+        >
+          <AnimatePresence initial={false} mode="popLayout">
+            <motion.div
+              key={service.details[active].title}
+              className="cq-flow-slide"
+              initial={reduced ? { opacity: 0 } : { x: "112%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={reduced ? { opacity: 0 } : { x: "-112%", opacity: 0 }}
+              transition={
+                reduced
+                  ? { duration: 0.15 }
+                  : { type: "spring", duration: 0.6, bounce: 0 }
+              }
             >
-              {isActive && (
+              {!reduced && (
                 <motion.span
                   aria-hidden
-                  layoutId={`cq-spotlight-${service.id}`}
-                  className="cq-flow-spotlight"
-                  transition={reduced ? { duration: 0 } : { type: "spring", duration: 0.55, bounce: 0 }}
-                >
-                  {!reduced && (
-                    <motion.span
-                      className="cq-flow-progress"
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: 1 }}
-                      transition={
-                        pinned
-                          ? { duration: 0.35, ease: "easeOut" }
-                          : { duration: CAPABILITY_DWELL_MS / 1000, ease: "linear" }
-                      }
-                    />
-                  )}
-                </motion.span>
+                  className="cq-flow-progress"
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={
+                    pinned
+                      ? { duration: 0.35, ease: "easeOut" }
+                      : { duration: CAPABILITY_DWELL_MS / 1000, ease: "linear" }
+                  }
+                />
               )}
-              <span aria-hidden className="cq-flow-node"><ServiceIcon name={detail.icon} /></span>
+              <span aria-hidden className="cq-flow-node">
+                <ServiceIcon name={service.details[active].icon} />
+              </span>
               <div className="cq-flow-body">
-                <h3 className="cq-flow-title">{detail.title}</h3>
-                <p className="cq-flow-desc">{detail.description}</p>
+                <h3 className="cq-flow-title">{service.details[active].title}</h3>
+                <p className="cq-flow-desc">{service.details[active].description}</p>
               </div>
-            </li>
-          );
-        })}
-      </ul>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="cq-flow-nav">
+          <div className="cq-flow-dots">
+            {service.details.map((detail, index) => (
+              <button
+                key={detail.title}
+                type="button"
+                className="cq-flow-dot"
+                data-active={index === active ? "" : undefined}
+                aria-label={`Show ${detail.title}`}
+                aria-current={index === active}
+                onClick={() => setActive(index)}
+              >
+                <span aria-hidden />
+              </button>
+            ))}
+          </div>
+          <div className="cq-flow-meta">
+            <span className="cq-flow-count">{service.details.length} capabilities</span>
+            <span className="cq-flow-counter" aria-hidden>
+              {String(active + 1).padStart(2, "0")} / {String(service.details.length).padStart(2, "0")}
+            </span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

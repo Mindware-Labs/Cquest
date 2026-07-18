@@ -240,18 +240,18 @@ body {
   padding-left: clamp(1.25rem, 2.2vw, 1.75rem);
 }
 
-/* The spine: a hairline in the service colour that dissolves downward,
-   capped by a small solid tick. It replaces the card's border entirely. */
+/* The spine: a hairline in the service colour that dissolves downward, capped
+   by a small solid tick. It replaces the card's border entirely. */
 .cq-panel-spine {
   position: absolute;
   left: 0;
   top: 0.35rem;
   bottom: 0.5rem;
-  width: 2px;
+  width: 1.5px;
   border-radius: 2px;
   background: linear-gradient(180deg,
     var(--svc) 0%,
-    color-mix(in srgb, var(--svc) 34%, transparent) 58%,
+    color-mix(in srgb, var(--svc) 32%, transparent) 58%,
     transparent 100%);
   pointer-events: none;
 }
@@ -261,45 +261,27 @@ body {
   position: absolute;
   left: -3px;
   top: 0;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 2px;
   background: var(--svc);
 }
 
-/* Ink seal, service-tinted: a faint wash of the service colour lights the top
-   of the ink, a hairline inner ring and top highlight give it machined depth. */
+/* Quality seal: a thin service-colour glyph on a whisper of the surface tint,
+   held by a fine ring — a hallmark, not an app icon. */
 .cq-panel-chip {
   position: relative;
-  color: #fff;
-  background: linear-gradient(155deg,
-    color-mix(in srgb, var(--svc) 32%, var(--foreground)) 0%,
-    var(--foreground) 58%,
-    color-mix(in srgb, black 22%, var(--foreground)) 100%);
+  color: color-mix(in srgb, var(--svc) 78%, var(--foreground));
+  background: color-mix(in srgb, var(--svc) 7%, white);
   box-shadow:
-    0 1px 2px rgba(6, 16, 24, 0.2),
-    0 10px 18px -10px rgba(6, 16, 24, 0.42),
-    inset 0 1px rgba(255, 255, 255, 0.18),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-/* The identity rule and summary boundaries establish the panel hierarchy. */
-.cq-panel-chip::after {
-  content: "";
-  position: absolute;
-  right: -0.16rem;
-  bottom: -0.16rem;
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 9999px;
-  background: var(--brand-verde);
-  box-shadow: 0 0 0 3px #fafdff;
+    inset 0 0 0 1px color-mix(in srgb, var(--svc) 40%, transparent),
+    0 1px 2px rgba(13, 30, 41, 0.05);
 }
 
 .cq-panel-chip svg {
-  width: 1.2rem;
-  height: 1.2rem;
-  stroke-width: 1.6;
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 1.45;
 }
 
 .cq-panel-label {
@@ -310,32 +292,11 @@ body {
 /* Microlabel above the service name: service-tinted, letterspaced caps. */
 .cq-panel-eyebrow {
   font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1;
   color: color-mix(in srgb, var(--svc) 58%, var(--muted));
-}
-
-/* Capability count: quiet mono readout with a service-colour status dot. */
-.cq-panel-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-.cq-panel-count::before {
-  content: "";
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--svc) 82%, white);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--svc) 14%, transparent);
 }
 
 /* Full-width identity rule: solid service colour at the left, settling into a
@@ -345,9 +306,9 @@ body {
   width: 100%;
   background: linear-gradient(90deg,
     var(--svc) 0,
-    color-mix(in srgb, var(--svc) 52%, transparent) 2.75rem,
-    color-mix(in srgb, var(--foreground) 11%, transparent) 5.5rem,
-    color-mix(in srgb, var(--foreground) 11%, transparent) 78%,
+    color-mix(in srgb, var(--svc) 48%, transparent) 2.75rem,
+    color-mix(in srgb, var(--foreground) 10%, transparent) 5.5rem,
+    color-mix(in srgb, var(--foreground) 10%, transparent) 78%,
     transparent 100%);
 }
 
@@ -380,127 +341,78 @@ body {
   text-wrap: pretty;
 }
 
-/* ── Capability ledger (Services) ────────────────────────
-   Hairline-separated rows improve scanning without turning every capability
-   into another card or giving non-interactive content a button-like hover. */
+/* ── Capability carousel (Services) ──────────────────────
+   One capability on stage at a time. The outgoing slide leaves through the
+   left edge while the next arrives from the right (Motion spring, bounce 0);
+   dots and a mono counter give position context plus direct navigation. */
 .cq-flow {
   position: relative;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  margin-top: 1.4rem;
 }
 
-.cq-flow-item {
+/* Clips the travelling slides. Negative margins let the slide surface clear
+   the text edge (like the old spotlight overhang) while keeping alignment. */
+.cq-flow-viewport {
+  position: relative;
+  overflow: hidden;
+  margin: 0 -0.4rem 0 -0.85rem;
+  padding: 0 0.4rem 0 0.85rem;
+  min-height: 5.5rem;
+  display: grid;
+  align-items: center;
+}
+
+/* The slide: a near-imperceptible service-tinted tone shift held by a 1px
+   light line, floating on a low, very soft elevation — no thick drop shadow. */
+.cq-flow-slide {
   position: relative;
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: 0.85rem;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 1rem;
   align-items: center;
-  padding: 0.7rem 0;
-  animation: cq-flow-in 460ms var(--ease-out) backwards;
-  animation-delay: calc(70ms + var(--i, 0) * 45ms);
-  transition-property: opacity;
-  transition-duration: 320ms;
-  transition-timing-function: var(--ease-out);
-}
-
-/* Rows outside the spotlight recede a touch so the active capability reads
-   first; a CSS transition (not keyframes) keeps the change interruptible. */
-.cq-flow-item:not([data-active]) {
-  opacity: 0.82;
-}
-
-/* ── Rotating capability spotlight ───────────────────────
-   A single surface per panel travels between rows via Motion's layoutId
-   (spring, bounce 0). Its wash dissolves rightward like every other rule in
-   the readout, and its left edge carries the dwell progress bar — the same
-   spine motif that anchors the panel. */
-.cq-flow-spotlight {
-  position: absolute;
-  top: 0.22rem;
-  bottom: 0.22rem;
-  left: -0.85rem;
-  right: -0.4rem;
-  z-index: -1;
-  border-radius: 12px;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--svc) 9%, transparent) 0%,
-    color-mix(in srgb, var(--svc) 4%, transparent) 55%,
-    transparent 100%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 15%, transparent);
-  pointer-events: none;
+  padding: 1rem 1.1rem 1rem 1.15rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--svc) 4%, white);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 16px 36px -24px rgba(13, 30, 41, 0.28),
+    0 2px 10px -6px rgba(13, 30, 41, 0.07);
   will-change: transform;
 }
 
-/* Dwell progress: fills top-to-bottom over the rotation interval; on hover it
-   completes softly and holds while the cycle is pinned. */
+/* Dwell progress on the slide's left edge — the panel's spine motif. Fills
+   top-to-bottom over the rotation interval; on hover it completes softly and
+   holds while the cycle is pinned. */
 .cq-flow-progress {
   position: absolute;
   left: 0;
-  top: 0.4rem;
-  bottom: 0.4rem;
-  width: 2px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 1.5px;
   border-radius: 2px;
   transform-origin: top;
-  background: color-mix(in srgb, var(--svc) 78%, var(--foreground));
+  background: color-mix(in srgb, var(--svc) 80%, var(--foreground));
 }
 
-/* Row hairlines dissolve toward the right edge, echoing the identity rule.
-   The list ends open — no closing rule — so it never reads as a bounded box. */
-.cq-flow-item::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--foreground) 10%, transparent) 0,
-    color-mix(in srgb, var(--foreground) 8%, transparent) 72%,
-    transparent 100%);
-}
-
-.cq-flow-item:last-child::after {
-  content: none;
-}
-
-/* Ghost chip: a service-tinted wash held by an inset hairline ring — defined,
-   but nothing like the opaque white mini-cards of a traditional layout. */
+/* The featured glyph: thin service-colour stroke on a soft tinted ground,
+   ringed by a fine hairline — matching the identity seal above. */
 .cq-flow-node {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9px;
-  color: color-mix(in srgb, var(--svc) 60%, var(--foreground));
-  background: color-mix(in srgb, var(--svc) 7%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 24%, transparent);
-  transition-property: color, background-color, box-shadow;
-  transition-duration: 280ms;
-  transition-timing-function: var(--ease-out);
-}
-
-/* Under the spotlight the ghost chip fills solid with the service colour and
-   lifts; both states are solid colours so background-color can interpolate. */
-.cq-flow-item[data-active] .cq-flow-node {
-  color: #fff;
-  background-color: color-mix(in srgb, var(--svc) 86%, var(--foreground));
-  box-shadow:
-    0 1px 2px rgba(6, 16, 24, 0.16),
-    0 8px 14px -8px color-mix(in srgb, var(--svc) 55%, transparent),
-    inset 0 1px rgba(255, 255, 255, 0.22);
-}
-
-.cq-flow-item[data-active] .cq-flow-title {
-  color: color-mix(in srgb, var(--svc) 42%, var(--foreground));
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  color: color-mix(in srgb, var(--svc) 78%, var(--foreground));
+  background: color-mix(in srgb, var(--svc) 8%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 32%, transparent);
 }
 
 .cq-flow-node svg {
-  width: 1.05rem;
-  height: 1.05rem;
-  stroke-width: 1.65;
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 1.45;
 }
 
 .cq-flow-body {
@@ -513,8 +425,7 @@ body {
   font-size: 0.95rem;
   line-height: 1.2;
   letter-spacing: -0.01em;
-  color: var(--foreground);
-  transition: color 200ms ease;
+  color: color-mix(in srgb, var(--svc) 42%, var(--foreground));
 }
 
 /* Hover feedback stays on the actual service controls, never the ledger. */
@@ -533,16 +444,82 @@ body {
 }
 
 .cq-flow-desc {
-  margin-top: 0.12rem;
+  margin-top: 0.18rem;
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--muted);
   text-wrap: pretty;
 }
 
-@keyframes cq-flow-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Carousel navigation: dots for direct access, mono counter for position. */
+.cq-flow-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.9rem;
+}
+
+.cq-flow-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Padded button extends each marker's hit area as far as the neighbouring
+   marker allows without overlapping. */
+.cq-flow-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.2rem;
+  margin: 0;
+  border: 0;
+  background: none;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.cq-flow-dot:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 2px;
+}
+
+/* Hairline pagination: fine short strokes; the active one stretches long in
+   the service colour. */
+.cq-flow-dot > span {
+  width: 0.9rem;
+  height: 1.5px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--foreground) 20%, transparent);
+  transition-property: width, background-color;
+  transition-duration: 260ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.cq-flow-dot[data-active] > span {
+  width: 2.4rem;
+  background: color-mix(in srgb, var(--svc) 85%, var(--foreground));
+}
+
+/* Position meta lives beside the pagination, quiet and light. */
+.cq-flow-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+}
+
+.cq-flow-count {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.cq-flow-counter {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
 }
 
 /* Native hover and radio selection are the disclosure mechanism, so the
