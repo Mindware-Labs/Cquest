@@ -20,7 +20,7 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const LINKS = [
   { label: "About us", href: "#" },
-  { label: "Services", href: "#" },
+  { label: "Services", href: "/servicios" },
   { label: "Sectors", href: "#" },
   { label: "Contact", href: "#" },
 ];

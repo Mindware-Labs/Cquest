@@ -131,6 +131,31 @@ body {
   will-change: transform;
 }
 
+/* One oversized gradient layer connects the orbs into a calmer, more
+   intentional field. It moves only through transforms, never by repainting. */
+.cq-services-mesh {
+  background:
+    radial-gradient(43% 47% at 18% 22%, color-mix(in srgb, var(--brand-celeste) 31%, transparent) 0%, transparent 74%),
+    radial-gradient(39% 44% at 81% 24%, color-mix(in srgb, var(--brand-gris) 48%, transparent) 0%, transparent 76%),
+    radial-gradient(48% 44% at 55% 78%, color-mix(in srgb, var(--brand-verde) 15%, transparent) 0%, transparent 78%);
+  animation: cq-mesh-drift 30s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform;
+}
+
+@keyframes cq-mesh-drift {
+  0%, 100% { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  50% { transform: translate3d(2.5%, 2%, 0) scale(1.04); }
+}
+
+.cq-services-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--brand-petroleo) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--brand-petroleo) 7%, transparent) 1px, transparent 1px);
+  background-position: center;
+  background-size: 4.5rem 4.5rem;
+  mask-image: radial-gradient(ellipse 76% 60% at 50% 50%, black 0%, transparent 76%);
+}
+
 /* ── Signal rings (Services section) ─────────────────────
    Concentric hairline rings that pulse slowly outward — a call
    radiating from the stage. Transform/opacity only; under reduced
@@ -143,6 +168,189 @@ body {
   100% { transform: scale(1.12); opacity: 0; }
 }
 
+/* The service nodes move as one constellation. The inner wrapper counters the
+   rotation so labels remain readable while they orbit. */
+@keyframes cq-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cq-orbit-counter {
+  to { transform: rotate(-360deg); }
+}
+
+.cq-service-orbit {
+  animation: cq-orbit 38s linear infinite;
+  will-change: transform;
+}
+
+.cq-service-orbit-counter {
+  animation: cq-orbit-counter 38s linear infinite;
+  will-change: transform;
+}
+
+/* Keep continuous ambient work dormant when this section is not visible or
+   when the document is backgrounded. Static controls remain fully usable. */
+.cq-services[data-ambient-active="false"] .cq-services-mesh,
+.cq-services[data-ambient-active="false"] .cq-orb,
+.cq-services[data-ambient-active="false"] .cq-ring,
+.cq-services[data-ambient-active="false"] .cq-service-orbit,
+.cq-services[data-ambient-active="false"] .cq-service-orbit-counter {
+  animation-play-state: paused;
+}
+
+/* ── Capability readout (Services) ───────────────────────
+   Not a card: a frosted telemetry surface that shares DNA with the orbital
+   stage. A single soft directional shadow lifts it — no boxing 1px border, so
+   it never resolves into a template card. A brand gradient hairline rides the
+   top edge, and the active service's colour bleeds in as a corner orb: the
+   same glow the orbital spheres carry, which ties panel and stage together. */
+.cq-service-panels {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-celeste) 9%, transparent) 0%, transparent 24%),
+    color-mix(in srgb, white 90%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 30px 60px -34px rgba(13, 30, 41, 0.42);
+}
+
+.cq-service-panels::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste) 52%, var(--brand-verde));
+  opacity: 0.85;
+}
+
+/* Each panel carries its service colour; descendants read it through --svc. */
+.cq-service-panel {
+  --svc: var(--brand-petroleo);
+  position: relative;
+}
+
+/* Corner orb — the orbital-sphere glow, echoed in the active service colour. */
+.cq-panel-orb {
+  position: absolute;
+  top: -4.75rem;
+  right: -4.75rem;
+  width: 15rem;
+  height: 15rem;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 34% 30%,
+    color-mix(in srgb, var(--svc-glow, var(--svc)) 70%, white) 0%,
+    var(--svc) 44%,
+    transparent 70%
+  );
+  opacity: 0.16;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Sub-services as a ruled spec matrix: hairline rows, service-tinted hover. */
+.cq-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .cq-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.75rem;
+  }
+}
+
+.cq-detail {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.7rem 0.6rem;
+  border-top: 1px solid color-mix(in srgb, var(--brand-petroleo) 10%, transparent);
+  border-radius: 9px;
+  transition: background-color 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: cq-detail-in 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.cq-detail:hover {
+  background: color-mix(in srgb, var(--svc) 8%, transparent);
+  transform: translateX(3px);
+}
+
+.cq-detail-icon {
+  color: var(--svc);
+}
+
+.cq-detail:nth-child(1) { animation-delay: 60ms; }
+.cq-detail:nth-child(2) { animation-delay: 110ms; }
+.cq-detail:nth-child(3) { animation-delay: 160ms; }
+.cq-detail:nth-child(4) { animation-delay: 210ms; }
+.cq-detail:nth-child(5) { animation-delay: 260ms; }
+
+@keyframes cq-detail-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Native hover and radio selection are the disclosure mechanism, so the
+   controls work without waiting for client-side JavaScript. */
+.cq-service-panel {
+  display: none;
+  animation: cq-panel-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cq-service-panel[data-panel="call-center"] {
+  display: block;
+}
+
+.cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel,
+.cq-services:has([data-service-control="systems"]:checked) .cq-service-panel {
+  display: none;
+}
+
+.cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel="bpo"],
+.cq-services:has([data-service-control="systems"]:checked) .cq-service-panel[data-panel="systems"] {
+  display: block;
+}
+
+.cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel,
+.cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel,
+.cq-services:has([data-service-label="systems"]:hover) .cq-service-panel {
+  display: none;
+}
+
+.cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel[data-panel="call-center"],
+.cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel[data-panel="bpo"],
+.cq-services:has([data-service-label="systems"]:hover) .cq-service-panel[data-panel="systems"] {
+  display: block;
+}
+
+.cq-service-node:hover .cq-service-sphere,
+.cq-service-control:checked + .cq-service-node .cq-service-sphere,
+.cq-service-control:focus-visible + .cq-service-node .cq-service-sphere {
+  transform: scale(1.08);
+}
+
+.cq-service-control:focus-visible + .cq-service-node {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 4px;
+}
+
+.cq-service-node {
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--brand-celeste) 34%, transparent);
+}
+
+
+.cq-service-node:hover .cq-service-active-ring,
+.cq-service-control:checked + .cq-service-node .cq-service-active-ring {
+  opacity: 1;
+}
+
+@keyframes cq-panel-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .cq-ring {
   position: absolute;
   inset: 0;
@@ -151,6 +359,17 @@ body {
   opacity: 0;
   transform: scale(0.55);
   animation: cq-ring 10.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes cq-hero-bloom {
+  0%, 100% { opacity: 0.86; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.055) translate3d(-1%, 1%, 0); }
+}
+
+.cq-hero-bloom {
+  animation: cq-hero-bloom 16s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: 78% 42%;
   will-change: transform, opacity;
 }
 

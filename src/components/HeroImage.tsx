@@ -6,6 +6,8 @@ import {
   AnimatePresence,
   motion,
   useReducedMotion,
+  useScroll,
+  useTransform,
   type Variants,
 } from "motion/react";
 import heroImage from "../../public/hero-image.jpeg";
@@ -50,7 +52,12 @@ const checkDraw: Variants = {
   },
 };
 
-const NAV_LINKS = ["Services", "Success stories", "About", "Contact"];
+const NAV_LINKS = [
+  { label: "Services", href: "#servicios" },
+  { label: "Success stories", href: "#success-stories" },
+  { label: "About", href: "#about" },
+  { label: "Contact", href: "#contact" },
+];
 
 /* ─── Bespoke dark nav — the shared light navbar reads illegibly here,
    so this hero carries its own, tuned for a photo backdrop. Includes a
@@ -88,10 +95,10 @@ function HeroNav({ reduced }: { reduced: boolean }) {
         </a>
 
         <ul className="hidden items-center gap-2 md:flex">
-          {NAV_LINKS.map((label) => (
+          {NAV_LINKS.map(({ label, href }) => (
             <li key={label}>
               <a
-                href={`#${label.toLowerCase()}`}
+                href={href}
                 className="relative block rounded-full px-5 py-2.5 text-[0.9375rem] font-medium text-white/90 transition-colors duration-300 after:absolute after:inset-x-5 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-celeste after:transition-transform after:duration-300 after:ease-out hover:text-white hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
               >
                 {label}
@@ -153,7 +160,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
             className="overflow-hidden border-t border-white/10 bg-ink/95 backdrop-blur-md md:hidden"
           >
             <ul className="flex flex-col px-6 py-4">
-              {NAV_LINKS.map((label, i) => (
+              {NAV_LINKS.map(({ label, href }, i) => (
                 <motion.li
                   key={label}
                   initial={reduced ? false : { opacity: 0, x: -12 }}
@@ -161,7 +168,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
                   transition={{ duration: 0.4, delay: 0.05 + i * 0.06, ease: EASE_OUT }}
                 >
                   <a
-                    href={`#${label.toLowerCase()}`}
+                    href={href}
                     onClick={() => setOpen(false)}
                     className="block touch-manipulation border-b border-white/10 py-3 text-base font-medium text-white/90 transition-colors hover:text-celeste focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
                   >
@@ -197,6 +204,30 @@ function HeroNav({ reduced }: { reduced: boolean }) {
 export default function HeroImage() {
   const reduced = useReducedMotion() ?? false;
   const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const imageY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [0, 0] : [0, 54],
+  );
+  const imageScale = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [1, 1] : [1, 1.07],
+  );
+  const contentY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [0, 0] : [0, -24],
+  );
+  const contentOpacity = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [1, 1] : [1, 0.38],
+  );
   const {
     ref: exploreCtaRef,
     style: exploreCtaStyle,
@@ -211,8 +242,8 @@ export default function HeroImage() {
       id="hero"
       className="relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
-      {/* Background photo — static, no drift */}
-      <div aria-hidden className="absolute inset-0">
+      {/* Background photo — restrained parallax keeps the scroll handoff alive. */}
+      <motion.div aria-hidden style={{ y: imageY, scale: imageScale }} className="absolute -inset-y-8 inset-x-0 will-change-transform">
         <Image
           src={heroImage}
           alt=""
@@ -223,13 +254,13 @@ export default function HeroImage() {
           sizes="100vw"
           className="object-cover object-[70%_center]"
         />
-      </div>
+      </motion.div>
 
       {/* Scrim — dark on the left where copy sits. Front-loaded so the
           right side of the photo (the person, the office) can breathe. */}
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="cq-hero-bloom absolute inset-0"
         style={{
           background:
             "linear-gradient(90deg, color-mix(in srgb, var(--ink) 90%, transparent) 0%, color-mix(in srgb, var(--ink) 78%, transparent) 20%, color-mix(in srgb, var(--ink) 50%, transparent) 38%, color-mix(in srgb, var(--ink) 20%, transparent) 54%, color-mix(in srgb, var(--ink) 6%, transparent) 66%, transparent 78%)",
@@ -263,6 +294,7 @@ export default function HeroImage() {
         variants={container}
         initial={reduced ? false : "hidden"}
         animate="visible"
+        style={{ y: contentY, opacity: contentOpacity }}
         className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-28 sm:px-12 sm:pt-32 lg:px-16"
       >
         <h1
@@ -333,7 +365,7 @@ export default function HeroImage() {
             </span>
           </motion.a>
           <a
-            href="#services"
+            href="#servicios"
             className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             <span className="inline-flex items-center gap-1.5">
