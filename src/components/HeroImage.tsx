@@ -53,7 +53,7 @@ const checkDraw: Variants = {
 };
 
 const NAV_LINKS = [
-  { label: "Services", href: "#servicios" },
+  { label: "Services", href: "#services" },
   { label: "Success stories", href: "#success-stories" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
@@ -365,7 +365,7 @@ export default function HeroImage() {
             </span>
           </motion.a>
           <a
-            href="#servicios"
+            href="#services"
             className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
           >
             <span className="inline-flex items-center gap-1.5">

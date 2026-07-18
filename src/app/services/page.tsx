@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
-import ServicesExperience from "@/components/ServicesExperience";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Nuestros servicios | Center Quest",
-  description:
-    "Call Center, BPO y Desarrollo de Sistemas para operaciones en República Dominicana.",
-};
-
+// The services experience lives on the landing page. Anyone who reaches
+// /services directly (old links, bookmarks, back navigation) is sent to that
+// section instead of a stranded standalone copy.
 export default function ServicesPage() {
-  return <ServicesExperience />;
+  redirect("/#services");
 }

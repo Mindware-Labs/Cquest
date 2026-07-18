@@ -20,7 +20,7 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const LINKS = [
   { label: "About us", href: "#" },
-  { label: "Services", href: "/servicios" },
+  { label: "Services", href: "/#services" },
   { label: "Sectors", href: "#" },
   { label: "Contact", href: "#" },
 ];
@@ -92,7 +92,10 @@ export default function Navbar() {
               )}
               <a
                 href={href}
-                onClick={stop}
+                onClick={(e) => {
+                  // Only placeholder links stay inert; real routes navigate.
+                  if (href === "#") stop(e);
+                }}
                 onMouseEnter={() => setHovered(label)}
                 onFocus={() => setHovered(label)}
                 className="relative z-10 block rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors duration-300 hover:text-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
@@ -170,7 +173,7 @@ export default function Navbar() {
                   <a
                     href={href}
                     onClick={(e) => {
-                      e.preventDefault();
+                      if (href === "#") e.preventDefault();
                       setOpen(false);
                     }}
                     className="block border-b border-border/40 py-3 text-base font-medium text-foreground/90 transition-colors hover:text-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"

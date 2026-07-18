@@ -13,6 +13,8 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useVelocity,
+  type Variants,
 } from "motion/react";
 
 type ServiceId = "call-center" | "bpo" | "systems";
@@ -45,7 +47,7 @@ const SERVICES: Service[] = [
       "Customer support, sales and follow-up designed around the moments that matter to your customers.",
     color: "#3f738d",
     glow: "#74c3d5",
-    href: "/servicios/call-center",
+    href: "/services/call-center",
     details: [
       { title: "Customer service", icon: "headset", description: "Inbound support across phone, email, chat and social media." },
       { title: "Sales", icon: "trend", description: "Outbound campaigns, telesales, lead generation and closing." },
@@ -63,7 +65,7 @@ const SERVICES: Service[] = [
       "Back office, data processing and omnichannel support under clear SLAs.",
     color: "#176c79",
     glow: "#80bc00",
-    href: "/servicios/bpo",
+    href: "/services/bpo",
     details: [
       { title: "Back office", icon: "layers", description: "The repeatable work that keeps an operation moving." },
       { title: "Data processing", icon: "database", description: "Information handled accurately and consistently at scale." },
@@ -79,7 +81,7 @@ const SERVICES: Service[] = [
       "CRMs, dashboards and operations automation built around how your business actually works.",
     color: "#4b98b1",
     glow: "#d6d1ca",
-    href: "/servicios/sistemas",
+    href: "/services/systems",
     details: [
       { title: "CRMs", icon: "layout", description: "Custom systems for customer and operational relationships." },
       { title: "Dashboards", icon: "chart", description: "Operational visibility for better-informed decisions." },
@@ -97,6 +99,52 @@ const ORBIT = [
 const SERVICE_PANEL_ID = "cq-services";
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 const CAPABILITY_DWELL_MS = 3200;
+
+/* Headline lines, split into words so each can rise out of its own mask. */
+const HEADLINE: string[][] = [
+  ["One", "operation."],
+  ["Three", "ways", "to", "move", "forward."],
+];
+
+/* ── Entrance choreography ────────────────────────────────
+   The stage assembles instead of fading in as one: guide rings draw first,
+   the three nodes pop in sequence on springs, and the seal lands last.
+   All children key off the parent's hidden/show via variant propagation;
+   delays are explicit (custom index) so the order is deterministic. */
+const wordVariants: Variants = {
+  hidden: { y: "112%" },
+  show: (i: number) => ({
+    y: "0%",
+    transition: { duration: 0.75, ease: EASE_OUT, delay: 0.08 + i * 0.06 },
+  }),
+};
+
+const guideRingVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.78 },
+  show: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.8, ease: EASE_OUT, delay: 0.12 + i * 0.11 },
+  }),
+};
+
+const nodeVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.45 },
+  show: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 340, damping: 24, delay: 0.42 + i * 0.13 },
+  }),
+};
+
+const sealVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.7 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 260, damping: 26, delay: 0.72 },
+  },
+};
 
 function ServiceIcon({ name }: { name: Detail["icon"] }) {
   const props = {
@@ -140,6 +188,10 @@ function ServicePanel({
 }) {
   const [active, setActive] = useState(0);
   const [pinned, setPinned] = useState(false);
+
+  // True while the auto-rotation timer is actually counting down — drives the
+  // dwell arc so the reader can see when the next capability will land.
+  const dwellRunning = ambient && !pinned && !reduced;
 
   // Auto-rotating capability spotlight. setTimeout (not setInterval) so every
   // resume — after hover, tab switch or scroll-out — restarts a full dwell.
@@ -211,28 +263,31 @@ function ServicePanel({
                 }
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                {/* Typographic dissolution: title, then prose, rise into place. */}
+                {/* Typographic dissolution: the title rises out of a line mask,
+                    then the prose condenses into focus beneath it. */}
                 <div className="cq-flow-body">
-                  <motion.h3
-                    className="cq-flow-title"
-                    initial={reduced ? false : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={
-                      reduced
-                        ? { duration: 0.15 }
-                        : { type: "spring", duration: 0.55, bounce: 0.2, delay: 0.08 }
-                    }
-                  >
-                    {service.details[active].title}
-                  </motion.h3>
+                  <h3 className="cq-flow-title">
+                    <motion.span
+                      className="cq-flow-title-inner"
+                      initial={reduced ? false : { y: "115%" }}
+                      animate={{ y: "0%" }}
+                      transition={
+                        reduced
+                          ? { duration: 0.15 }
+                          : { type: "spring", duration: 0.6, bounce: 0.18, delay: 0.06 }
+                      }
+                    >
+                      {service.details[active].title}
+                    </motion.span>
+                  </h3>
                   <motion.p
                     className="cq-flow-desc"
-                    initial={reduced ? false : { opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={reduced ? false : { opacity: 0, y: 12, filter: "blur(5px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={
                       reduced
                         ? { duration: 0.15 }
-                        : { type: "spring", duration: 0.6, bounce: 0.2, delay: 0.14 }
+                        : { type: "spring", duration: 0.62, bounce: 0.16, delay: 0.14 }
                     }
                   >
                     {service.details[active].description}
@@ -256,12 +311,57 @@ function ServicePanel({
                 aria-current={index === active}
                 onClick={() => setActive(index)}
               >
+                {/* Dwell arc: a hairline that draws a full turn over the dwell,
+                    announcing when the spotlight will move on. Unmounts while
+                    hovered/paused; every remount restarts a full dwell, exactly
+                    mirroring the timer above. */}
+                {index === active && dwellRunning && (
+                  <motion.svg
+                    key={`dwell-${active}`}
+                    aria-hidden
+                    className="cq-flow-anchor-dwell"
+                    viewBox="0 0 40 40"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  >
+                    <motion.circle
+                      cx="20"
+                      cy="20"
+                      r="18.25"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      transform="rotate(-90 20 20)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: CAPABILITY_DWELL_MS / 1000, ease: "linear" }}
+                    />
+                  </motion.svg>
+                )}
                 <ServiceIcon name={detail.icon} />
                 <span aria-hidden className="cq-flow-anchor-tip">{detail.title}</span>
               </button>
             ))}
           </div>
-          <Link href={service.href} className="cq-panel-cta shrink-0">
+          <Link
+            href={service.href}
+            className="cq-panel-cta shrink-0"
+            onPointerMove={(event) => {
+              // Magnetic lean: the pill drifts a few px toward the cursor.
+              if (reduced || event.pointerType !== "mouse") return;
+              const bounds = event.currentTarget.getBoundingClientRect();
+              const dx = (event.clientX - bounds.left - bounds.width / 2) * 0.14;
+              const dy = (event.clientY - bounds.top - bounds.height / 2) * 0.26;
+              event.currentTarget.style.setProperty("--ctax", `${Math.max(-4, Math.min(4, dx)).toFixed(1)}px`);
+              event.currentTarget.style.setProperty("--ctay", `${Math.max(-3, Math.min(3, dy)).toFixed(1)}px`);
+            }}
+            onPointerLeave={(event) => {
+              event.currentTarget.style.setProperty("--ctax", "0px");
+              event.currentTarget.style.setProperty("--ctay", "0px");
+            }}
+          >
             <span aria-hidden className="cq-panel-cta-sheen" />
             <span>
               Explore
@@ -291,6 +391,55 @@ export default function ServicesExperience() {
   const [armed, setArmed] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
 
+  /* Selection comet: when the choice moves to another sphere, a spark leaves
+     the old node and rides the orbit's arc to the new one — the crown visibly
+     travels instead of teleporting. Node positions are measured from the DOM
+     at launch time so the flight starts wherever the orbit has rotated to. */
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cometKey = useRef(0);
+  const lastService = useRef<ServiceId>("call-center");
+  const [comet, setComet] = useState<{ key: number; xs: number[]; ys: number[]; color: string } | null>(null);
+
+  const launchComet = (next: ServiceId) => {
+    const prev = lastService.current;
+    lastService.current = next;
+    const stage = stageRef.current;
+    if (reduced || prev === next || !stage) return;
+    const box = stage.getBoundingClientRect();
+    const fromRing = stage.querySelector(`[data-service-label="${prev}"] .cq-service-ring`);
+    const toRing = stage.querySelector(`[data-service-label="${next}"] .cq-service-ring`);
+    if (!fromRing || !toRing) return;
+    const fb = fromRing.getBoundingClientRect();
+    const tb = toRing.getBoundingClientRect();
+    const cx = box.width / 2;
+    const cy = box.height / 2;
+    const fx = fb.left + fb.width / 2 - box.left;
+    const fy = fb.top + fb.height / 2 - box.top;
+    const tx = tb.left + tb.width / 2 - box.left;
+    const ty = tb.top + tb.height / 2 - box.top;
+    // Shortest arc between the two node angles, at their shared orbit radius.
+    const a0 = Math.atan2(fy - cy, fx - cx);
+    let a1 = Math.atan2(ty - cy, tx - cx);
+    if (a1 - a0 > Math.PI) a1 -= 2 * Math.PI;
+    if (a0 - a1 > Math.PI) a1 += 2 * Math.PI;
+    const radius = (Math.hypot(fx - cx, fy - cy) + Math.hypot(tx - cx, ty - cy)) / 2;
+    // Ease is baked into the samples (linear between keyframes plays it back),
+    // so the spark accelerates out of the old node and brakes into the new.
+    const STEPS = 10;
+    const xs: number[] = [];
+    const ys: number[] = [];
+    for (let step = 0; step <= STEPS; step++) {
+      const t = step / STEPS;
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const angle = a0 + (a1 - a0) * eased;
+      xs.push(cx + Math.cos(angle) * radius);
+      ys.push(cy + Math.sin(angle) * radius);
+    }
+    cometKey.current += 1;
+    const color = SERVICES.find((entry) => entry.id === next)?.color ?? SERVICES[0].color;
+    setComet({ key: cometKey.current, xs, ys, color });
+  };
+
   /* Orbit driven in JS instead of CSS keyframes so its speed can be eased:
      the constellation dilates to ~45% while the pointer explores the stage,
      and winds down to a stop when the section is off-screen. */
@@ -306,6 +455,9 @@ export default function ServicesExperience() {
     damping: 28,
     restDelta: 0.001,
   });
+  // Scroll velocity stirs the constellation: a flick of the wheel briefly
+  // quickens the orbit, then it settles back — the stage feels inhabited.
+  const scrollVelocity = useVelocity(scrollYProgress);
   const ambientY = useTransform(
     smoothProgress,
     [0, 1],
@@ -344,9 +496,10 @@ export default function ServicesExperience() {
 
   useAnimationFrame((_, delta) => {
     if (reduced) return;
-    const target = !ambientActive ? 0 : stageHover ? 0.45 : 1;
-    // Ease the speed toward its target so pauses and dilation feel organic,
-    // never a hard gear change.
+    const stir = ambientActive ? Math.min(Math.abs(scrollVelocity.get()) * 1.3, 1.1) : 0;
+    const target = (!ambientActive ? 0 : stageHover ? 0.45 : 1) + stir;
+    // Ease the speed toward its target so pauses, dilation and scroll stirs
+    // feel organic, never a hard gear change.
     orbitSpeed.current += (target - orbitSpeed.current) * Math.min(1, delta / 320);
     orbitAngle.set((orbitAngle.get() + (360 / 38000) * delta * orbitSpeed.current) % 360);
   });
@@ -354,7 +507,7 @@ export default function ServicesExperience() {
   return (
     <section
       ref={sectionRef}
-      id="servicios"
+      id="services"
       data-ambient-active={ambientActive}
       className="cq-services relative isolate scroll-mt-6 overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
     >
@@ -365,32 +518,68 @@ export default function ServicesExperience() {
         <div className="cq-orb left-[42%] top-[32%] h-[24rem] w-[24rem] bg-verde/8" style={{ animation: "cq-float-c 20s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
       </motion.div>
       <motion.div aria-hidden style={{ opacity: gridOpacity }} className="cq-services-grid pointer-events-none absolute inset-0" />
+      {/* Photographic grain: removes the digital sterility of the gradients. */}
+      <div aria-hidden className="cq-noise pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto w-full max-w-[84rem] px-5 sm:px-8 lg:px-12">
         <motion.header
-          initial={reduced ? false : { opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={reduced ? false : "hidden"}
+          whileInView="show"
           viewport={{ once: true, amount: 0.28 }}
-          transition={{ duration: reduced ? 0 : 0.65, ease: EASE_OUT }}
           className="mx-auto max-w-[44rem] text-center"
         >
-          <p className="text-sm font-semibold text-petroleo">Our services</p>
-          <h1 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground text-balance">
-            One operation.
-            <br />
-            Three ways to move forward.
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 12 },
+              show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },
+            }}
+            className="text-sm font-semibold text-petroleo"
+          >
+            Our services
+          </motion.p>
+          {/* Each word rises out of its own mask, cascading across both lines. */}
+          <h1 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground">
+            {HEADLINE.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">
+                {line.map((word, wordIndex) => (
+                  <span key={`${word}-${wordIndex}`} className="cq-word">
+                    <motion.span
+                      className="cq-word-inner"
+                      custom={(lineIndex === 0 ? 0 : HEADLINE[0].length) + wordIndex}
+                      variants={wordVariants}
+                    >
+                      {word}
+                    </motion.span>
+                  </span>
+                ))}
+              </span>
+            ))}
           </h1>
-          <p className="mx-auto mt-3 max-w-[56ch] text-pretty text-[.95rem] leading-6 text-muted sm:text-base">
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 14, filter: "blur(5px)" },
+              show: {
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)",
+                transition: { duration: 0.6, ease: EASE_OUT, delay: 0.5 },
+              },
+            }}
+            className="mx-auto mt-3 max-w-[56ch] text-pretty text-[.95rem] leading-6 text-muted sm:text-base"
+          >
             Explore the capability that best fits your next business move.
-          </p>
+          </motion.p>
         </motion.header>
 
         <div className="mt-8 grid items-center gap-7 lg:mt-9 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,.82fr)] lg:gap-10">
           <motion.div
-            initial={reduced ? false : { opacity: 0, scale: 0.94 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { duration: 0.55, ease: EASE_OUT } },
+            }}
+            initial={reduced ? false : "hidden"}
+            whileInView="show"
             viewport={{ once: true, amount: 0.16 }}
-            transition={{ duration: reduced ? 0 : 0.7, ease: EASE_OUT, delay: reduced ? 0 : 0.08 }}
             style={{ y: stageY, scale: stageScale }}
             className="relative mx-auto w-full max-w-[32rem]"
             onPointerEnter={(event) => {
@@ -400,19 +589,24 @@ export default function ServicesExperience() {
               if (event.pointerType === "mouse") setStageHover(false);
             }}
           >
-            <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
-              <div aria-hidden className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/45" />
-              <div aria-hidden className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/60" />
-              <div aria-hidden className="absolute inset-[35%] rounded-full border border-[1.5px] border-petroleo/35" />
+            <div ref={stageRef} className="relative mx-auto aspect-square w-full max-w-[26rem]">
+              {/* Assembly: the guide rings draw outward-in before the nodes land. */}
+              <motion.div aria-hidden custom={0} variants={guideRingVariants} className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/45" />
+              <motion.div aria-hidden custom={1} variants={guideRingVariants} className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/60" />
+              <motion.div aria-hidden custom={2} variants={guideRingVariants} className="absolute inset-[35%] rounded-full border border-[1.5px] border-petroleo/35" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <motion.fieldset
                 className="cq-service-orbit absolute inset-0 m-0 border-0 p-0"
                 style={{ rotate: orbitAngle }}
                 data-armed={armed || undefined}
-                onChange={() => {
+                onChange={(event) => {
                   setArmed(true);
                   setPulseKey((key) => key + 1);
+                  // The change bubbles from whichever radio was picked.
+                  if (event.target instanceof HTMLInputElement) {
+                    launchComet(event.target.value as ServiceId);
+                  }
                 }}
               >
                 <legend className="sr-only">Center Quest business lines</legend>
@@ -424,7 +618,12 @@ export default function ServicesExperience() {
                       className="absolute left-1/2 top-1/2"
                       style={{ transform: `rotate(${orbit.angle}deg) translateY(calc(${orbit.radius} * -1)) rotate(${-orbit.angle}deg)` }}
                     >
-                      <motion.div className="cq-service-orbit-counter" style={{ rotate: counterAngle }}>
+                      <motion.div
+                        className="cq-service-orbit-counter"
+                        style={{ rotate: counterAngle }}
+                        custom={index}
+                        variants={nodeVariants}
+                      >
                         <input
                           id={`${SERVICE_PANEL_ID}-${service.id}-control`}
                           className="cq-service-control sr-only"
@@ -466,16 +665,38 @@ export default function ServicesExperience() {
               </motion.fieldset>
 
               <div className="absolute left-1/2 top-1/2 flex h-[6.4rem] w-[6.4rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3.5 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16)] ring-1 ring-inset ring-petroleo/10 sm:h-[8rem] sm:w-[8rem] sm:p-4">
-                {/* Keyed remount pulses the seal each time a selection lands. */}
-                <motion.div
-                  key={pulseKey}
-                  animate={pulseKey > 0 && !reduced ? { scale: [1, 1.035, 1] } : undefined}
-                  transition={{ duration: 0.5, ease: EASE_OUT }}
-                  className="flex items-center justify-center"
-                >
-                  <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
+                {/* The seal lands last in the assembly sequence… */}
+                <motion.div variants={sealVariants} className="flex items-center justify-center">
+                  {/* …and this keyed remount pulses it each time a selection lands. */}
+                  <motion.div
+                    key={pulseKey}
+                    animate={pulseKey > 0 && !reduced ? { scale: [1, 1.035, 1] } : undefined}
+                    transition={{ duration: 0.5, ease: EASE_OUT }}
+                    className="flex items-center justify-center"
+                  >
+                    <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
+                  </motion.div>
                 </motion.div>
               </div>
+
+              {/* The selection comet, flying the arc between spheres. */}
+              {comet && (
+                <motion.span
+                  key={comet.key}
+                  aria-hidden
+                  className="cq-comet"
+                  style={{ "--comet": comet.color } as CSSProperties}
+                  initial={{ x: comet.xs[0], y: comet.ys[0], opacity: 0, scale: 0.4 }}
+                  animate={{
+                    x: comet.xs,
+                    y: comet.ys,
+                    opacity: [0, 1, 1, 1, 0],
+                    scale: [0.4, 1, 1, 1, 0.5],
+                  }}
+                  transition={{ duration: 0.5, ease: "linear" }}
+                  onAnimationComplete={() => setComet(null)}
+                />
+              )}
             </div>
           </motion.div>
 
