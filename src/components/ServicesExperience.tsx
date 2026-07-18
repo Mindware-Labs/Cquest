@@ -400,9 +400,9 @@ export default function ServicesExperience() {
             }}
           >
             <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
-              <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/18" />
-              <div aria-hidden className="absolute inset-[20%] rounded-full border border-celeste/30" />
-              <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/12" />
+              <div aria-hidden className="absolute inset-[8%] rounded-full border border-petroleo/30" />
+              <div aria-hidden className="absolute inset-[20%] rounded-full border border-celeste/45" />
+              <div aria-hidden className="absolute inset-[35%] rounded-full border border-petroleo/20" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <motion.fieldset
@@ -492,15 +492,6 @@ export default function ServicesExperience() {
           </motion.div>
         </div>
 
-        <motion.p
-          initial={reduced ? false : { opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: reduced ? 0 : 0.5, ease: EASE_OUT, delay: reduced ? 0 : 0.28 }}
-          className="mt-2 text-center text-sm text-muted lg:mt-3"
-        >
-          Hover, use Tab, or select a sphere to explore each capability.
-        </motion.p>
       </div>
     </section>
   );

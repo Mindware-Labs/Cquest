@@ -323,7 +323,7 @@ body {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   line-height: 1;
-  color: color-mix(in srgb, var(--svc) 58%, var(--muted));
+  color: color-mix(in srgb, var(--svc) 62%, var(--foreground));
 }
 
 /* Full-width identity rule: solid service colour at the left, settling into a
@@ -333,9 +333,9 @@ body {
   width: 100%;
   background: linear-gradient(90deg,
     var(--svc) 0,
-    color-mix(in srgb, var(--svc) 48%, transparent) 2.75rem,
-    color-mix(in srgb, var(--foreground) 10%, transparent) 5.5rem,
-    color-mix(in srgb, var(--foreground) 10%, transparent) 78%,
+    color-mix(in srgb, var(--svc) 52%, transparent) 2.75rem,
+    color-mix(in srgb, var(--foreground) 15%, transparent) 5.5rem,
+    color-mix(in srgb, var(--foreground) 15%, transparent) 78%,
     transparent 100%);
 }
 
@@ -354,8 +354,8 @@ body {
   bottom: 0;
   height: 1px;
   background: linear-gradient(90deg,
-    color-mix(in srgb, var(--foreground) 10%, transparent) 0,
-    color-mix(in srgb, var(--foreground) 8%, transparent) 72%,
+    color-mix(in srgb, var(--foreground) 15%, transparent) 0,
+    color-mix(in srgb, var(--foreground) 12%, transparent) 72%,
     transparent 100%);
 }
 
@@ -365,6 +365,7 @@ body {
 }
 
 .cq-panel-description {
+  color: color-mix(in srgb, var(--foreground) 45%, var(--muted));
   text-wrap: pretty;
 }
 
@@ -420,7 +421,7 @@ body {
   background: none;
   border-radius: 9999px;
   cursor: pointer;
-  color: color-mix(in srgb, var(--foreground) 42%, transparent);
+  color: color-mix(in srgb, var(--foreground) 58%, transparent);
   transition-property: color, scale, filter;
   transition-duration: 240ms;
   transition-timing-function: var(--ease-out);
@@ -468,18 +469,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.3rem 0.35rem 0.3rem 1rem;
+  padding: 0.42rem 0.45rem 0.42rem 1.15rem;
   border-radius: 9999px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: color-mix(in srgb, var(--svc) 75%, var(--foreground));
+  color: #fff;
   text-decoration: none;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--svc) 5%, transparent),
-    transparent 70%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 34%, transparent);
-  transition-property: box-shadow, color, scale, translate;
+  background-color: color-mix(in srgb, var(--svc) 84%, var(--foreground));
+  box-shadow: 0 2px 8px -3px color-mix(in srgb, var(--svc) 55%, transparent);
+  transition-property: background-color, box-shadow, scale, translate;
   transition-duration: 260ms;
   transition-timing-function: var(--ease-out);
 }
@@ -491,41 +490,39 @@ body {
   pointer-events: none;
   background: linear-gradient(105deg,
     transparent 32%,
-    rgba(255, 255, 255, 0.45) 48%,
+    rgba(255, 255, 255, 0.35) 48%,
     transparent 64%);
   transform: translateX(-130%);
   transition: transform 700ms var(--ease-out-soft);
 }
 
-/* The arrow's orb: a small seal that fills solid on hover. */
+/* The arrow's orb: a translucent white seal that inverts on hover. */
 .cq-panel-cta-orb {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.65rem;
+  height: 1.65rem;
   border-radius: 9999px;
-  color: color-mix(in srgb, var(--svc) 80%, var(--foreground));
-  background-color: color-mix(in srgb, var(--svc) 8%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 30%, transparent);
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
   transition-property: background-color, color, box-shadow;
   transition-duration: 260ms;
   transition-timing-function: var(--ease-out);
 }
 
 .cq-panel-cta-orb svg {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.9rem;
+  height: 0.9rem;
   transition: translate 260ms var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .cq-panel-cta:hover {
-    color: color-mix(in srgb, var(--svc) 90%, var(--foreground));
+    background-color: color-mix(in srgb, var(--svc) 70%, var(--foreground));
     translate: 0 -1px;
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--svc) 60%, transparent),
-      0 6px 18px -12px color-mix(in srgb, var(--svc) 60%, transparent);
+    box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--svc) 65%, transparent);
   }
 
   .cq-panel-cta:hover .cq-panel-cta-sheen {
@@ -533,8 +530,8 @@ body {
   }
 
   .cq-panel-cta:hover .cq-panel-cta-orb {
-    background-color: color-mix(in srgb, var(--svc) 85%, var(--foreground));
-    color: #fff;
+    background-color: #fff;
+    color: color-mix(in srgb, var(--svc) 85%, var(--foreground));
     box-shadow: inset 0 0 0 1px transparent;
   }
 
@@ -582,7 +579,7 @@ body {
 /* Hover feedback stays on the actual service controls, never the ledger. */
 @media (hover: hover) and (pointer: fine) {
   .cq-service-node:hover .cq-service-ring {
-    background: color-mix(in srgb, var(--svc) 12%, transparent);
+    background: color-mix(in srgb, var(--svc) 14%, white);
     border-color: color-mix(in srgb, var(--svc) 62%, transparent);
     /* Lift below (light falls from above) plus a soft service-colour bloom —
        light, not outline. */
@@ -610,7 +607,7 @@ body {
   max-width: 68ch;
   font-size: 0.875rem;
   line-height: 1.7;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--foreground) 45%, var(--muted));
   text-wrap: pretty;
 }
 
@@ -728,8 +725,13 @@ body {
   height: 3.3rem;
   border-radius: 9999px;
   color: var(--svc);
-  background: color-mix(in srgb, var(--svc) 6%, transparent);
-  border: 2px solid color-mix(in srgb, var(--svc) 42%, transparent);
+  /* An opaque raised surface — elevation is the universal "pressable" cue,
+     so the spheres explain themselves without an instruction line. */
+  background: color-mix(in srgb, var(--svc) 7%, white);
+  border: 2px solid color-mix(in srgb, var(--svc) 58%, transparent);
+  box-shadow:
+    0 2px 5px -2px rgba(13, 30, 41, 0.2),
+    0 7px 14px -10px color-mix(in srgb, var(--svc) 45%, transparent);
   /* Magnetic lean: --mx/--my follow the cursor (set from JS); the transition
      retargets every pointer move, giving an organic trailing follow. */
   transform: translate(var(--mx, 0px), var(--my, 0px));
@@ -791,7 +793,7 @@ body {
   line-height: 1.1;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--foreground) 55%, var(--muted));
   transition:
     color 200ms var(--ease-out),
     letter-spacing 240ms var(--ease-out);
@@ -803,17 +805,18 @@ body {
   .cq-service-name { font-size: 0.8rem; }
 }
 
-/* Crowned state: the selected node holds court — sustained scale, a wider
-   halo and a soft bloom that keeps radiating its service colour. */
+/* Crowned state: the selected node fills solid — white glyph on the service
+   colour, larger and radiating — unmistakable against its quiet siblings. */
 .cq-service-control:checked + .cq-service-node .cq-service-ring,
 .cq-service-control:focus-visible + .cq-service-node .cq-service-ring {
-  background: color-mix(in srgb, var(--svc) 14%, transparent);
-  border-color: var(--svc);
+  color: #fff;
+  background: color-mix(in srgb, var(--svc) 88%, var(--foreground));
+  border-color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--svc) 10%, transparent),
-    0 10px 22px -8px color-mix(in srgb, var(--svc) 45%, transparent),
-    0 0 22px 3px color-mix(in srgb, var(--svc) 16%, transparent);
-  transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.08);
+    0 0 0 4px color-mix(in srgb, var(--svc) 14%, transparent),
+    0 12px 24px -8px color-mix(in srgb, var(--svc) 55%, transparent),
+    0 0 24px 4px color-mix(in srgb, var(--svc) 20%, transparent);
+  transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.12);
 }
 
 .cq-service-control:checked + .cq-service-node .cq-service-name,
