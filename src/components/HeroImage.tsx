@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -17,7 +17,9 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const container: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.11, delayChildren: 0.2 } },
+  // delayChildren holds the supporting copy until the rotating headline's
+  // first pair has essentially landed, preserving the original top-down rhythm.
+  visible: { transition: { staggerChildren: 0.11, delayChildren: 0.35 } },
 };
 
 // transform/opacity only — filter: blur() is not compositor-friendly and
@@ -31,14 +33,45 @@ const rise: Variants = {
   },
 };
 
-// Line-mask reveal — each headline line slides up from behind an
-// overflow-hidden clip, the signature entrance of editorial heroes.
-const lineReveal: Variants = {
-  hidden: { y: "110%" },
-  visible: {
-    y: "0%",
-    transition: { duration: 0.9, ease: EASE_OUT },
-  },
+/* ── Rotating headline ────────────────────────────────────
+   The hero statement is a ticker of "We … / You …" pairs, one per way of
+   reading the offer. Copy is edited here; keep the parallel structure. */
+const HEADLINE_ROTATE_MS = 4600;
+
+const ROTATING_HEADLINES = [
+  { top: "We power operations.", bottom: "You drive growth." },
+  { top: "We answer every call.", bottom: "You keep every client." },
+  { top: "We run the back office.", bottom: "You run the business." },
+  { top: "We build your systems.", bottom: "You set the pace." },
+];
+
+/* Ticker lines as a dissolve: the outgoing pair loses focus and fades with a
+   whisper of upward drift; once it has cleared, the incoming pair condenses
+   out of the blur from just below rest. Sequential — the entrance delay
+   covers the exit, so two messages never speak at once. The bottom line
+   trails the top by a beat in both directions. Parked pairs reset instantly
+   while invisible. */
+const tickerLine: Variants = {
+  parked: { opacity: 0, y: 16, filter: "blur(7px)", transition: { duration: 0 } },
+  active: (line: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.8, ease: EASE_OUT, delay: 0.3 + line * 0.12 },
+  }),
+  leaving: (line: number) => ({
+    opacity: 0,
+    y: -12,
+    filter: "blur(7px)",
+    transition: { duration: 0.45, ease: "easeIn", delay: line * 0.06 },
+  }),
+};
+
+// Reduced motion: the rotation survives as a quiet crossfade, no travel.
+const tickerFade: Variants = {
+  parked: { opacity: 0, transition: { duration: 0 } },
+  active: { opacity: 1, transition: { duration: 0.4 } },
+  leaving: { opacity: 0, transition: { duration: 0.3 } },
 };
 
 // Checkmark draws itself in after the social-proof line settles — a quiet
@@ -204,6 +237,26 @@ function HeroNav({ reduced }: { reduced: boolean }) {
 export default function HeroImage() {
   const reduced = useReducedMotion() ?? false;
   const sectionRef = useRef<HTMLElement>(null);
+
+  /* Headline ticker: current pair on stage, previous pair on its way out.
+     Tracking both lets the exit and entrance overlap like a relay handoff.
+     The interval skips beats while the tab is hidden so the rotation never
+     races to catch up on return. */
+  const [slides, setSlides] = useState<{ current: number; previous: number | null }>({
+    current: 0,
+    previous: null,
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.hidden) return;
+      setSlides(({ current }) => ({
+        current: (current + 1) % ROTATING_HEADLINES.length,
+        previous: current,
+      }));
+    }, HEADLINE_ROTATE_MS);
+    return () => clearInterval(timer);
+  }, []);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -228,6 +281,13 @@ export default function HeroImage() {
     [0, 1],
     reduced ? [1, 1] : [1, 0.38],
   );
+  // The scroll cue only belongs to the resting hero — it clears out within
+  // the first stretch of scroll so it never lingers over moving content.
+  const cueOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.12],
+    reduced ? [1, 1] : [1, 0],
+  );
   const {
     ref: exploreCtaRef,
     style: exploreCtaStyle,
@@ -240,7 +300,7 @@ export default function HeroImage() {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
+      className="cq-hero relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
       {/* Background photo — restrained parallax keeps the scroll handoff alive. */}
       <motion.div aria-hidden style={{ y: imageY, scale: imageScale }} className="absolute -inset-y-8 inset-x-0 will-change-transform">
@@ -295,28 +355,60 @@ export default function HeroImage() {
         initial={reduced ? false : "hidden"}
         animate="visible"
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-28 sm:px-12 sm:pt-32 lg:px-16"
+        className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-[calc(max(4rem,env(safe-area-inset-bottom))+var(--curtain))] pt-28 sm:px-12 sm:pt-32 lg:px-16"
       >
+        {/* Rotating headline — every pair stacks in the same grid cell, so the
+            block always reserves the tallest pair's height and the page never
+            shifts as messages trade places. Screen readers get one canonical
+            line; the ticker itself is presentation. */}
         <h1
           style={{ textWrap: "balance" } as React.CSSProperties}
-          className="font-heading max-w-[38rem] text-[clamp(2.3rem,5.4vw,4.25rem)] font-extrabold uppercase leading-[1.05] tracking-[-0.01em]"
+          className="font-heading grid max-w-[38rem] text-[clamp(2.3rem,5.4vw,4.25rem)] font-extrabold uppercase leading-[1.05] tracking-[-0.01em]"
         >
-          <span className="block overflow-hidden pb-[0.08em]">
-            <motion.span
-              variants={reduced ? rise : lineReveal}
-              className="block text-white"
-            >
-              We power operations.
-            </motion.span>
-          </span>
-          <span className="block overflow-hidden pb-[0.08em]">
-            <motion.span
-              variants={reduced ? rise : lineReveal}
-              className="block text-celeste"
-            >
-              You drive growth.
-            </motion.span>
-          </span>
+          <span className="sr-only">We power operations. You drive growth.</span>
+          {ROTATING_HEADLINES.map((pair, index) => {
+            const status =
+              index === slides.current
+                ? "active"
+                : index === slides.previous
+                  ? "leaving"
+                  : "parked";
+            const variants = reduced ? tickerFade : tickerLine;
+            return (
+              <span
+                key={pair.top}
+                aria-hidden
+                className={`col-start-1 row-start-1 select-none ${
+                  index === slides.current ? "" : "pointer-events-none"
+                }`}
+              >
+                {/* No clip masks here — the dissolve needs its blur halo and
+                    drift to breathe past the line box. */}
+                <span className="block pb-[0.08em]">
+                  <motion.span
+                    custom={0}
+                    variants={variants}
+                    initial={reduced ? status : "parked"}
+                    animate={status}
+                    className="block text-white"
+                  >
+                    {pair.top}
+                  </motion.span>
+                </span>
+                <span className="block pb-[0.08em]">
+                  <motion.span
+                    custom={1}
+                    variants={variants}
+                    initial={reduced ? status : "parked"}
+                    animate={status}
+                    className="block text-celeste"
+                  >
+                    {pair.bottom}
+                  </motion.span>
+                </span>
+              </span>
+            );
+          })}
         </h1>
 
         <motion.p
@@ -409,6 +501,30 @@ export default function HeroImage() {
           </svg>
           Call Center · BPO · Systems Development — 24/7 coverage
         </motion.p>
+      </motion.div>
+
+      {/* Scroll cue — a hairline track with a celeste drip, inviting the first
+          scroll; it fades as soon as the journey starts. Desktop only: on
+          mobile the fold itself already implies more below. Two layers because
+          a style motion value would override an animate on the same property:
+          the outer div follows scroll, the inner link owns its late entrance. */}
+      <motion.div
+        style={{ opacity: cueOpacity, bottom: "calc(var(--curtain) + 1.75rem)" }}
+        className="absolute left-1/2 z-10 hidden -translate-x-1/2 md:block"
+      >
+        <motion.a
+          href="#services"
+          aria-label="Scroll to services"
+          initial={reduced ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE_OUT, delay: 1.4 }}
+          className="flex flex-col items-center gap-2.5"
+        >
+          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-white/55">
+            Scroll
+          </span>
+          <span aria-hidden className="cq-scroll-cue" />
+        </motion.a>
       </motion.div>
     </section>
   );

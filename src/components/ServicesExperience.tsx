@@ -181,13 +181,22 @@ function ServicePanel({
   service,
   ambient,
   reduced,
+  selected,
 }: {
   service: Service;
   ambient: boolean;
   reduced: boolean;
+  selected: boolean;
 }) {
   const [active, setActive] = useState(0);
   const [pinned, setPinned] = useState(false);
+
+  // Whichever capability was showing last time this service was picked, a
+  // fresh selection always opens on the first one — never wherever the
+  // ambient rotation (or a prior visit) had left it.
+  useEffect(() => {
+    if (selected) setActive(0);
+  }, [selected]);
 
   // True while the auto-rotation timer is actually counting down — drives the
   // dwell arc so the reader can see when the next capability will land.
@@ -390,6 +399,7 @@ export default function ServicesExperience() {
   // pulse never fire on page load, only on interaction.
   const [armed, setArmed] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
+  const [selectedService, setSelectedService] = useState<ServiceId>("call-center");
 
   /* Selection comet: when the choice moves to another sphere, a spark leaves
      the old node and rides the orbit's arc to the new one — the crown visibly
@@ -605,7 +615,9 @@ export default function ServicesExperience() {
                   setPulseKey((key) => key + 1);
                   // The change bubbles from whichever radio was picked.
                   if (event.target instanceof HTMLInputElement) {
-                    launchComet(event.target.value as ServiceId);
+                    const next = event.target.value as ServiceId;
+                    setSelectedService(next);
+                    launchComet(next);
                   }
                 }}
               >
@@ -709,7 +721,13 @@ export default function ServicesExperience() {
             className="cq-service-panels min-h-[17rem]"
           >
             {SERVICES.map((service) => (
-              <ServicePanel key={service.id} service={service} ambient={ambientActive} reduced={reduced} />
+              <ServicePanel
+                key={service.id}
+                service={service}
+                ambient={ambientActive}
+                reduced={reduced}
+                selected={service.id === selectedService}
+              />
             ))}
           </motion.div>
         </div>

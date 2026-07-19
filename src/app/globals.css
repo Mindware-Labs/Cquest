@@ -20,6 +20,11 @@
   /* Dark ink — photo-hero scrims and dark surfaces (HeroImage) */
   --ink: #0a1116;
 
+  /* Curtain overlap: how far the services sheet rides up over the hero.
+     The hero grows by the same amount so its full-viewport photo stays
+     intact — the white shoulders only appear once scrolling starts. */
+  --curtain: clamp(1.75rem, 4vw, 2.75rem);
+
   /* Motion — shared ease-out curves (mirror EASE_OUT in the components) */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
@@ -67,6 +72,78 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Lenis smooth scroll ─────────────────────────────────
+   Recommended host styles: while Lenis drives the wheel it needs native
+   CSS smooth-scrolling out of the way (it eases anchors itself), and
+   fixed-height html would fight its measurements. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── Scroll progress hairline ────────────────────────────
+   Fixed to the very top, above both navbars; grows left-to-right through
+   the brand gradient as the page is read. */
+.cq-scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste));
+  pointer-events: none;
+}
+
+/* ── Hero sizing vs the curtain ──────────────────────────
+   The hero adds the curtain's height below the fold, so the services sheet
+   overlaps photo that was never visible — the first viewport stays 100% hero. */
+.cq-hero {
+  min-height: calc(100svh + var(--curtain));
+}
+
+/* ── Hero scroll cue ─────────────────────────────────────
+   A 1px track with a celeste drip running down it — "there's more below",
+   said at whisper volume. The reduced-motion net freezes the drip. */
+.cq-scroll-cue {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.6rem;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.cq-scroll-cue::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 3px;
+  height: 0.85rem;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--brand-celeste));
+  animation: cq-scroll-cue-drip 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes cq-scroll-cue-drip {
+  0% { transform: translateY(-100%); opacity: 0; }
+  22% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translateY(2.6rem); opacity: 0; }
 }
 
 /* ── Skip link for accessibility ─────────────────────── */
@@ -119,7 +196,13 @@ body {
    edge, a gentle central bloom that lifts the orbital stage, and a whisper of
    petroleo at the base — over an off-white. Gives depth before any ambient
    layer paints on top. */
+/* The section rides over the hero like a lifted sheet: rounded shoulders,
+   a soft shadow along its top edge, and a slight overlap (matching the
+   radius) so the photo disappears behind it as you scroll. */
 .cq-services {
+  margin-top: calc(-1 * var(--curtain));
+  border-radius: var(--curtain) var(--curtain) 0 0;
+  box-shadow: 0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent);
   background:
     radial-gradient(115% 62% at 50% -6%, color-mix(in srgb, var(--brand-celeste) 13%, transparent), transparent 58%),
     radial-gradient(76% 56% at 50% 44%, color-mix(in srgb, white 68%, transparent), transparent 72%),
@@ -827,25 +910,6 @@ body {
 
 .cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel="bpo"],
 .cq-services:has([data-service-control="systems"]:checked) .cq-service-panel[data-panel="systems"] {
-  --show: 1;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel[data-panel],
-.cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel[data-panel],
-.cq-services:has([data-service-label="systems"]:hover) .cq-service-panel[data-panel] {
-  --show: 0;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.cq-services:has([data-service-label="call-center"]:hover) .cq-service-panel[data-panel="call-center"],
-.cq-services:has([data-service-label="bpo"]:hover) .cq-service-panel[data-panel="bpo"],
-.cq-services:has([data-service-label="systems"]:hover) .cq-service-panel[data-panel="systems"] {
   --show: 1;
   opacity: 1;
   visibility: visible;
