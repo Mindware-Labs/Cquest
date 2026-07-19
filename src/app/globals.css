@@ -201,6 +201,12 @@ html.lenis body {
    radius) so the photo disappears behind it as you scroll. */
 .cq-services {
   margin-top: calc(-1 * var(--curtain));
+  /* Anchor jumps (e.g. the navbar's "Services" link) must land flush: the
+     -margin-top above already pulls this section's true document position up
+     to exactly one viewport height, so a 0 scroll-margin scrolls all the way
+     there with no hero fragment left peeking above it. Any positive value
+     here reserves that much hero above the fold instead. */
+  scroll-margin-top: 0;
   border-radius: var(--curtain) var(--curtain) 0 0;
   box-shadow: 0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent);
   background:

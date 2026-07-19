@@ -519,7 +519,7 @@ export default function ServicesExperience() {
       ref={sectionRef}
       id="services"
       data-ambient-active={ambientActive}
-      className="cq-services relative isolate scroll-mt-6 overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
+      className="cq-services relative isolate overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
     >
       <motion.div aria-hidden style={{ y: ambientY }} className="pointer-events-none absolute -inset-y-[9%] -inset-x-[8%] overflow-hidden">
         <div className="cq-services-mesh absolute -inset-[12%]" />
