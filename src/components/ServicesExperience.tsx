@@ -243,7 +243,7 @@ function ServicePanel({
       <span aria-hidden className="cq-panel-spine" />
 
       <div className="cq-panel-identity relative flex items-center gap-3">
-        <span className="cq-panel-chip flex h-11 w-11 shrink-0 items-center justify-center">
+        <span className="cq-panel-chip flex h-12 w-12 shrink-0 items-center justify-center">
           <ServiceIcon name={service.id === "call-center" ? "headset" : service.id === "bpo" ? "layers" : "code"} />
         </span>
         <div className="min-w-0 flex-1">

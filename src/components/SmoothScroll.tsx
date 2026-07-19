@@ -41,10 +41,16 @@ export default function SmoothScroll() {
       const target = id ? document.getElementById(id) : document.body;
       if (!target) return;
       event.preventDefault();
-      const scrollMargin =
-        parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+      const styles = getComputedStyle(target);
+      const scrollMargin = parseFloat(styles.scrollMarginTop) || 0;
+      let offset = -scrollMargin;
+      // Belt-and-braces: if the browser clamped the negative scroll-margin
+      // to 0, derive the identical landing from the curtain overlap itself
+      // (the section's negative margin-top) so the hero still ends hidden.
+      const overlap = Math.min(parseFloat(styles.marginTop) || 0, 0);
+      if (scrollMargin === 0 && overlap < 0) offset = -overlap;
       history.pushState(null, "", id ? `#${id}` : location.pathname);
-      lenis.scrollTo(target, { offset: -scrollMargin });
+      lenis.scrollTo(target, { offset });
     };
     document.addEventListener("click", onAnchorClick);
 

@@ -524,13 +524,12 @@ html.lenis body {
    constant orbit. Identity as motion, not as a box. */
 .cq-panel-chip {
   position: relative;
-  color: color-mix(in srgb, var(--svc) 85%, var(--foreground));
-  /* Same filled-circle material as the orbit nodes (not just a bare glyph) —
-     one visual family across the diagram and the panel, not two unrelated
-     icon styles that happen to share a colour. */
-  background: color-mix(in srgb, var(--svc) 9%, white);
+  color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
+  /* No container at all: the bare monoline glyph sits directly on the
+     field, circled only by its broken orbit and satellite — identity as
+     motion, not as a box. */
+  background: none;
   border-radius: 9999px;
-  box-shadow: 0 2px 6px -3px color-mix(in srgb, var(--svc) 40%, transparent);
   /* Arrival pop: scales up with a touch of overshoot while untwisting a few
      degrees — composes with the identity block's own rise/unblur. */
   scale: calc(0.55 + var(--show, 1) * 0.45);
@@ -546,7 +545,7 @@ html.lenis body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--svc) 46%, transparent);
+  border: 1px solid color-mix(in srgb, var(--svc) 56%, transparent);
   -webkit-mask: conic-gradient(from 30deg, #000 0 292deg, transparent 292deg 360deg);
   mask: conic-gradient(from 30deg, #000 0 292deg, transparent 292deg 360deg);
   animation: cq-chip-orbit 26s linear infinite;
@@ -563,7 +562,7 @@ html.lenis body {
   height: 3.5px;
   border-radius: 9999px;
   background: var(--svc);
-  transform: rotate(210deg) translateY(-1.375rem);
+  transform: rotate(210deg) translateY(-1.5rem);
   animation: cq-chip-satellite 26s linear infinite;
   pointer-events: none;
 }
@@ -573,14 +572,14 @@ html.lenis body {
 }
 
 @keyframes cq-chip-satellite {
-  from { transform: rotate(210deg) translateY(-1.375rem); }
-  to { transform: rotate(570deg) translateY(-1.375rem); }
+  from { transform: rotate(210deg) translateY(-1.5rem); }
+  to { transform: rotate(570deg) translateY(-1.5rem); }
 }
 
 .cq-panel-chip svg {
   position: relative;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.65rem;
+  height: 1.65rem;
   stroke-width: 1.4;
 }
 
