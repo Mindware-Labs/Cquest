@@ -315,12 +315,20 @@ html.lenis body {
   will-change: transform;
 }
 
-/* 1 · CALL CENTER — a live signal field. Five instruments on one 7.5s
-   emission clock: a breathing halo at the heart "emits" the pulse rings,
-   a radar wedge sweeps the field, two broken orbit arcs counter-rotate
-   with satellites riding their tips, and call-pings bloom across the map
-   where conversations land. Everything is transform/opacity, centred with
-   standalone translate so keyframe transforms compose cleanly on top. */
+/* 1 · CALL CENTER — a quiet map of live calls. One 14s master clock:
+   hairline flight-routes radiate from the glow behind the message; a
+   light streak (the call) departs the halo, rides its route and lands on
+   a customer point that blooms exactly on arrival — six routes, phase-
+   shifted so there is always a call in flight. Beneath them two dashed
+   graticules crawl like a map's meridians, and the breathing halo +
+   emission rings keep the heart alive on the half clock (7s = 14/2, so
+   every instrument stays phase-locked). Routes and streaks live in one
+   SVG whose radial mask clears the reading column: streaks materialize
+   leaving the glow and land in the margins, never crossing the text at
+   full strength. The streak is dash-driven over pathLength=1 and each
+   route's --cd phase-shifts BOTH its streak and its landing ping — the
+   arrival moment (14% of the cycle) is a shared CSS constant, so the
+   sync needs no JS measurement at all. */
 .cq-v2-ring {
   position: absolute;
   left: 50%;
@@ -329,9 +337,9 @@ html.lenis body {
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 9999px;
-  border: 2px solid color-mix(in srgb, var(--svc) 40%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--svc) 38%, transparent);
   opacity: 0;
-  animation: cq-v2-pulse 7.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: cq-v2-pulse 7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   will-change: transform, opacity;
 }
 
@@ -342,8 +350,9 @@ html.lenis body {
   100% { transform: scale(1.14); opacity: 0; }
 }
 
-/* The call's heart: a soft bloom breathing on the SAME 7.5s clock as the
-   rings, so each pulse visibly leaves from it. */
+/* The exchange's heart: a soft bloom breathing on the SAME 7s clock as
+   the rings, so each pulse visibly leaves from it. Every streak departs
+   out of this glow — it doubles as the map's origin. */
 .cq-v2-halo {
   position: absolute;
   left: 50%;
@@ -353,7 +362,7 @@ html.lenis body {
   translate: -50% -50%;
   border-radius: 9999px;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--svc) 22%, transparent), transparent 72%);
-  animation: cq-v2-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation: cq-v2-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   will-change: transform, opacity;
 }
 
@@ -362,87 +371,114 @@ html.lenis body {
   50%      { transform: scale(1.07); opacity: 1; }
 }
 
-/* Radar sweep: a soft conic wedge turning over the field, feathered by a
-   radial mask so it reads as light, not a painted slice. */
-.cq-v2-radar {
+/* The connection map's square stage, centred on the same origin as the
+   halo and rings. The SVG viewBox (0–100) and this square share one
+   coordinate space, so a route's endpoint coords double as its ping's
+   left/top percentages — geometry stays in sync by construction. */
+.cq-v2-net {
   position: absolute;
   left: 50%;
   top: 44%;
-  width: min(60rem, 104vw);
+  width: min(60rem, 110vw);
   aspect-ratio: 1;
   translate: -50% -50%;
-  border-radius: 9999px;
-  /* Intensity RISES toward 78deg then cuts: the bright sweep arm leads at
-     78° with its luminous trail fading BEHIND it — a real radar reads
-     this way, and the ping sync below aims at this exact arm angle. */
-  background: conic-gradient(from 0deg,
-    transparent 0deg,
-    color-mix(in srgb, var(--svc) 19%, transparent) 78deg,
-    transparent 79deg);
-  mask-image: radial-gradient(circle, transparent 16%, #000 42%, transparent 70%);
-  -webkit-mask-image: radial-gradient(circle, transparent 16%, #000 42%, transparent 70%);
-  animation: cq-v2-radar 16s linear infinite;
+}
+
+/* The mask clears the reading column: routes and streaks fade out toward
+   the origin, so every call visibly MATERIALIZES leaving the glow and
+   lands in the margins — nothing draws at full strength under the text. */
+.cq-v2-net svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  mask-image: radial-gradient(circle closest-side, transparent 54%, #000 76%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 54%, #000 76%);
+}
+
+/* Meridians: two dashed graticules crawling almost imperceptibly. The
+   rotation itself is invisible on a circle — what animates is the dash
+   pattern drifting around the ring, a map quietly alive. */
+.cq-v2-graticule {
+  fill: none;
+  stroke: color-mix(in srgb, var(--svc) 30%, transparent);
+  stroke-width: 0.14;
+  stroke-linecap: round;
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  animation: cq-v2-spin 150s linear infinite;
   will-change: transform;
 }
 
-@keyframes cq-v2-radar {
-  to { rotate: 360deg; }
+@keyframes cq-v2-spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Broken orbit arcs — the section's constellation signature at field scale.
-   A satellite dot rides each arc's leading edge (the ::after sits at
-   12 o'clock, inside the conic mask's visible span). */
-.cq-v2-arc {
-  position: absolute;
-  left: 50%;
-  top: 44%;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 9999px;
-  border: 1.5px solid color-mix(in srgb, var(--svc) 46%, transparent);
-  mask-image: conic-gradient(from -10deg, #000 0 104deg, transparent 104deg 360deg);
-  -webkit-mask-image: conic-gradient(from -10deg, #000 0 104deg, transparent 104deg 360deg);
-  animation: cq-v2-arc-spin 44s linear infinite;
-  will-change: transform;
+/* The standing route network: hairline flight paths, always present at
+   whisper contrast — the streaks ride ON these lines. Stroke widths are
+   in viewBox units (1u ≈ 9.6px at full size), so lines thin gracefully
+   on smaller stages instead of thickening relatively. */
+.cq-v2-route {
+  fill: none;
+  stroke: color-mix(in srgb, var(--svc) 45%, transparent);
+  stroke-width: 0.12;
+  opacity: 0.35;
 }
 
-.cq-v2-arc::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -3.5px;
-  width: 7px;
-  height: 7px;
-  margin-left: -3.5px;
-  border-radius: 9999px;
-  background: var(--svc);
-  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--svc) 45%, transparent);
+/* The call in flight: a comet-tail dash (32% of its route, normalized by
+   pathLength=1) sweeping hub → endpoint. Offset 0.32 parks the dash just
+   before the path start; -0.68 puts the HEAD exactly on the endpoint
+   (the 14%-of-cycle arrival the ping keyframes aim at); -1 carries the
+   tail off the far end — absorbed into the landing point. */
+.cq-v2-comet {
+  fill: none;
+  stroke: var(--svc);
+  stroke-width: 0.26;
+  stroke-linecap: round;
+  stroke-dasharray: 0.32 1.68;
+  stroke-dashoffset: 0.32;
+  opacity: 0;
+  animation: cq-v2-comet 14s linear infinite;
+  animation-delay: var(--cd, 0s);
 }
 
-@keyframes cq-v2-arc-spin {
-  to { rotate: 360deg; }
+/* Soft light underlay beneath the streak — the glow rides the same clock;
+   its stroke colour carries the alpha, so both share one keyframe set. */
+.cq-v2-comet-glow {
+  stroke: color-mix(in srgb, var(--svc-glow) 45%, transparent);
+  stroke-width: 0.8;
 }
 
-@keyframes cq-v2-arc-spin-ccw {
-  to { rotate: -360deg; }
+@keyframes cq-v2-comet {
+  0% {
+    stroke-dashoffset: 0.32;
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.6, 0.05, 0.3, 1);
+  }
+  1.5%      { opacity: 1; }
+  12.5%     { opacity: 1; }
+  14% {
+    stroke-dashoffset: -0.68;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  17.5%     { stroke-dashoffset: -1; opacity: 0; }
+  100%      { stroke-dashoffset: -1; opacity: 0; }
 }
 
-/* Call pings: conversations lighting up AS THE RADAR ARM PASSES OVER THEM.
-   Dot and halo share the radar's 16s clock; --pd (set from JS, which
-   measures each ping's true angle from the radar centre in the live
-   viewport) phase-shifts the cycle so local time 0 — the bloom's start —
-   lands exactly when the arm crosses. Pseudo-elements inherit --pd. The
-   bloom itself is compact (~3.5s) so each dot flares and dissolves while
-   the arm's trail is still washing over it. */
+/* Landing pings: the customer point blooming AS ITS CALL ARRIVES. Dot and
+   halo share the streak's 14s clock and its --cd phase shift (pseudo-
+   elements inherit it), and their keyframes hold until ~14% — the exact
+   moment the comet head reaches the endpoint. Centred on left/top with
+   standalone translate so the scale keyframes compose cleanly. */
 .cq-v2-ping {
   position: absolute;
   width: 7px;
   height: 7px;
+  translate: -50% -50%;
   border-radius: 9999px;
   background: var(--svc);
   opacity: 0;
-  animation: cq-v2-ping-dot 16s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  animation-delay: var(--pd, 0s);
+  animation: cq-v2-ping-dot 14s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--cd, 0s);
   will-change: transform, opacity;
 }
 
@@ -453,22 +489,22 @@ html.lenis body {
   border-radius: 9999px;
   border: 1.5px solid color-mix(in srgb, var(--svc) 55%, transparent);
   opacity: 0;
-  animation: cq-v2-ping-halo 16s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  animation-delay: var(--pd, 0s);
+  animation: cq-v2-ping-halo 14s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--cd, 0s);
   will-change: transform, opacity;
 }
 
 @keyframes cq-v2-ping-dot {
-  0%, 2%    { opacity: 0; transform: scale(0.4); }
-  5%        { opacity: 0.95; transform: scale(1); }
-  13%       { opacity: 0.5; }
-  22%, 100% { opacity: 0; transform: scale(0.85); }
+  0%, 13%   { opacity: 0; transform: scale(0.4); }
+  15.5%     { opacity: 0.95; transform: scale(1); }
+  24%       { opacity: 0.5; }
+  34%, 100% { opacity: 0; transform: scale(0.85); }
 }
 
 @keyframes cq-v2-ping-halo {
-  0%, 3%    { opacity: 0; transform: scale(0.6); }
-  7%        { opacity: 0.75; }
-  21%, 100% { opacity: 0; transform: scale(3.8); }
+  0%, 13.5% { opacity: 0; transform: scale(0.6); }
+  17%       { opacity: 0.75; }
+  32%, 100% { opacity: 0; transform: scale(3.8); }
 }
 
 /* 2 · BPO — repeatable work at volume: the operations dot-lattice marches
@@ -719,136 +755,48 @@ html.lenis body {
   50%, 100% { opacity: 0; }
 }
 
-/* ── V2 capability constellation ─────────────────────────
-   Capabilities as STATIONS on a drawn line — no boxes, no pills. Each node
-   is the brand's thin-ring sphere language at readout scale: hairline ring,
-   monoline icon, letterspaced caps label below. The rail passes behind the
-   nodes; hovering a station crowns it (tint fill, glow, label lights up)
-   and wakes a broken orbit with a satellite riding its arc. */
-.cq-cap-rail {
-  position: absolute;
-  left: 4%;
-  right: 4%;
-  top: 1.375rem; /* node half-height: the line runs through their centres */
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent,
-    color-mix(in srgb, var(--svc) 40%, transparent) 16%,
-    color-mix(in srgb, var(--svc) 40%, transparent) 84%,
-    transparent);
-  transform-origin: 50% 50%;
-  pointer-events: none;
-}
-
-.cq-cap-node {
-  position: relative;
-  display: flex;
+/* ── V2 capability tags ──────────────────────────────────
+   Capabilities as quiet tags, deliberately STATIC — the slide's living
+   backdrop owns the motion, so the tags spend no boldness of their own.
+   They borrow the hero CTA's rectangular language at readout scale:
+   2px radius, hairline border in the service tint, a barely-there fill
+   falling from white into the tint, and a 1px specular catch along the
+   top edge (the same light the sheet's shoulder catches). Monoline icon
+   in the service colour, letterspaced caps label. No hover states, no
+   transitions — they are statements, not controls. */
+.cq-cap {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 9999px;
-  color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
-  /* Opaque-ish raised surface so the rail visibly passes BEHIND it. */
-  background: color-mix(in srgb, var(--svc) 10%, white);
-  border: 1.5px solid color-mix(in srgb, var(--svc) 55%, transparent);
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem 0.5rem 0.7rem;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--svc) 32%, transparent);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.72),
+    color-mix(in srgb, var(--svc) 8%, transparent));
   box-shadow:
-    0 2px 5px -2px rgba(13, 30, 41, 0.18),
-    0 8px 16px -12px color-mix(in srgb, var(--svc) 45%, transparent);
-  transition:
-    background 320ms var(--ease-out),
-    border-color 300ms var(--ease-out),
-    box-shadow 360ms var(--ease-out),
-    color 240ms var(--ease-out);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 10px 20px -16px color-mix(in srgb, var(--svc) 50%, transparent);
+  cursor: default;
 }
 
-.cq-cap-node svg {
-  width: 1.15rem;
-  height: 1.15rem;
-  stroke-width: 1.6;
+.cq-cap svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  stroke-width: 1.7;
+  color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
 }
 
-/* Crowning — on hover, and briefly when the patrol satellite docks
-   (.cq-cap-visited, toggled from JS): the same gesture either way. */
-.cq-cap:hover .cq-cap-node,
-.cq-cap.cq-cap-visited .cq-cap-node {
-  background: color-mix(in srgb, var(--svc) 20%, white);
-  border-color: var(--svc);
-  box-shadow:
-    0 4px 10px -4px rgba(13, 30, 41, 0.22),
-    0 0 18px 2px color-mix(in srgb, var(--svc) 30%, transparent);
-}
-
-/* The patrol satellite: a glowing bead riding the rail. It sits BELOW the
-   stations in paint order, so docking reads as sliding underneath the
-   sphere — the crowning above is the arrival's visible half. */
-.cq-cap-sat {
-  position: absolute;
-  left: 0;
-  top: calc(1.375rem - 3px);
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--svc);
-  box-shadow:
-    0 0 8px 2px color-mix(in srgb, var(--svc) 45%, transparent),
-    0 0 18px 6px color-mix(in srgb, var(--svc) 18%, transparent);
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-/* The broken orbit: a quarter-open ring with a satellite at 12 o'clock,
-   always turning but invisible until its station is visited. */
-.cq-cap-orbit {
-  position: absolute;
-  inset: -7px;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--svc) 60%, transparent);
-  mask-image: conic-gradient(from 40deg, #000 0 280deg, transparent 280deg 360deg);
-  -webkit-mask-image: conic-gradient(from 40deg, #000 0 280deg, transparent 280deg 360deg);
-  opacity: 0;
-  animation: cq-cap-orbit-spin 8s linear infinite;
-  transition: opacity 300ms var(--ease-out);
-  pointer-events: none;
-}
-
-.cq-cap-orbit::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -2px;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 9999px;
-  background: var(--svc);
-}
-
-.cq-cap:hover .cq-cap-orbit,
-.cq-cap.cq-cap-visited .cq-cap-orbit {
-  opacity: 1;
-}
-
-@keyframes cq-cap-orbit-spin {
-  to { rotate: 360deg; }
-}
-
-.cq-cap-label {
-  font-size: 0.64rem;
+.cq-cap span {
+  font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  text-align: center;
-  line-height: 1.4;
-  text-wrap: balance;
-  color: color-mix(in srgb, var(--foreground) 55%, transparent);
-  transition: color 260ms var(--ease-out);
-}
-
-.cq-cap:hover .cq-cap-label,
-.cq-cap.cq-cap-visited .cq-cap-label {
-  color: color-mix(in srgb, var(--svc) 70%, var(--foreground));
+  line-height: 1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--foreground) 74%, transparent);
 }
 
 /* Battery etiquette: everything holds its breath while the tab is hidden.
@@ -856,8 +804,8 @@ html.lenis body {
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-orb,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ring,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-halo,
-.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-radar,
-.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-arc,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-graticule,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-comet,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ping,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ping::before,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-lattice::before,
@@ -867,8 +815,7 @@ html.lenis body {
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-node,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-panel,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-bar,
-.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-cursor,
-.cq-carousel-sheet[data-ambient-active="false"] .cq-cap-orbit {
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-cursor {
   animation-play-state: paused;
 }
 

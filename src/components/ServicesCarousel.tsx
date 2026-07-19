@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   AnimatePresence,
-  animate,
   motion,
   useReducedMotion,
   type Variants,
@@ -47,35 +46,6 @@ const pageVariants: Variants = {
     scale: 0.95,
     transition: { duration: 0.38, ease: EASE_OUT },
   }),
-};
-
-/* Capabilities are NOT pills — they're stations on a drawn line, the
-   brand's constellation language at readout scale. On each page turn the
-   rail draws itself from the centre outward, then the station nodes pop in
-   sequence with a spring overshoot, labels riding along. No exit variants —
-   the constellation rides the page out. */
-const capListVariants: Variants = {
-  enter: {},
-  center: { transition: { delayChildren: 0.32, staggerChildren: 0.07 } },
-};
-
-const capVariants: Variants = {
-  enter: { opacity: 0, scale: 0.4, y: 12 },
-  center: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 340, damping: 22 },
-  },
-};
-
-const capRailVariants: Variants = {
-  enter: { opacity: 0, scaleX: 0 },
-  center: {
-    opacity: 1,
-    scaleX: 1,
-    transition: { duration: 0.7, ease: EASE_OUT, delay: 0.24 },
-  },
 };
 
 export default function ServicesCarousel() {
@@ -200,7 +170,7 @@ export default function ServicesCarousel() {
               {service.strapline} {service.description}
             </p>
 
-            <CapabilityConstellation service={service} reduced={reduced} />
+            <CapabilityTags service={service} />
 
             <ServiceCta service={service} />
           </div>
@@ -316,223 +286,88 @@ function SlideBackdrop({ service }: { service: Service }) {
   );
 }
 
-/* The capability constellation: stations on a drawn rail, plus an ambient
-   SATELLITE that patrols the line station to station. The travel loop is
-   JS-driven (Motion's animate) because the stop positions only exist at
-   layout time: each hop re-measures the real node centres, so the route
-   stays exact on any viewport and after resizes. Arriving at a station,
-   the satellite tucks under the node (stations paint above it) and the
-   node flares a brief crowning — the same gesture as a hover visit. */
-function CapabilityConstellation({
-  service,
-  reduced,
-}: {
-  service: Service;
-  reduced: boolean;
-}) {
-  const listRef = useRef<HTMLUListElement>(null);
-  const satRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (reduced) return;
-    const list = listRef.current;
-    const sat = satRef.current;
-    if (!list || !sat) return;
-
-    let cancelled = false;
-    let controls: ReturnType<typeof animate> | undefined;
-    const timeouts = new Set<number>();
-
-    const sleep = (ms: number) =>
-      new Promise<void>((resolve) => {
-        const id = window.setTimeout(() => {
-          timeouts.delete(id);
-          resolve();
-        }, ms);
-        timeouts.add(id);
-      });
-
-    /* Node centres in the list's coordinate space, re-read every hop so
-       resizes and font settling never derail the route. */
-    const measure = () => {
-      const listBox = list.getBoundingClientRect();
-      const items = Array.from(list.querySelectorAll<HTMLElement>(".cq-cap"));
-      return items.map((item) => {
-        const node = item.querySelector<HTMLElement>(".cq-cap-node");
-        const box = (node ?? item).getBoundingClientRect();
-        return { item, x: box.left + box.width / 2 - listBox.left };
-      });
-    };
-
-    const crown = (item: HTMLElement) => {
-      item.classList.add("cq-cap-visited");
-      const id = window.setTimeout(() => {
-        timeouts.delete(id);
-        item.classList.remove("cq-cap-visited");
-      }, 750);
-      timeouts.add(id);
-    };
-
-    const run = async () => {
-      /* Let the entrance choreography land before the patrol begins. */
-      await sleep(1600);
-      if (cancelled) return;
-
-      let stops = measure();
-      if (stops.length < 2) return;
-
-      /* Materialize at the first station — position set through Motion so
-         the next hop animates from here instead of jumping from x: 0. */
-      controls = animate(sat, { x: stops[0].x - 3 }, { duration: 0 });
-      await controls;
-      controls = animate(sat, { opacity: 1 }, { duration: 0.4 });
-      await controls;
-      crown(stops[0].item);
-      await sleep(900);
-
-      let index = 0;
-      let dir = 1;
-      while (!cancelled) {
-        stops = measure();
-        const next = index + dir;
-        if (next < 0 || next >= stops.length) {
-          dir = -dir;
-          continue;
-        }
-        controls = animate(
-          sat,
-          { x: stops[next].x - 3 },
-          { duration: 1.05, ease: [0.45, 0, 0.55, 1] },
-        );
-        await controls;
-        if (cancelled) return;
-        index = next;
-        crown(stops[index].item);
-        await sleep(900);
-      }
-    };
-
-    void run();
-
-    return () => {
-      cancelled = true;
-      controls?.stop();
-      timeouts.forEach((id) => window.clearTimeout(id));
-    };
-  }, [reduced, service.id]);
-
+/* Capabilities as quiet tags. Deliberately STATIC — the living backdrop
+   already carries this slide's motion, so the tags spend no boldness of
+   their own: they borrow the hero CTA's rectangular language (2px radius,
+   hairline, a 1px light catch along the top) at readout scale, tinted by
+   the service colour, and simply ride the page turn with the rest of the
+   copy. Each tag keeps its capability description as a native tooltip. */
+function CapabilityTags({ service }: { service: Service }) {
   return (
-    <motion.ul
-      ref={listRef}
-      variants={reduced ? undefined : capListVariants}
-      className="relative mt-9 flex flex-nowrap items-start justify-center gap-4 sm:gap-8"
-    >
-      {/* The rail: a hairline in the service colour, drawn from the
-          centre outward on arrival — the line the stations sit on. */}
-      <motion.span
-        aria-hidden
-        variants={reduced ? undefined : capRailVariants}
-        className="cq-cap-rail"
-      />
-      {/* The patrol satellite — rides the rail, docks under each station. */}
-      <span ref={satRef} aria-hidden className="cq-cap-sat" />
+    <ul className="mt-9 flex max-w-xl flex-wrap items-center justify-center gap-2 sm:gap-2.5">
       {service.details.map((detail) => (
-        <motion.li
-          key={detail.title}
-          variants={reduced ? undefined : capVariants}
-          whileHover={reduced ? undefined : { y: -4 }}
-          transition={{ type: "spring", stiffness: 380, damping: 24 }}
-          title={detail.description}
-          className="cq-cap relative flex w-16 cursor-default flex-col items-center gap-2.5 sm:w-24"
-        >
-          <span className="cq-cap-node">
-            {/* Broken orbit + satellite, waking on hover. */}
-            <span aria-hidden className="cq-cap-orbit" />
-            <ServiceIcon name={detail.icon} />
-          </span>
-          <span className="cq-cap-label">{detail.title}</span>
-        </motion.li>
+        <li key={detail.title} title={detail.description} className="cq-cap">
+          <ServiceIcon name={detail.icon} />
+          <span>{detail.title}</span>
+        </li>
       ))}
-    </motion.ul>
+    </ul>
   );
 }
 
-/* Mirror of the radar's CSS timing (globals.css): one revolution per
-   RADAR_PERIOD, with the bright sweep arm sitting at ARM_OFFSET degrees of
-   the conic at local time 0. The ping animations run on the same period. */
-const RADAR_PERIOD = 16;
-const RADAR_ARM_OFFSET = 78;
+/* Call Center's connection map. Six flight-routes radiate from the glow
+   behind the message; on a shared 14s clock a light streak (the call)
+   departs the halo, rides its route and lands on a customer point that
+   blooms exactly on arrival. Each route's --cd phase-shifts BOTH its
+   streak and its landing ping, and the ping keyframes hold until the
+   streak's 14%-of-cycle arrival — the sync is a CSS constant shared by
+   construction, so no JS measurement is needed (the radar predecessor
+   had to measure angles at runtime). The SVG viewBox and the square
+   .cq-v2-net stage share the same 0–100 space, which lets each route's
+   endpoint coords double as its ping's left/top percentages. Routes bow
+   OUTWARD (around the reading column) and the SVG's radial mask fades
+   them toward the origin, so every call visibly materializes leaving the
+   glow and lands in the margins. Delays are slightly irregular on
+   purpose — departures read as traffic, not a metronome. */
+const CALL_ROUTES = [
+  { d: "M50 50 Q 26 46 14 22", x: 14, y: 22, delay: "0s" },
+  { d: "M50 50 Q 76 42 86 18", x: 86, y: 18, delay: "-2.2s" },
+  { d: "M50 50 Q 28 62 7 58", x: 7, y: 58, delay: "-4.7s" },
+  { d: "M50 50 Q 72 64 93 62", x: 93, y: 62, delay: "-7s" },
+  { d: "M50 50 Q 36 72 28 84", x: 28, y: 84, delay: "-9.3s" },
+  { d: "M50 50 Q 66 74 72 88", x: 72, y: 88, delay: "-11.8s" },
+] as const;
 
-/* Call Center's signal field. The pings don't fire on a canned stagger:
-   an effect measures each ping's TRUE angle from the radar's centre in the
-   live viewport (so the sync holds on any aspect ratio) and phase-shifts
-   its 16s cycle via --pd, landing the bloom exactly as the sweep arm
-   crosses it. Radar and pings mount in the same commit, so their CSS
-   animation clocks start together — and the hidden-tab pause freezes and
-   resumes them together, keeping the phase lock. */
 function CallCenterScene() {
-  const layerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const layer = layerRef.current;
-    if (!layer) return;
-
-    const sync = () => {
-      const box = layer.getBoundingClientRect();
-      if (box.width === 0 || box.height === 0) return;
-      /* The radar (and every centred instrument) sits at 50% / 44%. */
-      const centerX = box.left + box.width / 2;
-      const centerY = box.top + box.height * 0.44;
-
-      layer.querySelectorAll<HTMLElement>(".cq-v2-ping").forEach((ping) => {
-        const dot = ping.getBoundingClientRect();
-        const dx = dot.left + dot.width / 2 - centerX;
-        const dy = dot.top + dot.height / 2 - centerY;
-        /* Angle from 12 o'clock, clockwise — the same frame the rotating
-           conic gradient sweeps in. */
-        const theta = (Math.atan2(dx, -dy) * 180) / Math.PI;
-        const travel = (((theta - RADAR_ARM_OFFSET) % 360) + 360) % 360;
-        const crossing = (RADAR_PERIOD * travel) / 360;
-        /* Negative delay: the cycle is already mid-flight, and its local
-           time 0 (bloom start) lands at the arm's crossing moment. */
-        ping.style.setProperty("--pd", `${(crossing - RADAR_PERIOD).toFixed(2)}s`);
-      });
-    };
-
-    sync();
-    window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
-  }, []);
-
   return (
-    <div ref={layerRef} className="absolute inset-0">
-      {/* The call's heart: a bloom breathing on the same clock the rings
-          emit on. */}
+    <div className="absolute inset-0">
+      {/* The exchange's heart: a bloom breathing on the half clock (7s),
+          the origin every streak visibly departs from. */}
       <span className="cq-v2-halo" />
-      {/* Radar sweep turning over the whole field. */}
-      <span className="cq-v2-radar" />
-      {/* Four signal rings, evenly staggered mid-cycle on arrival. */}
+      {/* Emission rings leaving the heart every 3.5 seconds. */}
       <span className="cq-v2-ring" />
-      <span className="cq-v2-ring" style={{ animationDelay: "-1.875s" }} />
-      <span className="cq-v2-ring" style={{ animationDelay: "-3.75s" }} />
-      <span className="cq-v2-ring" style={{ animationDelay: "-5.625s" }} />
-      {/* Counter-rotating orbit arcs with satellites on their tips. */}
-      <span className="cq-v2-arc w-[min(44rem,80vw)]" />
-      <span
-        className="cq-v2-arc w-[min(34rem,64vw)]"
-        style={{
-          animationName: "cq-v2-arc-spin-ccw",
-          animationDuration: "34s",
-          borderColor: "color-mix(in srgb, var(--svc-glow) 55%, transparent)",
-        }}
-      />
-      {/* Call pings scattered across the map; each fires as the radar arm
-          reaches its measured angle (--pd is set by the effect above). */}
-      <span className="cq-v2-ping left-[16%] top-[28%]" />
-      <span className="cq-v2-ping right-[18%] top-[24%]" />
-      <span className="cq-v2-ping left-[24%] bottom-[22%]" />
-      <span className="cq-v2-ping right-[26%] bottom-[28%]" />
-      <span className="cq-v2-ping left-[38%] top-[14%]" />
+      <span className="cq-v2-ring" style={{ animationDelay: "-3.5s" }} />
+      {/* The map: crawling meridians, the standing route network, the
+          calls in flight, and their landing points. */}
+      <div className="cq-v2-net">
+        <svg viewBox="0 0 100 100" aria-hidden>
+          <circle className="cq-v2-graticule" cx="50" cy="50" r="36" strokeDasharray="2 4.5" />
+          <circle
+            className="cq-v2-graticule"
+            cx="50"
+            cy="50"
+            r="44"
+            strokeDasharray="0.5 3.4"
+            style={{ animationDirection: "reverse", animationDuration: "200s" }}
+          />
+          {CALL_ROUTES.map((route) => (
+            <g key={route.d} style={{ "--cd": route.delay } as CSSProperties}>
+              <path className="cq-v2-route" d={route.d} pathLength={1} />
+              <path className="cq-v2-comet cq-v2-comet-glow" d={route.d} pathLength={1} />
+              <path className="cq-v2-comet" d={route.d} pathLength={1} />
+            </g>
+          ))}
+        </svg>
+        {CALL_ROUTES.map((route) => (
+          <span
+            key={route.d}
+            className="cq-v2-ping"
+            style={
+              { left: `${route.x}%`, top: `${route.y}%`, "--cd": route.delay } as CSSProperties
+            }
+          />
+        ))}
+      </div>
       <span
         className="cq-v2-orb left-[-9rem] top-[-8rem] h-[30rem] w-[30rem]"
         style={{
