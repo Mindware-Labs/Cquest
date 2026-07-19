@@ -119,6 +119,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
             alt="Center Quest"
             width={412}
             height={304}
+            priority
             className="h-12 w-auto sm:h-14"
             style={{
               filter:

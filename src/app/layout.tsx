@@ -52,7 +52,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${switzer.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
         {/* Accessibility: skip to main content */}
         <a href="#main-content" className="skip-link">
           Skip to main content
