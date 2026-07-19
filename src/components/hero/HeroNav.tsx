@@ -60,12 +60,12 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
           whileHover={{ scale: 1.045 }}
           whileTap={{ scale: 0.96 }}
           transition={{ type: "spring", stiffness: 420, damping: 26 }}
-          className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_2px_10px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_color-mix(in_srgb,var(--brand-celeste)_55%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
+          className="cq-rect-cta group/nav relative hidden touch-manipulation items-center overflow-hidden bg-celeste px-6 py-3 text-foreground shadow-[0_2px_10px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_color-mix(in_srgb,var(--brand-celeste)_55%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-flex"
         >
           <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">
             Contact us
           </span>
-          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-lg bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
+          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[2px] bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
         </motion.a>
 
         <button
@@ -126,7 +126,7 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
                 <a
                   href="#contact"
                   onClick={() => setOpen(false)}
-                  className="block touch-manipulation rounded-lg bg-celeste px-5 py-3 text-center text-sm font-semibold text-foreground"
+                  className="cq-rect-cta flex touch-manipulation items-center justify-center bg-celeste px-6 py-3 text-center text-foreground transition-transform duration-150 ease-out active:scale-[0.96]"
                 >
                   Contact us
                 </a>

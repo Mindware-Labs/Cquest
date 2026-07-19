@@ -69,7 +69,7 @@ export default function Navbar() {
             whileHover={{ scale: 1.045 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 420, damping: 26 }}
-            className="group/cta relative hidden overflow-hidden rounded-lg bg-petroleo px-5 py-2 text-sm font-semibold text-white shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:block"
+            className="cq-rect-cta group/cta relative hidden items-center overflow-hidden bg-petroleo px-6 py-3 text-white shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:inline-flex"
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
             <span className="relative z-10">Contact us</span>

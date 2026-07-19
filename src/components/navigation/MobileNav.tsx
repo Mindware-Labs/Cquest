@@ -51,7 +51,7 @@ export default function MobileNav({ open, reduced, onClose }: MobileNavProps) {
                   event.preventDefault();
                   onClose();
                 }}
-                className="block rounded-lg bg-petroleo px-5 py-3 text-center text-sm font-semibold text-white"
+                className="cq-rect-cta flex items-center justify-center bg-petroleo px-6 py-3 text-center text-white transition-transform duration-150 ease-out active:scale-[0.96]"
               >
                 Contact us
               </a>

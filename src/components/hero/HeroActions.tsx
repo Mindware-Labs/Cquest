@@ -20,13 +20,13 @@ export default function HeroActions() {
         onMouseLeave={onMouseLeave}
         style={style}
         whileHover={{ scale: 1.035 }}
-        whileTap={{ scale: 0.965 }}
+        whileTap={{ scale: 0.96 }}
         transition={{ type: "spring", stiffness: 400, damping: 26 }}
-        className="group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden rounded-full bg-celeste py-2 pl-6 pr-2 text-[0.9375rem] font-semibold text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+        className="cq-rect-cta group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden bg-celeste py-3 pl-6 pr-[1.375rem] text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
       >
         <span aria-hidden className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100" />
         <span className="relative z-10">Request a quote</span>
-        <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-celeste transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:shadow-[0_0_14px_color-mix(in_srgb,var(--brand-celeste)_45%,transparent)]">
+        <span className="relative z-10 flex h-4 w-4 items-center justify-center text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
           <Chevron />
         </span>
       </motion.a>
