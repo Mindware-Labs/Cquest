@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Maven_Pro } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 import ScrollProgress from "@/components/ScrollProgress";
 import SmoothScroll from "@/components/SmoothScroll";
 
@@ -56,7 +55,6 @@ export default function RootLayout({
         </a>
         <SmoothScroll />
         <ScrollProgress />
-        <Navbar />
         <main id="main-content" className="flex flex-1 flex-col">
           {children}
         </main>
