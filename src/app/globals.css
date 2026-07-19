@@ -272,6 +272,606 @@ html.lenis body {
   .cq-services-sheet { padding-block: 6rem; }
 }
 
+/* The carousel variant of the services surface: same lifted-sheet language
+   (curtain overlap over the hero, rounded shoulders, rim light, ambient
+   field) on a fixed full-viewport stage. Kept separate from .cq-services
+   so none of the scroll-journey geometry (tall track, sticky pin) applies. */
+.cq-carousel-sheet {
+  margin-top: calc(-1 * var(--curtain));
+  scroll-margin-top: calc(-1 * var(--curtain));
+  border-radius: var(--curtain) var(--curtain) 0 0;
+  box-shadow:
+    0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
+    inset 0 34px 56px -44px color-mix(in srgb, var(--brand-celeste) 45%, transparent);
+  background:
+    radial-gradient(115% 62% at 50% -6%, color-mix(in srgb, var(--brand-celeste) 15%, transparent), transparent 58%),
+    radial-gradient(76% 56% at 50% 44%, color-mix(in srgb, white 68%, transparent), transparent 72%),
+    radial-gradient(120% 92% at 50% 116%, color-mix(in srgb, var(--brand-petroleo) 9%, transparent), transparent 60%),
+    #fafdff;
+}
+
+/* ── V2 carousel — per-service living backdrops ──────────
+   Each slide carries its own ambient scene, THEMED to its business line and
+   painted in its service colour, so a page turn re-lights the whole field
+   as part of the same gesture. All layers are transform/opacity only
+   (compositor-friendly), loop seamlessly (identical first/last frames or
+   fully off-screen at both ends), sit at whisper contrast behind the
+   content, and pause when the tab is hidden. The global reduced-motion net
+   freezes them entirely. */
+
+.cq-v2-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Soft colour mass that drifts on the existing cq-float keyframes; colour
+   comes from the slide's --svc/--svc-glow so it re-tints per service. */
+.cq-v2-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px) saturate(1.05);
+  will-change: transform;
+}
+
+/* 1 · CALL CENTER — a live signal field. Five instruments on one 7.5s
+   emission clock: a breathing halo at the heart "emits" the pulse rings,
+   a radar wedge sweeps the field, two broken orbit arcs counter-rotate
+   with satellites riding their tips, and call-pings bloom across the map
+   where conversations land. Everything is transform/opacity, centred with
+   standalone translate so keyframe transforms compose cleanly on top. */
+.cq-v2-ring {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(56rem, 96vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  border: 2px solid color-mix(in srgb, var(--svc) 40%, transparent);
+  opacity: 0;
+  animation: cq-v2-pulse 7.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes cq-v2-pulse {
+  0%   { transform: scale(0.5); opacity: 0; }
+  14%  { opacity: 0.5; }
+  70%  { opacity: 0.12; }
+  100% { transform: scale(1.14); opacity: 0; }
+}
+
+/* The call's heart: a soft bloom breathing on the SAME 7.5s clock as the
+   rings, so each pulse visibly leaves from it. */
+.cq-v2-halo {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(30rem, 70vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--svc) 22%, transparent), transparent 72%);
+  animation: cq-v2-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes cq-v2-breathe {
+  0%, 100% { transform: scale(0.94); opacity: 0.72; }
+  50%      { transform: scale(1.07); opacity: 1; }
+}
+
+/* Radar sweep: a soft conic wedge turning over the field, feathered by a
+   radial mask so it reads as light, not a painted slice. */
+.cq-v2-radar {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(60rem, 104vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  /* Intensity RISES toward 78deg then cuts: the bright sweep arm leads at
+     78° with its luminous trail fading BEHIND it — a real radar reads
+     this way, and the ping sync below aims at this exact arm angle. */
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--svc) 19%, transparent) 78deg,
+    transparent 79deg);
+  mask-image: radial-gradient(circle, transparent 16%, #000 42%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, transparent 16%, #000 42%, transparent 70%);
+  animation: cq-v2-radar 16s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cq-v2-radar {
+  to { rotate: 360deg; }
+}
+
+/* Broken orbit arcs — the section's constellation signature at field scale.
+   A satellite dot rides each arc's leading edge (the ::after sits at
+   12 o'clock, inside the conic mask's visible span). */
+.cq-v2-arc {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--svc) 46%, transparent);
+  mask-image: conic-gradient(from -10deg, #000 0 104deg, transparent 104deg 360deg);
+  -webkit-mask-image: conic-gradient(from -10deg, #000 0 104deg, transparent 104deg 360deg);
+  animation: cq-v2-arc-spin 44s linear infinite;
+  will-change: transform;
+}
+
+.cq-v2-arc::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3.5px;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 9999px;
+  background: var(--svc);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--svc) 45%, transparent);
+}
+
+@keyframes cq-v2-arc-spin {
+  to { rotate: 360deg; }
+}
+
+@keyframes cq-v2-arc-spin-ccw {
+  to { rotate: -360deg; }
+}
+
+/* Call pings: conversations lighting up AS THE RADAR ARM PASSES OVER THEM.
+   Dot and halo share the radar's 16s clock; --pd (set from JS, which
+   measures each ping's true angle from the radar centre in the live
+   viewport) phase-shifts the cycle so local time 0 — the bloom's start —
+   lands exactly when the arm crosses. Pseudo-elements inherit --pd. The
+   bloom itself is compact (~3.5s) so each dot flares and dissolves while
+   the arm's trail is still washing over it. */
+.cq-v2-ping {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--svc);
+  opacity: 0;
+  animation: cq-v2-ping-dot 16s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--pd, 0s);
+  will-change: transform, opacity;
+}
+
+.cq-v2-ping::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--svc) 55%, transparent);
+  opacity: 0;
+  animation: cq-v2-ping-halo 16s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--pd, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes cq-v2-ping-dot {
+  0%, 2%    { opacity: 0; transform: scale(0.4); }
+  5%        { opacity: 0.95; transform: scale(1); }
+  13%       { opacity: 0.5; }
+  22%, 100% { opacity: 0; transform: scale(0.85); }
+}
+
+@keyframes cq-v2-ping-halo {
+  0%, 3%    { opacity: 0; transform: scale(0.6); }
+  7%        { opacity: 0.75; }
+  21%, 100% { opacity: 0; transform: scale(3.8); }
+}
+
+/* 2 · BPO — repeatable work at volume: the operations dot-lattice marches
+   diagonally on the compositor (exactly one cell per loop → seamless wrap)
+   beneath a stationary mask. The mask clears a GENEROUS central ellipse —
+   the entire reading column stays dot-free; the texture lives at the
+   field's edges as a frame, never under type. */
+.cq-v2-lattice {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse 88% 74% at 50% 46%, transparent 40%, #000 66%, transparent 94%);
+  -webkit-mask-image: radial-gradient(ellipse 88% 74% at 50% 46%, transparent 40%, #000 66%, transparent 94%);
+}
+
+.cq-v2-lattice::before {
+  content: "";
+  position: absolute;
+  inset: -2.6rem 0 0 -2.6rem;
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--svc) 36%, transparent) 1.2px, transparent 1.7px);
+  background-position: center;
+  background-size: 2.6rem 2.6rem;
+  animation: cq-v2-march 20s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cq-v2-march {
+  to { transform: translate3d(2.6rem, 2.6rem, 0); }
+}
+
+/* Data streams: throughput made visible. Confined by the JSX to safe
+   bands at the very top and bottom of the field — they NEVER cross the
+   reading column. Each line carries a glowing packet head at its tip and
+   is fully off-screen at both ends of the loop (no seam). */
+.cq-v2-stream {
+  position: absolute;
+  left: -30%;
+  width: 26%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--svc) 62%, transparent));
+  animation: cq-v2-flow 12s linear infinite;
+  will-change: transform;
+}
+
+.cq-v2-stream::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 9999px;
+  background: var(--svc);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--svc) 40%, transparent);
+}
+
+@keyframes cq-v2-flow {
+  to { transform: translateX(560%); }
+}
+
+/* Processing stacks: the BPO "layers" motif at field scale. Three
+   translucent work-sheets per stack ride a vertical conveyor — each card
+   enters from below, settles, and releases upward while the next arrives —
+   phase-shifted thirds (--sd) make the throughput continuous. Cards carry
+   two hairline "text rows" so they read as documents, not empty chips. */
+.cq-v2-stack {
+  position: absolute;
+  width: clamp(7rem, 9vw, 9.5rem);
+  aspect-ratio: 16 / 10;
+  pointer-events: none;
+}
+
+.cq-v2-stack-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.7rem;
+  border: 1.5px solid color-mix(in srgb, var(--svc) 36%, transparent);
+  background: color-mix(in srgb, white 52%, transparent);
+  box-shadow: 0 12px 26px -18px color-mix(in srgb, var(--svc) 55%, transparent);
+  opacity: 0;
+  animation: cq-v2-stack-rise 9s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--sd, 0s);
+  will-change: transform, opacity;
+}
+
+.cq-v2-stack-card::before,
+.cq-v2-stack-card::after {
+  content: "";
+  position: absolute;
+  left: 13%;
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--svc) 42%, transparent);
+}
+
+.cq-v2-stack-card::before {
+  top: 24%;
+  width: 46%;
+}
+
+.cq-v2-stack-card::after {
+  top: 42%;
+  width: 28%;
+  opacity: 0.7;
+}
+
+@keyframes cq-v2-stack-rise {
+  0%        { transform: translateY(3.4rem) scale(0.92); opacity: 0; }
+  16%       { opacity: 0.9; }
+  50%       { transform: translateY(0) scale(1); opacity: 0.95; }
+  82%, 100% { transform: translateY(-3.2rem) scale(0.96); opacity: 0; }
+}
+
+/* 3 · SYSTEMS — a system indexing itself. The blueprint grid frames the
+   field (its mask keeps the whole reading column clear), a light beam
+   scans LINEARLY across it — linear so JS can predict the beam's position
+   at any moment — and grid nodes flare exactly as the beam's bright line
+   crosses them (--nd is set from JS, which also snaps each node onto a
+   true grid intersection). Floating UI panels in the side margins show
+   the work itself: a live dashboard and a code window. */
+.cq-v2-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--svc) 17%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--svc) 12%, transparent) 1px, transparent 1px);
+  background-position: center;
+  background-size: 3.4rem 3.4rem;
+  mask-image: radial-gradient(ellipse 88% 74% at 50% 46%, transparent 40%, #000 64%, transparent 94%);
+  -webkit-mask-image: radial-gradient(ellipse 88% 74% at 50% 46%, transparent 40%, #000 64%, transparent 94%);
+}
+
+/* Beam geometry is mirrored in the TSX (SCAN_PERIOD etc.) — if the rem
+   offsets, width, bright-line position or duration change here, update
+   the constants there or the node sync drifts. */
+.cq-v2-scan {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 20rem;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--svc) 10%, transparent) 45%,
+    color-mix(in srgb, white 30%, transparent) 55%,
+    transparent);
+  transform: translateX(-24rem);
+  animation: cq-v2-scan 13s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cq-v2-scan {
+  from { transform: translateX(-24rem); }
+  to   { transform: translateX(calc(100vw + 8rem)); }
+}
+
+/* Grid nodes: small squares sitting ON grid intersections (snapped from
+   JS) that flare as the scan's bright line passes — the system touching
+   each point as it indexes. Compact flare, long rest. */
+.cq-v2-node {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 1px;
+  background: var(--svc);
+  box-shadow: 0 0 9px 2px color-mix(in srgb, var(--svc) 40%, transparent);
+  opacity: 0;
+  animation: cq-v2-node-flare 13s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: var(--nd, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes cq-v2-node-flare {
+  0%, 1%    { opacity: 0; transform: scale(0.5); }
+  4%        { opacity: 0.95; transform: scale(1.3); }
+  9%        { opacity: 0.5; transform: scale(1); }
+  19%, 100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Floating UI panels — the deliverables made ambient. Bob keyframes carry
+   the tilt (via --tilt) because they own the transform. */
+.cq-v2-panel {
+  position: absolute;
+  width: clamp(8rem, 10vw, 10.5rem);
+  border-radius: 0.7rem;
+  border: 1.5px solid color-mix(in srgb, var(--svc) 34%, transparent);
+  background: color-mix(in srgb, white 58%, transparent);
+  box-shadow: 0 14px 30px -20px color-mix(in srgb, var(--svc) 55%, transparent);
+  padding: 0.55rem 0.65rem 0.65rem;
+  animation: cq-v2-panel-bob 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: var(--pb, 0s);
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes cq-v2-panel-bob {
+  0%, 100% { transform: translateY(4px) rotate(var(--tilt, 0deg)); }
+  50%      { transform: translateY(-4px) rotate(var(--tilt, 0deg)); }
+}
+
+/* Window chrome: the three title-bar dots. */
+.cq-v2-panel-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--svc) 50%, transparent);
+}
+
+/* Dashboard bars, breathing from their baseline on staggered thirds. */
+.cq-v2-bar {
+  width: 0.55rem;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--svc) 55%, transparent);
+  transform-origin: bottom;
+  animation: cq-v2-bar-breathe 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: var(--bd, 0s);
+  will-change: transform;
+}
+
+@keyframes cq-v2-bar-breathe {
+  0%, 100% { transform: scaleY(0.55); }
+  50%      { transform: scaleY(1); }
+}
+
+/* Code window rows + a blinking caret writing the next line. */
+.cq-v2-code-row {
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--svc) 40%, transparent);
+}
+
+.cq-v2-cursor {
+  width: 2px;
+  height: 0.55rem;
+  border-radius: 1px;
+  background: var(--svc);
+  animation: cq-v2-blink 1.1s steps(1) infinite;
+}
+
+@keyframes cq-v2-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── V2 capability constellation ─────────────────────────
+   Capabilities as STATIONS on a drawn line — no boxes, no pills. Each node
+   is the brand's thin-ring sphere language at readout scale: hairline ring,
+   monoline icon, letterspaced caps label below. The rail passes behind the
+   nodes; hovering a station crowns it (tint fill, glow, label lights up)
+   and wakes a broken orbit with a satellite riding its arc. */
+.cq-cap-rail {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 1.375rem; /* node half-height: the line runs through their centres */
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--svc) 40%, transparent) 16%,
+    color-mix(in srgb, var(--svc) 40%, transparent) 84%,
+    transparent);
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+
+.cq-cap-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  color: color-mix(in srgb, var(--svc) 88%, var(--foreground));
+  /* Opaque-ish raised surface so the rail visibly passes BEHIND it. */
+  background: color-mix(in srgb, var(--svc) 10%, white);
+  border: 1.5px solid color-mix(in srgb, var(--svc) 55%, transparent);
+  box-shadow:
+    0 2px 5px -2px rgba(13, 30, 41, 0.18),
+    0 8px 16px -12px color-mix(in srgb, var(--svc) 45%, transparent);
+  transition:
+    background 320ms var(--ease-out),
+    border-color 300ms var(--ease-out),
+    box-shadow 360ms var(--ease-out),
+    color 240ms var(--ease-out);
+}
+
+.cq-cap-node svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke-width: 1.6;
+}
+
+/* Crowning — on hover, and briefly when the patrol satellite docks
+   (.cq-cap-visited, toggled from JS): the same gesture either way. */
+.cq-cap:hover .cq-cap-node,
+.cq-cap.cq-cap-visited .cq-cap-node {
+  background: color-mix(in srgb, var(--svc) 20%, white);
+  border-color: var(--svc);
+  box-shadow:
+    0 4px 10px -4px rgba(13, 30, 41, 0.22),
+    0 0 18px 2px color-mix(in srgb, var(--svc) 30%, transparent);
+}
+
+/* The patrol satellite: a glowing bead riding the rail. It sits BELOW the
+   stations in paint order, so docking reads as sliding underneath the
+   sphere — the crowning above is the arrival's visible half. */
+.cq-cap-sat {
+  position: absolute;
+  left: 0;
+  top: calc(1.375rem - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--svc);
+  box-shadow:
+    0 0 8px 2px color-mix(in srgb, var(--svc) 45%, transparent),
+    0 0 18px 6px color-mix(in srgb, var(--svc) 18%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* The broken orbit: a quarter-open ring with a satellite at 12 o'clock,
+   always turning but invisible until its station is visited. */
+.cq-cap-orbit {
+  position: absolute;
+  inset: -7px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--svc) 60%, transparent);
+  mask-image: conic-gradient(from 40deg, #000 0 280deg, transparent 280deg 360deg);
+  -webkit-mask-image: conic-gradient(from 40deg, #000 0 280deg, transparent 280deg 360deg);
+  opacity: 0;
+  animation: cq-cap-orbit-spin 8s linear infinite;
+  transition: opacity 300ms var(--ease-out);
+  pointer-events: none;
+}
+
+.cq-cap-orbit::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 9999px;
+  background: var(--svc);
+}
+
+.cq-cap:hover .cq-cap-orbit,
+.cq-cap.cq-cap-visited .cq-cap-orbit {
+  opacity: 1;
+}
+
+@keyframes cq-cap-orbit-spin {
+  to { rotate: 360deg; }
+}
+
+.cq-cap-label {
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+  text-wrap: balance;
+  color: color-mix(in srgb, var(--foreground) 55%, transparent);
+  transition: color 260ms var(--ease-out);
+}
+
+.cq-cap:hover .cq-cap-label,
+.cq-cap.cq-cap-visited .cq-cap-label {
+  color: color-mix(in srgb, var(--svc) 70%, var(--foreground));
+}
+
+/* Battery etiquette: everything holds its breath while the tab is hidden.
+   (Static controls and content stay fully usable.) */
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-orb,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ring,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-halo,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-radar,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-arc,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ping,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ping::before,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-lattice::before,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-stream,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-stack-card,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-scan,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-node,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-panel,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-bar,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-v2-cursor,
+.cq-carousel-sheet[data-ambient-active="false"] .cq-cap-orbit {
+  animation-play-state: paused;
+}
+
 /* ── Lateral journey (desktop, motion-safe) ──────────────
    The section stretches into a tall scroll track and the sheet pins to the
    viewport: vertical scroll no longer moves the page past the section — it
