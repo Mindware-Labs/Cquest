@@ -101,7 +101,9 @@ const ORBIT = [
 ];
 
 const SERVICE_PANEL_ID = "cq-services";
-const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_OUT = [0.22, 1, 0.36, 1] as const; // ease-out-quint
+const EASE_OUT_QUART = [0.25, 1, 0.5, 1] as const;
+const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 const CAPABILITY_DWELL_MS = 3200;
 
 /* Headline lines, split into words so each can rise out of its own mask. */
@@ -112,7 +114,8 @@ const HEADLINE: string[][] = [
 
 /* ── Entrance choreography ────────────────────────────────
    The stage assembles instead of fading in as one: guide rings draw first,
-   the three nodes pop in sequence on springs, and the seal lands last.
+   the three nodes pop in sequence on ease-out-expo, and the seal lands last
+   on a spring.
    All children key off the parent's hidden/show via variant propagation;
    delays are explicit (custom index) so the order is deterministic. */
 const wordVariants: Variants = {
@@ -138,7 +141,7 @@ const nodeVariants: Variants = {
   show: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { type: "spring", stiffness: 340, damping: 24, delay: 0.42 + i * 0.13 },
+    transition: { duration: 0.6, ease: EASE_OUT_EXPO, delay: 0.42 + i * 0.13 },
   }),
 };
 
@@ -292,7 +295,7 @@ function ServicePanel({
                       transition={
                         reduced
                           ? { duration: 0.15 }
-                          : { type: "spring", duration: 0.6, bounce: 0.18, delay: 0.06 }
+                          : { duration: 0.4, ease: EASE_OUT_QUART, delay: 0.06 }
                       }
                     >
                       {service.details[active].title}
@@ -305,7 +308,7 @@ function ServicePanel({
                     transition={
                       reduced
                         ? { duration: 0.15 }
-                        : { type: "spring", duration: 0.62, bounce: 0.16, delay: 0.14 }
+                        : { duration: 0.42, ease: EASE_OUT_QUART, delay: 0.12 }
                     }
                   >
                     {service.details[active].description}

@@ -37,8 +37,10 @@
   --curtain: clamp(1.75rem, 4vw, 2.75rem);
 
   /* Motion — shared ease-out curves (mirror EASE_OUT in the components) */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);       /* ease-out-quint */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);   /* ease-out-expo */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   /* Spring-like overshoot (~back-ease) for scale changes that should feel
      weighted — settles past 100% before easing back, like a real spring. */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -201,6 +203,7 @@ html.lenis body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }
@@ -433,6 +436,7 @@ html.lenis body {
   height: 7px;
   border-radius: 2px;
   background: var(--svc);
+  transition: background-color 250ms ease-in-out;
 }
 
 /* Orbital mark: no container at all. The bare monoline glyph sits directly
@@ -612,11 +616,9 @@ html.lenis body {
   border-radius: 9999px;
   cursor: pointer;
   color: color-mix(in srgb, var(--foreground) 70%, transparent);
-  /* Scale gets its own longer, spring-eased entry so the active glyph settles
-     with a touch of overshoot instead of a flat ease. */
   transition-property: color, scale, filter;
-  transition-duration: 240ms, 420ms, 240ms;
-  transition-timing-function: var(--ease-out), var(--ease-spring), var(--ease-out);
+  transition-duration: 240ms, 340ms, 240ms;
+  transition-timing-function: var(--ease-out-expo), var(--ease-out-quart), var(--ease-out-expo);
 }
 
 /* Dwell arc: a hairline in the service colour that draws a full turn around
@@ -641,6 +643,8 @@ html.lenis body {
   bottom: calc(100% + 0.5rem);
   left: 50%;
   translate: -50% 4px;
+  scale: 0.95;
+  transform-origin: bottom center;
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
   background: color-mix(in srgb, var(--foreground) 92%, transparent);
@@ -652,9 +656,12 @@ html.lenis body {
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition-property: opacity, translate;
+  /* No delay here: leaving hover/focus hides the tip immediately. The 100ms
+     show delay lives only on the hover/focus-visible rules below, so a quick
+     pass over the icon never flashes it. */
+  transition-property: opacity, translate, scale;
   transition-duration: 180ms;
-  transition-timing-function: var(--ease-out);
+  transition-timing-function: var(--ease-out-quart);
   z-index: 2;
 }
 
@@ -671,6 +678,8 @@ html.lenis body {
 .cq-flow-anchor:focus-visible .cq-flow-anchor-tip {
   opacity: 1;
   translate: -50% 0;
+  scale: 1;
+  transition-delay: 100ms;
 }
 
 .cq-flow-anchor svg {
@@ -689,6 +698,8 @@ html.lenis body {
   .cq-flow-anchor:hover .cq-flow-anchor-tip {
     opacity: 1;
     translate: -50% 0;
+    scale: 1;
+    transition-delay: 100ms;
   }
 }
 
@@ -737,9 +748,12 @@ html.lenis body {
      the press, so all three compose. The transition retargets every pointer
      move, giving the same trailing follow as the orbital nodes. */
   transform: translate(var(--ctax, 0px), var(--ctay, 0px));
+  /* background-color transitions on its own ease-in-out timing so the CTA's
+     colour change (following whichever service is active) reads as a smooth
+     cross-blend rather than a hover-style ease-out snap. */
   transition-property: background-color, box-shadow, scale, translate, transform;
-  transition-duration: 260ms;
-  transition-timing-function: var(--ease-out);
+  transition-duration: 250ms, 260ms, 260ms, 260ms, 260ms;
+  transition-timing-function: ease-in-out, var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-out);
 }
 
 /* Specular sweep, parked off-canvas until hover. */
@@ -856,24 +870,16 @@ html.lenis body {
       0 8px 18px -9px color-mix(in srgb, var(--svc) 48%, transparent),
       0 0 20px 3px color-mix(in srgb, var(--svc) 26%, transparent);
     /* Scale stays on the standalone `scale` property (not baked into
-       `transform`) so it inherits the same spring easing as the crowned
-       state instead of the plain translate ease. One timing value per
-       transition-property on .cq-service-ring, in that same order:
-       transform, scale, background, border-color, box-shadow, color. */
+       `transform`) so hover reuses the exact same ease-out-quart timing as
+       the crowned state instead of a separate curve — the base rule above
+       already defines it, so no override is needed here. */
     scale: 1.05;
-    transition-timing-function:
-      var(--ease-out),
-      var(--ease-spring),
-      var(--ease-out),
-      var(--ease-out),
-      var(--ease-out),
-      var(--ease-out);
   }
 
-  /* The glyph wakes: a small tilt-and-rise, sprung by the organic curve. */
+  /* The glyph wakes: a small tilt-and-rise, no overshoot. */
   .cq-service-node:hover .cq-service-ring svg {
     transform: translateY(-1px) rotate(-5deg) scale(1.06);
-    transition-timing-function: cubic-bezier(0.34, 1.3, 0.5, 1);
+    transition-timing-function: var(--ease-out-quart);
   }
 
   .cq-service-node:hover .cq-service-name {
@@ -931,25 +937,31 @@ html.lenis body {
   opacity: var(--show);
   translate: 0 calc((1 - var(--show)) * 10px);
   filter: blur(calc((1 - var(--show)) * 4px));
-  /* Translate springs in with a touch of overshoot (weight, not just fade)
-     while opacity/blur stay on a plain ease — bouncing those would flicker. */
+  /* Crossfade + slide, all on ease-out-quart — no overshoot, so the stagger
+     below reads as one calm cascade instead of a bouncy relay. */
   transition:
-    opacity 320ms var(--ease-out),
-    translate 420ms var(--ease-spring),
-    filter 320ms var(--ease-out);
+    opacity 240ms var(--ease-out-quart),
+    translate 260ms var(--ease-out-quart),
+    filter 240ms var(--ease-out-quart);
 }
 
-.cq-service-panel > :nth-child(2) { transition-delay: 30ms; }
-.cq-service-panel > :nth-child(3) { transition-delay: 90ms; }
-.cq-service-panel > :nth-child(4) { transition-delay: 150ms; }
-.cq-service-panel > :nth-child(5) { transition-delay: 210ms; }
-.cq-service-panel > :nth-child(6) { transition-delay: 270ms; }
+/* Stagger: headline-adjacent chrome leads, prose follows, the capability row
+   and CTA land last — 40ms apart, 4 steps deep so the whole cascade resolves
+   well inside the 350–450ms window (last element: 160ms delay + 260ms). */
+.cq-service-panel > :nth-child(2) { transition-delay: 0ms; }
+.cq-service-panel > :nth-child(3) { transition-delay: 40ms; }
+.cq-service-panel > :nth-child(4) { transition-delay: 80ms; }
+.cq-service-panel > :nth-child(5) { transition-delay: 120ms; }
+.cq-service-panel > :nth-child(6) { transition-delay: 160ms; }
 
-/* The spine redraws top-to-bottom in the incoming service colour. */
+/* The spine redraws top-to-bottom in the incoming service colour — the
+   vertical "timeline" for the active panel. Ease-out-expo, 300ms: it never
+   jumps between services because the outgoing and incoming spine occupy the
+   exact same screen position and simply cross-blend. */
 .cq-panel-spine {
   transform-origin: top;
   scale: 1 var(--show);
-  transition: scale 520ms var(--ease-out) 80ms;
+  transition: scale 300ms var(--ease-out-expo) 60ms;
 }
 
 /* NOTE: the [data-panel] qualifier on every "hide all" selector is load-bearing.
@@ -1001,13 +1013,16 @@ html.lenis body {
      can spring independently of the lean's plain ease. */
   transform: translate(var(--mx, 0px), var(--my, 0px));
   scale: 1;
+  /* Scale/shadow settle on ease-out-quart (no overshoot); colour/background
+     cross-blend on ease-out-expo — covers both the hover preview and the
+     inactive→active crowning, each landing inside 300–400ms. */
   transition:
-    transform 220ms var(--ease-out),
-    scale 420ms var(--ease-spring),
-    background 220ms var(--ease-out),
-    border-color 200ms var(--ease-out),
-    box-shadow 220ms var(--ease-out),
-    color 200ms var(--ease-out);
+    transform 220ms var(--ease-out-expo),
+    scale 360ms var(--ease-out-quart),
+    background 320ms var(--ease-out-expo),
+    border-color 300ms var(--ease-out-expo),
+    box-shadow 360ms var(--ease-out-quart),
+    color 240ms var(--ease-out-expo);
   /* Idle breathing, phase-shifted per node (--oi) so the constellation never
      inhales in unison; composes with the standalone `scale` above. */
   animation: cq-breathe 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
@@ -1082,12 +1097,19 @@ html.lenis body {
   /* A crisp light ring separates the crowned node from a background that can
      otherwise share its hue (e.g. celeste orb behind a celeste-tinted node) —
      the selection reads clearly even at low display brightness. */
+  /* A wider, softer outer glow (beyond the crisp separation ring) keeps the
+     crowned node from reading as flush against the seal's own edge when the
+     orbit carries it past dead-center — separation by light, since the seal
+     sits in a higher stacking context and always paints on top regardless of
+     shadow reach. */
   box-shadow:
     0 0 0 2px var(--surface-raised),
     0 0 0 4.5px color-mix(in srgb, var(--svc) 55%, transparent),
-    0 12px 24px -8px color-mix(in srgb, var(--svc) 50%, transparent);
+    0 12px 24px -8px color-mix(in srgb, var(--svc) 50%, transparent),
+    0 0 22px 6px color-mix(in srgb, var(--svc) 20%, transparent);
+  backdrop-filter: blur(2px);
   transform: translate(var(--mx, 0px), var(--my, 0px));
-  scale: 1.12;
+  scale: 1.08;
 }
 
 .cq-service-control:checked + .cq-service-node .cq-service-name,
