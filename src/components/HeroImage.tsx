@@ -249,6 +249,9 @@ export default function HeroImage() {
   });
 
   useEffect(() => {
+    // Reduced motion: the headline holds its first pair — auto-rotating copy
+    // is still motion (and WCAG 2.2.2 auto-updating content) even as a fade.
+    if (reduced) return;
     const timer = setInterval(() => {
       if (document.hidden) return;
       setSlides(({ current }) => ({
@@ -257,7 +260,7 @@ export default function HeroImage() {
       }));
     }, HEADLINE_ROTATE_MS);
     return () => clearInterval(timer);
-  }, []);
+  }, [reduced]);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],

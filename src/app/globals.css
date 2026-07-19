@@ -60,11 +60,8 @@
   --color-verde: var(--brand-verde);
   --color-gris: var(--brand-gris);
 
-  /* One family, carried by weight contrast (see layout.tsx) instead of a
-     second display face — headings lean Semibold/Bold, body stays
-     Regular/Medium. */
-  --font-heading: var(--font-switzer);
-  --font-sans: var(--font-switzer);
+  --font-heading: var(--font-maven-pro);
+  --font-sans: var(--font-maven-pro);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -85,6 +82,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  /* Variable font: let the optical-size axis retune letterforms per size
+     (display headings tighten, small text opens up) — Apple-style type. */
+  font-optical-sizing: auto;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -225,11 +225,17 @@ html.lenis body {
      here reserves that much hero above the fold instead. */
   scroll-margin-top: 0;
   border-radius: var(--curtain) var(--curtain) 0 0;
-  box-shadow: 0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent);
+  /* Rim light: a 1px specular catch along the sheet's rounded shoulder plus
+     a soft celeste bloom falling from the top edge — the section reads as a
+     physical lifted surface catching the room's light, not a flat div. */
+  box-shadow:
+    0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
+    inset 0 34px 56px -44px color-mix(in srgb, var(--brand-celeste) 45%, transparent);
   background:
-    radial-gradient(115% 62% at 50% -6%, color-mix(in srgb, var(--brand-celeste) 13%, transparent), transparent 58%),
+    radial-gradient(115% 62% at 50% -6%, color-mix(in srgb, var(--brand-celeste) 15%, transparent), transparent 58%),
     radial-gradient(76% 56% at 50% 44%, color-mix(in srgb, white 68%, transparent), transparent 72%),
-    radial-gradient(120% 92% at 50% 116%, color-mix(in srgb, var(--brand-petroleo) 8%, transparent), transparent 60%),
+    radial-gradient(120% 92% at 50% 116%, color-mix(in srgb, var(--brand-petroleo) 9%, transparent), transparent 60%),
     #fafdff;
 }
 
@@ -257,31 +263,76 @@ html.lenis body {
   will-change: transform;
 }
 
+/* The fourth orb takes the ACTIVE service's colour — picking a business line
+   re-lights the whole field, so the background visibly belongs to the
+   selection instead of staying inert brand wallpaper. background-color
+   cross-blends over ~900ms (a colour, so it interpolates smoothly, unlike
+   gradients); the float itself is declared inline like its siblings. */
+.cq-orb-svc {
+  background-color: color-mix(in srgb, var(--svc-active, var(--brand-celeste)) 24%, transparent);
+  transition: background-color 900ms ease-in-out;
+}
+
+/* A whisper-level wash of the active service colour over the section's
+   heart, masked to a soft ellipse so edges stay clean. Same 900ms
+   cross-blend as the orb — the two layers retune together. */
+.cq-services-tint {
+  background-color: color-mix(in srgb, var(--svc-active, var(--brand-celeste)) 9%, transparent);
+  -webkit-mask-image: radial-gradient(72% 58% at 50% 40%, #000, transparent 78%);
+  mask-image: radial-gradient(72% 58% at 50% 40%, #000, transparent 78%);
+  transition: background-color 900ms ease-in-out;
+  pointer-events: none;
+}
+
 /* One oversized gradient layer connects the orbs into a calmer, more
-   intentional field. It moves only through transforms, never by repainting. */
+   intentional field. It moves only through transforms, never by repainting.
+   Four blobs (two cool, one warm-green, one deep petroleo anchor) give the
+   field enough colour complexity to read as an aurora, not a vignette. */
 .cq-services-mesh {
   background:
-    radial-gradient(43% 47% at 18% 22%, color-mix(in srgb, var(--brand-celeste) 20%, transparent) 0%, transparent 74%),
-    radial-gradient(39% 44% at 81% 24%, color-mix(in srgb, var(--brand-gris) 30%, transparent) 0%, transparent 76%),
-    radial-gradient(48% 44% at 55% 78%, color-mix(in srgb, var(--brand-verde) 9%, transparent) 0%, transparent 78%);
-  animation: cq-mesh-drift 30s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    radial-gradient(46% 50% at 16% 20%, color-mix(in srgb, var(--brand-celeste) 26%, transparent) 0%, transparent 74%),
+    radial-gradient(40% 46% at 82% 22%, color-mix(in srgb, var(--brand-gris) 36%, transparent) 0%, transparent 76%),
+    radial-gradient(50% 46% at 56% 80%, color-mix(in srgb, var(--brand-verde) 12%, transparent) 0%, transparent 78%),
+    radial-gradient(38% 42% at 10% 82%, color-mix(in srgb, var(--brand-petroleo) 12%, transparent) 0%, transparent 76%);
+  animation: cq-mesh-drift 26s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   will-change: transform;
 }
 
 @keyframes cq-mesh-drift {
-  0%, 100% { transform: translate3d(-1.5%, -1%, 0) scale(1); }
-  50% { transform: translate3d(2.5%, 2%, 0) scale(1.04); }
+  0%, 100% { transform: translate3d(-1.5%, -1%, 0) scale(1) rotate(0.001deg); }
+  50% { transform: translate3d(2.5%, 2.2%, 0) scale(1.055) rotate(-0.6deg); }
 }
 
 /* A fine dot lattice — a subtle "operations" texture that reads as intentional,
    not the generic line-grid tell. Masked to clear the centre (so it never
-   clutters the stage) and fade at the edges. */
+   clutters the stage) and fade at the edges. The dots live on ::before so
+   they can march diagonally on the compositor (transform, not
+   background-position) beneath the parent's stationary mask — a conveyor of
+   quiet activity. Travel per loop is exactly one cell, so the wrap from
+   100% back to 0% lands on an identical frame: seamless. */
 .cq-services-grid {
+  mask-image: radial-gradient(ellipse 82% 64% at 50% 45%, transparent 4%, black 32%, transparent 84%);
+  mask-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse 82% 64% at 50% 45%, transparent 4%, black 32%, transparent 84%);
+  -webkit-mask-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.cq-services-grid::before {
+  content: "";
+  position: absolute;
+  inset: -2.35rem 0 0 -2.35rem;
   background-image:
-    radial-gradient(color-mix(in srgb, var(--brand-petroleo) 20%, transparent) 1px, transparent 1.5px);
+    radial-gradient(color-mix(in srgb, var(--brand-petroleo) 26%, transparent) 1px, transparent 1.5px);
   background-position: center;
   background-size: 2.35rem 2.35rem;
-  mask-image: radial-gradient(ellipse 82% 64% at 50% 45%, transparent 4%, black 32%, transparent 84%);
+  animation: cq-grid-march 22s linear infinite;
+  will-change: transform;
+}
+
+@keyframes cq-grid-march {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(2.35rem, 2.35rem, 0); }
 }
 
 /* ── Selection comet ─────────────────────────────────────
@@ -360,6 +411,7 @@ html.lenis body {
 /* Keep continuous ambient work dormant when this section is not visible or
    when the document is backgrounded. Static controls remain fully usable. */
 .cq-services[data-ambient-active="false"] .cq-services-mesh,
+.cq-services[data-ambient-active="false"] .cq-services-grid::before,
 .cq-services[data-ambient-active="false"] .cq-orb,
 .cq-services[data-ambient-active="false"] .cq-ring,
 .cq-services[data-ambient-active="false"] .cq-service-ring,
@@ -400,43 +452,67 @@ html.lenis body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 14rem;
+  width: 18rem;
   height: 14rem;
   translate: -50% -50%;
   border-radius: 9999px;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--svc-active) 22%, transparent), transparent 72%);
-  filter: blur(6px);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--svc-active) 35%, transparent), transparent 72%);
+  filter: blur(8px);
   pointer-events: none;
   transition: background 500ms var(--ease-out);
   z-index: 0;
 }
 
 /* The spine: a hairline in the service colour that dissolves downward, capped
-   by a small solid tick. It replaces the card's border entirely. */
+   by a small solid tick. It replaces the card's border entirely. The line
+   itself lives on ::after so the panel choreography can draw it top-to-bottom
+   without squashing the cap, which ignites on its own clock. */
 .cq-panel-spine {
   position: absolute;
   left: 0;
   top: 0.35rem;
   bottom: 0.5rem;
   width: 1.5px;
-  border-radius: 2px;
-  background: linear-gradient(180deg,
-    var(--svc) 0%,
-    color-mix(in srgb, var(--svc) 32%, transparent) 58%,
-    transparent 100%);
   pointer-events: none;
 }
 
+/* Solid only under the cap, then a long dissolve — the rail reads as light
+   falling from the node, not as a drawn border. */
+.cq-panel-spine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg,
+    var(--svc) 0%,
+    color-mix(in srgb, var(--svc) 50%, transparent) 34%,
+    color-mix(in srgb, var(--svc) 20%, transparent) 72%,
+    transparent 96%);
+}
+
+/* The cap: a small glowing node in the service colour — the same halo
+   language as the orbital spheres, so the rail visibly belongs to the
+   constellation above it. Scale/opacity are driven by the panel
+   choreography (--show) further below; the overshoot bezier gives the
+   arrival a distinct "ignition" pop before the line falls from it. */
 .cq-panel-spine::before {
   content: "";
   position: absolute;
-  left: -3px;
+  left: 50%;
   top: 0;
   width: 7px;
   height: 7px;
-  border-radius: 2px;
+  border-radius: 9999px;
+  translate: -50% -1.5px;
   background: var(--svc);
-  transition: background-color 250ms ease-in-out;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--svc) 16%, transparent),
+    0 0 12px 2px color-mix(in srgb, var(--svc) 38%, transparent);
+  transition:
+    background-color 250ms ease-in-out,
+    box-shadow 250ms ease-in-out,
+    scale 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--show, 1) * 60ms),
+    opacity 300ms var(--ease-out-quart) calc(var(--show, 1) * 60ms);
 }
 
 /* Orbital mark: no container at all. The bare monoline glyph sits directly
@@ -452,6 +528,13 @@ html.lenis body {
   background: color-mix(in srgb, var(--svc) 9%, white);
   border-radius: 9999px;
   box-shadow: 0 2px 6px -3px color-mix(in srgb, var(--svc) 40%, transparent);
+  /* Arrival pop: scales up with a touch of overshoot while untwisting a few
+     degrees — composes with the identity block's own rise/unblur. */
+  scale: calc(0.55 + var(--show, 1) * 0.45);
+  rotate: calc((1 - var(--show, 1)) * -10deg);
+  transition:
+    scale 560ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--show, 1) * 80ms),
+    rotate 560ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--show, 1) * 80ms);
 }
 
 /* The orbit: a 1px ring with a quarter missing, turning slowly. */
@@ -503,14 +586,17 @@ html.lenis body {
   line-height: 1.2;
 }
 
-/* Microlabel above the service name: service-tinted, letterspaced caps. */
+/* Microlabel above the service name: service-tinted, letterspaced caps.
+   On arrival the tracking settles closed from a wider spread — type that
+   breathes in as the panel lands. */
 .cq-panel-eyebrow {
   font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: calc(0.18em + (1 - var(--show, 1)) * 0.16em);
   text-transform: uppercase;
   line-height: 1;
   color: color-mix(in srgb, var(--svc) 62%, var(--foreground));
+  transition: letter-spacing 900ms var(--ease-out-expo) calc(var(--show, 1) * 120ms);
 }
 
 /* Full-width identity rule: solid service colour at the left, settling into a
@@ -565,7 +651,7 @@ html.lenis body {
    pagination, dwell progress and accumulated position in one instrument. */
 .cq-flow {
   position: relative;
-  margin-top: 1.85rem;
+  margin-top: 1rem;
 }
 
 /* Stage: a fixed reading space — entries dissolve in place, the page around
@@ -585,10 +671,12 @@ html.lenis body {
    instead of pinned to opposite edges. */
 .cq-flow-foot {
   display: flex;
-  flex-wrap: nowrap;
+  /* wrap, not nowrap: Call Center's five anchors plus the CTA overflow a
+     360px viewport otherwise — the CTA drops to its own line down there. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 1.5rem;
+  gap: 0.85rem 1.5rem;
   margin-top: 0.6rem;
   padding-bottom: 0.25rem;
 }
@@ -607,8 +695,9 @@ html.lenis body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  /* 44px — Apple HIG minimum touch target. */
+  width: 2.75rem;
+  height: 2.75rem;
   margin: 0;
   padding: 0;
   border: 0;
@@ -616,9 +705,16 @@ html.lenis body {
   border-radius: 9999px;
   cursor: pointer;
   color: color-mix(in srgb, var(--foreground) 70%, transparent);
-  transition-property: color, scale, filter;
-  transition-duration: 240ms, 340ms, 240ms;
-  transition-timing-function: var(--ease-out-expo), var(--ease-out-quart), var(--ease-out-expo);
+  /* Panel arrival: the glyphs land one by one (--ai staggers each anchor),
+     rising a few px into place — a relay along the closing line. */
+  opacity: var(--show, 1);
+  translate: 0 calc((1 - var(--show, 1)) * 10px);
+  transition:
+    color 240ms var(--ease-out-expo),
+    scale 340ms var(--ease-out-quart),
+    filter 240ms var(--ease-out-expo),
+    opacity 420ms var(--ease-out-quart) calc(var(--show, 1) * (520ms + var(--ai, 0) * 50ms)),
+    translate 560ms var(--ease-out-expo) calc(var(--show, 1) * (520ms + var(--ai, 0) * 50ms));
 }
 
 /* Dwell arc: a hairline in the service colour that draws a full turn around
@@ -720,6 +816,17 @@ html.lenis body {
   outline-offset: 2px;
 }
 
+/* Press: instant feedback on pointer-down (fast in), sprung out on release —
+   the base rule's slower durations take over when :active drops. */
+.cq-flow-anchor:active {
+  scale: 0.9;
+  transition-duration: 100ms;
+}
+
+.cq-flow-anchor[data-active]:active {
+  scale: 1.18;
+}
+
 /* ── Panel CTA ───────────────────────────────────────────
    A jewelled hairline pill: 1px ring lit faintly from above, the arrow held
    in its own small orb. On hover the ring firms, a specular sheen sweeps the
@@ -748,12 +855,19 @@ html.lenis body {
      the press, so all three compose. The transition retargets every pointer
      move, giving the same trailing follow as the orbital nodes. */
   transform: translate(var(--ctax, 0px), var(--ctay, 0px));
+  /* Panel arrival: the CTA is the choreography's final beat — it fades up
+     after the capability row has landed, closing the reading path. */
+  opacity: var(--show, 1);
   /* background-color transitions on its own ease-in-out timing so the CTA's
      colour change (following whichever service is active) reads as a smooth
      cross-blend rather than a hover-style ease-out snap. */
-  transition-property: background-color, box-shadow, scale, translate, transform;
-  transition-duration: 250ms, 260ms, 260ms, 260ms, 260ms;
-  transition-timing-function: ease-in-out, var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-out);
+  transition:
+    background-color 250ms ease-in-out,
+    box-shadow 260ms var(--ease-out),
+    scale 260ms var(--ease-out),
+    translate 260ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    opacity 480ms var(--ease-out-quart) calc(var(--show, 1) * 600ms);
 }
 
 /* Specular sweep, parked off-canvas until hover. */
@@ -813,8 +927,18 @@ html.lenis body {
   }
 }
 
+/* Press: the sink lands in 120ms (feedback on pointer-down, not release);
+   letting go falls back to the base rule's 260ms settle. The full list is
+   restated because transition-duration alone can't retime one property. */
 .cq-panel-cta:active {
   scale: 0.96;
+  transition:
+    background-color 250ms ease-in-out,
+    box-shadow 160ms var(--ease-out),
+    scale 120ms var(--ease-out),
+    translate 260ms var(--ease-out),
+    transform 260ms var(--ease-out),
+    opacity 480ms var(--ease-out-quart) calc(var(--show, 1) * 600ms);
 }
 
 .cq-panel-cta:focus-visible {
@@ -913,11 +1037,16 @@ html.lenis body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(6px);
+  transform: translateY(18px) scale(0.985);
+  /* Asymmetric timing, same trick as the delays: durations stretch with
+     --show, so the ENTRANCE settles luxuriously (~320/560ms) while the
+     EXIT releases briskly (~230ms) — the outgoing panel gets out of the
+     incoming choreography's way. transition-* values are read from the
+     after-change style, so each direction uses its own numbers. */
   transition:
-    opacity 260ms var(--ease-out),
-    transform 260ms var(--ease-out),
-    visibility 260ms;
+    opacity calc(230ms + var(--show) * 90ms) var(--ease-out),
+    transform calc(230ms + var(--show) * 330ms) var(--ease-out-expo),
+    visibility calc(230ms + var(--show) * 90ms);
 }
 
 .cq-service-panel[data-panel="call-center"] {
@@ -925,43 +1054,113 @@ html.lenis body {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: none;
 }
 
-/* Layered reveal: flipping --show retargets each block's opacity/translate/
-   blur transition, and the per-child delays choreograph identity → rule →
-   headline → summary → carousel. No delay applies to the panel-level fade,
-   so exits stay soft and immediate. First paint resolves --show directly,
-   so nothing animates on page load. */
-.cq-service-panel > :not(.cq-panel-spine) {
-  opacity: var(--show);
-  translate: 0 calc((1 - var(--show)) * 10px);
-  filter: blur(calc((1 - var(--show)) * 4px));
-  /* Crossfade + slide, all on ease-out-quart — no overshoot, so the stagger
-     below reads as one calm cascade instead of a bouncy relay. */
+/* ── Panel-switch choreography ───────────────────────────
+   Flipping --show (0/1) drives every block's own transition. Every delay is
+   multiplied by --show, so the stagger only exists on the way IN: the
+   incoming panel assembles as a narrative — cap ignites, spine draws down,
+   identity settles, hairlines trace across, the headline rises out of its
+   mask, prose condenses, the capability row lands glyph by glyph and the
+   CTA arrives last — while the outgoing panel releases everything at once
+   under the fast panel-level fade. First paint resolves --show directly,
+   so nothing animates on page load.
+
+   Timeline (entrance):
+     60ms  cap ignition        480ms  capability stage
+    140ms  spine draws         520ms+ anchors, one by one
+    170ms  identity rule       600ms  CTA
+    220ms  headline mask rise
+    320ms  strapline · 400ms description · 440ms summary rule */
+
+/* 1 · Identity: the block rises out of a soft blur while the chip pops in
+   with a touch of overshoot and the eyebrow's tracking settles closed. */
+.cq-panel-identity {
+  opacity: var(--show, 1);
+  translate: 0 calc((1 - var(--show, 1)) * 16px);
+  filter: blur(calc((1 - var(--show, 1)) * 5px));
   transition:
-    opacity 240ms var(--ease-out-quart),
-    translate 260ms var(--ease-out-quart),
-    filter 240ms var(--ease-out-quart);
+    opacity 440ms var(--ease-out-quart) calc(var(--show, 1) * 40ms),
+    translate 620ms var(--ease-out-expo) calc(var(--show, 1) * 40ms),
+    filter 420ms var(--ease-out-quart) calc(var(--show, 1) * 40ms);
 }
 
-/* Stagger: headline-adjacent chrome leads, prose follows, the capability row
-   and CTA land last — 40ms apart, 4 steps deep so the whole cascade resolves
-   well inside the 350–450ms window (last element: 160ms delay + 260ms). */
-.cq-service-panel > :nth-child(2) { transition-delay: 0ms; }
-.cq-service-panel > :nth-child(3) { transition-delay: 40ms; }
-.cq-service-panel > :nth-child(4) { transition-delay: 80ms; }
-.cq-service-panel > :nth-child(5) { transition-delay: 120ms; }
-.cq-service-panel > :nth-child(6) { transition-delay: 160ms; }
-
-/* The spine redraws top-to-bottom in the incoming service colour — the
-   vertical "timeline" for the active panel. Ease-out-expo, 300ms: it never
-   jumps between services because the outgoing and incoming spine occupy the
-   exact same screen position and simply cross-blend. */
-.cq-panel-spine {
+/* 2 · The spine draws top-to-bottom in the incoming service colour — the
+   vertical "timeline" for the active panel. The gradient lives on ::after
+   (see the spine block above) so the cap can ignite independently instead
+   of being squashed by the line's own scale. */
+.cq-panel-spine::after {
   transform-origin: top;
-  scale: 1 var(--show);
-  transition: scale 300ms var(--ease-out-expo) 60ms;
+  scale: 1 var(--show, 1);
+  transition: scale 640ms var(--ease-out-expo) calc(var(--show, 1) * 140ms);
+}
+
+/* The cap ignites first — a small overshoot pop, as if the selection's
+   light lands here before falling down the rail. */
+.cq-panel-spine::before {
+  opacity: var(--show, 1);
+  scale: calc(0.25 + var(--show, 1) * 0.75);
+}
+
+/* 3 · Both horizontal hairlines trace left-to-right, echoing the spine. */
+.cq-panel-label-rule {
+  transform-origin: 0 50%;
+  scale: var(--show, 1) 1;
+  transition: scale 700ms var(--ease-out-expo) calc(var(--show, 1) * 170ms);
+}
+
+.cq-panel-summary::after {
+  transform-origin: 0 50%;
+  scale: var(--show, 1) 1;
+  transition: scale 640ms var(--ease-out-expo) calc(var(--show, 1) * 440ms);
+}
+
+/* 4 · Headline: pure typographic reveal — the text rises out of a line
+   mask, no fade, the same gesture as the section's own headline. */
+.cq-panel-headline {
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.cq-panel-headline-inner {
+  display: block;
+  translate: 0 calc((1 - var(--show, 1)) * 118%);
+  transition: translate 760ms var(--ease-out-expo) calc(var(--show, 1) * 220ms);
+  will-change: translate;
+}
+
+/* 5 · Prose condenses into focus, strapline leading the description. */
+.cq-panel-strapline {
+  opacity: var(--show, 1);
+  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  filter: blur(calc((1 - var(--show, 1)) * 4px));
+  transition:
+    opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 320ms),
+    translate 600ms var(--ease-out-expo) calc(var(--show, 1) * 320ms),
+    filter 440ms var(--ease-out-quart) calc(var(--show, 1) * 320ms);
+}
+
+.cq-panel-description {
+  opacity: var(--show, 1);
+  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  filter: blur(calc((1 - var(--show, 1)) * 4px));
+  transition:
+    opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 400ms),
+    translate 600ms var(--ease-out-expo) calc(var(--show, 1) * 400ms),
+    filter 440ms var(--ease-out-quart) calc(var(--show, 1) * 400ms);
+}
+
+/* 6 · The capability stage arrives once the reading path above is set. */
+.cq-flow-stage {
+  opacity: var(--show, 1);
+  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  filter: blur(calc((1 - var(--show, 1)) * 4px));
+  transition:
+    opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 480ms),
+    translate 600ms var(--ease-out-expo) calc(var(--show, 1) * 480ms),
+    filter 440ms var(--ease-out-quart) calc(var(--show, 1) * 480ms);
 }
 
 /* NOTE: the [data-panel] qualifier on every "hide all" selector is load-bearing.
@@ -976,6 +1175,11 @@ html.lenis body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  /* Explicit here so the default (call-center) panel also sinks on exit —
+     without this its own show rule would keep transform: none while
+     hidden, making it the only panel that left without the release
+     motion. */
+  transform: translateY(18px) scale(0.985);
 }
 
 .cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel="bpo"],
@@ -984,7 +1188,27 @@ html.lenis body {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: none;
+}
+
+/* ── First reveal gate ───────────────────────────────────
+   Until the panel column has scrolled into view (data-revealed, set from
+   JS via useInView), EVERY panel holds at --show:0 — including whichever
+   service is selected. When the attribute lands, the active panel runs the
+   full assembly cascade: the section's first impression is the exact same
+   choreography a selection gets, instead of a separate container fade that
+   used to sit on top and swallow it. Scripting-gated so no-JS visitors
+   (and older browsers) simply see the content immediately. The doubled
+   [data-panel] lifts specificity to (0,5,0) so, declared last, it beats
+   the :has() show rules above by source order. */
+@media (scripting: enabled) {
+  .cq-services:not([data-revealed]) .cq-service-panel[data-panel][data-panel] {
+    --show: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(18px) scale(0.985);
+  }
 }
 
 /* Orbital nodes — "thin ring" style. A hairline ring in the service colour
@@ -1002,8 +1226,8 @@ html.lenis body {
   color: var(--svc);
   /* An opaque raised surface — elevation is the universal "pressable" cue,
      so the spheres explain themselves without an instruction line. */
-  background: color-mix(in srgb, var(--svc) 7%, white);
-  border: 2px solid color-mix(in srgb, var(--svc) 58%, transparent);
+  background: color-mix(in srgb, var(--svc) 12%, white);
+  border: 2px solid color-mix(in srgb, var(--svc) 75%, transparent);
   box-shadow:
     0 2px 5px -2px rgba(13, 30, 41, 0.2),
     0 7px 14px -10px color-mix(in srgb, var(--svc) 45%, transparent);
@@ -1161,22 +1385,14 @@ html.lenis body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 1.5px solid color-mix(in srgb, var(--brand-petroleo) 38%, transparent);
+  /* Tinted straight from --svc-active (set on the section from the single
+     source of truth in ServicesExperience) — no per-service hex copies. */
+  border: 1.5px solid color-mix(in srgb, var(--svc-active, var(--brand-petroleo)) 40%, transparent);
   opacity: 0;
   transform: scale(0.55);
   animation: cq-ring 10.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   will-change: transform, opacity;
   transition: border-color 400ms var(--ease-out);
-}
-
-/* The signal rings radiate in the colour of the selected service — the whole
-   stage pulses from the current choice. Call Center matches the default. */
-.cq-services:has([data-service-control="bpo"]:checked) .cq-ring {
-  border-color: color-mix(in srgb, #176c79 40%, transparent);
-}
-
-.cq-services:has([data-service-control="systems"]:checked) .cq-ring {
-  border-color: color-mix(in srgb, #4b98b1 44%, transparent);
 }
 
 @keyframes cq-hero-bloom {

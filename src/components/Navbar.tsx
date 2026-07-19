@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -61,7 +62,7 @@ export default function Navbar() {
         aria-label="Main"
         className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5"
       >
-        <a href="#" onClick={stop} aria-label="Center Quest home" className="shrink-0">
+        <Link href="/" aria-label="Center Quest home" className="shrink-0">
           <Image
             src="/logo.png"
             alt="Center Quest"
@@ -70,7 +71,7 @@ export default function Navbar() {
             priority
             className="h-12 w-auto"
           />
-        </a>
+        </Link>
 
         {/* desktop links */}
         <ul
@@ -134,7 +135,7 @@ export default function Navbar() {
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-background/60 backdrop-blur focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:hidden"
+            className="relative flex h-11 w-11 touch-manipulation items-center justify-center rounded-full border border-border/70 bg-background/60 backdrop-blur focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo md:hidden"
           >
             <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
             <motion.span

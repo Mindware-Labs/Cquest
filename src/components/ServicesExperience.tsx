@@ -198,6 +198,10 @@ function ServicePanel({
 }) {
   const [active, setActive] = useState(0);
   const [pinned, setPinned] = useState(false);
+  // Agency: once the reader picks a capability by hand, the carousel stops
+  // wrestling for the wheel — auto-rotation stays off until this service is
+  // freshly re-selected. The interface never takes back control it ceded.
+  const [userDriven, setUserDriven] = useState(false);
 
   // Whichever capability was showing last time this service was picked, a
   // fresh selection always opens on the first one — never wherever the
@@ -207,23 +211,26 @@ function ServicePanel({
   const [prevSelected, setPrevSelected] = useState(selected);
   if (selected !== prevSelected) {
     setPrevSelected(selected);
-    if (selected) setActive(0);
+    if (selected) {
+      setActive(0);
+      setUserDriven(false);
+    }
   }
 
   // True while the auto-rotation timer is actually counting down — drives the
   // dwell arc so the reader can see when the next capability will land.
-  const dwellRunning = ambient && !pinned && !reduced;
+  const dwellRunning = ambient && !pinned && !reduced && !userDriven;
 
   // Auto-rotating capability spotlight. setTimeout (not setInterval) so every
   // resume — after hover, tab switch or scroll-out — restarts a full dwell.
   useEffect(() => {
-    if (reduced || !ambient || pinned) return;
+    if (reduced || !ambient || pinned || userDriven) return;
     const timer = setTimeout(
       () => setActive((current) => (current + 1) % service.details.length),
       CAPABILITY_DWELL_MS,
     );
     return () => clearTimeout(timer);
-  }, [active, ambient, pinned, reduced, service.details.length]);
+  }, [active, ambient, pinned, reduced, userDriven, service.details.length]);
 
   return (
     <section
@@ -247,8 +254,10 @@ function ServicePanel({
 
       <span aria-hidden className="cq-panel-label-rule relative mt-6 block" />
 
-      <h2 className="relative mt-7 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
-        {service.shortLabel}
+      {/* The headline rises out of its own line mask on panel arrival — the
+          same typographic gesture as the section's main headline. */}
+      <h2 className="cq-panel-headline relative mt-7 font-heading text-[clamp(1.5rem,2.4vw,1.95rem)] font-semibold leading-[1.06] tracking-[-0.025em] text-foreground" style={{ textWrap: "balance" }}>
+        <span className="cq-panel-headline-inner">{service.shortLabel}</span>
       </h2>
 
       <div className="cq-panel-summary relative mt-7">
@@ -280,7 +289,7 @@ function ServicePanel({
                 exit={
                   reduced
                     ? { opacity: 0, transition: { duration: 0.12 } }
-                    : { opacity: 0, y: -6, transition: { duration: 0.22, ease: "easeIn" } }
+                    : { opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.25, ease: "easeIn" } }
                 }
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
@@ -295,7 +304,7 @@ function ServicePanel({
                       transition={
                         reduced
                           ? { duration: 0.15 }
-                          : { duration: 0.4, ease: EASE_OUT_QUART, delay: 0.06 }
+                          : { duration: 0.55, ease: EASE_OUT_EXPO, delay: 0.05 }
                       }
                     >
                       {service.details[active].title}
@@ -303,12 +312,12 @@ function ServicePanel({
                   </h3>
                   <motion.p
                     className="cq-flow-desc"
-                    initial={reduced ? false : { opacity: 0, y: 12, filter: "blur(5px)" }}
+                    initial={reduced ? false : { opacity: 0, y: 14, filter: "blur(6px)" }}
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     transition={
                       reduced
                         ? { duration: 0.15 }
-                        : { duration: 0.42, ease: EASE_OUT_QUART, delay: 0.12 }
+                        : { duration: 0.5, ease: EASE_OUT_QUART, delay: 0.14 }
                     }
                   >
                     {service.details[active].description}
@@ -327,10 +336,14 @@ function ServicePanel({
                 key={detail.title}
                 type="button"
                 className="cq-flow-anchor"
+                style={{ "--ai": index } as CSSProperties}
                 data-active={index === active ? "" : undefined}
                 aria-label={`Show ${detail.title}`}
                 aria-current={index === active}
-                onClick={() => setActive(index)}
+                onClick={() => {
+                  setUserDriven(true);
+                  setActive(index);
+                }}
               >
                 {/* Dwell arc: a hairline that draws a full turn over the dwell,
                     announcing when the spotlight will move on. Unmounts while
@@ -405,6 +418,14 @@ export default function ServicesExperience() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = useReducedMotion() ?? false;
   const inView = useInView(sectionRef, { amount: 0.08 });
+  /* First reveal: the panel column holds at --show:0 (CSS gate on
+     data-revealed) until it actually scrolls into view, then the active
+     panel runs the SAME assembly cascade a selection gets. This replaces
+     the old container-level blur entrance, which sat on top of the panels
+     and swallowed the cascade if the user switched spheres right after
+     arriving — the "first switch doesn't animate" bug. */
+  const panelsRef = useRef<HTMLDivElement>(null);
+  const panelsRevealed = useInView(panelsRef, { once: true, amount: 0.2 });
   const [tabVisible, setTabVisible] = useState(true);
   const [stageHover, setStageHover] = useState(false);
   // Armed after the first user selection so the crowning shockwave and logo
@@ -489,7 +510,7 @@ export default function ServicesExperience() {
   const gridOpacity = useTransform(
     smoothProgress,
     [0, 0.28, 0.72, 1],
-    [0, 0.35, 0.35, 0],
+    [0, 0.5, 0.5, 0],
   );
   const stageY = useTransform(
     smoothProgress,
@@ -532,13 +553,23 @@ export default function ServicesExperience() {
       ref={sectionRef}
       id="services"
       data-ambient-active={ambientActive}
+      data-revealed={panelsRevealed ? "" : undefined}
+      /* --svc-active lives on the section (not just the grid columns) so the
+         ambient layers behind everything — service orb, central tint — can
+         re-light themselves in the selected service's colour. */
+      style={{ "--svc-active": activeColor } as CSSProperties}
       className="cq-services relative isolate overflow-hidden py-16 text-foreground sm:py-20 lg:py-24"
     >
       <motion.div aria-hidden style={{ y: ambientY }} className="pointer-events-none absolute -inset-y-[9%] -inset-x-[8%] overflow-hidden">
         <div className="cq-services-mesh absolute -inset-[12%]" />
-        <div className="cq-orb left-[-12rem] top-[-13rem] h-[36rem] w-[36rem] bg-celeste/30" style={{ animation: "cq-float-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
-        <div className="cq-orb bottom-[-15rem] right-[-10rem] h-[34rem] w-[34rem] bg-petroleo/16" style={{ animation: "cq-float-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
-        <div className="cq-orb left-[42%] top-[32%] h-[24rem] w-[24rem] bg-verde/8" style={{ animation: "cq-float-c 20s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb left-[-12rem] top-[-13rem] h-[36rem] w-[36rem] bg-celeste/35" style={{ animation: "cq-float-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb bottom-[-15rem] right-[-10rem] h-[34rem] w-[34rem] bg-petroleo/20" style={{ animation: "cq-float-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        <div className="cq-orb left-[42%] top-[32%] h-[24rem] w-[24rem] bg-verde/12" style={{ animation: "cq-float-c 20s cubic-bezier(0.45, 0, 0.55, 1) infinite" }} />
+        {/* The selection's own light: an orb over the panel column that
+            cross-blends to whichever service is active. */}
+        <div className="cq-orb cq-orb-svc right-[4%] top-[16%] h-[28rem] w-[28rem]" style={{ animation: "cq-float-b 24s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse" }} />
+        {/* Whisper wash of the active service colour over the section's heart. */}
+        <div className="cq-services-tint absolute inset-0" />
       </motion.div>
       <motion.div aria-hidden style={{ opacity: gridOpacity }} className="cq-services-grid pointer-events-none absolute inset-0" />
       {/* Photographic grain: removes the digital sterility of the gradients. */}
@@ -561,7 +592,8 @@ export default function ServicesExperience() {
             Our services
           </motion.p>
           {/* Each word rises out of its own mask, cascading across both lines. */}
-          <h1 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground">
+          {/* h2, not h1 — the hero owns the page's single h1. */}
+          <h2 className="mt-2 font-heading text-[clamp(1.9rem,4vw,3.3rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground">
             {HEADLINE.map((line, lineIndex) => (
               <span key={lineIndex} className="block">
                 {line.map((word, wordIndex) => (
@@ -577,7 +609,7 @@ export default function ServicesExperience() {
                 ))}
               </span>
             ))}
-          </h1>
+          </h2>
           <motion.p
             variants={{
               hidden: { opacity: 0, y: 14, filter: "blur(5px)" },
@@ -594,10 +626,7 @@ export default function ServicesExperience() {
           </motion.p>
         </motion.header>
 
-        <div
-          className="cq-services-grid-cols relative mt-8 grid items-center gap-7 lg:mt-9 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,1fr)] lg:gap-10"
-          style={{ "--svc-active": activeColor } as CSSProperties}
-        >
+        <div className="cq-services-grid-cols relative mt-8 grid items-center gap-7 lg:mt-9 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,1fr)] lg:gap-10">
           {/* Bridge: a soft glow in the shared accent colour, seated in the gap
               between the diagram and the panel, so the two halves read as one
               linked system instead of two things that happen to sit side by
@@ -626,9 +655,9 @@ export default function ServicesExperience() {
           >
             <div ref={stageRef} className="relative mx-auto aspect-square w-full max-w-[24rem]">
               {/* Assembly: the guide rings draw outward-in before the nodes land. */}
-              <motion.div aria-hidden custom={0} variants={guideRingVariants} className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/45" />
-              <motion.div aria-hidden custom={1} variants={guideRingVariants} className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/60" />
-              <motion.div aria-hidden custom={2} variants={guideRingVariants} className="absolute inset-[35%] rounded-full border border-[1.5px] border-petroleo/35" />
+              <motion.div aria-hidden custom={0} variants={guideRingVariants} className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/60" />
+              <motion.div aria-hidden custom={1} variants={guideRingVariants} className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/80" />
+              <motion.div aria-hidden custom={2} variants={guideRingVariants} className="absolute inset-[35%] rounded-full border border-[1.5px] border-petroleo/50" />
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <motion.fieldset
@@ -721,14 +750,14 @@ export default function ServicesExperience() {
                 })}
               </motion.fieldset>
 
-              <div className="absolute left-1/2 top-1/2 z-20 flex h-[5.6rem] w-[5.6rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16),0_0_0_1.5px_rgba(63,115,141,0.16),0_0_20px_2px_rgba(116,195,213,0.18)] ring-1 ring-inset ring-petroleo/22 sm:h-[7rem] sm:w-[7rem] sm:p-3.5">
+              <div className="absolute left-1/2 top-1/2 z-20 flex h-[5.6rem] w-[5.6rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 backdrop-blur-md p-3 shadow-[0_12px_34px_-16px_rgba(15,57,73,.6),0_2px_6px_-3px_rgba(15,57,73,.2),0_0_0_1.5px_rgba(63,115,141,0.2),0_0_20px_2px_rgba(116,195,213,0.25)] ring-1 ring-inset ring-petroleo/30 sm:h-[7rem] sm:w-[7rem] sm:p-3.5">
                 {/* The seal lands last in the assembly sequence… */}
                 <motion.div variants={sealVariants} className="flex items-center justify-center">
                   {/* …and this keyed remount pulses it each time a selection lands. */}
                   <motion.div
                     key={pulseKey}
-                    animate={pulseKey > 0 && !reduced ? { scale: [1, 1.035, 1] } : undefined}
-                    transition={{ duration: 0.5, ease: EASE_OUT }}
+                    animate={pulseKey > 0 && !reduced ? { scale: [1, 1.05, 1] } : undefined}
+                    transition={{ duration: 0.55, ease: EASE_OUT }}
                     className="flex items-center justify-center"
                   >
                     <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.3rem] sm:w-[5.2rem]" />
@@ -757,17 +786,13 @@ export default function ServicesExperience() {
             </div>
           </motion.div>
 
+          {/* No container-level entrance here: the first reveal is the
+              panels' own assembly cascade (gated on data-revealed above), so
+              nothing ever sits on top of it and swallows the choreography. */}
           <motion.div
-            initial={reduced ? false : { opacity: 0, y: 30, scale: 0.97, filter: "blur(9px)" }}
-            whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            viewport={{ once: true, amount: 0.16 }}
-            transition={
-              reduced
-                ? { duration: 0 }
-                : { type: "spring", duration: 0.75, bounce: 0.14, delay: 0.16 }
-            }
+            ref={panelsRef}
             style={{ y: panelY }}
-            className="cq-service-panels min-h-[17rem]"
+            className="cq-service-panels min-h-[17rem] py-4 lg:py-10"
           >
             {SERVICES.map((service) => (
               <ServicePanel
