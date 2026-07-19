@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   motion,
   useAnimationFrame,
@@ -22,6 +22,7 @@ type ServiceOrbitProps = {
   stageY: MotionValue<number>;
   stageScale: MotionValue<number>;
   scrollVelocity: MotionValue<number>;
+  selected: ServiceId;
   onSelect: (service: ServiceId) => void;
 };
 
@@ -31,6 +32,7 @@ export default function ServiceOrbit({
   stageY,
   stageScale,
   scrollVelocity,
+  selected,
   onSelect,
 }: ServiceOrbitProps) {
   const [stageHover, setStageHover] = useState(false);
@@ -39,6 +41,19 @@ export default function ServiceOrbit({
   const orbitAngle = useMotionValue(0);
   const counterAngle = useTransform(orbitAngle, (value) => -value);
   const { stageRef, comet, launchComet, clearComet } = useServiceComet(reduced);
+  const prevSelected = useRef<ServiceId | null>(null);
+
+  // React to selection from ANY source — orbit clicks, journey-rail stops or
+  // the scroll journey itself — with the same ceremony: arm the crown pulse,
+  // ping the seal and send the comet along the arc to the new sphere.
+  useEffect(() => {
+    const previous = prevSelected.current;
+    prevSelected.current = selected;
+    if (previous === null || previous === selected) return;
+    setArmed(true);
+    setPulseKey((key) => key + 1);
+    launchComet(selected);
+  }, [selected, launchComet]);
 
   return (
     <motion.div
@@ -84,11 +99,7 @@ export default function ServiceOrbit({
           data-armed={armed || undefined}
           onChange={(event) => {
             if (!(event.target instanceof HTMLInputElement)) return;
-            const next = event.target.value as ServiceId;
-            setArmed(true);
-            setPulseKey((key) => key + 1);
-            onSelect(next);
-            launchComet(next);
+            onSelect(event.target.value as ServiceId);
           }}
         >
           <legend className="sr-only">Center Quest business lines</legend>
@@ -99,6 +110,7 @@ export default function ServiceOrbit({
               index={index}
               counterAngle={counterAngle}
               reduced={reduced}
+              selected={service.id === selected}
             />
           ))}
         </motion.fieldset>

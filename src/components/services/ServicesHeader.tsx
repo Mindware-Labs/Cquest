@@ -7,7 +7,7 @@ export default function ServicesHeader({ reduced }: { reduced: boolean }) {
       initial={reduced ? false : "hidden"}
       whileInView="show"
       viewport={{ once: true, amount: 0.28 }}
-      className="mx-auto max-w-[44rem] text-center"
+      className="cq-services-header mx-auto max-w-[44rem] text-center"
     >
       <motion.p
         variants={{

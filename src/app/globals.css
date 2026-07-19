@@ -240,6 +240,14 @@ html.lenis body {
      screen). SmoothScroll's anchor handler reads this same value, so the
      smooth path and the native path (reduced motion, hash loads) agree. */
   scroll-margin-top: calc(-1 * var(--curtain));
+}
+
+/* The lifted sheet: the section's visible surface. Split from .cq-services
+   because on desktop the section becomes a tall SCROLL TRACK (the lateral
+   journey below) while this sheet pins to the viewport — visuals travel
+   with the sheet, scroll geometry stays on the section. */
+.cq-services-sheet {
+  position: relative;
   border-radius: var(--curtain) var(--curtain) 0 0;
   /* Rim light: a 1px specular catch along the sheet's rounded shoulder plus
      a soft celeste bloom falling from the top edge — the section reads as a
@@ -253,6 +261,61 @@ html.lenis body {
     radial-gradient(76% 56% at 50% 44%, color-mix(in srgb, white 68%, transparent), transparent 72%),
     radial-gradient(120% 92% at 50% 116%, color-mix(in srgb, var(--brand-petroleo) 9%, transparent), transparent 60%),
     #fafdff;
+  padding-block: 4rem;
+}
+
+@media (min-width: 40rem) {
+  .cq-services-sheet { padding-block: 5rem; }
+}
+
+@media (min-width: 64rem) {
+  .cq-services-sheet { padding-block: 6rem; }
+}
+
+/* ── Lateral journey (desktop, motion-safe) ──────────────
+   The section stretches into a tall scroll track and the sheet pins to the
+   viewport: vertical scroll no longer moves the page past the section — it
+   advances the three business lines LATERALLY (see the panel choreography
+   further down, driven by --active-i from JS). Mobile and reduced-motion
+   keep the normal document flow untouched. */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+  .cq-services {
+    height: 340vh;
+  }
+
+  .cq-services-sheet {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100dvh;
+    padding-block: 0;
+  }
+}
+
+/* Short desktop viewports (1366×768-class laptops): the pinned stage must
+   fit inside 100dvh, so verticals compress — tighter header, margins and
+   panel padding — instead of letting overflow:hidden shave the headline
+   and the journey rail. */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) and (max-height: 50rem) {
+  .cq-services-sheet .cq-services-header h2 {
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+  }
+
+  .cq-services-sheet .cq-services-grid-cols {
+    margin-top: 1rem;
+    gap: 1.75rem;
+  }
+
+  .cq-services-sheet .cq-service-panels {
+    min-height: 0;
+    padding-block: 0.75rem;
+  }
+
+  .cq-services-sheet .cq-journey-rail {
+    margin-top: 0.9rem;
+  }
 }
 
 /* ── Ambient background orbs (Services section) ──────────
@@ -1043,11 +1106,19 @@ html.lenis body {
    panels leave the a11y tree and stop capturing pointer events. */
 .cq-service-panel {
   --show: 0;
+  /* Lateral choreography: each panel knows its slot (--i, inline) and the
+     active slot (--active-i, on the section). The clamped difference gives
+     a direction sign: panels BEFORE the active one rest exited to the LEFT
+     (-1), panels AFTER wait offstage to the RIGHT (+1). Advancing therefore
+     sends the outgoing panel left while the incoming one arrives from the
+     right — and scrolling back plays the exact mirror, with zero direction
+     bookkeeping in JS. */
+  --side: clamp(-1, var(--i, 0) - var(--active-i, 0), 1);
   grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(18px) scale(0.985);
+  transform: translateX(calc(var(--side) * clamp(3rem, 7vw, 5.5rem))) scale(0.975);
   /* Asymmetric timing, same trick as the delays: durations stretch with
      --show, so the ENTRANCE settles luxuriously (~320/560ms) while the
      EXIT releases briskly (~230ms) — the outgoing panel gets out of the
@@ -1084,11 +1155,13 @@ html.lenis body {
     220ms  headline mask rise
     320ms  strapline · 400ms description · 440ms summary rule */
 
-/* 1 · Identity: the block rises out of a soft blur while the chip pops in
-   with a touch of overshoot and the eyebrow's tracking settles closed. */
+/* 1 · Identity: the block drifts in laterally out of a soft blur while the
+   chip pops in with a touch of overshoot and the eyebrow's tracking settles
+   closed. Children inherit --side from the panel, so every inner offset
+   agrees with the panel's travel direction — including on the way back. */
 .cq-panel-identity {
   opacity: var(--show, 1);
-  translate: 0 calc((1 - var(--show, 1)) * 16px);
+  translate: calc(var(--side, 0) * (1 - var(--show, 1)) * 22px) 0;
   filter: blur(calc((1 - var(--show, 1)) * 5px));
   transition:
     opacity 440ms var(--ease-out-quart) calc(var(--show, 1) * 40ms),
@@ -1126,8 +1199,9 @@ html.lenis body {
   transition: scale 640ms var(--ease-out-expo) calc(var(--show, 1) * 440ms);
 }
 
-/* 4 · Headline: pure typographic reveal — the text rises out of a line
-   mask, no fade, the same gesture as the section's own headline. */
+/* 4 · Headline: pure typographic reveal — the text now WIPES horizontally
+   out of its line mask in the travel direction, no fade: the panel's
+   strongest line makes the lateral gesture explicit. */
 .cq-panel-headline {
   overflow: hidden;
   padding-bottom: 0.14em;
@@ -1136,15 +1210,16 @@ html.lenis body {
 
 .cq-panel-headline-inner {
   display: block;
-  translate: 0 calc((1 - var(--show, 1)) * 118%);
+  translate: calc(var(--side, 0) * (1 - var(--show, 1)) * 108%) 0;
   transition: translate 760ms var(--ease-out-expo) calc(var(--show, 1) * 220ms);
   will-change: translate;
 }
 
-/* 5 · Prose condenses into focus, strapline leading the description. */
+/* 5 · Prose condenses into focus, strapline leading the description — both
+   drifting in along the travel axis. */
 .cq-panel-strapline {
   opacity: var(--show, 1);
-  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  translate: calc(var(--side, 0) * (1 - var(--show, 1)) * 16px) 0;
   filter: blur(calc((1 - var(--show, 1)) * 4px));
   transition:
     opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 320ms),
@@ -1154,7 +1229,7 @@ html.lenis body {
 
 .cq-panel-description {
   opacity: var(--show, 1);
-  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  translate: calc(var(--side, 0) * (1 - var(--show, 1)) * 16px) 0;
   filter: blur(calc((1 - var(--show, 1)) * 4px));
   transition:
     opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 400ms),
@@ -1165,7 +1240,7 @@ html.lenis body {
 /* 6 · The capability stage arrives once the reading path above is set. */
 .cq-flow-stage {
   opacity: var(--show, 1);
-  translate: 0 calc((1 - var(--show, 1)) * 12px);
+  translate: calc(var(--side, 0) * (1 - var(--show, 1)) * 16px) 0;
   filter: blur(calc((1 - var(--show, 1)) * 4px));
   transition:
     opacity 460ms var(--ease-out-quart) calc(var(--show, 1) * 480ms),
@@ -1185,11 +1260,11 @@ html.lenis body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  /* Explicit here so the default (call-center) panel also sinks on exit —
-     without this its own show rule would keep transform: none while
+  /* Explicit here so the default (call-center) panel also slides out on
+     exit — without this its own show rule would keep transform: none while
      hidden, making it the only panel that left without the release
-     motion. */
-  transform: translateY(18px) scale(0.985);
+     motion. Same lateral expression as the base hidden state. */
+  transform: translateX(calc(var(--side) * clamp(3rem, 7vw, 5.5rem))) scale(0.975);
 }
 
 .cq-services:has([data-service-control="bpo"]:checked) .cq-service-panel[data-panel="bpo"],
@@ -1214,10 +1289,16 @@ html.lenis body {
 @media (scripting: enabled) {
   .cq-services:not([data-revealed]) .cq-service-panel[data-panel][data-panel] {
     --show: 0;
+    /* Force "waiting stage-right" on every panel pre-reveal: the active
+       panel's own --side resolves to 0 (it IS the active slot), which would
+       strip the first entrance of any travel. Pinning +1 here means the
+       first impression arrives from the right — the same direction the
+       whole lateral journey moves. */
+    --side: 1;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(18px) scale(0.985);
+    transform: translateX(calc(var(--side) * clamp(3rem, 7vw, 5.5rem))) scale(0.975);
   }
 }
 

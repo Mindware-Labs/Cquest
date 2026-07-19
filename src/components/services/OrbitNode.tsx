@@ -9,6 +9,7 @@ type OrbitNodeProps = {
   index: number;
   counterAngle: MotionValue<number>;
   reduced: boolean;
+  selected: boolean;
 };
 
 export default function OrbitNode({
@@ -16,6 +17,7 @@ export default function OrbitNode({
   index,
   counterAngle,
   reduced,
+  selected,
 }: OrbitNodeProps) {
   const orbit = ORBIT[index];
   const icon =
@@ -35,13 +37,17 @@ export default function OrbitNode({
         custom={index}
         variants={nodeVariants}
       >
+        {/* Controlled so the scroll journey can drive :checked (and with it
+            the whole CSS panel choreography); the change event still bubbles
+            to the fieldset, which owns selection handling. */}
         <input
           id={`${SERVICE_PANEL_ID}-${service.id}-control`}
           className="cq-service-control sr-only"
           type="radio"
           name="center-quest-service"
           value={service.id}
-          defaultChecked={service.id === "call-center"}
+          checked={selected}
+          onChange={() => {}}
           data-service-control={service.id}
           aria-label={service.label}
         />

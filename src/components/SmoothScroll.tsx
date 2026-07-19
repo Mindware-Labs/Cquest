@@ -2,6 +2,15 @@
 
 import { useEffect } from "react";
 
+declare global {
+  interface Window {
+    /* The live Lenis instance, exposed so components that need programmatic
+       travel (e.g. the services lateral journey) scroll through the same
+       easing pipeline instead of fighting it with native scrollTo. */
+    __lenis?: import("lenis").default;
+  }
+}
+
 export default function SmoothScroll() {
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -18,6 +27,7 @@ export default function SmoothScroll() {
       frame = undefined;
       lenis?.destroy();
       lenis = undefined;
+      delete window.__lenis;
     };
 
     const start = async () => {
@@ -29,6 +39,7 @@ export default function SmoothScroll() {
 
       lenis = new Lenis({ lerp: 0.1 });
       const instance = lenis;
+      window.__lenis = instance;
       const onAnchorClick = (event: MouseEvent) => {
         if (
           event.defaultPrevented ||

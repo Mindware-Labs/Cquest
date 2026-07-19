@@ -5,6 +5,7 @@ import ServiceIcon from "./ServiceIcon";
 
 type ServicePanelProps = {
   service: Service;
+  index: number;
   ambient: boolean;
   reduced: boolean;
   selected: boolean;
@@ -12,6 +13,7 @@ type ServicePanelProps = {
 
 export default function ServicePanel({
   service,
+  index,
   ambient,
   reduced,
   selected,
@@ -25,7 +27,15 @@ export default function ServicePanel({
       data-panel={service.id}
       aria-labelledby={`${SERVICE_PANEL_ID}-${service.id}-label`}
       className="cq-service-panel"
-      style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
+      style={
+        {
+          "--svc": service.color,
+          "--svc-glow": service.glow,
+          /* Slot index for the lateral choreography: CSS derives the exit/
+             entry side from (--i - --active-i). */
+          "--i": index,
+        } as CSSProperties
+      }
     >
       <span aria-hidden className="cq-panel-spine" />
       <div className="cq-panel-identity relative flex items-center gap-3">
