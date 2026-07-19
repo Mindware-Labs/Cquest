@@ -13,6 +13,17 @@
   --muted: #4a5c6a;            /* bumped from #5c6b77 for ≥4.5:1 on bg */
   --border: #e2ddd6;
 
+  /* Secondary-text hierarchy — 2 tiers, used everywhere instead of one-off
+     gray mixes so the whole system stays on exactly these tones. Solid
+     colours (not text-opacity) so contrast holds regardless of what's
+     behind the text on gradient/photo surfaces. Verified against the
+     lightest surface this sits on (#fafdff, the Services section's near-
+     white base): secondary ≈14.4:1, tertiary ≈12.7:1 — both clear WCAG AA's
+     4.5:1 floor for normal text with wide margin. Re-check with
+     webaim.org/resources/contrastchecker if either mix ratio changes. */
+  --text-secondary: color-mix(in srgb, var(--foreground) 80%, var(--muted));
+  --text-tertiary: color-mix(in srgb, var(--foreground) 72%, var(--muted));
+
   /* Elevation tints (used in components) */
   --surface-raised: #ffffff;
   --surface-sunken: #f0ede8;
@@ -47,9 +58,12 @@
   --color-verde: var(--brand-verde);
   --color-gris: var(--brand-gris);
 
-  --font-heading: var(--font-geist-sans);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  /* One family, carried by weight contrast (see layout.tsx) instead of a
+     second display face — headings lean Semibold/Bold, body stays
+     Regular/Medium. */
+  --font-heading: var(--font-switzer);
+  --font-sans: var(--font-switzer);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 /* ── Base ─────────────────────────────────────────────── */
@@ -371,9 +385,27 @@ html.lenis body {
    Left padding clears the spine. */
 .cq-service-panel {
   --svc: var(--brand-petroleo);
-  --panel-pad: clamp(1.25rem, 2.2vw, 1.75rem);
+  --panel-pad: clamp(1.5rem, 3vw, 2.25rem);
   position: relative;
   padding-left: var(--panel-pad);
+}
+
+/* Bridge: sits in the gap between the two grid columns, a soft glow tinted
+   with whichever service is active — visual proof the diagram and the panel
+   are one linked system, not two coincidentally adjacent blocks. */
+.cq-services-bridge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14rem;
+  height: 14rem;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--svc-active) 22%, transparent), transparent 72%);
+  filter: blur(6px);
+  pointer-events: none;
+  transition: background 500ms var(--ease-out);
+  z-index: 0;
 }
 
 /* The spine: a hairline in the service colour that dissolves downward, capped
@@ -410,6 +442,12 @@ html.lenis body {
 .cq-panel-chip {
   position: relative;
   color: color-mix(in srgb, var(--svc) 85%, var(--foreground));
+  /* Same filled-circle material as the orbit nodes (not just a bare glyph) —
+     one visual family across the diagram and the panel, not two unrelated
+     icon styles that happen to share a colour. */
+  background: color-mix(in srgb, var(--svc) 9%, white);
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px -3px color-mix(in srgb, var(--svc) 40%, transparent);
 }
 
 /* The orbit: a 1px ring with a quarter missing, turning slowly. */
@@ -510,7 +548,7 @@ html.lenis body {
 }
 
 .cq-panel-description {
-  color: color-mix(in srgb, var(--foreground) 80%, var(--muted));
+  color: var(--text-secondary);
   line-height: 1.75;
   text-wrap: pretty;
 }
@@ -681,14 +719,17 @@ html.lenis body {
   overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.42rem 0.45rem 0.42rem 1.15rem;
+  gap: 0.6rem;
+  padding: 0.55rem 0.5rem 0.55rem 1.4rem;
   border-radius: 9999px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: #fff;
   text-decoration: none;
+  /* Per-service colour — the CTA must read as part of the active business
+     line (matching the node, spine and bridge glow), not a fixed accent
+     that stays the same regardless of which service is selected. */
   background-color: color-mix(in srgb, var(--svc) 84%, var(--foreground));
   box-shadow: 0 2px 8px -3px color-mix(in srgb, var(--svc) 42%, transparent);
   /* Magnetic lean: --ctax/--ctay follow the cursor (set from JS); keeping it
@@ -807,15 +848,26 @@ html.lenis body {
 /* Hover feedback stays on the actual service controls, never the ledger. */
 @media (hover: hover) and (pointer: fine) {
   .cq-service-node:hover .cq-service-ring {
-    background: color-mix(in srgb, var(--svc) 14%, white);
-    border-color: color-mix(in srgb, var(--svc) 62%, transparent);
+    background: color-mix(in srgb, var(--svc) 22%, white);
+    border-color: color-mix(in srgb, var(--svc) 75%, transparent);
     /* Lift below (light falls from above) plus a soft service-colour bloom —
        light, not outline. */
     box-shadow:
-      0 8px 18px -9px color-mix(in srgb, var(--svc) 42%, transparent),
-      0 0 18px 2px color-mix(in srgb, var(--svc) 20%, transparent);
-    transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1.05);
-    transition-timing-function: cubic-bezier(0.34, 1.3, 0.5, 1);
+      0 8px 18px -9px color-mix(in srgb, var(--svc) 48%, transparent),
+      0 0 20px 3px color-mix(in srgb, var(--svc) 26%, transparent);
+    /* Scale stays on the standalone `scale` property (not baked into
+       `transform`) so it inherits the same spring easing as the crowned
+       state instead of the plain translate ease. One timing value per
+       transition-property on .cq-service-ring, in that same order:
+       transform, scale, background, border-color, box-shadow, color. */
+    scale: 1.05;
+    transition-timing-function:
+      var(--ease-out),
+      var(--ease-spring),
+      var(--ease-out),
+      var(--ease-out),
+      var(--ease-out),
+      var(--ease-out);
   }
 
   /* The glyph wakes: a small tilt-and-rise, sprung by the organic curve. */
@@ -835,7 +887,7 @@ html.lenis body {
   max-width: 56ch;
   font-size: 0.875rem;
   line-height: 1.75;
-  color: color-mix(in srgb, var(--foreground) 80%, var(--muted));
+  color: var(--text-secondary);
   text-wrap: pretty;
 }
 
@@ -1008,7 +1060,7 @@ html.lenis body {
   line-height: 1.1;
   letter-spacing: -0.01em;
   white-space: nowrap;
-  color: color-mix(in srgb, var(--foreground) 55%, var(--muted));
+  color: var(--text-tertiary);
   transition:
     color 200ms var(--ease-out),
     letter-spacing 240ms var(--ease-out);

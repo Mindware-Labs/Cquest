@@ -31,14 +31,15 @@ Estilo objetivo: premium minimalista, inspirado en Stripe.
 
 | Uso | Fuente | Peso | Fuente de descarga |
 |---|---|---|---|
-| **Titulares (headlines)** | Geist | Bold / Semibold | [vercel.com/font](https://vercel.com/font) |
-| **Cuerpo de texto** | Inter | Regular / Medium | [Google Fonts](https://fonts.google.com/specimen/Inter) |
+| **Titulares (headlines)** | Switzer | Bold / Semibold | [Fontshare](https://www.fontshare.com/fonts/switzer) |
+| **Cuerpo de texto** | Switzer | Regular / Medium | [Fontshare](https://www.fontshare.com/fonts/switzer) |
 
 ### Notas de uso
 
-- Geist se reserva para títulos grandes (hero, encabezados de sección) en Bold o Semibold, aportando el carácter distintivo de marca.
-- Inter se usa para todo el texto de lectura (párrafos, descripciones de tarjetas, labels, botones) en Regular o Medium, priorizando legibilidad.
-- Evitar mezclar más de estas dos familias tipográficas para mantener la coherencia minimalista.
+- Una sola familia (Switzer) cubre titulares y cuerpo, diferenciados por peso — Bold/Semibold para títulos, Regular/Medium para lectura — en vez de dos tipografías distintas.
+- Se reemplazó la pareja anterior (Geist + Inter): es la combinación "premium-Stripe" más repetida en sitios asistidos por IA, y no diferenciaba a la marca. Switzer mantiene el mismo carácter neutro-premium (es prima cercana de Söhne/Suisse Int'l, la familia que usa Stripe) sin caer en ese mismo lugar común.
+- Los archivos (`.woff2`, licencia Fontshare Free — gratis para uso comercial) viven en `src/fonts/switzer/` y se cargan vía `next/font/local` en `layout.tsx`, autohospedados (sin depender del CDN de Fontshare en producción).
+- Evitar mezclar más de esta familia tipográfica para mantener la coherencia minimalista.
 
 ---
 *Este documento se irá actualizando a medida que se defina el diseño final del sitio.*

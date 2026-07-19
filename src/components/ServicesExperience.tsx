@@ -90,10 +90,14 @@ const SERVICES: Service[] = [
   },
 ];
 
+// Radius must clear the central seal plus the crowned node's own scaled-up
+// footprint (ring at 1.12x + its halo ring) with margin to spare — the
+// previous minimum (6.4rem) was only enough for the quiet, unscaled nodes,
+// so the active node visually sat behind/inside the seal at narrow widths.
 const ORBIT = [
-  { angle: -90, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
-  { angle: 30, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
-  { angle: 150, radius: "clamp(6.4rem, 12vw, 8.6rem)" },
+  { angle: -90, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
+  { angle: 30, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
+  { angle: 150, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
 ];
 
 const SERVICE_PANEL_ID = "cq-services";
@@ -120,10 +124,11 @@ const wordVariants: Variants = {
 };
 
 const guideRingVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.78 },
+  hidden: { opacity: 0, scale: 0.78, filter: "blur(6px)" },
   show: (i: number) => ({
     opacity: 1,
     scale: 1,
+    filter: "blur(0px)",
     transition: { duration: 0.8, ease: EASE_OUT, delay: 0.12 + i * 0.11 },
   }),
 };
@@ -193,10 +198,14 @@ function ServicePanel({
 
   // Whichever capability was showing last time this service was picked, a
   // fresh selection always opens on the first one — never wherever the
-  // ambient rotation (or a prior visit) had left it.
-  useEffect(() => {
+  // ambient rotation (or a prior visit) had left it. Reset during render
+  // (React's documented pattern for state-on-prop-change) instead of an
+  // effect, so it lands before paint with no extra render pass.
+  const [prevSelected, setPrevSelected] = useState(selected);
+  if (selected !== prevSelected) {
+    setPrevSelected(selected);
     if (selected) setActive(0);
-  }, [selected]);
+  }
 
   // True while the auto-rotation timer is actually counting down — drives the
   // dwell arc so the reader can see when the next capability will land.
@@ -241,7 +250,7 @@ function ServicePanel({
 
       <div className="cq-panel-summary relative mt-7">
         <p className="cq-panel-strapline max-w-[46ch] text-[.95rem] leading-relaxed text-foreground/90">{service.strapline}</p>
-        <p className="cq-panel-description mt-2 max-w-[48ch] text-sm text-muted">{service.description}</p>
+        <p className="cq-panel-description mt-2 max-w-[48ch] text-sm">{service.description}</p>
       </div>
 
       <div
@@ -400,6 +409,7 @@ export default function ServicesExperience() {
   const [armed, setArmed] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
   const [selectedService, setSelectedService] = useState<ServiceId>("call-center");
+  const activeColor = SERVICES.find((entry) => entry.id === selectedService)?.color ?? SERVICES[0].color;
 
   /* Selection comet: when the choice moves to another sphere, a spark leaves
      the old node and rides the orbit's arc to the new one — the crown visibly
@@ -575,23 +585,35 @@ export default function ServicesExperience() {
                 transition: { duration: 0.6, ease: EASE_OUT, delay: 0.5 },
               },
             }}
-            className="mx-auto mt-3 max-w-[56ch] text-pretty text-[.95rem] leading-6 text-muted sm:text-base"
+            className="mx-auto mt-3 max-w-[56ch] text-pretty text-[.95rem] leading-6 text-[var(--text-secondary)] sm:text-base"
           >
             Explore the capability that best fits your next business move.
           </motion.p>
         </motion.header>
 
-        <div className="mt-8 grid items-center gap-7 lg:mt-9 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,.82fr)] lg:gap-10">
+        <div
+          className="cq-services-grid-cols relative mt-8 grid items-center gap-7 lg:mt-9 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,1fr)] lg:gap-10"
+          style={{ "--svc-active": activeColor } as CSSProperties}
+        >
+          {/* Bridge: a soft glow in the shared accent colour, seated in the gap
+              between the diagram and the panel, so the two halves read as one
+              linked system instead of two things that happen to sit side by
+              side — echoes whichever service is currently selected. */}
+          <span aria-hidden className="cq-services-bridge hidden lg:block" />
           <motion.div
             variants={{
-              hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { duration: 0.55, ease: EASE_OUT } },
+              hidden: { opacity: 0, filter: "blur(10px)" },
+              show: {
+                opacity: 1,
+                filter: "blur(0px)",
+                transition: { duration: 0.85, ease: EASE_OUT },
+              },
             }}
             initial={reduced ? false : "hidden"}
             whileInView="show"
             viewport={{ once: true, amount: 0.16 }}
             style={{ y: stageY, scale: stageScale }}
-            className="relative mx-auto w-full max-w-[32rem]"
+            className="relative mx-auto w-full max-w-[29rem]"
             onPointerEnter={(event) => {
               if (event.pointerType === "mouse") setStageHover(true);
             }}
@@ -599,7 +621,7 @@ export default function ServicesExperience() {
               if (event.pointerType === "mouse") setStageHover(false);
             }}
           >
-            <div ref={stageRef} className="relative mx-auto aspect-square w-full max-w-[26rem]">
+            <div ref={stageRef} className="relative mx-auto aspect-square w-full max-w-[24rem]">
               {/* Assembly: the guide rings draw outward-in before the nodes land. */}
               <motion.div aria-hidden custom={0} variants={guideRingVariants} className="absolute inset-[8%] rounded-full border border-[1.5px] border-petroleo/45" />
               <motion.div aria-hidden custom={1} variants={guideRingVariants} className="absolute inset-[20%] rounded-full border border-[1.5px] border-celeste/60" />
@@ -607,7 +629,7 @@ export default function ServicesExperience() {
               <><div aria-hidden className="cq-ring inset-[19%]" /><div aria-hidden className="cq-ring inset-[19%]" style={{ animationDelay: "-5.1s" }} /></>
 
               <motion.fieldset
-                className="cq-service-orbit absolute inset-0 m-0 border-0 p-0"
+                className="cq-service-orbit absolute inset-0 z-10 m-0 border-0 p-0"
                 style={{ rotate: orbitAngle }}
                 data-armed={armed || undefined}
                 onChange={(event) => {
@@ -628,11 +650,31 @@ export default function ServicesExperience() {
                     <div
                       key={service.id}
                       className="absolute left-1/2 top-1/2"
-                      style={{ transform: `rotate(${orbit.angle}deg) translateY(calc(${orbit.radius} * -1)) rotate(${-orbit.angle}deg)` }}
+                      /* transformOrigin pins the pivot to this exact anchor point
+                         (the container's true center) regardless of the child
+                         label's own rendered size — without it, the pivot
+                         defaults to the wrapper's own content box center, which
+                         differs per node ("BPO" vs "Call Center" text width,
+                         plus the selected node's larger scale), throwing the
+                         three nodes off a shared radius asymmetrically. */
+                      style={{
+                        transform: `rotate(${orbit.angle}deg) translateY(calc(${orbit.radius} * -1)) rotate(${-orbit.angle}deg)`,
+                        transformOrigin: "0 0",
+                      }}
                     >
                       <motion.div
                         className="cq-service-orbit-counter"
-                        style={{ rotate: counterAngle }}
+                        /* Same fix as the parent wrapper: without a pinned
+                           transformOrigin, Framer Motion pivots this div's
+                           counter-rotation and entrance scale around its OWN
+                           content-box center, which grows with the label
+                           (icon + name, bigger still for the crowned/scaled
+                           node) — as the outer orbit keeps rotating, that
+                           mismatched pivot makes the node visibly drift off
+                           its radius over time, occasionally right behind
+                           the seal. Pinning both to the same anchor point
+                           keeps every node on its true circle always. */
+                        style={{ rotate: counterAngle, transformOrigin: "0 0" }}
                         custom={index}
                         variants={nodeVariants}
                       >
@@ -676,7 +718,7 @@ export default function ServicesExperience() {
                 })}
               </motion.fieldset>
 
-              <div className="absolute left-1/2 top-1/2 flex h-[6.4rem] w-[6.4rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3.5 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16)] ring-1 ring-inset ring-petroleo/10 sm:h-[8rem] sm:w-[8rem] sm:p-4">
+              <div className="absolute left-1/2 top-1/2 z-20 flex h-[5.6rem] w-[5.6rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white p-3 shadow-[0_12px_34px_-16px_rgba(15,57,73,.5),0_2px_6px_-3px_rgba(15,57,73,.16),0_0_0_1.5px_rgba(63,115,141,0.16),0_0_20px_2px_rgba(116,195,213,0.18)] ring-1 ring-inset ring-petroleo/22 sm:h-[7rem] sm:w-[7rem] sm:p-3.5">
                 {/* The seal lands last in the assembly sequence… */}
                 <motion.div variants={sealVariants} className="flex items-center justify-center">
                   {/* …and this keyed remount pulses it each time a selection lands. */}
@@ -686,7 +728,7 @@ export default function ServicesExperience() {
                     transition={{ duration: 0.5, ease: EASE_OUT }}
                     className="flex items-center justify-center"
                   >
-                    <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.9rem] sm:w-[5.9rem]" />
+                    <Image src="/logo.png" alt="Center Quest" width={206} height={152} priority className="h-auto w-[4.3rem] sm:w-[5.2rem]" />
                   </motion.div>
                 </motion.div>
               </div>
@@ -696,7 +738,7 @@ export default function ServicesExperience() {
                 <motion.span
                   key={comet.key}
                   aria-hidden
-                  className="cq-comet"
+                  className="cq-comet z-[15]"
                   style={{ "--comet": comet.color } as CSSProperties}
                   initial={{ x: comet.xs[0], y: comet.ys[0], opacity: 0, scale: 0.4 }}
                   animate={{
@@ -713,10 +755,14 @@ export default function ServicesExperience() {
           </motion.div>
 
           <motion.div
-            initial={reduced ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduced ? false : { opacity: 0, y: 30, scale: 0.97, filter: "blur(9px)" }}
+            whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.16 }}
-            transition={{ duration: reduced ? 0 : 0.6, ease: EASE_OUT, delay: reduced ? 0 : 0.16 }}
+            transition={
+              reduced
+                ? { duration: 0 }
+                : { type: "spring", duration: 0.75, bounce: 0.14, delay: 0.16 }
+            }
             style={{ y: panelY }}
             className="cq-service-panels min-h-[17rem]"
           >

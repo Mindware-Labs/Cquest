@@ -1,26 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import ScrollProgress from "@/components/ScrollProgress";
 import SmoothScroll from "@/components/SmoothScroll";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Switzer (Fontshare, free for commercial use) — one family for headings and
+// body, carried by weight contrast instead of a second typeface. Replaces
+// Geist + Inter, the single most common "Stripe-inspired" pairing on
+// AI-assisted sites; see DISENIO.md for the brand rationale.
+const switzer = localFont({
+  variable: "--font-switzer",
   display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
+  src: [
+    { path: "../fonts/switzer/Switzer-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/switzer/Switzer-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Bold.woff2", weight: "700", style: "normal" },
+  ],
 });
 
 const SITE_DESCRIPTION =
@@ -53,7 +50,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
+      className={`${switzer.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {/* Accessibility: skip to main content */}
