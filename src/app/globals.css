@@ -218,12 +218,15 @@ html.lenis body {
    radius) so the photo disappears behind it as you scroll. */
 .cq-services {
   margin-top: calc(-1 * var(--curtain));
-  /* Anchor jumps (e.g. the navbar's "Services" link) must land flush: the
-     -margin-top above already pulls this section's true document position up
-     to exactly one viewport height, so a 0 scroll-margin scrolls all the way
-     there with no hero fragment left peeking above it. Any positive value
-     here reserves that much hero above the fold instead. */
-  scroll-margin-top: 0;
+  /* Anchor jumps (the "Services" links) must hide the hero COMPLETELY.
+     Landing flush at this section's top still shows the hero through the
+     rounded shoulders (the curtain overlap is exactly that: hero behind the
+     sheet's corners). The negative scroll-margin makes anchors land one
+     curtain PAST the top — precisely at the hero's bottom edge — so no
+     photo fragment survives at any viewport size (the clamp() tracks the
+     screen). SmoothScroll's anchor handler reads this same value, so the
+     smooth path and the native path (reduced motion, hash loads) agree. */
+  scroll-margin-top: calc(-1 * var(--curtain));
   border-radius: var(--curtain) var(--curtain) 0 0;
   /* Rim light: a 1px specular catch along the sheet's rounded shoulder plus
      a soft celeste bloom falling from the top edge — the section reads as a

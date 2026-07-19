@@ -156,7 +156,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
           transition={{ type: "spring", stiffness: 420, damping: 26 }}
           className="group/nav relative hidden touch-manipulation overflow-hidden rounded-lg bg-celeste px-5 py-3 text-sm font-semibold text-foreground shadow-[0_2px_10px_-4px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_color-mix(in_srgb,var(--brand-celeste)_55%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-block"
         >
-          <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Request a quote</span>
+          <span className="relative z-10 transition-colors duration-300 group-hover/nav:text-[var(--ink)]">Contact us</span>
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-lg bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
         </motion.a>
 
@@ -221,7 +221,7 @@ function HeroNav({ reduced }: { reduced: boolean }) {
                   onClick={() => setOpen(false)}
                   className="block touch-manipulation rounded-lg bg-celeste px-5 py-3 text-center text-sm font-semibold text-foreground"
                 >
-                  Request a quote
+                  Contact us
                 </a>
               </motion.li>
             </ul>
