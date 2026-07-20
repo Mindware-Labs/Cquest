@@ -17,7 +17,10 @@ export type ServiceIconName =
   | "chart"
   | "workflow"
   | "brain"
-  | "code";
+  | "code"
+  | "phone"
+  | "mail"
+  | "share";
 
 export type Service = {
   id: ServiceId;
@@ -91,12 +94,3 @@ export const SERVICES: ReadonlyArray<Service> = [
     ],
   },
 ];
-
-export const ORBIT = [
-  { angle: -90, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
-  { angle: 30, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
-  { angle: 150, radius: "clamp(7.6rem, 13vw, 9.6rem)" },
-] as const;
-
-export const SERVICE_PANEL_ID = "cq-services";
-export const CAPABILITY_DWELL_MS = 3200;

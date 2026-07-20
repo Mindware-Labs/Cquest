@@ -1,11 +1,11 @@
 import HeroImage from "@/components/HeroImage";
-import ServicesExperience from "@/components/ServicesExperience";
+import ServicesCarousel from "@/components/ServicesCarousel";
 
 export default function Home() {
   return (
     <>
       <HeroImage />
-      <ServicesExperience />
+      <ServicesCarousel />
     </>
   );
 }
