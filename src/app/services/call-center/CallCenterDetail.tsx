@@ -35,8 +35,80 @@ const CHANNEL_ICON: Record<string, ServiceIconName> = {
   "Follow-up": "share",
 };
 
-const PROCESS = ["Discovery", "Operation design", "Team preparation", "Launch", "Continuous improvement"] as const;
-const METRICS = ["Interactions handled", "Average response time", "Service level", "First-contact resolution", "Quality score"] as const;
+const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: string }> = {
+  "Customer service": {
+    includes: [
+      "Inbound support across phone, email, chat and social media",
+      "Agents trained on your brand voice, product and escalation protocols",
+      "Real-time monitoring against documented quality standards",
+    ],
+    benefit: "Faster resolutions and consistent, on-brand interactions that keep customers loyal — without the overhead of building an in-house support team.",
+  },
+  Sales: {
+    includes: [
+      "Outbound campaigns built around your target segments",
+      "Telesales scripts refined against real conversion data",
+      "Lead generation, qualification and closing in one continuous flow",
+    ],
+    benefit: "A dedicated sales engine that turns outreach into revenue, scaled up or down as your campaign calendar demands.",
+  },
+  Collections: {
+    includes: [
+      "Portfolio segmentation by risk and recovery likelihood",
+      "Compliant, professional contact protocols at every stage",
+      "Negotiated payment plans documented for auditability",
+    ],
+    benefit: "Higher recovery rates protected by protocols that preserve the customer relationship and your brand's reputation.",
+  },
+  Surveys: {
+    includes: [
+      "Satisfaction studies and market polls across phone and digital channels",
+      "NPS measurement with segment-level breakdowns",
+      "Structured reporting delivered on your schedule",
+    ],
+    benefit: "Clear, actionable insight into what your customers think — used to guide product, service and retention decisions.",
+  },
+  Onboarding: {
+    includes: [
+      "Welcome contact within your defined SLA",
+      "Guided activation of the product or service",
+      "Early follow-up that catches friction before it becomes churn",
+    ],
+    benefit: "New customers reach their first value moment faster, with fewer early-stage drop-offs.",
+  },
+  "Tech Support": {
+    includes: [
+      "First-line troubleshooting across phone, chat and email",
+      "Documented resolution paths with escalation to specialist tiers",
+      "Issue tracking that feeds back into product and process improvement",
+    ],
+    benefit: "Customers stay productive and confident in your product, while your specialist teams stay focused on what only they can solve.",
+  },
+};
+
+const PROCESS = [
+  { title: "Discovery", description: "We study your current operation, volumes, channels and goals to understand exactly what the engagement needs to deliver." },
+  { title: "Operation design", description: "We define the process, staffing model, protocols and technology that will run the operation, sized to your volume and SLAs." },
+  { title: "Team preparation", description: "Agents are recruited, trained on your product and brand voice, and certified before they take a single live interaction." },
+  { title: "Launch", description: "The operation goes live under close supervision, with daily monitoring and rapid feedback loops during ramp-up." },
+  { title: "Continuous improvement", description: "Ongoing coaching, quality audits and performance reviews keep the operation improving after launch, not just at the start." },
+] as const;
+const CLIENT_LOGOS = [
+  { name: "Altice", src: "/brands/altice.jpg" },
+  { name: "Paso Rápido", src: "/brands/pasoRapido.png", size: "large" },
+  { name: "Rig Hut", src: "/brands/righut.jpg" },
+  { name: "Cell Phone", src: "/brands/cellphone.jpg" },
+  { name: "Plastifar", src: "/brands/plastifar.png", size: "compact" },
+  { name: "Fiduciaria Reservas", src: "/brands/fiduciariaReservas.jpg" },
+] as const;
+
+const METRICS = [
+  { label: "Interactions handled", value: "Built for scale", status: "Staffing flexes with your interaction volume" },
+  { label: "Average response time", value: "< 20 sec", status: "Average phone queue time" },
+  { label: "Service level", value: "80/20", status: "80% of calls answered within 20 seconds" },
+  { label: "First-contact resolution", value: "90%+", status: "Resolution target per account" },
+  { label: "Quality score", value: "95%+", status: "QA scorecard standard" },
+] as const;
 
 const processContainerVariants = {
   hidden: {},
@@ -61,25 +133,6 @@ function Arrow({ direction = "right" }: { direction?: "right" | "down" }) {
   );
 }
 
-function MediaPlaceholder({ label, ratio, className = "" }: { label: string; ratio: string; className?: string }) {
-  const reduced = useReducedMotion() ?? false;
-  return (
-    <motion.div
-      className={`${styles.mediaPlaceholder} ${className}`}
-      initial={reduced ? false : { opacity: 0, scale: 0.98 }}
-      whileInView={reduced ? undefined : { opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <span className={styles.mediaCross} aria-hidden />
-      <div>
-        <span className={styles.mediaLabel}>{label}</span>
-        <span className={styles.mediaRatio}>Replaceable media · {ratio}</span>
-      </div>
-    </motion.div>
-  );
-}
-
 function HeroMedia() {
   return (
     <div className={styles.heroMedia}>
@@ -97,14 +150,14 @@ function HeroMedia() {
   );
 }
 
-function SectionIntro({ title, description, compact = false }: { title: ReactNode; description: string; compact?: boolean }) {
+function SectionIntro({ title, description, compact = false }: { title: ReactNode; description?: string; compact?: boolean }) {
   return (
     <div className={styles.sectionIntro} data-compact={compact || undefined}>
       <div className={styles.sectionIntroHeading}>
         <span className={styles.sectionIntroRule} aria-hidden />
         <h2>{title}</h2>
       </div>
-      <p>{description}</p>
+      {description && <p>{description}</p>}
     </div>
   );
 }
@@ -168,11 +221,11 @@ export default function CallCenterDetail() {
                     <div className={styles.detailGrid}>
                       <div>
                         <h4>What it includes</h4>
-                        <ul><li>Service detail to be defined</li><li>Operational scope to be defined</li><li>Delivery standard to be defined</li></ul>
+                        <ul>{CAPABILITY_DETAIL[active.title].includes.map((item) => (<li key={item}>{item}</li>))}</ul>
                       </div>
                       <div className={styles.clientBenefit}>
                         <h4>Client benefit</h4>
-                        <p>Space reserved for the concrete business benefit and the outcome this capability is expected to support.</p>
+                        <p>{CAPABILITY_DETAIL[active.title].benefit}</p>
                       </div>
                     </div>
                     <div className={styles.channelRow}>
@@ -193,7 +246,7 @@ export default function CallCenterDetail() {
 
         <section id="method" className={styles.processSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>A method the client<br />can understand</>} description="This sequence is ready to document Center Quest's actual operating method once the final process is supplied." />
+            <SectionIntro title={<>A method the client<br />can understand</>} description="Every engagement follows the same disciplined sequence, from first discovery call to the ongoing work of getting better." />
             <div className={styles.processTrack}>
               <motion.span
                 className={styles.processLine}
@@ -211,8 +264,8 @@ export default function CallCenterDetail() {
                 variants={processContainerVariants}
               >
                 {PROCESS.map((step, index) => (
-                  <motion.li key={step} variants={processItemVariants}>
-                    <span className={styles.processNumber}>0{index + 1}</span><h3>{step}</h3><p>Stage description and responsibilities to be defined.</p>
+                  <motion.li key={step.title} variants={processItemVariants}>
+                    <span className={styles.processNumber}>0{index + 1}</span><h3>{step.title}</h3><p>{step.description}</p>
                   </motion.li>
                 ))}
               </motion.ol>
@@ -227,7 +280,6 @@ export default function CallCenterDetail() {
                 <span className={styles.metricsRule} aria-hidden />
                 <h2>Performance that can be demonstrated.</h2>
               </div>
-              <p>Editable fields prepared for verified operational indicators. No figures are published until Center Quest supplies them.</p>
             </div>
             <motion.dl
               className={styles.metricList}
@@ -237,10 +289,10 @@ export default function CallCenterDetail() {
               variants={processContainerVariants}
             >
               {METRICS.map((metric) => (
-                <motion.div key={metric} variants={processItemVariants}>
-                  <dt>{metric}</dt>
-                  <dd>—</dd>
-                  <span className={styles.metricStatus}><span className={styles.metricDot} aria-hidden />Verified value pending</span>
+                <motion.div key={metric.label} variants={processItemVariants}>
+                  <dt>{metric.label}</dt>
+                  <dd>{metric.value}</dd>
+                  <span className={styles.metricStatus}><span className={styles.metricDot} aria-hidden />{metric.status}</span>
                 </motion.div>
               ))}
             </motion.dl>
@@ -249,55 +301,23 @@ export default function CallCenterDetail() {
 
         <section id="clients" className={styles.clientsSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title="Clients who trust the operation" description="A flexible logo wall for the brands Center Quest is authorized to feature." />
+            <SectionIntro title="Clients who trust the operation" />
             <motion.ul
               className={styles.logoWall}
-              aria-label="Client logo placeholders"
+              aria-label="Client logos"
               initial={reduced ? false : "hidden"}
               whileInView={reduced ? undefined : "visible"}
               viewport={{ once: true, margin: "-100px" }}
               variants={processContainerVariants}
             >
-              {Array.from({ length: 6 }, (_, index) => (
-                <motion.li key={index} variants={processItemVariants}>
-                  <span className={styles.logoMark}><ServiceIcon name="layout" /></span>
-                  <span className={styles.logoSlot}><span className={styles.logoDot} aria-hidden />Slot {String(index + 1).padStart(2, "0")}</span>
+              {CLIENT_LOGOS.map((brand) => (
+                <motion.li key={brand.name} variants={processItemVariants}>
+                  <span className={styles.logoImageWrap} data-size={"size" in brand ? brand.size : undefined}>
+                    <Image src={brand.src} alt={`${brand.name} logo`} fill sizes="(min-width: 64rem) 12vw, 30vw" className={styles.logoImage} />
+                  </span>
                 </motion.li>
               ))}
             </motion.ul>
-          </div>
-        </section>
-
-        <section id="case-study" className={styles.caseSection}>
-          <div className={styles.contentShell}>
-            <SectionIntro title="A result worth examining" description="One featured engagement can explain the challenge, the operating response, and the verified result in depth." />
-            <div className={styles.caseGrid}>
-              <MediaPlaceholder label="Featured case photo or video" ratio="16:9" />
-              <motion.div
-                className={styles.caseNarrative}
-                initial={reduced ? false : "hidden"}
-                whileInView={reduced ? undefined : "visible"}
-                viewport={{ once: true, margin: "-100px" }}
-                variants={processContainerVariants}
-              >
-                {[["Challenge", "Client context and operational challenge pending."], ["Solution", "Scope, service model, and implementation details pending."], ["Results", "Verified outcomes and approved metrics pending."]].map(([title, copy], index) => (
-                  <motion.div key={title} variants={processItemVariants}>
-                    <span className={styles.caseNumber}>0{index + 1}</span>
-                    <span>{title}</span>
-                    <p>{copy}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        <section id="facilities" className={styles.gallerySection}>
-          <div className={styles.contentShell}>
-            <SectionIntro title="The people and place behind the service" description="Real photography can turn operating capacity into visible evidence. These frames preserve the intended composition." />
-            <div className={styles.galleryGrid}>
-              <MediaPlaceholder label="Facilities" ratio="4:3" /><MediaPlaceholder label="Operations floor" ratio="4:3" /><MediaPlaceholder label="Team" ratio="4:3" />
-            </div>
           </div>
         </section>
 

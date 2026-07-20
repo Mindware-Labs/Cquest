@@ -43,7 +43,6 @@
 .primaryCta,
 .secondaryCta {
   position: relative;
-  isolation: isolate;
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
@@ -56,19 +55,13 @@
   letter-spacing: 0.1em;
   line-height: 1;
   text-transform: uppercase;
-  overflow: hidden;
-  transition: box-shadow 260ms var(--ease-out), border-color 260ms var(--ease-out), transform 180ms var(--ease-out);
+  border: 1px solid transparent;
+  transition: background-color 260ms var(--ease-out), color 260ms var(--ease-out), border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 180ms var(--ease-out);
 }
 
-.primaryCta::before,
-.secondaryCta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  transition: opacity 260ms var(--ease-out);
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
 }
 
 .primaryCta {
@@ -78,30 +71,21 @@
 }
 
 .primaryCta:hover {
+  background: var(--cc-charcoal);
+  color: white;
   box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
-}
-
-.primaryCta:hover::before {
-  opacity: 1;
-}
-
-.primaryCta:active,
-.secondaryCta:active {
-  transform: scale(0.97);
 }
 
 .secondaryCta {
   background: var(--cc-charcoal);
-  border: 1px solid color-mix(in srgb, var(--cc-stone) 55%, transparent);
+  border-color: color-mix(in srgb, var(--cc-stone) 55%, transparent);
   color: white;
 }
 
 .secondaryCta:hover {
-  border-color: var(--cc-stone);
-}
-
-.secondaryCta:hover::before {
-  opacity: 1;
+  background: var(--cc-sky);
+  border-color: var(--cc-sky);
+  color: var(--cc-ink);
 }
 
 .arrow,
@@ -231,71 +215,6 @@ a:hover > .arrowDown {
   background: rgba(255, 255, 255, 0.16);
 }
 
-.mediaPlaceholder {
-  position: relative;
-  display: grid;
-  min-height: 18rem;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--cc-petroleum) 42%, transparent);
-  background: color-mix(in srgb, var(--brand-gris) 40%, white);
-  color: var(--foreground);
-  text-align: center;
-}
-
-.mediaPlaceholder::before,
-.mediaPlaceholder::after,
-.mediaCross::before,
-.mediaCross::after {
-  content: "";
-  position: absolute;
-  background: color-mix(in srgb, var(--cc-petroleum) 28%, transparent);
-}
-
-.mediaPlaceholder::before {
-  inset: 50% 1.5rem auto;
-  height: 1px;
-}
-
-.mediaPlaceholder::after {
-  inset: 1.5rem auto 1.5rem 50%;
-  width: 1px;
-}
-
-.mediaCross::before,
-.mediaCross::after {
-  top: 50%;
-  left: 50%;
-  width: 1px;
-  height: 140%;
-  transform-origin: center;
-}
-
-.mediaCross::before { transform: translate(-50%, -50%) rotate(55deg); }
-.mediaCross::after { transform: translate(-50%, -50%) rotate(-55deg); }
-
-.mediaPlaceholder > div {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 1rem;
-  background: color-mix(in srgb, white 88%, transparent);
-}
-
-.mediaLabel {
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.mediaRatio {
-  color: var(--muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .heroMedia {
   position: relative;
   min-height: 100%;
@@ -336,26 +255,20 @@ a:hover > .arrowDown {
 
 .capabilitiesSection,
 .processSection,
-.clientsSection,
-.caseSection,
-.gallerySection {
+.clientsSection {
   scroll-margin-top: 2rem;
 }
 
 .capabilitiesSection { padding-block: clamp(3rem, 4.5vw, 4rem); }
 .processSection { padding-block: clamp(5.5rem, 8vw, 7rem); }
 .clientsSection { padding-block: clamp(4.5rem, 7vw, 6rem); }
-.caseSection { padding-block: clamp(7rem, 10vw, 9rem); }
-.gallerySection { padding-block: clamp(5.5rem, 8vw, 7.5rem); }
 
 .capabilitiesSection,
-.clientsSection,
-.gallerySection {
+.clientsSection {
   background: #fbfcfc;
 }
 
-.processSection,
-.caseSection {
+.processSection {
   background: var(--background);
 }
 
@@ -529,8 +442,7 @@ a:hover > .arrowDown {
 
 .capabilityHeading h4,
 .detailGrid h4,
-.channelRow > span,
-.caseNarrative span {
+.channelRow > span {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -843,12 +755,12 @@ a:hover > .arrowDown {
 .logoWall li {
   position: relative;
   display: flex;
-  min-height: 8rem;
+  min-height: 8.5rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
   overflow: hidden;
+  padding: 0.85rem 1rem;
   border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
   border-radius: 0.85rem;
   background: white;
@@ -875,113 +787,35 @@ a:hover > .arrowDown {
   transform: translateX(130%);
 }
 
-.logoMark {
-  display: inline-flex;
-  width: 2.5rem;
-  height: 2.5rem;
+.logoImageWrap {
+  position: relative;
+  width: 100%;
+  height: 5.5rem;
   flex: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.65rem;
-  background: color-mix(in srgb, var(--cc-sky) 10%, white);
-  color: var(--cc-petroleum);
-  transition: background 240ms var(--ease-out), color 240ms var(--ease-out), transform 240ms var(--ease-out);
+  filter: grayscale(1) opacity(0.7);
+  transition: filter 260ms var(--ease-out), transform 260ms var(--ease-out);
 }
 
-.logoWall li:hover .logoMark {
-  background: color-mix(in srgb, var(--cc-sky) 24%, white);
-  color: var(--cc-sky);
-  transform: scale(1.06);
+.logoImageWrap[data-size="compact"] {
+  height: 3.25rem;
 }
 
-.logoSlot {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+.logoImageWrap[data-size="large"] {
+  height: 7rem;
 }
 
-.logoDot {
-  width: 0.3rem;
-  height: 0.3rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--cc-sky);
-  animation: metricPulse 2.6s ease-in-out infinite;
+.logoImage {
+  object-fit: contain;
+}
+
+.logoWall li:hover .logoImageWrap {
+  filter: grayscale(0) opacity(1);
+  transform: scale(1.05);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logoDot { animation: none; opacity: 0.8; }
   .logoWall li::before { display: none; }
 }
-
-.caseGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
-  gap: clamp(2.5rem, 5vw, 5rem);
-  align-items: stretch;
-  margin-top: clamp(3rem, 6vw, 5rem);
-}
-
-.caseGrid > .mediaPlaceholder { min-height: 31rem; }
-
-.caseNarrative {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.caseNarrative > div {
-  position: relative;
-  padding-block: 2rem;
-  padding-left: 0;
-  border-top: 1px solid var(--cc-rule);
-  transition: padding-left 280ms var(--ease-out);
-}
-
-.caseNarrative > div::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--cc-sky);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 280ms var(--ease-out);
-}
-
-.caseNarrative > div:hover { padding-left: 1.1rem; }
-.caseNarrative > div:hover::before { transform: scaleY(1); }
-
-.caseNarrative > div:last-child { border-bottom: 1px solid var(--cc-rule); }
-.caseNarrative span { color: var(--cc-petroleum); }
-.caseNarrative .caseNumber {
-  margin-right: 0.6rem;
-  color: var(--cc-sky);
-  font-family: var(--font-heading), sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: none;
-}
-.caseNarrative p { max-width: 42ch; margin-top: 0.7rem; color: var(--text-secondary); font-size: 1rem; line-height: 1.7; }
-
-.galleryGrid {
-  display: grid;
-  grid-template-columns: 1.35fr 0.65fr;
-  grid-template-rows: repeat(2, minmax(12rem, 1fr));
-  gap: 1rem;
-  margin-top: 3.5rem;
-}
-
-.galleryGrid .mediaPlaceholder { min-height: 12rem; }
-.galleryGrid .mediaPlaceholder:first-child { grid-row: 1 / span 2; min-height: 25rem; }
 
 .testimonialSection {
   padding-block: clamp(4rem, 8vw, 7rem);
@@ -1099,9 +933,6 @@ a:hover > .arrowDown {
   .metricList > div:nth-child(4) { border-left: 0; }
   .metricList > div:nth-child(n + 4) { border-top: 1px solid rgba(255, 255, 255, 0.18); }
   .logoWall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .caseGrid { grid-template-columns: 1fr; }
-  .caseGrid > .mediaPlaceholder { min-height: 26rem; }
-  .galleryGrid .mediaPlaceholder { min-height: 16rem; }
 }
 
 @media (max-width: 56rem) {
@@ -1127,9 +958,7 @@ a:hover > .arrowDown {
   .heroMedia { min-height: 24rem; }
   .capabilitiesSection,
   .processSection,
-  .clientsSection,
-  .caseSection,
-  .gallerySection { padding-block: 4.5rem; }
+  .clientsSection { padding-block: 4.5rem; }
   .sectionIntro { grid-template-columns: 1fr; gap: 1.25rem; }
   .metricsHeading h2,
   .contactInner h2 { font-size: clamp(2.2rem, 11vw, 3.2rem); }
@@ -1148,11 +977,7 @@ a:hover > .arrowDown {
   .metricList > div { min-height: 9rem; }
   .metricList > div + div { border-top: 1px solid rgba(255, 255, 255, 0.18); border-left: 0; }
   .logoWall { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
-  .logoWall li { min-height: 7rem; }
-  .caseGrid > .mediaPlaceholder { min-height: 20rem; }
-  .galleryGrid { grid-template-columns: 1fr; grid-template-rows: none; }
-  .galleryGrid .mediaPlaceholder { min-height: 18rem; }
-  .galleryGrid .mediaPlaceholder:first-child { grid-row: auto; min-height: 18rem; }
+  .logoWall li { min-height: 8rem; }
   .testimonialInner { grid-template-columns: auto 1fr; }
   .portraitPlaceholder { grid-column: 2; width: 5.5rem; }
   .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }
