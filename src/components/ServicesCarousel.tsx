@@ -252,18 +252,6 @@ function SlideBackdrop({ service }: { service: Service }) {
             className="cq-v2-stream top-[89%]"
             style={{ animationDelay: "-9s", animationDuration: "13s" }}
           />
-          {/* Processing stacks riding their vertical conveyors in the side
-              margins — the "layers" motif, work visibly moving through. */}
-          <span className="cq-v2-stack left-[6%] top-[38%] -rotate-6 hidden md:block">
-            <span className="cq-v2-stack-card" />
-            <span className="cq-v2-stack-card" style={{ "--sd": "-3s" } as CSSProperties} />
-            <span className="cq-v2-stack-card" style={{ "--sd": "-6s" } as CSSProperties} />
-          </span>
-          <span className="cq-v2-stack right-[6%] top-[56%] rotate-3 hidden md:block">
-            <span className="cq-v2-stack-card" style={{ "--sd": "-1.5s" } as CSSProperties} />
-            <span className="cq-v2-stack-card" style={{ "--sd": "-4.5s" } as CSSProperties} />
-            <span className="cq-v2-stack-card" style={{ "--sd": "-7.5s" } as CSSProperties} />
-          </span>
           <span
             className="cq-v2-orb left-[-10rem] bottom-[-10rem] h-[30rem] w-[30rem]"
             style={{
@@ -461,43 +449,6 @@ function SystemsScene() {
       <span className="cq-v2-node" data-x="66" data-y="88" />
       <span className="cq-v2-node" data-x="84" data-y="18" />
       <span className="cq-v2-node" data-x="90" data-y="66" />
-      {/* The deliverables, ambient: a live dashboard and a code window
-          floating in the side margins. */}
-      <span
-        className="cq-v2-panel left-[5%] top-[30%] hidden md:block"
-        style={{ "--tilt": "-5deg" } as CSSProperties}
-      >
-        <span className="flex items-center gap-1">
-          <span className="cq-v2-panel-dot" />
-          <span className="cq-v2-panel-dot" />
-          <span className="cq-v2-panel-dot" />
-        </span>
-        <span className="mt-2 flex h-9 items-end gap-1.5">
-          <span className="cq-v2-bar h-6" />
-          <span className="cq-v2-bar h-9" style={{ "--bd": "-1.1s" } as CSSProperties} />
-          <span className="cq-v2-bar h-5" style={{ "--bd": "-2.2s" } as CSSProperties} />
-          <span className="cq-v2-bar h-7" style={{ "--bd": "-0.6s" } as CSSProperties} />
-        </span>
-      </span>
-      <span
-        className="cq-v2-panel right-[5%] top-[54%] hidden md:block"
-        style={{ "--tilt": "4deg", "--pb": "-4.5s" } as CSSProperties}
-      >
-        <span className="flex items-center gap-1">
-          <span className="cq-v2-panel-dot" />
-          <span className="cq-v2-panel-dot" />
-          <span className="cq-v2-panel-dot" />
-        </span>
-        <span className="mt-2.5 block space-y-2">
-          <span className="cq-v2-code-row block w-3/4" />
-          <span className="cq-v2-code-row ml-3 block w-1/2 opacity-70" />
-          <span className="cq-v2-code-row ml-3 block w-3/5 opacity-80" />
-          <span className="flex items-center gap-1.5">
-            <span className="cq-v2-code-row block w-1/3" />
-            <span className="cq-v2-cursor" />
-          </span>
-        </span>
-      </span>
       <span
         className="cq-v2-orb left-[-9rem] top-[30%] h-[28rem] w-[28rem]"
         style={{
