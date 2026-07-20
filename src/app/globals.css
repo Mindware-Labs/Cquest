@@ -216,6 +216,43 @@ html.lenis body {
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
+
+  /* The universal selector above can't reach these — they're top-layer
+     pseudo-elements the browser generates for the View Transition API,
+     not part of the normal DOM tree. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* Cross-route page transition (see app/layout.tsx's <ViewTransition>).
+   Old content leaves quickly and plainly; new content arrives a beat
+   later, slightly slower — an asymmetric fade so the handoff reads as
+   deliberate rather than a hard cut. No slide/scale: the two routes
+   don't share a spatial relationship, so movement would read as noise. */
+::view-transition-old(.page-exit) {
+  animation: 200ms var(--ease-out) both cq-page-fade-out;
+}
+
+::view-transition-new(.page-enter) {
+  animation: 340ms var(--ease-out-soft) 90ms both cq-page-fade-in;
+}
+
+@keyframes cq-page-fade-out {
+  to {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+@keyframes cq-page-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
 }
 
 /* The services surface: a lifted sheet (curtain overlap over the hero,

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { ViewTransition } from "react";
 import "./globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -61,7 +62,9 @@ export default function RootLayout({
         <SmoothScroll />
         <ScrollProgress />
         <main id="main-content" className="flex flex-1 flex-col">
-          {children}
+          <ViewTransition name="page" exit="page-exit" enter="page-enter">
+            {children}
+          </ViewTransition>
         </main>
       </body>
     </html>
