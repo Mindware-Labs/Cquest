@@ -1,12 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Maven_Pro } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import SmoothScroll from "@/components/SmoothScroll";
 
-const mavenPro = Maven_Pro({
-  subsets: ["latin"],
-  variable: "--font-maven-pro",
+const switzer = localFont({
+  src: [
+    { path: "../fonts/switzer/Switzer-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/switzer/Switzer-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/switzer/Switzer-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-switzer",
   display: "swap",
 });
 
@@ -46,7 +51,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${mavenPro.variable} h-full antialiased`}
+      className={`${switzer.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         {/* Accessibility: skip to main content */}

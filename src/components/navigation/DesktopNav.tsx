@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { NAV_LINKS } from "./data";
 
-export default function DesktopNav({ reduced }: { reduced: boolean }) {
+export default function DesktopNav({ reduced, inverse = false }: { reduced: boolean; inverse?: boolean }) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   return (
@@ -28,7 +28,7 @@ export default function DesktopNav({ reduced }: { reduced: boolean }) {
             onClick={(event) => href === "#" && event.preventDefault()}
             onMouseEnter={() => setHovered(label)}
             onFocus={() => setHovered(label)}
-            className="relative z-10 block rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors duration-300 hover:text-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+            className={`relative z-10 block rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${inverse ? "text-white/78 hover:text-white focus-visible:outline-celeste" : "text-foreground/80 hover:text-petroleo focus-visible:outline-petroleo"}`}
           >
             {label}
           </a>

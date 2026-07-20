@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Systems Development | Center Quest",
   description:
-    "Custom software for operations: CRMs, dashboards, and operations automation shaped around how the client actually works.",
+    "Custom software for operations: CRMs, dashboards, operations automation, and AI implementation shaped around how the client actually works.",
 };
 
 const SERVICES = [
@@ -19,6 +19,10 @@ const SERVICES = [
   {
     title: "Operations automation",
     description: "Workflows designed around the way your operation runs.",
+  },
+  {
+    title: "AI Implementation",
+    description: "Integrate AI that empowers your team and delights your customers.",
   },
 ];
 

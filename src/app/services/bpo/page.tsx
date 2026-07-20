@@ -4,13 +4,13 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "BPO | Center Quest",
   description:
-    "Business Process Outsourcing: back office, data processing, and omnichannel support run accurately at volume under clear SLAs.",
+    "Business Process Outsourcing: back office support, data processing, omnichannel support, trust and safety, quality assurance, and consulting.",
 };
 
 const SERVICES = [
   {
-    title: "Back office",
-    description: "The repeatable work that keeps an operation moving.",
+    title: "Back Office Support",
+    description: "Streamline your operations and scale with ease behind the scenes.",
   },
   {
     title: "Data processing",
@@ -19,6 +19,18 @@ const SERVICES = [
   {
     title: "Omnichannel support",
     description: "Support coordinated across your operational channels.",
+  },
+  {
+    title: "Trust & Safety",
+    description: "Protect your platform and community with proactive risk management.",
+  },
+  {
+    title: "Quality Assurance",
+    description: "Ensure every interaction meets your highest standards.",
+  },
+  {
+    title: "Consulting Services",
+    description: "Get tailored strategies to optimize every part of your customer experience.",
   },
 ];
 

@@ -60,8 +60,8 @@
   --color-verde: var(--brand-verde);
   --color-gris: var(--brand-gris);
 
-  --font-heading: var(--font-maven-pro);
-  --font-sans: var(--font-maven-pro);
+  --font-heading: var(--font-switzer);
+  --font-sans: var(--font-switzer);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -82,9 +82,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  /* Variable font: let the optical-size axis retune letterforms per size
-     (display headings tighten, small text opens up) — Apple-style type. */
-  font-optical-sizing: auto;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1591,7 +1588,7 @@ html.lenis body {
   overflow: hidden;
   padding-bottom: 0.12em;
   margin-bottom: -0.12em;
-  font-weight: 650;
+  font-weight: 600;
   font-size: 1.1rem;
   line-height: 1.25;
   letter-spacing: -0.015em;
