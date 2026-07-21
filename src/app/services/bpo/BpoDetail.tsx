@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  AnimatePresence,
   motion,
   useReducedMotion,
   useScroll,
@@ -11,7 +10,7 @@ import {
   useTransform,
   type Variants,
 } from "motion/react";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import { SERVICES } from "@/components/services/data";
 import styles from "./bpo.module.css";
@@ -189,7 +188,23 @@ function SectionIntro({ title, description, reduced }: { title: ReactNode; descr
 
 export default function BpoDetail() {
   const reduced = useReducedMotion() ?? false;
-  const [openCapability, setOpenCapability] = useState<string | null>(BPO.details[0].title);
+  const total = BPO.details.length;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const slatRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Arrow keys move between the discipline spines (APG accordion pattern:
+  // Tab reaches each header, arrows travel the set, Home/End jump to ends).
+  const handleSlatKey = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % total;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + total) % total;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = total - 1;
+    if (next === null) return;
+    event.preventDefault();
+    setActiveIndex(next);
+    slatRefs.current[next]?.focus();
+  };
 
   // The media band drifts on its own axis as it crosses the viewport, so the
   // hero → content seam reads as depth rather than a stacked block.
@@ -271,62 +286,71 @@ export default function BpoDetail() {
       <div>
         <section id="capabilities" className={styles.capabilitiesSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>Six disciplines,<br />one standard</>} description="Every discipline opens into the same structure: what it includes, and the benefit it creates for the client. One logbook, no surprises." reduced={reduced} />
+            <SectionIntro title={<>Six disciplines,<br />one standard</>} description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you." reduced={reduced} />
             <motion.div
-              className={styles.ledger}
+              className={styles.rack}
+              role="group"
+              aria-label="BPO disciplines"
               initial={reduced ? false : "hidden"}
               whileInView={reduced ? undefined : "visible"}
               viewport={VIEWPORT}
               variants={groupVariants}
             >
               {BPO.details.map((item, index) => {
-                const open = item.title === openCapability;
                 const detail = CAPABILITY_DETAIL[item.title];
-                const panelId = `bpo-panel-${index}`;
+                const active = index === activeIndex;
                 return (
-                  <motion.div key={item.title} className={styles.ledgerRow} data-open={open || undefined} variants={softRiseVariants}>
+                  <motion.div
+                    key={item.title}
+                    className={styles.slat}
+                    data-active={active || undefined}
+                    variants={softRiseVariants}
+                    onMouseEnter={() => setActiveIndex(index)}
+                  >
                     <button
+                      ref={(node) => { slatRefs.current[index] = node; }}
                       type="button"
-                      className={styles.ledgerHead}
-                      aria-expanded={open}
-                      aria-controls={panelId}
-                      onClick={() => setOpenCapability(open ? null : item.title)}
+                      id={`bpo-tab-${index}`}
+                      className={styles.slatSpine}
+                      aria-expanded={active}
+                      aria-controls={`bpo-panel-${index}`}
+                      onClick={() => setActiveIndex(index)}
+                      onFocus={() => setActiveIndex(index)}
+                      onKeyDown={(event) => handleSlatKey(event, index)}
                     >
-                      <span className={styles.ledgerNumber}>0{index + 1}</span>
-                      <span className={styles.ledgerIcon}><ServiceIcon name={item.icon} /></span>
-                      <span className={styles.ledgerTitleWrap}>
-                        <span className={styles.ledgerTitle}>{item.title}</span>
-                        <span className={styles.ledgerHint}>{item.description}</span>
-                      </span>
-                      <span className={styles.ledgerPlus} aria-hidden />
+                      <span className={styles.slatNumber} aria-hidden>0{index + 1}</span>
+                      <span className={styles.slatIcon} aria-hidden><ServiceIcon name={item.icon} /></span>
+                      <span className={styles.slatTitle}>{item.title}</span>
+                      <svg className={styles.slatChevron} aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 5 5 5-5" /></svg>
                     </button>
-                    <AnimatePresence initial={false}>
-                      {open && (
-                        <motion.div
-                          id={panelId}
-                          className={styles.ledgerPanel}
-                          initial={reduced ? false : { height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={reduced ? undefined : { height: 0, opacity: 0 }}
-                          transition={{ duration: reduced ? 0 : 0.5, ease: EASE_OUT }}
-                        >
-                          <div className={styles.panelGrid}>
-                            <div>
-                              <h4>What it includes</h4>
-                              <ul>{detail.includes.map((line) => (<li key={line}>{line}</li>))}</ul>
-                            </div>
-                            <div className={styles.clientBenefit}>
-                              <h4>Client benefit</h4>
-                              <p>{detail.benefit}</p>
-                            </div>
+                    <div
+                      className={styles.slatDetail}
+                      id={`bpo-panel-${index}`}
+                      role="region"
+                      aria-label={item.title}
+                      aria-hidden={!active}
+                    >
+                      <div className={styles.slatDetailInner}>
+                        <span className={styles.slatKicker}><span className={styles.slatKickerDot} aria-hidden />Held to one SLA</span>
+                        <span className={styles.slatName}>{item.title}</span>
+                        <p className={styles.slatLead}>{item.description}</p>
+                        <div className={styles.slatPanels}>
+                          <div className={styles.slatIncludes}>
+                            <span className={styles.slatLabel}>What it includes</span>
+                            <ul>{detail.includes.map((line) => (<li key={line}>{line}</li>))}</ul>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          <div className={styles.slatBenefit}>
+                            <span className={styles.slatLabel}>Client benefit</span>
+                            <p>{detail.benefit}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}
             </motion.div>
+            <p className={styles.rackHint}><span aria-hidden>—</span> Select a discipline to open its full spec. Every one runs under the same SLA.</p>
           </div>
         </section>
 
