@@ -135,7 +135,8 @@ export const CLIENT_LOGOS = [
     src: "/brands/altice.png",
     about:
       "Altice, listed on Euronext Amsterdam, is a global converged leader in telecommunications, content, media, entertainment and advertising.\n\nAltice offers innovative, customer-centric products and solutions that unlock the unlimited potential of its more than 50 million customers worldwide, through best-in-class connectivity powered by its fiber-optic and mobile broadband network infrastructure.",
-    source: "https://altice.com.do/personal/nosotros/institucional/nosotros/grupo-altice",
+    source:
+      "https://altice.com.do/personal/nosotros/institucional/nosotros/grupo-altice",
     provides:
       "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Altice.",
   },
@@ -151,7 +152,7 @@ export const CLIENT_LOGOS = [
   },
   {
     name: "Rig Hut",
-    src: "/brands/righut.jpg",
+    src: "/brands/righut.jpeg",
     about:
       "Rig Hut is a provider of parking management software purpose built for industrial parking applications. Truck parking facilities utilize Rig Hut to manage their inventory, accurately represent vacancies to the market, process payments and generate comprehensive reports for their yards.\n\nUtilizing a powerful suite of management tools, rest assured knowing your customer database, payments and communications are all processed and stored securely within the Rig Hut environment.",
     source: "https://www.linkedin.com/company/rig-hut/",
