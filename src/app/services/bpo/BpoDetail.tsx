@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import QuoteContact from "@/app/cotizador/QuoteContact";
 import {
   motion,
   useReducedMotion,
@@ -384,9 +385,9 @@ export default function BpoDetail() {
               className={styles.heroActions}
               variants={focusRiseVariants}
             >
-              <a href="#contact" className={styles.primaryCta}>
+              <Link href="/cotizador?servicio=bpo" className={styles.primaryCta}>
                 Request a quote <Arrow />
-              </a>
+              </Link>
               <a href="#capabilities" className={styles.secondaryCta}>
                 Explore capabilities <Arrow direction="down" />
               </a>
@@ -738,28 +739,12 @@ export default function BpoDetail() {
         </section>
 
         <section id="contact" className={styles.contactSection}>
-          <motion.div
-            className={styles.contactInner}
-            initial={reduced ? false : "hidden"}
-            whileInView={reduced ? undefined : "visible"}
-            viewport={VIEWPORT}
-            variants={groupVariants}
-          >
-            <motion.div variants={focusRiseVariants}>
-              <h2>Let&rsquo;s take the busywork off your plate.</h2>
-              <p>
-                This section is prepared to connect with the smart quote form
-                and direct contact channels in the next phase.
-              </p>
-            </motion.div>
-            <motion.div
-              className={styles.contactPlaceholder}
-              variants={focusRiseVariants}
-            >
-              <span>Quote form integration</span>
-              <strong>Pending connection</strong>
-            </motion.div>
-          </motion.div>
+          <QuoteContact
+            service="bpo"
+            heading="Let’s take the busywork off your plate."
+            lede="Answer a few questions and we’ll come back with a tailored BPO proposal — usually within one business day."
+            reduced={reduced}
+          />
         </section>
       </div>
 

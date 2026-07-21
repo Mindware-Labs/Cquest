@@ -1,0 +1,208 @@
+/* ── Closing quote CTA (service pages' #contact) ──────────
+   A balanced two-column band on the section's dark ink, in the same editorial
+   language as the Metrics section it echoes: a big-statement heading with a
+   celeste tick on the left, and — on the right — an action card built from the
+   site's card idiom (hairline border, celeste top-accent, numbered rows like the
+   capability index). currentColor carries the neutrals so it reads on each
+   service's ink; --brand-celeste carries the accent. */
+
+.inner {
+  width: min(100% - 2.5rem, 72rem);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+/* ── Left: the statement (Metrics idiom) ── */
+.lead {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.rule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1.1rem;
+  background: var(--brand-celeste);
+  transform-origin: top center;
+}
+
+.heading {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.15rem, 3.7vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+  max-width: 15ch;
+  color: inherit;
+}
+
+.lede {
+  margin-top: 1.15rem;
+  max-width: 42ch;
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+/* ── Right: the action card (site card idiom, on dark ink) ── */
+/* Borderless, like the capability panel: a soft raised surface defined by fill
+   and depth rather than a stroke. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.5rem, 2.4vw, 2rem);
+  border-radius: 2px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  box-shadow: 0 26px 52px -34px rgba(0, 0, 0, 0.65);
+}
+
+.cardMeta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+/* Numbered rows, echoing the capability index — hairline dividers, celeste
+   number, plain label. */
+.stepList {
+  margin-top: 1.15rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.stepRow {
+  display: grid;
+  grid-template-columns: 1.9rem 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.stepNum {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-celeste);
+}
+
+.stepLabel {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: color-mix(in srgb, currentColor 88%, transparent);
+}
+
+.cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  align-self: stretch;
+  min-height: 2.875rem;
+  margin-top: 1.5rem;
+  padding: 0 1.5rem;
+  border-radius: 2px;
+  background: var(--brand-celeste);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 12px 26px -16px color-mix(in srgb, var(--brand-celeste) 55%, transparent);
+  transition:
+    transform 0.28s var(--ease-out),
+    background-color 0.3s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
+}
+
+/* A band of light sweeps across on hover — the shimmer the logo cards use,
+   scoped to the button. Sits above the fill, below the label (z-index -1 inside
+   the button's own isolated stacking context). */
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    color-mix(in srgb, white 55%, transparent) 50%,
+    transparent 65%
+  );
+  transform: translateX(-135%);
+  transition: transform 0.7s var(--ease-out);
+  pointer-events: none;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, white 12%, var(--brand-celeste));
+  box-shadow: 0 22px 42px -18px color-mix(in srgb, var(--brand-celeste) 62%, transparent);
+}
+
+.cta:hover::before {
+  transform: translateX(135%);
+}
+
+.cta:active {
+  transform: translateY(0);
+  box-shadow: 0 10px 20px -16px color-mix(in srgb, var(--brand-celeste) 50%, transparent);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 3px;
+}
+
+.ctaArrow {
+  width: 1.05rem;
+  height: 1.05rem;
+  transition: transform 0.3s var(--ease-out);
+}
+
+.cta:hover .ctaArrow {
+  transform: translateX(3px);
+}
+
+.reassure {
+  margin-top: 0.85rem;
+  text-align: center;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+@media (max-width: 56rem) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+  .card {
+    max-width: 30rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta::before {
+    display: none;
+  }
+  .cta:hover {
+    transform: none;
+  }
+  .cta:hover .ctaArrow {
+    transform: none;
+  }
+}

@@ -15,7 +15,7 @@ export const NAV_LINKS = [
   { label: "About us", href: "#" },
   { label: "Services", href: "/#services" },
   { label: "Sectors", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Contact", href: "/cotizador" },
 ] as const;
 
 // Service detail pages have their own in-page sections — on those routes the

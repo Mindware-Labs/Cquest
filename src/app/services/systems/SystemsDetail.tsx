@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import QuoteContact from "@/app/cotizador/QuoteContact";
 import {
   motion,
   useReducedMotion,
@@ -261,7 +262,7 @@ export default function SystemsDetail() {
             </motion.h1>
             <motion.p className={styles.heroLead} variants={focusRiseVariants}>CRMs, dashboards and operations automation built around how your business actually works — not the other way around.</motion.p>
             <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-              <a href="#contact" className={styles.primaryCta}>Request a quote <Arrow /></a>
+              <Link href="/cotizador?servicio=systems" className={styles.primaryCta}>Request a quote <Arrow /></Link>
               <a href="#capabilities" className={styles.secondaryCta}>See what we build <Arrow direction="down" /></a>
             </motion.div>
             <motion.div className={styles.heroSignal} aria-label="Page highlights" variants={focusRiseVariants}>
@@ -446,16 +447,12 @@ export default function SystemsDetail() {
         </section>
 
         <section id="contact" className={styles.contactSection}>
-          <motion.div
-            className={styles.contactInner}
-            initial={reduced ? false : "hidden"}
-            whileInView={reduced ? undefined : "visible"}
-            viewport={VIEWPORT}
-            variants={groupVariants}
-          >
-            <motion.div variants={focusRiseVariants}><h2>Let&rsquo;s build the system your operation deserves.</h2><p>This section is prepared to connect with the smart quote form and direct contact channels in the next phase.</p></motion.div>
-            <motion.div className={styles.contactPlaceholder} variants={focusRiseVariants}><span>Quote form integration</span><strong>Pending connection</strong></motion.div>
-          </motion.div>
+          <QuoteContact
+            service="systems"
+            heading="Let’s build the system your operation deserves."
+            lede="Answer a few questions and we’ll come back with a tailored systems proposal — usually within one business day."
+            reduced={reduced}
+          />
         </section>
       </div>
 

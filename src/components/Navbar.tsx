@@ -10,6 +10,8 @@ import MobileNav from "@/components/navigation/MobileNav";
 import { NAV_EASE_OUT, NAV_LINKS, SERVICE_DETAIL_PAGES, SERVICE_NAV_LINKS } from "@/components/navigation/data";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
+const MotionLink = motion.create(Link);
+
 export default function Navbar() {
   const reduced = useReducedMotion() ?? false;
   const pathname = usePathname();
@@ -51,6 +53,11 @@ export default function Navbar() {
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
   const inverse = serviceDetailPage && !scrolled && !open;
   const navLinks = SERVICE_NAV_LINKS[pathname] ?? NAV_LINKS;
+  // The quote CTA opens the dedicated /cotizador form — on a service page it
+  // deep-links with that service preselected (Step 2).
+  const quoteHref = serviceDetailPage
+    ? `/cotizador?servicio=${pathname.split("/").pop()}`
+    : "/cotizador";
 
   return (
     <motion.header
@@ -89,10 +96,9 @@ export default function Navbar() {
         <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} />
 
         <div className="flex items-center gap-3">
-          <motion.a
+          <MotionLink
             ref={ctaRef}
-            href={serviceDetailPage ? "#contact" : "#"}
-            onClick={(event) => !serviceDetailPage && event.preventDefault()}
+            href={quoteHref}
             onMouseEnter={onMouseEnter}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
@@ -104,7 +110,7 @@ export default function Navbar() {
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
             <span className="relative z-10">Contact us</span>
-          </motion.a>
+          </MotionLink>
 
           <button
             type="button"
@@ -128,7 +134,7 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} ctaHref={serviceDetailPage ? "#contact" : "#"} />
+      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} ctaHref={quoteHref} />
     </motion.header>
   );
 }

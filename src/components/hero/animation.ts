@@ -14,7 +14,7 @@ export const HERO_NAV_LINKS = [
   { label: "Services", href: "#services" },
   { label: "Success stories", href: "#success-stories" },
   { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Contact", href: "/cotizador" },
 ] as const;
 
 export const heroContentVariants: Variants = {

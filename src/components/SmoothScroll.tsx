@@ -37,7 +37,13 @@ export default function SmoothScroll() {
       starting = false;
       if (!active || reducedMotion.matches) return;
 
-      lenis = new Lenis({ lerp: 0.1 });
+      // Without this, Lenis keeps its previous page's scroll target alive
+      // across a client-side route change (this component never unmounts),
+      // so the next raf tick drags the real scroll back toward wherever the
+      // old page had it — landing past the new page's hero. Internal-link
+      // clicks (Next's <Link>) now stop that inertia so navigation starts
+      // clean from wherever Next.js settles the new page's scroll.
+      lenis = new Lenis({ lerp: 0.1, stopInertiaOnNavigate: true });
       const instance = lenis;
       window.__lenis = instance;
       const onAnchorClick = (event: MouseEvent) => {

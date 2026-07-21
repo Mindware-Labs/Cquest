@@ -1163,7 +1163,7 @@ a:hover > .arrowDown {
 /* ── Contact + footer (shared closing rhythm across service pages) ───── */
 .contactSection {
   scroll-margin-top: 2rem;
-  padding-block: clamp(5rem, 9vw, 8rem);
+  padding-block: clamp(3.25rem, 6vw, 5rem);
   background: var(--bp-ink);
   color: white;
 }

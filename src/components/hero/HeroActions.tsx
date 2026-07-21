@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
+
+const MotionLink = motion.create(Link);
 
 export default function HeroActions() {
   const {
@@ -12,9 +15,9 @@ export default function HeroActions() {
 
   return (
     <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
-      <motion.a
+      <MotionLink
         ref={ref}
-        href="#contact"
+        href="/cotizador"
         onMouseEnter={onMouseEnter}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
@@ -29,7 +32,7 @@ export default function HeroActions() {
         <span className="relative z-10 flex h-4 w-4 items-center justify-center text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
           <Chevron />
         </span>
-      </motion.a>
+      </MotionLink>
 
       <a
         href="#services"

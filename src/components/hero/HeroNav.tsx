@@ -1,8 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { EASE_OUT, HERO_NAV_LINKS } from "./animation";
+
+const MotionLink = motion.create(Link);
 
 export default function HeroNav({ reduced }: { reduced: boolean }) {
   const [open, setOpen] = useState(false);
@@ -50,9 +53,9 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
           ))}
         </ul>
 
-        <motion.a
+        <MotionLink
           ref={ctaRef}
-          href="#contact"
+          href="/cotizador"
           onMouseEnter={onMouseEnter}
           onMouseMove={onMouseMove}
           onMouseLeave={onMouseLeave}
@@ -66,7 +69,7 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
             Contact us
           </span>
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[2px] bg-white opacity-0 transition-opacity duration-300 ease-out group-hover/nav:opacity-100" />
-        </motion.a>
+        </MotionLink>
 
         <button
           type="button"
@@ -123,13 +126,13 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
                 transition={{ duration: 0.4, delay: 0.05 + HERO_NAV_LINKS.length * 0.06, ease: EASE_OUT }}
                 className="pt-4"
               >
-                <a
-                  href="#contact"
+                <Link
+                  href="/cotizador"
                   onClick={() => setOpen(false)}
                   className="cq-rect-cta flex touch-manipulation items-center justify-center bg-celeste px-6 py-3 text-center text-foreground transition-transform duration-150 ease-out active:scale-[0.96]"
                 >
                   Contact us
-                </a>
+                </Link>
               </motion.li>
             </ul>
           </motion.div>

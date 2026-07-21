@@ -72,7 +72,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </motion.h1>
           <motion.p className={styles.heroLead} variants={focusRiseVariants}>Inbound and outbound contact-center operations designed around the moments that matter to your customers.</motion.p>
           <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-            <a href="#contact" className={styles.primaryCta}>Request a quote <Arrow /></a>
+            <Link href="/cotizador?servicio=call-center" className={styles.primaryCta}>Request a quote <Arrow /></Link>
             <a href="#capabilities" className={styles.secondaryCta}>Explore capabilities <Arrow direction="down" /></a>
           </motion.div>
           <motion.div className={styles.heroSignal} aria-label="Page highlights" variants={focusRiseVariants}>
