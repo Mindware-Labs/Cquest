@@ -6,9 +6,10 @@ type MobileNavProps = {
   reduced: boolean;
   onClose: () => void;
   links: readonly NavLink[];
+  ctaHref?: string;
 };
 
-export default function MobileNav({ open, reduced, onClose, links }: MobileNavProps) {
+export default function MobileNav({ open, reduced, onClose, links, ctaHref = "#" }: MobileNavProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -47,9 +48,9 @@ export default function MobileNav({ open, reduced, onClose, links }: MobileNavPr
               className="pt-4"
             >
               <a
-                href="#"
+                href={ctaHref}
                 onClick={(event) => {
-                  event.preventDefault();
+                  if (ctaHref === "#") event.preventDefault();
                   onClose();
                 }}
                 className="cq-rect-cta flex items-center justify-center bg-petroleo px-6 py-3 text-center text-white transition-transform duration-150 ease-out active:scale-[0.96]"

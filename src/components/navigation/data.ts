@@ -30,6 +30,12 @@ export const SERVICE_NAV_LINKS: Record<string, readonly NavLink[]> = {
     { label: "Results", href: "#metrics" },
     { label: "Clients", href: "#clients" },
   ],
+  "/services/bpo": [
+    { label: "Disciplines", href: "#capabilities" },
+    { label: "Method", href: "#method" },
+    { label: "SLAs", href: "#slas" },
+    { label: "Facilities", href: "#facility" },
+  ],
 };
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;

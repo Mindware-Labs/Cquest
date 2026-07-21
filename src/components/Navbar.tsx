@@ -128,7 +128,7 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} />
+      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} ctaHref={serviceDetailPage ? "#contact" : "#"} />
     </motion.header>
   );
 }

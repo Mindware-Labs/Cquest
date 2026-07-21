@@ -10,7 +10,12 @@ import {
   useTransform,
   type Variants,
 } from "motion/react";
-import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import { SERVICES } from "@/components/services/data";
 import styles from "./bpo.module.css";
@@ -19,14 +24,18 @@ const BPO = SERVICES.find((service) => service.id === "bpo")!;
 
 const MotionLink = motion.create(Link);
 
-const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: string }> = {
+const CAPABILITY_DETAIL: Record<
+  string,
+  { includes: readonly string[]; benefit: string }
+> = {
   "Back Office Support": {
     includes: [
       "Document management, order processing and account maintenance handled end to end",
       "Runbooks that make every task repeatable, whoever executes it",
       "Volume absorbed without adding headcount on your side",
     ],
-    benefit: "Your team stays focused on the core business while the repetitive load runs accurately in the background.",
+    benefit:
+      "Your team stays focused on the core business while the repetitive load runs accurately in the background.",
   },
   "Data processing": {
     includes: [
@@ -34,7 +43,8 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Double-verification protocols on accuracy-critical records",
       "Structured outputs delivered in your systems and formats",
     ],
-    benefit: "Reliable information your operation can act on — without the error rates that manual overload produces.",
+    benefit:
+      "Reliable information your operation can act on — without the error rates that manual overload produces.",
   },
   "Omnichannel support": {
     includes: [
@@ -42,7 +52,8 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Consistent answers backed by a shared knowledge base",
       "Coverage schedules aligned to your operating hours",
     ],
-    benefit: "Customers get the same answer on every channel, and nothing falls between the cracks.",
+    benefit:
+      "Customers get the same answer on every channel, and nothing falls between the cracks.",
   },
   "Trust & Safety": {
     includes: [
@@ -50,7 +61,8 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Proactive risk flagging with defined escalation paths",
       "Audit trails behind every decision taken",
     ],
-    benefit: "Your platform and community stay protected without slowing the operation down.",
+    benefit:
+      "Your platform and community stay protected without slowing the operation down.",
   },
   "Quality Assurance": {
     includes: [
@@ -58,7 +70,8 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Calibration sessions that keep evaluators aligned",
       "Findings fed back into coaching and process fixes",
     ],
-    benefit: "Quality stops being an opinion — it becomes a measured, improving number.",
+    benefit:
+      "Quality stops being an opinion — it becomes a measured, improving number.",
   },
   "Consulting Services": {
     includes: [
@@ -66,24 +79,65 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Redesign proposals with measurable targets",
       "Implementation support alongside your team",
     ],
-    benefit: "An outside operations lens that turns inefficiencies into a concrete improvement plan.",
+    benefit:
+      "An outside operations lens that turns inefficiencies into a concrete improvement plan.",
   },
 };
 
 const PROCESS = [
-  { title: "Discovery", description: "We study the process as it runs today — volumes, systems, exceptions, and the cost of getting it wrong." },
-  { title: "Process mapping", description: "Every step is documented into a runbook: inputs, outputs, rules and edge cases, so the work is repeatable by design." },
-  { title: "Pilot", description: "A controlled slice of real volume runs first, measured against the agreed SLAs before anything scales." },
-  { title: "Scale-up", description: "Volume ramps in stages while accuracy and turnaround hold; staffing flexes with your demand curve." },
-  { title: "Continuous improvement", description: "Audits, error analysis and process reviews keep tightening the operation long after launch." },
+  {
+    title: "Discovery",
+    description:
+      "We study the process as it runs today — volumes, systems, exceptions, and the cost of getting it wrong.",
+  },
+  {
+    title: "Process mapping",
+    description:
+      "Every step is documented into a runbook: inputs, outputs, rules and edge cases, so the work is repeatable by design.",
+  },
+  {
+    title: "Pilot",
+    description:
+      "A controlled slice of real volume runs first, measured against the agreed SLAs before anything scales.",
+  },
+  {
+    title: "Scale-up",
+    description:
+      "Volume ramps in stages while accuracy and turnaround hold; staffing flexes with your demand curve.",
+  },
+  {
+    title: "Continuous improvement",
+    description:
+      "Audits, error analysis and process reviews keep tightening the operation long after launch.",
+  },
 ] as const;
 
 const SLAS = [
-  { label: "Accuracy target", value: "99%+", status: "Double-verification on critical records" },
-  { label: "Turnaround", value: "Within SLA", status: "Agreed per process, measured daily" },
-  { label: "Volume capacity", value: "Elastic", status: "Staffing flexes with your demand curve" },
-  { label: "Coverage", value: "Up to 24/7", status: "Schedules aligned to your operation" },
-  { label: "Reporting", value: "Continuous", status: "Production and quality always visible to you" },
+  {
+    label: "Accuracy target",
+    value: "99%+",
+    status: "Double-verification on critical records",
+  },
+  {
+    label: "Turnaround",
+    value: "Within SLA",
+    status: "Agreed per process, measured daily",
+  },
+  {
+    label: "Volume capacity",
+    value: "Elastic",
+    status: "Staffing flexes with your demand curve",
+  },
+  {
+    label: "Coverage",
+    value: "Up to 24/7",
+    status: "Schedules aligned to your operation",
+  },
+  {
+    label: "Reporting",
+    value: "Continuous",
+    status: "Production and quality always visible to you",
+  },
 ] as const;
 
 /* ── Motion language ──────────────────────────────────────
@@ -101,13 +155,22 @@ const groupVariants: Variants = {
 
 const focusRiseVariants: Variants = {
   hidden: { opacity: 0, y: 26, filter: "blur(10px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: EASE_OUT } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.9, ease: EASE_OUT },
+  },
 };
 
 // Blur-only reveal for elements that own a CSS hover transform.
 const softRiseVariants: Variants = {
   hidden: { opacity: 0, filter: "blur(10px)" },
-  visible: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.85, ease: EASE_OUT } },
+  visible: {
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.85, ease: EASE_OUT },
+  },
 };
 
 const ruleXVariants: Variants = {
@@ -125,7 +188,11 @@ const stepVariants: Variants = {
 };
 const nodeVariants: Variants = {
   hidden: { scale: 0, opacity: 0 },
-  visible: { scale: 1, opacity: 1, transition: { duration: 0.55, ease: EASE_OUT } },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { duration: 0.55, ease: EASE_OUT },
+  },
 };
 
 const heroCopyVariants: Variants = {
@@ -151,7 +218,16 @@ const HERO_LINES = [
 
 function Arrow({ direction = "right" }: { direction?: "right" | "down" }) {
   return (
-    <svg aria-hidden viewBox="0 0 20 20" className={direction === "down" ? styles.arrowDown : styles.arrow} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden
+      viewBox="0 0 20 20"
+      className={direction === "down" ? styles.arrowDown : styles.arrow}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M4 10h12M11.5 5.5 16 10l-4.5 4.5" />
     </svg>
   );
@@ -168,7 +244,15 @@ function FrameTicks() {
   );
 }
 
-function SectionIntro({ title, description, reduced }: { title: ReactNode; description?: string; reduced: boolean }) {
+function SectionIntro({
+  title,
+  description,
+  reduced,
+}: {
+  title: ReactNode;
+  description?: string;
+  reduced: boolean;
+}) {
   return (
     <motion.div
       className={styles.sectionIntro}
@@ -177,11 +261,20 @@ function SectionIntro({ title, description, reduced }: { title: ReactNode; descr
       viewport={VIEWPORT}
       variants={groupVariants}
     >
-      <motion.div className={styles.sectionIntroHeading} variants={stepVariants}>
-        <motion.span className={styles.sectionIntroRule} aria-hidden variants={ruleXVariants} />
+      <motion.div
+        className={styles.sectionIntroHeading}
+        variants={stepVariants}
+      >
+        <motion.span
+          className={styles.sectionIntroRule}
+          aria-hidden
+          variants={ruleXVariants}
+        />
         <motion.h2 variants={focusRiseVariants}>{title}</motion.h2>
       </motion.div>
-      {description && <motion.p variants={focusRiseVariants}>{description}</motion.p>}
+      {description && (
+        <motion.p variants={focusRiseVariants}>{description}</motion.p>
+      )}
     </motion.div>
   );
 }
@@ -194,10 +287,15 @@ export default function BpoDetail() {
 
   // Arrow keys move between the discipline spines (APG accordion pattern:
   // Tab reaches each header, arrows travel the set, Home/End jump to ends).
-  const handleSlatKey = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+  const handleSlatKey = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
     let next: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % total;
-    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + total) % total;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+      next = (index + 1) % total;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+      next = (index - 1 + total) % total;
     else if (event.key === "Home") next = 0;
     else if (event.key === "End") next = total - 1;
     if (next === null) return;
@@ -213,7 +311,11 @@ export default function BpoDetail() {
     target: bandRef,
     offset: ["start end", "end start"],
   });
-  const bandY = useTransform(bandProgress, [0, 1], reduced ? [0, 0] : [28, -28]);
+  const bandY = useTransform(
+    bandProgress,
+    [0, 1],
+    reduced ? [0, 0] : [28, -28],
+  );
 
   // The method spine draws itself downward, spring-smoothed so it trails the
   // scroll like a needle, not a scrubber.
@@ -237,22 +339,64 @@ export default function BpoDetail() {
           animate="visible"
         >
           <div className={styles.heroCopy}>
-            <MotionLink href="/#services" className={styles.breadcrumb} variants={focusRiseVariants}>Services <span aria-hidden>/</span> BPO</MotionLink>
-            <motion.div className={styles.liveLine} variants={focusRiseVariants}><span aria-hidden />Business Process Outsourcing under clear SLAs</motion.div>
-            <motion.h1 className={styles.heroHeadline} variants={heroLinesVariants}>
+            <MotionLink
+              href="/#services"
+              className={styles.breadcrumb}
+              variants={focusRiseVariants}
+            >
+              Services <span aria-hidden>/</span> BPO
+            </MotionLink>
+            <motion.div
+              className={styles.liveLine}
+              variants={focusRiseVariants}
+            >
+              <span aria-hidden />
+              Business Process Outsourcing under clear SLAs
+            </motion.div>
+            <motion.h1
+              className={styles.heroHeadline}
+              variants={heroLinesVariants}
+            >
               {HERO_LINES.map((line) => (
-                <motion.span key={line.text} className={styles.heroLineMask} variants={passThroughVariants}>
-                  <motion.span className={line.strong ? `${styles.heroLine} ${styles.heroHeadlineStrong}` : styles.heroLine} variants={heroCurtainVariants}>{line.text}</motion.span>
+                <motion.span
+                  key={line.text}
+                  className={styles.heroLineMask}
+                  variants={passThroughVariants}
+                >
+                  <motion.span
+                    className={
+                      line.strong
+                        ? `${styles.heroLine} ${styles.heroHeadlineStrong}`
+                        : styles.heroLine
+                    }
+                    variants={heroCurtainVariants}
+                  >
+                    {line.text}
+                  </motion.span>
                 </motion.span>
               ))}
             </motion.h1>
-            <motion.p className={styles.heroLead} variants={focusRiseVariants}>Back office, data processing and omnichannel support — the repeatable work of your operation, run accurately at volume.</motion.p>
-            <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-              <a href="#contact" className={styles.primaryCta}>Request a quote <Arrow /></a>
-              <a href="#capabilities" className={styles.secondaryCta}>Explore capabilities <Arrow direction="down" /></a>
+            <motion.p className={styles.heroLead} variants={focusRiseVariants}>
+              Back office, data processing and omnichannel support — the
+              repeatable work of your operation, run accurately at volume.
+            </motion.p>
+            <motion.div
+              className={styles.heroActions}
+              variants={focusRiseVariants}
+            >
+              <a href="#contact" className={styles.primaryCta}>
+                Request a quote <Arrow />
+              </a>
+              <a href="#capabilities" className={styles.secondaryCta}>
+                Explore capabilities <Arrow direction="down" />
+              </a>
             </motion.div>
           </div>
-          <motion.aside className={styles.heroMeta} variants={focusRiseVariants} aria-label="Operating scope">
+          <motion.aside
+            className={styles.heroMeta}
+            variants={focusRiseVariants}
+            aria-label="Operating scope"
+          >
             <span className={styles.heroMetaLabel}>Operating scope</span>
             <ul className={styles.heroMetaList}>
               <li>Back office</li>
@@ -260,7 +404,10 @@ export default function BpoDetail() {
               <li>Omnichannel</li>
               <li>Quality &amp; risk</li>
             </ul>
-            <p className={styles.heroMetaNote}>Every engagement runs under a documented SLA — accuracy, turnaround and coverage, agreed before launch.</p>
+            <p className={styles.heroMetaNote}>
+              Every engagement runs under a documented SLA — accuracy,
+              turnaround and coverage, agreed before launch.
+            </p>
           </motion.aside>
         </motion.div>
       </header>
@@ -286,7 +433,17 @@ export default function BpoDetail() {
       <div>
         <section id="capabilities" className={styles.capabilitiesSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>Six disciplines,<br />one standard</>} description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you." reduced={reduced} />
+            <SectionIntro
+              title={
+                <>
+                  Six disciplines,
+                  <br />
+                  one standard
+                </>
+              }
+              description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you."
+              reduced={reduced}
+            />
             <motion.div
               className={styles.rack}
               role="group"
@@ -308,7 +465,9 @@ export default function BpoDetail() {
                     onMouseEnter={() => setActiveIndex(index)}
                   >
                     <button
-                      ref={(node) => { slatRefs.current[index] = node; }}
+                      ref={(node) => {
+                        slatRefs.current[index] = node;
+                      }}
                       type="button"
                       id={`bpo-tab-${index}`}
                       className={styles.slatSpine}
@@ -318,10 +477,25 @@ export default function BpoDetail() {
                       onFocus={() => setActiveIndex(index)}
                       onKeyDown={(event) => handleSlatKey(event, index)}
                     >
-                      <span className={styles.slatNumber} aria-hidden>0{index + 1}</span>
-                      <span className={styles.slatIcon} aria-hidden><ServiceIcon name={item.icon} /></span>
+                      <span className={styles.slatNumber} aria-hidden>
+                        0{index + 1}
+                      </span>
+                      <span className={styles.slatIcon} aria-hidden>
+                        <ServiceIcon name={item.icon} />
+                      </span>
                       <span className={styles.slatTitle}>{item.title}</span>
-                      <svg className={styles.slatChevron} aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 5 5 5-5" /></svg>
+                      <svg
+                        className={styles.slatChevron}
+                        aria-hidden
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m5 8 5 5 5-5" />
+                      </svg>
                     </button>
                     <div
                       className={styles.slatDetail}
@@ -331,16 +505,27 @@ export default function BpoDetail() {
                       aria-hidden={!active}
                     >
                       <div className={styles.slatDetailInner}>
-                        <span className={styles.slatKicker}><span className={styles.slatKickerDot} aria-hidden />Held to one SLA</span>
+                        <span className={styles.slatKicker}>
+                          <span className={styles.slatKickerDot} aria-hidden />
+                          Held to one SLA
+                        </span>
                         <span className={styles.slatName}>{item.title}</span>
                         <p className={styles.slatLead}>{item.description}</p>
                         <div className={styles.slatPanels}>
                           <div className={styles.slatIncludes}>
-                            <span className={styles.slatLabel}>What it includes</span>
-                            <ul>{detail.includes.map((line) => (<li key={line}>{line}</li>))}</ul>
+                            <span className={styles.slatLabel}>
+                              What it includes
+                            </span>
+                            <ul>
+                              {detail.includes.map((line) => (
+                                <li key={line}>{line}</li>
+                              ))}
+                            </ul>
                           </div>
                           <div className={styles.slatBenefit}>
-                            <span className={styles.slatLabel}>Client benefit</span>
+                            <span className={styles.slatLabel}>
+                              Client benefit
+                            </span>
                             <p>{detail.benefit}</p>
                           </div>
                         </div>
@@ -350,7 +535,10 @@ export default function BpoDetail() {
                 );
               })}
             </motion.div>
-            <p className={styles.rackHint}><span aria-hidden>—</span> Select a discipline to open its full spec. Every one runs under the same SLA.</p>
+            <p className={styles.rackHint}>
+              <span aria-hidden>—</span> Select a discipline to open its full
+              spec. Every one runs under the same SLA.
+            </p>
           </div>
         </section>
 
@@ -364,33 +552,91 @@ export default function BpoDetail() {
                 viewport={VIEWPORT}
                 variants={groupVariants}
               >
-                <motion.div variants={stepVariants} style={{ display: "flex", flexDirection: "column" }}>
-                  <motion.span className={styles.railRule} aria-hidden variants={ruleYVariants} />
-                  <motion.h2 variants={focusRiseVariants}>From handover to steady state</motion.h2>
+                <motion.div
+                  variants={stepVariants}
+                  style={{ display: "flex", flexDirection: "column" }}
+                >
+                  <motion.span
+                    className={styles.railRule}
+                    aria-hidden
+                    variants={ruleYVariants}
+                  />
+                  <motion.h2 variants={focusRiseVariants}>
+                    From handover to steady state
+                  </motion.h2>
                 </motion.div>
-                <motion.p variants={focusRiseVariants}>Taking over a process is a discipline in itself. The same sequence governs every engagement, so nothing depends on improvisation.</motion.p>
+                <motion.p variants={focusRiseVariants}>
+                  Taking over a process is a discipline in itself. The same
+                  sequence governs every engagement, so nothing depends on
+                  improvisation.
+                </motion.p>
+                <motion.p
+                  className={styles.railMeta}
+                  variants={focusRiseVariants}
+                >
+                  <span aria-hidden />
+                  Five steps, one sequence — repeated on every engagement.
+                </motion.p>
               </motion.div>
               <div ref={spineRef} className={styles.spine}>
                 <span className={styles.spineTrack} aria-hidden />
-                <motion.span className={styles.spineLine} aria-hidden style={{ scaleY: spineScale }} />
-                <motion.ol
-                  className={styles.spineList}
+                <motion.span
+                  className={styles.spineLine}
+                  aria-hidden
+                  style={{ scaleY: spineScale }}
+                />
+                <motion.div
+                  className={styles.spineFlow}
                   initial={reduced ? false : "hidden"}
                   whileInView={reduced ? undefined : "visible"}
                   viewport={{ once: true, margin: "-60px" }}
                   variants={groupVariants}
                 >
-                  {PROCESS.map((step, index) => (
-                    <motion.li key={step.title} className={styles.spineStep} variants={stepVariants}>
-                      <motion.span className={styles.spineNode} aria-hidden variants={nodeVariants} />
-                      <motion.div variants={focusRiseVariants}>
-                        <span className={styles.spineNumber}>0{index + 1}</span>
-                        <h3>{step.title}</h3>
-                        <p>{step.description}</p>
-                      </motion.div>
-                    </motion.li>
-                  ))}
-                </motion.ol>
+                  <motion.p
+                    className={styles.spineEnd}
+                    data-pos="start"
+                    variants={focusRiseVariants}
+                  >
+                    <span className={styles.spineEndMark} aria-hidden />
+                    Handover
+                  </motion.p>
+                  <motion.ol
+                    className={styles.spineList}
+                    variants={groupVariants}
+                  >
+                    {PROCESS.map((step, index) => (
+                      <motion.li
+                        key={step.title}
+                        className={styles.spineStep}
+                        variants={stepVariants}
+                      >
+                        <motion.span
+                          className={styles.spineNode}
+                          aria-hidden
+                          variants={nodeVariants}
+                        />
+                        <motion.div
+                          className={styles.spineStepBody}
+                          variants={focusRiseVariants}
+                        >
+                          <span className={styles.spineNumber}>
+                            0{index + 1}
+                          </span>
+                          <h3>{step.title}</h3>
+                          <p>{step.description}</p>
+                        </motion.div>
+                      </motion.li>
+                    ))}
+                  </motion.ol>
+                  <motion.p
+                    className={styles.spineEnd}
+                    data-pos="end"
+                    variants={focusRiseVariants}
+                  >
+                    <span className={styles.spineEndMark} aria-hidden />
+                    Steady state
+                  </motion.p>
+                </motion.div>
               </div>
             </div>
           </div>
@@ -405,11 +651,27 @@ export default function BpoDetail() {
               viewport={VIEWPORT}
               variants={groupVariants}
             >
-              <motion.div variants={stepVariants} style={{ display: "flex", flexDirection: "column" }}>
-                <motion.span className={styles.slaRule} aria-hidden variants={ruleYVariants} />
-                <motion.h2 variants={focusRiseVariants}>Accuracy is the product.</motion.h2>
+              <motion.div
+                variants={stepVariants}
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                <motion.span
+                  className={styles.slaRule}
+                  aria-hidden
+                  variants={ruleYVariants}
+                />
+                <motion.h2 variants={focusRiseVariants}>
+                  Accuracy is the product.
+                </motion.h2>
               </motion.div>
-              <motion.p variants={focusRiseVariants}>BPO is judged on what it delivers, day after day. These are the commitments every engagement is measured against.</motion.p>
+              <motion.p variants={focusRiseVariants}>
+                BPO is judged on what it delivers, day after day. These are the
+                commitments every engagement is measured against.
+              </motion.p>
+              <motion.p className={styles.slaMeta} variants={focusRiseVariants}>
+                <span className={styles.slaMetaDot} aria-hidden />
+                Measured daily, and always visible to you.
+              </motion.p>
             </motion.div>
             <motion.dl
               className={styles.slaList}
@@ -418,20 +680,30 @@ export default function BpoDetail() {
               viewport={VIEWPORT}
               variants={groupVariants}
             >
-              {SLAS.map((sla) => (
+              {SLAS.map((sla, index) => (
                 <motion.div key={sla.label} variants={softRiseVariants}>
+                  <span className={styles.slaIndex} aria-hidden>
+                    0{index + 1}
+                  </span>
                   <dt>{sla.label}</dt>
                   <dd>{sla.value}</dd>
-                  <span className={styles.slaStatus}><span className={styles.slaDot} aria-hidden />{sla.status}</span>
+                  <span className={styles.slaStatus}>
+                    <span className={styles.slaTick} aria-hidden />
+                    {sla.status}
+                  </span>
                 </motion.div>
               ))}
             </motion.dl>
           </div>
         </section>
 
-        <section className={styles.photosSection}>
+        <section id="facility" className={styles.photosSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title="The operation up close" description="Real photos of the team and facilities will live here — evidence of the operation, not stock imagery." reduced={reduced} />
+            <SectionIntro
+              title="The operation up close"
+              description="Real photos of the team and facilities will live here — evidence of the operation, not stock imagery."
+              reduced={reduced}
+            />
             <motion.div
               className={styles.photoGrid}
               initial={reduced ? false : "hidden"}
@@ -439,7 +711,10 @@ export default function BpoDetail() {
               viewport={VIEWPORT}
               variants={groupVariants}
             >
-              <motion.div className={styles.photoFrame} variants={softRiseVariants}>
+              <motion.div
+                className={styles.photoFrame}
+                variants={softRiseVariants}
+              >
                 <FrameTicks />
                 <div className={styles.frameLabel}>
                   <span>Image placeholder</span>
@@ -447,7 +722,10 @@ export default function BpoDetail() {
                   <small>4:3 · real team photo, WebP</small>
                 </div>
               </motion.div>
-              <motion.div className={styles.photoFrame} variants={softRiseVariants}>
+              <motion.div
+                className={styles.photoFrame}
+                variants={softRiseVariants}
+              >
                 <FrameTicks />
                 <div className={styles.frameLabel}>
                   <span>Image placeholder</span>
@@ -467,14 +745,34 @@ export default function BpoDetail() {
             viewport={VIEWPORT}
             variants={groupVariants}
           >
-            <motion.div variants={focusRiseVariants}><h2>Let&rsquo;s take the busywork off your plate.</h2><p>This section is prepared to connect with the smart quote form and direct contact channels in the next phase.</p></motion.div>
-            <motion.div className={styles.contactPlaceholder} variants={focusRiseVariants}><span>Quote form integration</span><strong>Pending connection</strong></motion.div>
+            <motion.div variants={focusRiseVariants}>
+              <h2>Let&rsquo;s take the busywork off your plate.</h2>
+              <p>
+                This section is prepared to connect with the smart quote form
+                and direct contact channels in the next phase.
+              </p>
+            </motion.div>
+            <motion.div
+              className={styles.contactPlaceholder}
+              variants={focusRiseVariants}
+            >
+              <span>Quote form integration</span>
+              <strong>Pending connection</strong>
+            </motion.div>
           </motion.div>
         </section>
       </div>
 
       <footer className={styles.footer}>
-        <Link href="/" aria-label="Center Quest home"><Image src="/logo.png" alt="Center Quest" width={206} height={152} className={styles.footerLogo} /></Link>
+        <Link href="/" aria-label="Center Quest home">
+          <Image
+            src="/logo.png"
+            alt="Center Quest"
+            width={206}
+            height={152}
+            className={styles.footerLogo}
+          />
+        </Link>
         <p>Call Center · BPO · Systems Development</p>
         <Link href="/#services">Back to all services</Link>
       </footer>
