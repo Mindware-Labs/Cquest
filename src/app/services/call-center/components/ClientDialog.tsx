@@ -4,49 +4,23 @@ import Image from "next/image";
 import { motion, type Variants } from "motion/react";
 import { useEffect, useRef } from "react";
 import Arrow from "@/components/services/Arrow";
-import { EASE_OUT, focusRiseVariants, passThroughVariants, stepVariants } from "@/components/services/motion";
+import { EASE_OUT, focusRiseVariants, ruleXVariants } from "@/components/services/motion";
 import type { ClientLogo } from "../data";
 import styles from "./ClientDialog.module.css";
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-// Client dialog: one orchestrated beat, not a flat pop. Both badges settle in,
-// the line draws toward Center Quest, a signal travels it and lands on the CQ
-// mark, the mark visibly "receives" it with a ripple, then a permanent
-// connection node blooms — before the copy sharpens in from blur beneath it.
-// Tuned tight (whole beat lands in ~0.9s) so it reads as one quick pulse of
-// energy, not a slow ceremony.
+// One quiet reveal, staggered — the same primitives every other section on
+// this page uses (rule draws, content sharpens out of blur) rather than a
+// bespoke effect. Consistency of motion language is what makes this read as
+// part of the page instead of a dropped-in widget.
 const dialogGroupVariants: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
 };
-const badgeRiseVariants: Variants = {
-  hidden: { opacity: 0, y: 6, scale: 0.86, filter: "blur(6px)" },
-  visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.5, ease: EASE_OUT } },
-};
-const connectorLineVariants: Variants = {
-  hidden: { scaleX: 0 },
-  visible: { scaleX: 1, transition: { duration: 0.4, ease: EASE_OUT, delay: 0.08 } },
-};
-// The pulse box spans the full line (inset: 0) with its dot centered inside —
-// so "travel" is a transform-only x translate (in % of the pulse's own width,
-// i.e. the line's width) rather than animating the layout property `left`.
-const connectorTravelVariants: Variants = {
-  hidden: { x: "-46%", opacity: 0 },
-  visible: {
-    x: ["-46%", "0%", "46%", "46%"],
-    opacity: [0, 1, 1, 0],
-    transition: { duration: 0.48, ease: EASE_OUT, delay: 0.28, times: [0, 0.45, 0.85, 1] },
-  },
-};
-// Fires the instant the pulse lands (delay lines up with connectorTravelVariants: 0.28 + 0.48).
-const connectorPingVariants: Variants = {
-  hidden: { scale: 0.7, opacity: 0 },
-  visible: { scale: 1.45, opacity: [0, 0.65, 0], transition: { duration: 0.5, ease: EASE_OUT, delay: 0.76 } },
-};
-const connectorNodeVariants: Variants = {
-  hidden: { scale: 0, opacity: 0 },
-  visible: { scale: 1, opacity: 1, transition: { duration: 0.3, ease: EASE_OUT, delay: 0.78 } },
+const logoRiseVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.92, filter: "blur(8px)" },
+  visible: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { duration: 0.55, ease: EASE_OUT } },
 };
 
 export default function ClientDialog({ client, onClose, reduced }: { client: ClientLogo; onClose: () => void; reduced: boolean }) {
@@ -119,37 +93,44 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
         </motion.button>
 
         <motion.div initial={reduced ? false : "hidden"} animate="visible" variants={dialogGroupVariants}>
-          <motion.div className={styles.connectionRow} variants={stepVariants}>
-            <motion.span className={styles.connectionBadge} variants={badgeRiseVariants}>
-              <span className={styles.connectionLogoFrame}>
-                <Image src={client.src} alt={`${client.name} logo`} fill sizes="3rem" className={styles.connectionLogo} />
-              </span>
+          <div className={styles.dialogHeader}>
+            <motion.span
+              className={styles.dialogLogoFrame}
+              data-size={"size" in client ? client.size : undefined}
+              variants={logoRiseVariants}
+            >
+              <Image src={client.src} alt={`${client.name} logo`} fill sizes="9rem" className={styles.dialogLogo} />
             </motion.span>
-            <motion.span className={styles.connectionLine} aria-hidden variants={passThroughVariants}>
-              <motion.span className={styles.connectionLineFill} variants={connectorLineVariants} />
-              <motion.span className={styles.connectionPulse} variants={connectorTravelVariants} />
-              <motion.span className={styles.connectionNode} variants={connectorNodeVariants} />
-            </motion.span>
-            <motion.span className={styles.connectionBadge} data-brand="true" variants={badgeRiseVariants}>
-              <span className={styles.connectionLogoFrame}>
-                <Image src="/logo.png" alt="Center Quest" fill sizes="3rem" className={styles.connectionLogo} />
-              </span>
-              <motion.span className={styles.connectionPing} aria-hidden variants={connectorPingVariants} />
-            </motion.span>
-          </motion.div>
+            <motion.h3 id={titleId} className={styles.dialogTitle} variants={focusRiseVariants}>{client.name}</motion.h3>
+          </div>
 
-          <motion.h3 id={titleId} className={styles.dialogTitle} variants={focusRiseVariants}>{client.name}</motion.h3>
+          <motion.span className={styles.dialogDivider} aria-hidden variants={ruleXVariants} />
 
           <motion.div className={styles.dialogSection} variants={focusRiseVariants}>
-            <h4>About {client.name}</h4>
-            <p>{client.about}</p>
+            <h4>About the company</h4>
+            {client.about.split("\n\n").map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+            {"source" in client && client.source && (
+              <div className={styles.dialogCite}>
+                <span className={styles.dialogCiteLabel}>Source</span>
+                <cite>
+                  <a className={styles.dialogCiteLink} href={client.source} target="_blank" rel="noopener noreferrer">
+                    {new URL(client.source).hostname.replace(/^www\./, "")}
+                    <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8 6h6v6M14 6 6 14" />
+                    </svg>
+                  </a>
+                </cite>
+              </div>
+            )}
           </motion.div>
-          <motion.div className={styles.dialogSection} variants={focusRiseVariants}>
+          <motion.div className={styles.dialogProvides} variants={focusRiseVariants}>
             <h4>What Center Quest provides</h4>
             <p>{client.provides}</p>
           </motion.div>
 
-          <motion.a href="#contact" className={styles.dialogFooterLink} onClick={onClose} variants={focusRiseVariants}>
+          <motion.a href="#contact" className={styles.dialogCta} onClick={onClose} variants={focusRiseVariants}>
             Discuss a similar engagement <Arrow />
           </motion.a>
         </motion.div>

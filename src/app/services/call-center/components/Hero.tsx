@@ -52,7 +52,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
   const copyOpacity = useTransform(heroProgress, [0, 0.85], reduced ? [1, 1] : [1, 0]);
 
   return (
-    <header ref={heroRef} className={styles.hero}>
+    <header ref={heroRef} data-hero-boundary className={styles.hero}>
       <div className={`${container.container} ${styles.heroGrid}`}>
         <motion.div
           className={styles.heroCopy}

@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { NAV_LINKS } from "./data";
+import type { NavLink } from "./data";
 
-export default function DesktopNav({ reduced, inverse = false }: { reduced: boolean; inverse?: boolean }) {
+export default function DesktopNav({
+  reduced,
+  inverse = false,
+  links,
+}: {
+  reduced: boolean;
+  inverse?: boolean;
+  links: readonly NavLink[];
+}) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   return (
@@ -10,7 +18,7 @@ export default function DesktopNav({ reduced, inverse = false }: { reduced: bool
       className="hidden items-center gap-1 md:flex"
       onMouseLeave={() => setHovered(null)}
     >
-      {NAV_LINKS.map(({ label, href }) => (
+      {links.map(({ label, href }) => (
         <li key={label} className="relative">
           {hovered === label && (
             <motion.span

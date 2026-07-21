@@ -1,23 +1,28 @@
+/* The overlay itself is the scroll container — not the panel inside it.
+   A dialog with its own clipped overflow reads as a widget bolted onto the
+   page; scrolling the full-viewport overlay instead reads as scrolling the
+   page, and it sidesteps the flex/grid-centering-plus-overflow bug where
+   content taller than the viewport gets clipped above an unreachable
+   scrollTop of 0. */
 .clientOverlay {
   position: fixed;
   inset: 0;
   z-index: 60;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(3rem, 10vh, 6rem) 1.5rem;
   background: color-mix(in srgb, var(--cc-ink) 62%, transparent);
   backdrop-filter: blur(6px);
 }
 
 .clientDialog {
   position: relative;
-  width: min(100%, 30rem);
-  max-height: min(88vh, 40rem);
-  overflow-y: auto;
-  padding: clamp(2rem, 4vw, 2.75rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
-  border-radius: 1.25rem;
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  padding: clamp(1.85rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
+  border-radius: 2px;
   background: white;
-  box-shadow: 0 40px 80px -30px rgba(10, 17, 22, 0.45);
+  box-shadow: 0 28px 50px -30px rgba(10, 17, 22, 0.32), 0 4px 12px -4px rgba(10, 17, 22, 0.14);
 }
 
 /* Focused programmatically on open (tabIndex=-1) so its aria-labelledby is
@@ -29,8 +34,8 @@
 
 .dialogClose {
   position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
+  top: 0.6rem;
+  right: 0.6rem;
   display: grid;
   place-items: center;
   width: 2.75rem;
@@ -57,135 +62,63 @@
   .dialogClose:hover { transform: none; }
 }
 
-.connectionRow {
+.dialogHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 1.75rem;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
 }
 
-.connectionBadge {
+.dialogLogoFrame {
   position: relative;
   display: grid;
   flex: none;
   place-items: center;
   overflow: hidden;
-  width: 4.5rem;
-  height: 4.5rem;
-  padding: 0.6rem;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
-  box-shadow: 0 10px 22px -14px rgba(10, 17, 22, 0.3);
+  width: 4.75rem;
+  height: 4.75rem;
+  padding: 0.65rem;
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--foreground) 4%, white);
 }
 
-.connectionBadge[data-brand="true"] {
-  border-color: color-mix(in srgb, var(--cc-sky) 45%, transparent);
-  background: color-mix(in srgb, var(--cc-sky) 10%, white);
+/* Wordmark logos (wide, short) drown in a square frame — most of it renders
+   as empty tinted background around a thin strip of logo. Give them a frame
+   shaped like their own aspect ratio instead, matching the same data-size
+   convention the logo wall already uses (see ClientsSection.module.css). */
+.dialogLogoFrame[data-size="compact"] {
+  width: 7.5rem;
+  height: 2.75rem;
+  padding: 0.4rem 0.75rem;
 }
 
-/* A circular mask clips the corners of any non-square contained image — this
-   inner frame keeps the logo's own bounding box inside the circle's safe
-   radius (≤ ~70.7% of the diameter) no matter its aspect ratio, so nothing
-   ever touches the mask edge. Client logos are unpredictable (several are
-   perfectly square, the tightest case), so they keep the conservative default;
-   the Center Quest mark is a known fixed asset (~1.36:1) with more headroom,
-   so it can sit closer to the badge edge without risking a future clip. */
-.connectionLogoFrame {
-  position: relative;
-  width: 68%;
-  height: 68%;
+.dialogLogoFrame[data-size="large"] {
+  width: 5.5rem;
+  height: 5.5rem;
 }
 
-.connectionBadge[data-brand="true"] .connectionLogoFrame {
-  width: 80%;
-  height: 80%;
-}
-
-.connectionLogo {
+.dialogLogo {
   object-fit: contain;
 }
 
-.connectionLine {
-  position: relative;
-  width: clamp(3rem, 8vw, 4.5rem);
-  height: 2px;
-  flex: none;
-  margin-inline: 0.35rem;
-  background: color-mix(in srgb, var(--foreground) 12%, transparent);
-}
-
-.connectionLineFill {
-  position: absolute;
-  inset: 0;
-  transform-origin: left;
-  background: var(--cc-sky);
-}
-
-/* Centered with a negative margin, not `transform: translate(-50%, -50%)` —
-   Framer Motion writes this element's own `scale` as an inline transform, and
-   an inline transform always replaces (never merges with) a static CSS one,
-   which would silently un-center the node the moment its entrance animates. */
-.connectionNode {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin: -0.25rem 0 0 -0.25rem;
-  border-radius: 50%;
-  background: var(--cc-sky);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cc-sky) 25%, transparent);
-}
-
-.connectionPulse {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.connectionPulse::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: var(--cc-jade);
-  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--cc-jade) 70%, transparent);
-  transform: translate(-50%, -50%);
-}
-
-/* Ripples out on the Center Quest badge the instant the traveling pulse
-   lands — the "signal received" payoff that closes the connection beat. */
-.connectionPing {
-  position: absolute;
-  inset: 0.4rem;
-  border: 1.5px solid var(--cc-jade);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .connectionPulse,
-  .connectionPing { display: none; }
-}
-
 .dialogTitle {
-  margin-top: 0.25rem;
-  text-align: center;
-  font-size: clamp(1.4rem, 2vw, 1.7rem);
-  font-weight: 500;
+  min-width: 0;
+  font-size: clamp(1.4rem, 2.4vw, 1.65rem);
+  font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
-.dialogSection {
-  margin-top: 1.5rem;
+.dialogDivider {
+  display: block;
+  margin-block: 1.5rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  transform-origin: left center;
 }
 
-.dialogSection h4 {
+.dialogSection h4,
+.dialogProvides h4 {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -193,25 +126,123 @@
   color: var(--cc-petroleum);
 }
 
-.dialogSection p {
+.dialogSection p,
+.dialogProvides p {
   margin-top: 0.5rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.6;
 }
 
-.dialogFooterLink {
+/* An attribution, not a UI row — set the way a caption sits under a pull
+   quote: flush right, quietly italic, no boxed-in divider. Alignment and
+   type alone mark it as tertiary, so it doesn't need a rule or a label chip
+   to separate it from the body copy above. */
+.dialogCite {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 1.4rem;
+}
+
+.dialogCiteLabel {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--text-tertiary) 75%, transparent);
+}
+
+.dialogCiteLink {
+  position: relative;
   display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--cc-petroleum);
+  transition: color 200ms var(--ease-out);
+}
+
+/* Underline draws in on hover, left to right — the same directional beat as
+   every other hairline rule on this page (dialogRule, dialogDivider,
+   SectionIntro), just triggered by hover instead of entrance. */
+.dialogCiteLink::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.15rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 280ms var(--ease-out);
+}
+
+.dialogCiteLink:hover {
+  color: var(--cc-charcoal);
+}
+
+.dialogCiteLink:hover::after {
+  transform: scaleX(1);
+}
+
+.dialogCiteLink svg {
+  width: 0.62rem;
+  height: 0.62rem;
+  flex: none;
+  transition: transform 200ms var(--ease-out);
+}
+
+.dialogCiteLink:hover svg {
+  transform: translate(1px, -1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogCiteLink::after { transition: none; }
+}
+
+.dialogProvides {
+  margin-top: 1.35rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--cc-sky) 8%, white);
+  border: 1px solid color-mix(in srgb, var(--cc-sky) 22%, transparent);
+}
+
+.dialogCta {
+  position: relative;
+  display: flex;
   width: 100%;
   min-height: 2.75rem;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
+  gap: 0.65rem;
   margin-top: 1.85rem;
-  padding-top: 1.35rem;
-  border-top: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
-  color: var(--cc-petroleum);
-  font-size: 0.78rem;
+  border-radius: 2px;
+  padding: 0.85rem 1.25rem;
+  background: var(--cc-sky);
+  color: var(--cc-ink);
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  line-height: 1;
   text-transform: uppercase;
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out), box-shadow 240ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.dialogCta:hover {
+  background: var(--cc-charcoal);
+  color: white;
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.dialogCta:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogCta { transition: none; }
 }

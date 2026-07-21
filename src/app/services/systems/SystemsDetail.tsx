@@ -196,7 +196,7 @@ export default function SystemsDetail() {
 
   return (
     <article className={styles.page}>
-      <header ref={heroRef} className={styles.hero}>
+      <header ref={heroRef} data-hero-boundary className={styles.hero}>
         <div className={styles.heroInner}>
           <motion.div
             className={styles.heroCopy}

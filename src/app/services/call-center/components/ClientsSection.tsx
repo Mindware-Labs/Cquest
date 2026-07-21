@@ -27,6 +27,11 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
   useEffect(() => {
     if (!activeClientName) return;
     document.body.style.overflow = "hidden";
+    // Lenis drives scroll through its own rAF loop independent of native
+    // overflow, so `body.style.overflow = "hidden"` alone doesn't stop the
+    // page behind the dialog from gliding along with a wheel/touch gesture —
+    // the smooth-scroll engine itself has to be paused too.
+    window.__lenis?.stop();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeClientDialog();
     };
@@ -34,6 +39,7 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
     const triggerRefs = clientTriggerRefs.current;
     return () => {
       document.body.style.overflow = "";
+      window.__lenis?.start();
       window.removeEventListener("keydown", handleKeyDown);
       const triggerName = lastTriggerName.current;
       const trigger = triggerName ? triggerRefs[triggerName] : null;

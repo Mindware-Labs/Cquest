@@ -2,17 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  motion,
-  useMotionValueEvent,
-  useReducedMotion,
-  useScroll,
-} from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { NAV_EASE_OUT } from "@/components/navigation/data";
+import { NAV_EASE_OUT, NAV_LINKS, SERVICE_DETAIL_PAGES, SERVICE_NAV_LINKS } from "@/components/navigation/data";
 import { useMagnetic } from "@/hooks/useMagnetic";
 
 export default function Navbar() {
@@ -20,7 +15,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const { scrollY } = useScroll();
   const {
     ref: ctaRef,
     style: ctaStyle,
@@ -29,9 +23,34 @@ export default function Navbar() {
     onMouseLeave,
   } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
-  useMotionValueEvent(scrollY, "change", (value) => setScrolled(value > 8));
-  const callCenterPage = pathname === "/services/call-center";
-  const inverse = callCenterPage && !scrolled && !open;
+  // "Scrolled" flips the nav to its light chrome — but on a page with a dark
+  // hero, flipping on the first pixel of scroll puts dark/near-invisible
+  // text over a background that's still dark. Track the hero itself instead:
+  // stay in the dark-hero look until it has actually scrolled out from under
+  // the fixed navbar, then switch. Pages without a `[data-hero-boundary]`
+  // (nothing currently renders Navbar outside /services/*, but this keeps it
+  // safe if one ever does) fall back to a plain scroll-position threshold.
+  useEffect(() => {
+    const heroEl = document.querySelector<HTMLElement>("[data-hero-boundary]");
+
+    if (!heroEl) {
+      const onScroll = () => setScrolled(window.scrollY > 8);
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return () => window.removeEventListener("scroll", onScroll);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { rootMargin: "-80px 0px 0px 0px" },
+    );
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
+  const inverse = serviceDetailPage && !scrolled && !open;
+  const navLinks = SERVICE_NAV_LINKS[pathname] ?? NAV_LINKS;
 
   return (
     <motion.header
@@ -42,7 +61,13 @@ export default function Navbar() {
         scrolled || open
           ? "border-b border-border/70 bg-background/80 shadow-[0_1px_12px_rgba(15,32,40,0.04)] backdrop-blur-xl"
           : inverse
-            ? "border-b border-white/12 bg-transparent"
+            ? // Pure transparency lets the hero's own headline slide up and
+              // visually collide with the nav links while it scrolls past —
+              // a blurred top-down scrim keeps the nav readable without
+              // looking like solid chrome. The blur (not just the darkening)
+              // is what keeps scrolling hero text from reading as a sharp
+              // overlap with the nav's own labels.
+              "border-b border-white/12 bg-gradient-to-b from-black/55 via-black/20 to-transparent backdrop-blur-md"
             : "border-b border-transparent bg-transparent"
       }`}
     >
@@ -61,13 +86,13 @@ export default function Navbar() {
           />
         </Link>
 
-        <DesktopNav reduced={reduced} inverse={inverse} />
+        <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} />
 
         <div className="flex items-center gap-3">
           <motion.a
             ref={ctaRef}
-            href={callCenterPage ? "#contact" : "#"}
-            onClick={(event) => !callCenterPage && event.preventDefault()}
+            href={serviceDetailPage ? "#contact" : "#"}
+            onClick={(event) => !serviceDetailPage && event.preventDefault()}
             onMouseEnter={onMouseEnter}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
@@ -103,7 +128,7 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} />
+      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} />
     </motion.header>
   );
 }

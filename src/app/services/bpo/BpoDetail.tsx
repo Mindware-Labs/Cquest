@@ -214,7 +214,7 @@ export default function BpoDetail() {
 
   return (
     <article className={styles.page}>
-      <header className={styles.hero}>
+      <header data-hero-boundary className={styles.hero}>
         <motion.div
           className={styles.heroInner}
           variants={heroCopyVariants}

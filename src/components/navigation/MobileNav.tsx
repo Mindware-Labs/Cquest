@@ -1,13 +1,14 @@
 import { AnimatePresence, motion } from "motion/react";
-import { NAV_EASE_OUT, NAV_LINKS } from "./data";
+import { NAV_EASE_OUT, type NavLink } from "./data";
 
 type MobileNavProps = {
   open: boolean;
   reduced: boolean;
   onClose: () => void;
+  links: readonly NavLink[];
 };
 
-export default function MobileNav({ open, reduced, onClose }: MobileNavProps) {
+export default function MobileNav({ open, reduced, onClose, links }: MobileNavProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -20,7 +21,7 @@ export default function MobileNav({ open, reduced, onClose }: MobileNavProps) {
           className="overflow-hidden border-t border-border/60 md:hidden"
         >
           <ul className="flex flex-col px-6 py-4">
-            {NAV_LINKS.map(({ label, href }, index) => (
+            {links.map(({ label, href }, index) => (
               <motion.li
                 key={label}
                 initial={reduced ? false : { opacity: 0, x: -12 }}
@@ -42,7 +43,7 @@ export default function MobileNav({ open, reduced, onClose }: MobileNavProps) {
             <motion.li
               initial={reduced ? false : { opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 + NAV_LINKS.length * 0.06, ease: NAV_EASE_OUT }}
+              transition={{ duration: 0.4, delay: 0.05 + links.length * 0.06, ease: NAV_EASE_OUT }}
               className="pt-4"
             >
               <a
