@@ -12,14 +12,15 @@ import {
 } from "motion/react";
 import { useRef, type ReactNode } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
-import { SERVICES } from "@/components/services/data";
+import { SERVICES, type ServiceIconName } from "@/components/services/data";
+import SystemPreview from "./SystemPreview";
 import styles from "./systems.module.css";
 
 const SYSTEMS = SERVICES.find((service) => service.id === "systems")!;
 
 const MotionLink = motion.create(Link);
 
-const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: string; shot: string }> = {
+const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: string }> = {
   CRMs: {
     includes: [
       "Customer and case management shaped to your actual workflow",
@@ -27,7 +28,6 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Integrations with the channels and tools you already use",
     ],
     benefit: "One system of record your team actually wants to use, because it works the way they do.",
-    shot: "Custom CRM — case view",
   },
   Dashboards: {
     includes: [
@@ -36,7 +36,6 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Alerts when a number leaves its acceptable range",
     ],
     benefit: "Decisions made on today's numbers, not last month's report.",
-    shot: "Operations dashboard — live KPIs",
   },
   "Operations automation": {
     includes: [
@@ -45,7 +44,6 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Human handoff points exactly where judgment is needed",
     ],
     benefit: "Hours of manual work become minutes, with fewer errors along the way.",
-    shot: "Workflow builder — automation rules",
   },
   "AI Implementation": {
     includes: [
@@ -54,7 +52,6 @@ const CAPABILITY_DETAIL: Record<string, { includes: readonly string[]; benefit: 
       "Guardrails, evaluation and monitoring from day one",
     ],
     benefit: "AI that empowers your team and delights your customers — deployed responsibly.",
-    shot: "AI assistant — agent console",
   },
 };
 
@@ -71,6 +68,31 @@ const COMMITMENTS = [
   { title: "Code and data are yours", description: "Full ownership, documentation and handover. No lock-in to us or to anyone." },
   { title: "Support after go-live", description: "Launch is the midpoint, not the end — the system keeps evolving with the operation it serves." },
 ] as const;
+
+/* ── Selected work ─────────────────────────────────────────
+   The proof gallery. Each slot is a clickable plate that opens its own case-
+   study subpage (`href`). Only `build` / `icon` / `href` are required: an entry
+   with no `image`/`title` renders as a labeled, reserved slot. To publish a
+   real case study, fill its fields, drop a WebP in `public/apps/`, and flesh
+   out its subpage — the same slot becomes a live card, no layout change. Add
+   more entries and the gallery reflows on its own; the first `featured` entry
+   is the flagship plate. */
+type Work = {
+  build: string;                                // system-type tag, e.g. "CRM"
+  icon: ServiceIconName;                        // mirrors the capability icons
+  href: string;                                 // its case-study subpage
+  featured?: boolean;
+  title?: string;                               // published: the system's name
+  sector?: string;                              // published: the sector it serves
+  summary?: string;                             // published: challenge → system, one line
+  outcome?: { value: string; label: string };   // published: the number it moved
+  image?: string;                               // published: "/apps/<file>.webp"
+  alt?: string;                                 // published: describe the screenshot
+};
+
+const WORKS: readonly Work[] = [
+  { build: "CRM", icon: "layout", featured: true, href: "/services/systems/work" },
+];
 
 /* ── Motion language ──────────────────────────────────────
    Same vocabulary as the other service pages — ease-out-quint, focus-pull
@@ -140,17 +162,6 @@ function Arrow({ direction = "right" }: { direction?: "right" | "down" }) {
   );
 }
 
-function FrameTicks() {
-  return (
-    <>
-      <span className={styles.tick} data-pos="tl" aria-hidden />
-      <span className={styles.tick} data-pos="tr" aria-hidden />
-      <span className={styles.tick} data-pos="bl" aria-hidden />
-      <span className={styles.tick} data-pos="br" aria-hidden />
-    </>
-  );
-}
-
 function WindowDots() {
   return (
     <span className={styles.windowDots} aria-hidden>
@@ -177,8 +188,43 @@ function SectionIntro({ title, description, reduced }: { title: ReactNode; descr
   );
 }
 
+// Media slot for a work plate: a real screenshot once `image` is set, or a
+// labeled, reserved placeholder until then. Featured plates carry a 16:9 frame
+// with registration ticks; supporting plates a quieter 16:10.
+function WorkMedia({ work, featured = false }: { work: Work; featured?: boolean }) {
+  return (
+    <div className={styles.workMedia} data-featured={featured || undefined}>
+      {work.image ? (
+        <Image
+          src={work.image}
+          alt={work.alt ?? work.title ?? ""}
+          fill
+          sizes={featured ? "(max-width: 64rem) 100vw, 45rem" : "(max-width: 64rem) 100vw, 22rem"}
+          className={styles.workShot}
+        />
+      ) : (
+        <div className={styles.workSlot}>
+          <span className={styles.workSlotIcon}><ServiceIcon name={work.icon} /></span>
+          <span className={styles.workSlotLabel}>App screenshot</span>
+          <span className={styles.workSlotMeta}>{featured ? "16 : 9 · WebP" : "16 : 10 · WebP"}</span>
+        </div>
+      )}
+      {featured && (
+        <>
+          <span className={styles.workTick} data-c="tl" aria-hidden />
+          <span className={styles.workTick} data-c="tr" aria-hidden />
+          <span className={styles.workTick} data-c="bl" aria-hidden />
+          <span className={styles.workTick} data-c="br" aria-hidden />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function SystemsDetail() {
   const reduced = useReducedMotion() ?? false;
+
+  const featuredWork = WORKS.find((work) => work.featured) ?? WORKS[0];
 
   // The product window arrives tilted in perspective and flattens as the
   // page scrolls — the deliverable settling onto the desk. Transforms are
@@ -237,12 +283,15 @@ export default function SystemsDetail() {
               <span className={styles.windowAddress}>app.centerquest.com.do/operations</span>
             </div>
             <div className={styles.windowBody}>
-              <FrameTicks />
-              <div className={styles.frameLabel}>
-                <span>Image placeholder</span>
-                <strong>Flagship product screenshot</strong>
-                <small>Hero window · 16:9 · real system capture, WebP</small>
-              </div>
+              <Image
+                src="/apps/dev-hero.jpeg"
+                alt="Center Quest operations platform — dashboard with call volume, agent activity and follow-up accountability"
+                fill
+                quality={100}
+                sizes="(min-width: 64rem) 62rem, 100vw"
+                className={styles.windowShot}
+                priority
+              />
             </div>
           </motion.div>
         </div>
@@ -251,7 +300,7 @@ export default function SystemsDetail() {
       <div>
         <section id="capabilities" className={styles.capabilitiesSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>Built for the operation,<br />shown as the product</>} description="Four kinds of systems, each presented with what it includes, the benefit it creates, and a real capture of the software itself." reduced={reduced} />
+            <SectionIntro title={<>Built for the operation,<br />shown as the product</>} description="Four kinds of systems, each presented with what it includes and the benefit it creates for the operation running it." reduced={reduced} />
             <div className={styles.capRows}>
               {SYSTEMS.details.map((item, index) => {
                 const detail = CAPABILITY_DETAIL[item.title];
@@ -266,29 +315,22 @@ export default function SystemsDetail() {
                     variants={groupVariants}
                   >
                     <motion.div className={styles.capCopy} variants={focusRiseVariants}>
-                      <p className={styles.capKicker}><ServiceIcon name={item.icon} />Capability 0{index + 1}</p>
+                      <p className={styles.capKicker}><ServiceIcon name={item.icon} />System 0{index + 1}</p>
                       <h3>{item.title}</h3>
                       <p>{item.description}</p>
-                      <ul className={styles.capIncludes}>
-                        {detail.includes.map((line) => (<li key={line}>{line}</li>))}
-                      </ul>
+                      <div className={styles.capIncludes}>
+                        <p className={styles.capListLabel}>What it includes</p>
+                        <ul>
+                          {detail.includes.map((line) => (<li key={line}>{line}</li>))}
+                        </ul>
+                      </div>
                       <div className={styles.capBenefit}>
-                        <h4>Client benefit</h4>
+                        <h4>The benefit</h4>
                         <p>{detail.benefit}</p>
                       </div>
                     </motion.div>
                     <motion.div className={styles.capMedia} variants={softRiseVariants}>
-                      <div className={styles.capMediaBar}>
-                        <WindowDots />
-                      </div>
-                      <div className={styles.capMediaBody}>
-                        <FrameTicks />
-                        <div className={`${styles.frameLabel} ${styles.frameLabelLight}`}>
-                          <span>Image placeholder</span>
-                          <strong>{detail.shot}</strong>
-                          <small>16:10 · real product capture, WebP</small>
-                        </div>
-                      </div>
+                      <SystemPreview title={item.title} />
                     </motion.div>
                   </motion.div>
                 );
@@ -347,6 +389,58 @@ export default function SystemsDetail() {
                   <p>{item.description}</p>
                 </motion.div>
               ))}
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="work" className={styles.workSection}>
+          <div className={styles.contentShell}>
+            <SectionIntro
+              title={<>Selected work</>}
+              description="The first case study is in curation. Open the plate for the full build — the challenge, the system, and the number it moved — the moment it clears review."
+              reduced={reduced}
+            />
+            <motion.div
+              className={styles.workGallery}
+              initial={reduced ? false : "hidden"}
+              whileInView={reduced ? undefined : "visible"}
+              viewport={VIEWPORT}
+              variants={groupVariants}
+            >
+              <MotionLink
+                href={featuredWork.href}
+                className={`${styles.workPlate} ${styles.workFeatured}`}
+                variants={softRiseVariants}
+                aria-label={featuredWork.title ? `Case study: ${featuredWork.title}` : `${featuredWork.build} case study — in curation`}
+              >
+                <WorkMedia work={featuredWork} featured />
+                <div className={styles.workCaption}>
+                  <div className={styles.workTags}>
+                    <span className={styles.workChip}><ServiceIcon name={featuredWork.icon} />{featuredWork.build}</span>
+                  </div>
+                  {featuredWork.title ? (
+                    <>
+                      <h3 className={styles.workTitle}>{featuredWork.title}</h3>
+                      {featuredWork.sector && <p className={styles.workSector}>{featuredWork.sector}</p>}
+                      {featuredWork.summary && <p className={styles.workSummary}>{featuredWork.summary}</p>}
+                    </>
+                  ) : (
+                    <>
+                      <h3 className={styles.workTitle} data-reserved>A flagship build, in curation</h3>
+                      <p className={styles.workSummary}>The full case study — the challenge, the system we built, and the number it moved — is being prepared.</p>
+                    </>
+                  )}
+                  <div className={styles.workOutcome}>
+                    {featuredWork.outcome ? (
+                      <span className={styles.workOutcomeValue}>{featuredWork.outcome.value}</span>
+                    ) : (
+                      <span className={styles.workOutcomeValue} data-empty aria-hidden>&mdash;</span>
+                    )}
+                    <span className={styles.workOutcomeLabel}>{featuredWork.outcome?.label ?? "Measured result"}</span>
+                  </div>
+                  <span className={styles.workCta}>View case study <Arrow /></span>
+                </div>
+              </MotionLink>
             </motion.div>
           </div>
         </section>

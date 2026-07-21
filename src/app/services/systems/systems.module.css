@@ -319,6 +319,10 @@ a:hover > .arrowDown {
     #0f1a21;
 }
 
+.windowShot {
+  object-fit: cover;
+}
+
 .frameLabel {
   display: flex;
   flex-direction: column;
@@ -349,24 +353,6 @@ a:hover > .arrowDown {
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
-
-/* Light-surface variant of the frame label, for the capability shots. */
-.frameLabelLight span { color: var(--sy-petroleum); }
-.frameLabelLight strong { color: var(--foreground); }
-.frameLabelLight small { color: var(--text-tertiary); }
-
-.tick {
-  position: absolute;
-  width: 0.8rem;
-  height: 0.8rem;
-  border: 0 solid color-mix(in srgb, var(--sy-blue) 70%, transparent);
-  pointer-events: none;
-}
-
-.tick[data-pos="tl"] { top: 0.65rem; left: 0.65rem; border-top-width: 1.5px; border-left-width: 1.5px; }
-.tick[data-pos="tr"] { top: 0.65rem; right: 0.65rem; border-top-width: 1.5px; border-right-width: 1.5px; }
-.tick[data-pos="bl"] { bottom: 0.65rem; left: 0.65rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
-.tick[data-pos="br"] { bottom: 0.65rem; right: 0.65rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
 
 /* ── Sections ────────────────────────────────────────────────────────── */
 .capabilitiesSection,
@@ -477,6 +463,15 @@ a:hover > .arrowDown {
   border-top: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
 }
 
+.capListLabel {
+  margin-bottom: 0.85rem;
+  color: var(--sy-petroleum);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .capIncludes li {
   position: relative;
   padding-left: 1.1rem;
@@ -519,45 +514,388 @@ a:hover > .arrowDown {
   line-height: 1.7;
 }
 
-/* The capability's screenshot frame: light browser chrome, crop marks,
-   labelled placeholder until the real capture exists. */
+/* ── System previews — each capability shown AS its product: a synthetic,
+   image-free interface drawn in CSS/SVG inside the same dark window chrome as
+   the hero. The window frame arrives with the row; the interface then
+   populates itself — records land, KPIs settle, a rule fires down its
+   branches, the assistant answers — so every panel reads as live software,
+   never a placeholder waiting for a screenshot. */
 .capMedia {
   border-radius: 0.85rem;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--sy-blue) 30%, transparent);
-  background: white;
+  border: 1px solid rgba(116, 195, 213, 0.28);
+  background: #0f1a21;
   box-shadow: 0 30px 55px -38px rgba(10, 17, 22, 0.4), 0 3px 8px -5px rgba(10, 17, 22, 0.14);
   transition: border-color 280ms var(--ease-out), box-shadow 280ms var(--ease-out), transform 280ms var(--ease-out);
 }
 
 .capMedia:hover {
-  border-color: color-mix(in srgb, var(--sy-blue) 55%, transparent);
-  box-shadow: 0 38px 62px -38px rgba(10, 17, 22, 0.48), 0 4px 10px -5px rgba(10, 17, 22, 0.16);
+  border-color: rgba(116, 195, 213, 0.5);
+  box-shadow: 0 40px 66px -38px rgba(10, 17, 22, 0.5), 0 5px 12px -6px rgba(10, 17, 22, 0.18);
   transform: translateY(-4px);
 }
 
-.capMediaBar {
+/* Window chrome — three dots + a mono route label, matching the hero. */
+.pvBar {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-  padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  background: color-mix(in srgb, var(--sy-sky) 5%, white);
+  gap: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.capMediaBar .windowDots span {
-  background: color-mix(in srgb, var(--foreground) 14%, transparent);
+.pvDots { display: flex; gap: 0.34rem; }
+.pvDots span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+
+.pvBarLabel {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
 }
 
-.capMediaBody {
+/* The screen — a dark blueprint field, cleared through the centre so the
+   interface reads cleanly. --pv-green is the on-dark green the palette's
+   #6aaa00 is too muted for at this scale. */
+.pvScreen {
+  --pv-green: #8ecb46;
   position: relative;
   aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(0.8rem, 1.7vw, 1.2rem);
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(75, 152, 177, 0.18), transparent 55%),
+    var(--sy-ink);
+}
+
+.pvScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.04) 1px, transparent 1px);
+  background-size: 1.7rem 1.7rem;
+  mask-image: radial-gradient(ellipse 92% 88% at 50% 42%, #000 55%, transparent 94%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 42%, #000 55%, transparent 94%);
+  pointer-events: none;
+}
+
+.pvScreen > * { position: relative; }
+
+/* 1 · CRM — case list */
+.crmToolbar { display: flex; align-items: center; gap: 0.5rem; }
+
+.crmSearch {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 1.7rem;
+  padding: 0 0.6rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.62rem;
+}
+
+.crmSearch svg { width: 0.8rem; height: 0.8rem; color: var(--sy-sky); }
+
+.crmNew {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 1.7rem;
+  padding: 0 0.6rem;
+  border-radius: 0.45rem;
+  background: var(--sy-sky);
+  color: var(--sy-ink);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.crmNew svg { width: 0.72rem; height: 0.72rem; }
+
+.crmList { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.6rem; flex: 1; }
+
+.crmRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+}
+
+.crmRow[data-active="true"] {
+  border-color: rgba(116, 195, 213, 0.35);
+  background: rgba(116, 195, 213, 0.1);
+}
+
+.crmRow[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--sy-sky);
+}
+
+.crmAvatar {
   display: grid;
   place-items: center;
-  background:
-    repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--sy-blue) 5%, transparent) 14px 15px),
-    linear-gradient(160deg, color-mix(in srgb, var(--sy-sky) 12%, white), white 65%);
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  border-radius: 0.4rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: var(--a);
+  background: color-mix(in srgb, var(--a) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--a) 32%, transparent);
 }
+
+.crmLines { display: flex; flex-direction: column; gap: 0.32rem; flex: 1; min-width: 0; }
+.crmName { font-size: 0.66rem; font-weight: 600; color: rgba(255, 255, 255, 0.82); }
+.crmSub { height: 0.32rem; width: 42%; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+
+.crmPill {
+  flex: none;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t);
+  background: color-mix(in srgb, var(--t) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--t) 30%, transparent);
+}
+
+/* 2 · Dashboard — KPIs + bar chart */
+.dashHead { display: flex; align-items: center; }
+
+.dashLive {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.dashLive i {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--pv-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--pv-green) 60%, transparent);
+  animation: pvLive 2.4s var(--ease-out) infinite;
+}
+
+@keyframes pvLive { 50% { box-shadow: 0 0 0 0.35rem rgba(142, 203, 70, 0); } }
+
+.dashTiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; margin-top: 0.55rem; }
+
+.dashTile {
+  padding: 0.5rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.dashTileLabel { display: block; font-size: 0.5rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.42); }
+
+.dashTileValue {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.dashChart {
+  position: relative;
+  flex: 1;
+  min-height: 3rem;
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.25rem, 0.9vw, 0.5rem);
+  padding-bottom: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dashBar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  transform-origin: bottom;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sy-sky) 78%, transparent), color-mix(in srgb, var(--sy-blue) 32%, transparent));
+}
+
+.dashBar[data-peak="true"] {
+  background: linear-gradient(180deg, var(--pv-green), color-mix(in srgb, var(--pv-green) 38%, transparent));
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--pv-green) 55%, transparent);
+}
+
+/* 3 · Automation — node graph */
+.autoStage { position: relative; flex: 1; margin-top: 0.3rem; min-height: 6rem; }
+
+.autoSvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.autoConn {
+  fill: none;
+  stroke: rgba(116, 195, 213, 0.3);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.autoPulse {
+  fill: none;
+  stroke: var(--sy-sky);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 9 91;
+  stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--sy-sky) 70%, transparent));
+  animation: pvFlow 2.6s linear infinite;
+  animation-delay: var(--fd, 0s);
+}
+
+@keyframes pvFlow { to { stroke-dashoffset: 0; } }
+
+.autoNode {
+  position: absolute;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.38rem 0.58rem;
+  border-radius: 0.55rem;
+  white-space: nowrap;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--n) 16%, #0f1a21);
+  border: 1px solid color-mix(in srgb, var(--n) 45%, transparent);
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.7);
+}
+
+.autoNode svg { width: 0.85rem; height: 0.85rem; flex: none; color: var(--n); }
+
+/* 4 · AI — agent console */
+.aiMsg { display: flex; gap: 0.45rem; max-width: 84%; }
+.aiMsg + .aiMsg { margin-top: 0.5rem; }
+.aiMsg[data-role="user"] { align-self: flex-end; flex-direction: row-reverse; }
+.aiMsg[data-role="ai"] { align-self: flex-start; }
+
+.aiAvatar {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: none;
+  border-radius: 0.4rem;
+  color: var(--sy-ink);
+  background: linear-gradient(135deg, var(--sy-sky), var(--sy-blue));
+}
+
+.aiAvatar svg { width: 0.85rem; height: 0.85rem; }
+
+.aiBubble { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.5rem 0.6rem; border-radius: 0.6rem; }
+
+.aiMsg[data-role="user"] .aiBubble {
+  background: rgba(116, 195, 213, 0.16);
+  border: 1px solid rgba(116, 195, 213, 0.22);
+  border-bottom-right-radius: 0.2rem;
+}
+
+.aiMsg[data-role="ai"] .aiBubble {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom-left-radius: 0.2rem;
+}
+
+.aiLine { height: 0.34rem; max-width: 100%; border-radius: 2px; background: rgba(255, 255, 255, 0.26); }
+.aiMsg[data-role="user"] .aiLine { background: rgba(116, 195, 213, 0.5); }
+
+.aiTyping {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.6rem;
+  border-bottom-left-radius: 0.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.aiTyping span {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--sy-sky);
+  animation: pvType 1.3s var(--ease-out) infinite;
+}
+
+.aiTyping span:nth-child(2) { animation-delay: 0.16s; }
+.aiTyping span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes pvType {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-0.22rem); opacity: 1; }
+}
+
+.aiInput {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 1.8rem;
+  padding: 0 0.35rem 0 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aiInputText { flex: 1; display: inline-flex; align-items: center; gap: 0.2rem; color: rgba(255, 255, 255, 0.4); font-size: 0.62rem; }
+
+.aiCaret { width: 1.5px; height: 0.8rem; background: var(--sy-sky); animation: pvBlink 1.1s steps(1) infinite; }
+
+@keyframes pvBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+.aiSend {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: none;
+  border-radius: 0.35rem;
+  color: var(--sy-ink);
+  background: var(--sy-sky);
+}
+
+.aiSend svg { width: 0.78rem; height: 0.78rem; }
 
 /* ── Method — full-width numbered rows whose top hairline draws in as each
    step reveals; the ghost number carries the sequence. */
@@ -703,6 +1041,258 @@ a:hover > .arrowDown {
   text-wrap: pretty;
 }
 
+/* ── Selected work — the proof gallery. Replaceable, clearly-labeled media
+   slots: a deliberate "in curation" wall now, real published case studies the
+   moment a screenshot + fields are added (see the Work type). A light section
+   on purpose — it breaks the dark commitments→contact run and sets the shipped
+   product apart from the dark synthetic previews further up. Resting plates are
+   flat and editorial; they lift only on hover, so nothing reads as a ghost
+   card. */
+.workSection {
+  position: relative;
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 8vw, 7.5rem);
+  background:
+    radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--sy-sky) 8%, transparent), transparent 60%),
+    #fbfcfc;
+}
+
+.workSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--sy-blue) 45%, transparent), transparent);
+}
+
+.workGallery {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.workPlate {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 340ms var(--ease-out), border-color 340ms var(--ease-out), box-shadow 340ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .workPlate:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--sy-blue) 45%, var(--border));
+    box-shadow: 0 28px 52px -32px rgba(10, 17, 22, 0.3);
+  }
+}
+
+.workFeatured {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: stretch;
+}
+
+.workMedia {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(130% 90% at 50% 0%, color-mix(in srgb, var(--sy-sky) 10%, transparent), transparent 62%),
+    var(--surface-sunken);
+}
+
+.workMedia[data-featured] {
+  aspect-ratio: 16 / 9;
+  border-bottom: 0;
+  border-right: 1px solid var(--border);
+}
+
+.workShot { object-fit: cover; }
+
+.workSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.workSlotIcon {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 0.85rem;
+  color: var(--sy-blue);
+  background: color-mix(in srgb, var(--sy-sky) 14%, white);
+  border: 1px solid color-mix(in srgb, var(--sy-sky) 30%, transparent);
+  transition: transform 340ms var(--ease-out), box-shadow 340ms var(--ease-out);
+}
+
+.workMedia[data-featured] .workSlotIcon { width: 4rem; height: 4rem; }
+.workSlotIcon svg { width: 1.5rem; height: 1.5rem; }
+.workMedia[data-featured] .workSlotIcon svg { width: 1.9rem; height: 1.9rem; }
+
+@media (hover: hover) {
+  .workPlate:hover .workSlotIcon {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 26px -14px color-mix(in srgb, var(--sy-blue) 50%, transparent);
+  }
+}
+
+.workSlotLabel {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.workSlotMeta {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Registration ticks — the media as a precise, reserved plate (featured only). */
+.workTick {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 0 solid color-mix(in srgb, var(--sy-blue) 42%, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.workTick[data-c="tl"] { top: 0.6rem; left: 0.6rem; border-top-width: 1.5px; border-left-width: 1.5px; }
+.workTick[data-c="tr"] { top: 0.6rem; right: 0.6rem; border-top-width: 1.5px; border-right-width: 1.5px; }
+.workTick[data-c="bl"] { bottom: 0.6rem; left: 0.6rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.workTick[data-c="br"] { bottom: 0.6rem; right: 0.6rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+.workCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: clamp(1.25rem, 2vw, 1.6rem);
+}
+
+.workFeatured .workCaption {
+  gap: 1rem;
+  padding: clamp(1.5rem, 2.6vw, 2.5rem);
+}
+
+/* Anchor the outcome to the bottom of the stretched caption column. */
+.workFeatured .workOutcome { margin-top: auto; }
+
+.workTags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.workChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sy-petroleum) 55%, var(--foreground));
+  background: color-mix(in srgb, var(--sy-sky) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--sy-sky) 30%, transparent);
+}
+
+.workChip svg { width: 0.85rem; height: 0.85rem; color: var(--sy-blue); }
+
+.workTitle {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.workTitle[data-reserved] { color: var(--text-tertiary); font-weight: 400; }
+
+.workSector {
+  color: var(--sy-petroleum);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.workSummary {
+  max-width: 46ch;
+  color: var(--text-secondary);
+  font-size: 0.97rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.workOutcome {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.workOutcomeValue {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.9rem, 3vw, 2.7rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--sy-petroleum);
+}
+
+.workOutcomeValue[data-empty] { color: color-mix(in srgb, var(--foreground) 26%, transparent); }
+
+.workOutcomeLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Click affordance — the plate is a link to its case-study subpage. */
+.workCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+  color: color-mix(in srgb, var(--sy-petroleum) 55%, var(--foreground));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.workCta svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (hover: hover) {
+  .workPlate:hover .workCta svg { transform: translateX(0.25rem); }
+}
+
 /* ── Contact + footer (shared closing rhythm across service pages) ───── */
 .contactSection {
   scroll-margin-top: 2rem;
@@ -774,6 +1364,8 @@ a:hover > .arrowDown {
   .methodStep p { grid-column: 2; }
   .pactGrid { grid-template-columns: 1fr; }
   .pactGrid > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+  .workFeatured { grid-template-columns: 1fr; align-items: stretch; }
+  .workFeatured .workMedia { border-right: 0; border-bottom: 1px solid var(--border); }
 }
 
 @media (max-width: 42rem) {
@@ -791,6 +1383,8 @@ a:hover > .arrowDown {
   .windowAddress { display: none; }
   .capabilitiesSection,
   .methodSection { padding-block: 4.5rem; }
+  .workSection { padding-block: 4.5rem; }
+  .pvScreen { aspect-ratio: 4 / 3; }
   .methodStep { grid-template-columns: 1fr; gap: 0.75rem; }
   .methodStep p { grid-column: 1; }
   .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }

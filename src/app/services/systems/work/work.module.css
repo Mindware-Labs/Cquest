@@ -1,0 +1,177 @@
+/* Case-study subpage — a designed empty state (holding page). Light and airy,
+   consistent with the Selected work gallery it opens from. Kept intentionally
+   minimal: this is the frame the real write-up drops into later. */
+.page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--foreground);
+  background:
+    radial-gradient(120% 55% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 9%, transparent), transparent 60%),
+    #fbfcfc;
+}
+
+.shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100% - 2.5rem, 68rem);
+  margin-inline: auto;
+  padding-top: clamp(7rem, 14vh, 10rem);
+  padding-bottom: clamp(3.5rem, 8vh, 6rem);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  align-self: flex-start;
+  min-height: 2.5rem;
+  color: var(--brand-petroleo);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.back svg { width: 1rem; height: 1rem; transition: transform 260ms var(--ease-out); }
+.back:hover svg { transform: translateX(-0.2rem); }
+
+.head { margin-top: clamp(1.75rem, 5vh, 3rem); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brand-petroleo) 55%, var(--foreground));
+  background: color-mix(in srgb, var(--brand-celeste) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--brand-celeste) 30%, transparent);
+}
+
+.chip svg { width: 0.9rem; height: 0.9rem; color: var(--brand-petroleo); }
+
+.title {
+  margin-top: 1.25rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 5.5vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.lede {
+  margin-top: 1.25rem;
+  max-width: 52ch;
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* Reserved frame — the same recessed plate the gallery uses, at full width. */
+.frame {
+  position: relative;
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(130% 90% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 10%, transparent), transparent 62%),
+    var(--surface-sunken);
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.slotIcon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.9rem;
+  color: var(--brand-petroleo);
+  background: color-mix(in srgb, var(--brand-celeste) 14%, white);
+  border: 1px solid color-mix(in srgb, var(--brand-celeste) 30%, transparent);
+}
+
+.slotIcon svg { width: 1.9rem; height: 1.9rem; }
+.slotLabel { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
+.slotMeta { color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.tick {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0 solid color-mix(in srgb, var(--brand-petroleo) 40%, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.tick[data-c="tl"] { top: 0.75rem; left: 0.75rem; border-top-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-c="tr"] { top: 0.75rem; right: 0.75rem; border-top-width: 1.5px; border-right-width: 1.5px; }
+.tick[data-c="bl"] { bottom: 0.75rem; left: 0.75rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-c="br"] { bottom: 0.75rem; right: 0.75rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: clamp(2.5rem, 6vh, 3.5rem);
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.85rem 1.35rem;
+  border-radius: 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out), border-color 240ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.primary { background: var(--brand-petroleo); color: #fff; }
+.primary:hover { background: var(--foreground); }
+.secondary { background: var(--surface-raised); border-color: var(--border); color: var(--foreground); }
+.secondary:hover { border-color: color-mix(in srgb, var(--brand-petroleo) 50%, var(--border)); }
+.primary:active,
+.secondary:active { transform: scale(0.98); }
+.primary svg { width: 1rem; height: 1rem; transition: transform 240ms var(--ease-out); }
+.primary:hover svg { transform: translateX(0.2rem); }
+
+@media (max-width: 42rem) {
+  .shell { width: min(100% - 2rem, 68rem); }
+  .actions { flex-direction: column; align-items: stretch; }
+  .primary,
+  .secondary { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back svg,
+  .primary svg { transition-duration: 0.01ms; }
+}
