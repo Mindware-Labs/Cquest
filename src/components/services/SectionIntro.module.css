@@ -1,0 +1,84 @@
+.sectionIntro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+.sectionIntroHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionIntroRule {
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 1.1rem;
+  background: var(--section-intro-accent, currentColor);
+  transform-origin: left center;
+}
+
+.sectionIntro h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.sectionIntro p {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.sectionIntro[data-compact] {
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  align-items: start;
+  column-gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.sectionIntro[data-compact] .sectionIntroHeading {
+  gap: 0;
+}
+
+.sectionIntro[data-compact] .sectionIntroRule {
+  width: 2px;
+  height: 1.2rem;
+  margin-bottom: 0.85rem;
+  transform-origin: top center;
+}
+
+.sectionIntro[data-compact] h2 {
+  font-size: clamp(1.65rem, 2.35vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.sectionIntro[data-compact] p {
+  max-width: 32ch;
+  margin-top: 0.1rem;
+  color: color-mix(in srgb, var(--text-tertiary) 88%, #8a7a68);
+  font-weight: 350;
+  line-height: 1.8;
+}
+
+@media (max-width: 64rem) {
+  .sectionIntro {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .sectionIntro[data-compact] { column-gap: 0; }
+  .sectionIntro[data-compact] h2 { white-space: normal; }
+  .sectionIntro[data-compact] p { max-width: none; }
+}
+
+@media (max-width: 42rem) {
+  .sectionIntro { grid-template-columns: 1fr; gap: 1.25rem; }
+}

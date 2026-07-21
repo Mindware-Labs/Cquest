@@ -1,0 +1,19 @@
+.arrow,
+.arrowDown {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform 260ms var(--ease-out-expo);
+}
+
+.arrowDown {
+  transform: rotate(90deg);
+}
+
+a:hover > .arrow {
+  transform: translateX(0.2rem);
+}
+
+a:hover > .arrowDown {
+  transform: rotate(90deg) translateX(0.2rem);
+}

@@ -1,0 +1,108 @@
+.processSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5.5rem, 8vw, 7rem);
+  background: var(--background);
+}
+
+.processTrack {
+  position: relative;
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.processList {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding-top: clamp(1.5rem, 2.2vw, 1.85rem);
+}
+
+/* Scrubbed to the section's scroll progress — the timeline literally draws
+   itself as you read down it, left to right. */
+.processLine {
+  position: absolute;
+  top: clamp(1.5rem, 2.2vw, 1.85rem);
+  left: 0.5%;
+  right: 0.5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cc-sky) 6%, var(--cc-sky) 94%, transparent);
+  opacity: 0.6;
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.processList li {
+  position: relative;
+  padding-top: 1.35rem;
+  padding-right: 1.5rem;
+}
+
+/* The empty socket, always present on the line. */
+.processList li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1.5px solid var(--cc-sky);
+  border-radius: 50%;
+  background: var(--background);
+  transform: translate(-0.2rem, -50%);
+}
+
+/* The light that fills the socket — blooms in as the step reveals, so each
+   node reads as switching on when the drawing line reaches it. Positioned
+   with offsets (no CSS transform) so Framer owns the scale/opacity cleanly. */
+.processNode {
+  position: absolute;
+  top: -0.275rem;
+  left: -0.2rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--cc-sky);
+  box-shadow: 0 0 0.5rem 0.06rem color-mix(in srgb, var(--cc-sky) 55%, transparent);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.processBody {
+  will-change: transform, opacity;
+}
+
+.processNumber {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--cc-sky);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.processList h3 {
+  margin-top: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.processList p {
+  max-width: 22ch;
+  margin-top: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 64rem) {
+  .processList { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2.25rem; padding-top: 0; }
+  .processLine { display: none; }
+  .processList li { padding-right: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--cc-rule); }
+  .processList li::before { display: none; }
+  .processNode { display: none; }
+}
+
+@media (max-width: 42rem) {
+  .processSection { padding-block: 4.5rem; }
+  .processList { grid-template-columns: 1fr; }
+  .processList li { padding-right: 0; padding-bottom: 0.5rem; }
+}

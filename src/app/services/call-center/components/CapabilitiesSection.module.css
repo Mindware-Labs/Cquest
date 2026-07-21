@@ -1,0 +1,232 @@
+.capabilitiesSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(3rem, 4.5vw, 4rem);
+  background: #fbfcfc;
+}
+
+.capabilityLayout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.35fr) minmax(0, 0.65fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.capabilityIndex {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--cc-rule);
+}
+
+.capabilityTab {
+  display: grid;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 3rem;
+  cursor: pointer;
+  grid-template-columns: 2.25rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--cc-rule);
+  border-left: 3px solid transparent;
+  padding: 0.65rem 1.25rem;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: color 240ms var(--ease-out), background 240ms var(--ease-out), border-color 240ms var(--ease-out);
+}
+
+.capabilityTab:hover {
+  color: var(--foreground);
+}
+
+.capabilityTab[data-active] {
+  background: color-mix(in srgb, var(--cc-sky) 14%, transparent);
+  border-left-color: var(--cc-sky);
+  color: var(--cc-petroleum);
+}
+
+/* `.tabArrow` is applied by CapabilitiesSection itself via Arrow's
+   `className` prop, so this context-specific shift stays local instead of
+   reaching into the shared Arrow component's own hashed class. */
+.capabilityTab[data-active] .tabArrow {
+  transform: translateX(0.15rem);
+}
+
+.tabNumber {
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.capabilityPanel {
+  padding: clamp(1.35rem, 2vw, 1.85rem);
+  min-height: 27rem;
+  background: white;
+  box-shadow: 0 24px 44px -30px rgba(10, 17, 22, 0.28), 0 2px 6px -3px rgba(10, 17, 22, 0.12);
+}
+
+.capabilityHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.capabilityIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+}
+
+.capabilityIcon svg {
+  width: 2.15rem;
+  height: 2.15rem;
+  stroke-width: 1.3;
+}
+
+.capabilityHeading h4,
+.detailGrid h4,
+.channelRow > span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.capabilityHeading p {
+  color: var(--cc-petroleum);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.capabilityHeading h3 {
+  margin-top: 0.2rem;
+  font-size: clamp(1.55rem, 2.1vw, 1.9rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.capabilityDescription {
+  max-width: 62ch;
+  margin-top: 0.85rem;
+  min-height: calc(1rem * 1.6 * 2);
+  color: color-mix(in srgb, var(--foreground) 82%, transparent);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 1.25rem;
+  padding-block: 1.25rem;
+  border-block: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.detailGrid h4 {
+  color: var(--cc-petroleum);
+}
+
+.detailGrid ul,
+.detailGrid p {
+  margin-top: 0.85rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.detailGrid li {
+  position: relative;
+  min-height: calc(0.95rem * 1.6 * 2);
+  padding-left: 1.1rem;
+}
+
+.detailGrid li + li { margin-top: 0.5rem; }
+.detailGrid li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--cc-sky);
+}
+
+.clientBenefit {
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--cc-sky) 6%, white);
+}
+
+.clientBenefit p {
+  min-height: calc(0.95rem * 1.6 * 4);
+}
+
+.channelRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 1.1rem;
+}
+
+.channelRow > span { color: var(--muted); }
+.channelRow ul { display: flex; flex-wrap: wrap; align-items: center; gap: 1.35rem; }
+.channelRow li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.channelRow li:not(:last-child) {
+  padding-right: 1.35rem;
+  border-right: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.channelIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--cc-sky);
+}
+
+.channelIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 1.4;
+}
+
+@media (max-width: 64rem) {
+  .capabilityLayout { grid-template-columns: minmax(13rem, 0.65fr) minmax(0, 1.35fr); gap: 2rem; }
+}
+
+@media (max-width: 56rem) {
+  .capabilityLayout { grid-template-columns: 1fr; }
+  .capabilityIndex { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .capabilityTab:nth-child(odd) { border-right: 1px solid var(--cc-rule); }
+  .detailGrid { gap: 2rem; }
+}
+
+@media (max-width: 42rem) {
+  .capabilitiesSection { padding-block: 4.5rem; }
+  .capabilityLayout { grid-template-columns: 1fr; }
+  .capabilityIndex { display: flex; flex-direction: row; max-width: 100%; overflow-x: auto; border-bottom: 1px solid var(--cc-rule); scrollbar-width: thin; }
+  .capabilityTab { flex: 0 0 auto; min-width: max-content; min-height: 3.5rem; grid-template-columns: auto auto; padding-inline: 0.8rem; border-bottom: 0; border-left: 0; }
+  .capabilityTab .tabArrow { display: none; }
+  .capabilityTab[data-active] { border-left: 0; box-shadow: inset 0 -2px var(--cc-petroleum); }
+  .capabilityPanel { min-height: 0; padding: 1.5rem; }
+  .detailGrid { grid-template-columns: 1fr; gap: 2rem; }
+  .channelRow { align-items: flex-start; flex-direction: column; }
+  .channelRow ul { justify-content: flex-start; }
+}

@@ -1,0 +1,952 @@
+.page {
+  --bp-ink: #0a1116;
+  --bp-deep: #0e2b30;
+  --bp-teal: #176c79;
+  --bp-lime: #80bc00;
+  --bp-lime-text: var(--brand-verde);
+  --bp-stone: color-mix(in srgb, var(--brand-gris) 78%, white);
+  --bp-charcoal: #1b2226;
+  --bp-rule: color-mix(in srgb, var(--foreground) 14%, transparent);
+  background: #fbfcfc;
+  color: var(--foreground);
+  overflow: clip;
+}
+
+/* ── Hero — full-width editorial, no side photo. The media lives BELOW as a
+   band that rides up over the hero's bottom edge (same curtain gesture as
+   Home), so the hero is pure typography + the scope rail. */
+.hero {
+  position: relative;
+  padding-top: 5.5rem;
+  padding-bottom: clamp(8rem, 14vw, 11.5rem);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(23, 108, 121, 0.22), transparent 30rem),
+    radial-gradient(circle at 85% 80%, rgba(128, 188, 0, 0.07), transparent 26rem),
+    var(--bp-ink);
+  color: white;
+}
+
+.heroInner,
+.contentShell,
+.slaInner,
+.contactInner,
+.footer,
+.bandWrap {
+  width: min(100% - 2.5rem, 84rem);
+  margin-inline: auto;
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.55fr);
+  align-items: end;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  padding-top: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.breadcrumb {
+  align-self: flex-start;
+  color: var(--bp-stone);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.breadcrumb span {
+  margin-inline: 0.5rem;
+  color: color-mix(in srgb, var(--bp-stone) 65%, transparent);
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+}
+
+.liveLine {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.25rem, 2.5vh, 2rem);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.liveLine > span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--bp-lime);
+  box-shadow: 0 0 0 0 rgba(128, 188, 0, 0.4);
+  animation: statusPulse 2.8s ease-out infinite;
+}
+
+@keyframes statusPulse {
+  50% { box-shadow: 0 0 0 0.45rem rgba(128, 188, 0, 0); }
+}
+
+.heroHeadline {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.6rem, 6.2vw, 5.25rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.heroHeadlineStrong {
+  font-weight: 800;
+}
+
+/* Curtain masks — each headline line rides up from behind its own clipped
+   bottom edge; padding carries the descenders, the negative margin gives
+   the space back so the tight leading holds. */
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.heroLineMask:not(:last-child) {
+  margin-bottom: -0.12em;
+}
+
+.heroLine {
+  display: block;
+  will-change: transform;
+}
+
+.heroLead {
+  max-width: 46ch;
+  margin-top: 1.25rem;
+  color: var(--bp-stone);
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.primaryCta,
+.secondaryCta {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 2px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 260ms var(--ease-out), color 260ms var(--ease-out), border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
+}
+
+.primaryCta {
+  background: var(--bp-lime);
+  color: var(--bp-ink);
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+}
+
+.primaryCta:hover {
+  background: white;
+  color: var(--bp-ink);
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.secondaryCta {
+  background: var(--bp-charcoal);
+  border-color: color-mix(in srgb, var(--bp-stone) 55%, transparent);
+  color: white;
+}
+
+.secondaryCta:hover {
+  background: var(--bp-lime);
+  border-color: var(--bp-lime);
+  color: var(--bp-ink);
+}
+
+.arrow,
+.arrowDown {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform 260ms var(--ease-out-expo);
+}
+
+.arrowDown {
+  transform: rotate(90deg);
+}
+
+a:hover > .arrow {
+  transform: translateX(0.2rem);
+}
+
+a:hover > .arrowDown {
+  transform: rotate(90deg) translateX(0.2rem);
+}
+
+/* Scope rail — the hero's right column: what the line covers, said as a
+   quiet index instead of a photo. */
+.heroMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding-left: clamp(1.25rem, 2vw, 1.75rem);
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.heroMetaLabel {
+  color: color-mix(in srgb, var(--bp-stone) 70%, transparent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.heroMetaList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.heroMetaList li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.heroMetaList li::before {
+  content: "";
+  width: 1.1rem;
+  height: 1px;
+  flex: none;
+  background: color-mix(in srgb, var(--bp-lime) 75%, transparent);
+}
+
+.heroMetaNote {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+/* ── Media band — the image frame that overlaps the hero. Placeholder for
+   the real operations-floor photo (full-bleed band, 21:9, WebP). */
+.bandWrap {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(-8rem, -10vw, -6rem);
+}
+
+.band {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--bp-teal) 6%, transparent) 14px 15px),
+    linear-gradient(135deg, color-mix(in srgb, var(--bp-teal) 16%, white), color-mix(in srgb, var(--bp-deep) 10%, white));
+  border: 1px solid color-mix(in srgb, var(--bp-teal) 38%, transparent);
+  box-shadow: 0 34px 60px -38px rgba(10, 17, 22, 0.55), 0 4px 10px -6px rgba(10, 17, 22, 0.2);
+  will-change: transform;
+}
+
+.frameLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.frameLabel span {
+  color: color-mix(in srgb, var(--bp-teal) 80%, var(--foreground));
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.frameLabel strong {
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.frameLabel small {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* Crop marks — the frame reads as "a photo goes exactly here". */
+.tick {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0 solid color-mix(in srgb, var(--bp-teal) 70%, transparent);
+  pointer-events: none;
+}
+
+.tick[data-pos="tl"] { top: 0.65rem; left: 0.65rem; border-top-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="tr"] { top: 0.65rem; right: 0.65rem; border-top-width: 1.5px; border-right-width: 1.5px; }
+.tick[data-pos="bl"] { bottom: 0.65rem; left: 0.65rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="br"] { bottom: 0.65rem; right: 0.65rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+/* ── Section intro (shared rhythm with the Call Center page) ─────────── */
+.capabilitiesSection,
+.methodSection,
+.photosSection {
+  scroll-margin-top: 2rem;
+}
+
+.capabilitiesSection { padding-block: clamp(4.5rem, 7vw, 6.5rem) clamp(4rem, 6vw, 5.5rem); }
+.methodSection { padding-block: clamp(5.5rem, 8vw, 7rem); background: var(--background); }
+.photosSection { padding-block: clamp(4.5rem, 7vw, 6rem); }
+
+.sectionIntro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+.sectionIntroHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionIntroRule {
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 1.1rem;
+  background: var(--bp-teal);
+  transform-origin: left center;
+}
+
+.sectionIntro h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.sectionIntro p {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* ── Capability ledger — six disciplines as expandable rows, an operations
+   logbook rather than tabs. One row open at a time. */
+.ledger {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--bp-rule);
+}
+
+.ledgerRow {
+  border-bottom: 1px solid var(--bp-rule);
+  transition: background 260ms var(--ease-out);
+}
+
+.ledgerRow[data-open] {
+  background: color-mix(in srgb, var(--bp-teal) 4%, transparent);
+}
+
+.ledgerHead {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 3rem 2.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 1.35rem 0.75rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--foreground);
+  text-align: left;
+  transition: color 240ms var(--ease-out);
+}
+
+.ledgerHead:hover {
+  color: var(--bp-teal);
+}
+
+.ledgerNumber {
+  color: var(--bp-teal);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ledgerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.ledgerIcon svg {
+  width: 1.85rem;
+  height: 1.85rem;
+  stroke-width: 1.3;
+}
+
+.ledgerTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.ledgerTitle {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.15rem, 1.9vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.ledgerHint {
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Plus that folds into a minus as the row opens. */
+.ledgerPlus {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
+  border-radius: 50%;
+  transition: border-color 240ms var(--ease-out), background 240ms var(--ease-out);
+}
+
+.ledgerPlus::before,
+.ledgerPlus::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.85rem;
+  height: 1.5px;
+  background: currentColor;
+  translate: -50% -50%;
+  transition: rotate 340ms var(--ease-out);
+}
+
+.ledgerPlus::after {
+  rotate: 90deg;
+}
+
+.ledgerRow[data-open] .ledgerPlus {
+  border-color: var(--bp-teal);
+  background: color-mix(in srgb, var(--bp-teal) 10%, transparent);
+}
+
+.ledgerRow[data-open] .ledgerPlus::after {
+  rotate: 0deg;
+}
+
+.ledgerPanel {
+  overflow: hidden;
+}
+
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  padding: 0.25rem 0.75rem 1.85rem calc(3rem + 2.75rem + clamp(0.75rem, 2vw, 1.5rem) * 2);
+}
+
+.panelGrid h4 {
+  color: var(--bp-teal);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panelGrid ul,
+.panelGrid p {
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.panelGrid li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+.panelGrid li + li { margin-top: 0.55rem; }
+.panelGrid li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--bp-lime);
+}
+
+.clientBenefit {
+  padding: 1.1rem 1.25rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--bp-teal) 6%, white);
+  align-self: start;
+}
+
+/* ── Method — sticky intro on the left, a vertical spine on the right that
+   draws itself downward as the steps are read. */
+.methodGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.railIntro {
+  position: sticky;
+  top: 6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.railRule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--bp-teal);
+  transform-origin: top center;
+}
+
+.railIntro h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.railIntro p {
+  max-width: 38ch;
+  margin-top: 1.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.spine {
+  position: relative;
+  padding-left: 2.75rem;
+}
+
+.spineTrack,
+.spineLine {
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 1.5px;
+}
+
+.spineTrack {
+  background: var(--bp-rule);
+}
+
+/* Scrubbed to the section's scroll — the spine literally draws itself
+   downward, spring-smoothed so it trails the read like a needle. */
+.spineLine {
+  background: linear-gradient(180deg, var(--bp-teal), color-mix(in srgb, var(--bp-lime) 65%, var(--bp-teal)));
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.spineList {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.spineStep {
+  position: relative;
+}
+
+/* Empty socket on the spine, always present. */
+.spineStep::before {
+  content: "";
+  position: absolute;
+  left: -2.75rem;
+  top: 0.35rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1.5px solid var(--bp-teal);
+  border-radius: 50%;
+  background: var(--background);
+  translate: -0.2rem 0;
+}
+
+/* The light that fills the socket as the drawing line reaches it. */
+.spineNode {
+  position: absolute;
+  left: calc(-2.75rem - 0.2rem);
+  top: 0.35rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--bp-teal);
+  box-shadow: 0 0 0.5rem 0.06rem color-mix(in srgb, var(--bp-teal) 55%, transparent);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.spineNumber {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--bp-teal);
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.spineStep h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.spineStep p {
+  max-width: 52ch;
+  margin-top: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ── SLA section — dark, asymmetric: the claim on the left, the commitments
+   as ledger rows on the right (not a metric table — a service contract). */
+.slaSection {
+  position: relative;
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--bp-deep);
+  color: white;
+}
+
+.slaSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.slaInner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr);
+  gap: clamp(3rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.slaHeading {
+  position: sticky;
+  top: 6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.slaRule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--bp-lime);
+  transform-origin: top center;
+}
+
+.slaHeading h2 {
+  max-width: 15ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.slaHeading p {
+  max-width: 44ch;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.slaList {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.slaList > div {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label value" "status value";
+  align-items: center;
+  column-gap: 2rem;
+  padding: 1.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background 320ms var(--ease-out);
+}
+
+.slaList > div:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.slaList > div::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: transparent;
+  transition: background 320ms var(--ease-out);
+}
+
+.slaList > div:hover::before {
+  background: linear-gradient(90deg, transparent, var(--bp-lime), transparent);
+}
+
+.slaList dt {
+  grid-area: label;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.slaList dd {
+  grid-area: value;
+  color: var(--bp-lime);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.35rem);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.slaStatus {
+  grid-area: status;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.slaDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bp-lime);
+  animation: slaPulse 2.6s ease-in-out infinite;
+}
+
+@keyframes slaPulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Photo frames — where the real team / facility photography will live. */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.photoFrame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--bp-teal) 6%, transparent) 14px 15px),
+    linear-gradient(135deg, color-mix(in srgb, var(--bp-teal) 12%, white), color-mix(in srgb, var(--bp-deep) 7%, white));
+  border: 1px solid color-mix(in srgb, var(--bp-teal) 32%, transparent);
+  transition: border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 260ms var(--ease-out);
+}
+
+.photoFrame:hover {
+  border-color: color-mix(in srgb, var(--bp-teal) 60%, transparent);
+  box-shadow: 0 18px 32px -22px rgba(10, 17, 22, 0.35);
+  transform: translateY(-2px);
+}
+
+/* ── Contact + footer (shared closing rhythm across service pages) ───── */
+.contactSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--bp-ink);
+  color: white;
+}
+
+.contactInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.55fr);
+  align-items: center;
+  gap: 4rem;
+}
+
+.contactInner h2 {
+  max-width: 17ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.contactInner p {
+  max-width: 56ch;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.contactPlaceholder {
+  display: flex;
+  min-height: 9rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(128, 188, 0, 0.45);
+  padding: 2rem;
+}
+
+.contactPlaceholder span { color: rgba(255, 255, 255, 0.55); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.contactPlaceholder strong { color: var(--bp-lime); font-size: 1.15rem; font-weight: 600; }
+
+.footer {
+  display: flex;
+  min-height: 8rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  background: #fbfcfc;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.footerLogo { width: auto; height: 2.5rem; }
+.footer > a:last-child { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--bp-teal); font-weight: 700; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 64rem) {
+  .heroInner { grid-template-columns: 1fr; align-items: start; gap: 2.5rem; }
+  .heroMeta { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.16); padding-left: 0; padding-top: 1.5rem; }
+  .heroMetaList { flex-direction: row; flex-wrap: wrap; column-gap: 1.5rem; }
+  .sectionIntro { grid-template-columns: 1fr; gap: 1.5rem; }
+  .methodGrid,
+  .slaInner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .railIntro,
+  .slaHeading { position: static; }
+}
+
+@media (max-width: 56rem) {
+  .panelGrid { grid-template-columns: 1fr; padding-left: calc(3rem + clamp(0.75rem, 2vw, 1.5rem)); }
+  .ledgerHead { grid-template-columns: 3rem minmax(0, 1fr) auto; }
+  .ledgerIcon { display: none; }
+}
+
+@media (max-width: 42rem) {
+  .heroInner,
+  .contentShell,
+  .slaInner,
+  .contactInner,
+  .footer,
+  .bandWrap { width: min(100% - 2rem, 84rem); }
+  .hero { padding-bottom: 7rem; }
+  .heroHeadline { font-size: clamp(2.5rem, 13vw, 3.8rem); }
+  .heroActions { flex-direction: column; align-items: stretch; }
+  .primaryCta,
+  .secondaryCta { width: 100%; }
+  .bandWrap { margin-top: -5rem; }
+  .band { aspect-ratio: 16 / 10; }
+  .capabilitiesSection,
+  .methodSection,
+  .photosSection { padding-block: 4.5rem; }
+  .ledgerHead { padding-block: 1.15rem; }
+  .ledgerHint { display: none; }
+  .panelGrid { padding-left: 0.25rem; padding-right: 0.25rem; }
+  .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .photoGrid { grid-template-columns: 1fr; }
+  .slaList dd { font-size: 1.5rem; }
+  .footer { min-height: 12rem; flex-direction: column; justify-content: center; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .slaDot { animation: none; opacity: 0.8; }
+}

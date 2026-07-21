@@ -1,0 +1,809 @@
+.page {
+  --sy-ink: #0a1116;
+  --sy-deep: #0d2430;
+  --sy-blue: #4b98b1;
+  --sy-sky: var(--brand-celeste);
+  --sy-petroleum: var(--brand-petroleo);
+  --sy-stone: color-mix(in srgb, var(--brand-gris) 78%, white);
+  --sy-charcoal: #1b2226;
+  --sy-rule: color-mix(in srgb, var(--foreground) 14%, transparent);
+  background: #fbfcfc;
+  color: var(--foreground);
+  overflow: clip;
+}
+
+/* ── Hero — centered composition over a blueprint grid, with the product
+   window rising beneath the copy: the deliverable itself is the hero image. */
+.hero {
+  position: relative;
+  padding-top: 5.5rem;
+  padding-bottom: clamp(3.5rem, 6vw, 5.5rem);
+  background:
+    radial-gradient(circle at 50% 12%, rgba(75, 152, 177, 0.16), transparent 30rem),
+    var(--sy-ink);
+  color: white;
+  overflow: clip;
+}
+
+/* Blueprint field — static hairline grid, masked so it frames the copy
+   instead of sitting under it at full strength. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.05) 1px, transparent 1px);
+  background-position: center top;
+  background-size: 3.4rem 3.4rem;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 78%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--sy-blue), transparent);
+  opacity: 0.45;
+}
+
+.heroInner,
+.contentShell,
+.pactInner,
+.contactInner,
+.footer {
+  width: min(100% - 2.5rem, 84rem);
+  margin-inline: auto;
+}
+
+.heroCopy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.breadcrumb {
+  color: var(--sy-stone);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.breadcrumb span {
+  margin-inline: 0.5rem;
+  color: color-mix(in srgb, var(--sy-stone) 65%, transparent);
+}
+
+.liveLine {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.25rem, 2.5vh, 2rem);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.liveLine > span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--sy-sky);
+  box-shadow: 0 0 0 0 rgba(116, 195, 213, 0.4);
+  animation: statusPulse 2.8s ease-out infinite;
+}
+
+@keyframes statusPulse {
+  50% { box-shadow: 0 0 0 0.45rem rgba(116, 195, 213, 0); }
+}
+
+.heroHeadline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 5.4vw, 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.heroHeadlineStrong {
+  font-weight: 800;
+}
+
+/* Curtain masks — headline lines lift from behind their own clip edge. */
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.heroLineMask:not(:last-child) {
+  margin-bottom: -0.12em;
+}
+
+.heroLine {
+  display: block;
+  will-change: transform;
+}
+
+.heroLead {
+  max-width: 52ch;
+  margin-top: 1.25rem;
+  color: var(--sy-stone);
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.primaryCta,
+.secondaryCta {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 2px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 260ms var(--ease-out), color 260ms var(--ease-out), border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
+}
+
+.primaryCta {
+  background: var(--sy-sky);
+  color: var(--sy-ink);
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+}
+
+.primaryCta:hover {
+  background: var(--sy-charcoal);
+  color: white;
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.secondaryCta {
+  background: var(--sy-charcoal);
+  border-color: color-mix(in srgb, var(--sy-stone) 55%, transparent);
+  color: white;
+}
+
+.secondaryCta:hover {
+  background: var(--sy-sky);
+  border-color: var(--sy-sky);
+  color: var(--sy-ink);
+}
+
+.arrow,
+.arrowDown {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform 260ms var(--ease-out-expo);
+}
+
+.arrowDown {
+  transform: rotate(90deg);
+}
+
+a:hover > .arrow {
+  transform: translateX(0.2rem);
+}
+
+a:hover > .arrowDown {
+  transform: rotate(90deg) translateX(0.2rem);
+}
+
+.heroSignal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+  margin-top: clamp(1.75rem, 4vh, 2.75rem);
+}
+
+.heroSignal span {
+  display: flex;
+  align-items: center;
+  color: color-mix(in srgb, var(--sy-stone) 70%, transparent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.heroSignal span:not(:last-child)::after {
+  content: "";
+  width: 2.75rem;
+  height: 1px;
+  margin-inline: 1.1rem;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Product window — a browser-chrome frame in perspective; the tilt
+   flattens as the page scrolls, like the product settling onto the desk.
+   Placeholder for the real product screenshot. */
+.windowStage {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2.5rem, 62rem);
+  margin-inline: auto;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  perspective: 1200px;
+}
+
+.window {
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(116, 195, 213, 0.28);
+  background: #0f1a21;
+  box-shadow:
+    0 60px 90px -50px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform-origin: center top;
+  will-change: transform;
+}
+
+.windowBar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.windowDots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.windowDots span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.windowAddress {
+  flex: 1;
+  max-width: 22rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.windowBody {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, rgba(116, 195, 213, 0.045) 14px 15px),
+    radial-gradient(circle at 50% 0%, rgba(75, 152, 177, 0.16), transparent 60%),
+    #0f1a21;
+}
+
+.frameLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.frameLabel span {
+  color: color-mix(in srgb, var(--sy-sky) 80%, white);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.frameLabel strong {
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.frameLabel small {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* Light-surface variant of the frame label, for the capability shots. */
+.frameLabelLight span { color: var(--sy-petroleum); }
+.frameLabelLight strong { color: var(--foreground); }
+.frameLabelLight small { color: var(--text-tertiary); }
+
+.tick {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0 solid color-mix(in srgb, var(--sy-blue) 70%, transparent);
+  pointer-events: none;
+}
+
+.tick[data-pos="tl"] { top: 0.65rem; left: 0.65rem; border-top-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="tr"] { top: 0.65rem; right: 0.65rem; border-top-width: 1.5px; border-right-width: 1.5px; }
+.tick[data-pos="bl"] { bottom: 0.65rem; left: 0.65rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="br"] { bottom: 0.65rem; right: 0.65rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+/* ── Sections ────────────────────────────────────────────────────────── */
+.capabilitiesSection,
+.methodSection {
+  scroll-margin-top: 2rem;
+}
+
+.capabilitiesSection { padding-block: clamp(4.5rem, 7vw, 6.5rem); }
+.methodSection { padding-block: clamp(5.5rem, 8vw, 7rem); background: var(--background); }
+
+.sectionIntro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+.sectionIntroHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionIntroRule {
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 1.1rem;
+  background: var(--sy-blue);
+  transform-origin: left center;
+}
+
+.sectionIntro h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.sectionIntro p {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* ── Capabilities — alternating rows: copy on one side, the product shot
+   frame on the other, flipping each row. Software is shown, not listed. */
+.capRows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 6vw, 5.5rem);
+  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.capRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.capRow[data-flip] .capMedia {
+  order: -1;
+}
+
+.capKicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--sy-petroleum);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.capKicker svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 1.3;
+  color: var(--foreground);
+}
+
+.capCopy h3 {
+  margin-top: 0.85rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.capCopy > p {
+  max-width: 52ch;
+  margin-top: 0.9rem;
+  color: color-mix(in srgb, var(--foreground) 82%, transparent);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.capIncludes {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.capIncludes li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.capIncludes li + li { margin-top: 0.5rem; }
+.capIncludes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--sy-blue);
+}
+
+.capBenefit {
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--sy-sky) 9%, white);
+}
+
+.capBenefit h4 {
+  color: var(--sy-petroleum);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.capBenefit p {
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* The capability's screenshot frame: light browser chrome, crop marks,
+   labelled placeholder until the real capture exists. */
+.capMedia {
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sy-blue) 30%, transparent);
+  background: white;
+  box-shadow: 0 30px 55px -38px rgba(10, 17, 22, 0.4), 0 3px 8px -5px rgba(10, 17, 22, 0.14);
+  transition: border-color 280ms var(--ease-out), box-shadow 280ms var(--ease-out), transform 280ms var(--ease-out);
+}
+
+.capMedia:hover {
+  border-color: color-mix(in srgb, var(--sy-blue) 55%, transparent);
+  box-shadow: 0 38px 62px -38px rgba(10, 17, 22, 0.48), 0 4px 10px -5px rgba(10, 17, 22, 0.16);
+  transform: translateY(-4px);
+}
+
+.capMediaBar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  background: color-mix(in srgb, var(--sy-sky) 5%, white);
+}
+
+.capMediaBar .windowDots span {
+  background: color-mix(in srgb, var(--foreground) 14%, transparent);
+}
+
+.capMediaBody {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--sy-blue) 5%, transparent) 14px 15px),
+    linear-gradient(160deg, color-mix(in srgb, var(--sy-sky) 12%, white), white 65%);
+}
+
+/* ── Method — full-width numbered rows whose top hairline draws in as each
+   step reveals; the ghost number carries the sequence. */
+.methodList {
+  margin-top: clamp(2rem, 3.5vw, 3rem);
+}
+
+.methodStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 0.22fr) minmax(0, 0.38fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  padding-block: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.methodRule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--sy-blue), color-mix(in srgb, var(--sy-blue) 20%, transparent));
+  transform-origin: left center;
+}
+
+.methodNumber {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--sy-blue) 55%, transparent);
+}
+
+.methodStep h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.methodStep p {
+  max-width: 58ch;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ── Commitments — dark band, three large statements. */
+.pactSection {
+  position: relative;
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--sy-deep);
+  color: white;
+}
+
+.pactSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.pactHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.pactRule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--sy-sky);
+  transform-origin: top center;
+}
+
+.pactHeading h2 {
+  max-width: 20ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.pactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 4rem;
+  border-block: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.pactGrid > div {
+  position: relative;
+  padding: 1.85rem 1.5rem 1.65rem;
+  transition: background 320ms var(--ease-out), transform 320ms var(--ease-out);
+}
+
+.pactGrid > div::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: transparent;
+  transition: background 320ms var(--ease-out);
+}
+
+.pactGrid > div:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-2px);
+}
+
+.pactGrid > div:hover::before {
+  background: linear-gradient(90deg, transparent, var(--sy-sky), transparent);
+}
+
+.pactGrid > div + div { border-left: 1px solid rgba(255, 255, 255, 0.18); }
+
+.pactGrid h3 {
+  color: var(--sy-sky);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.pactGrid p {
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* ── Contact + footer (shared closing rhythm across service pages) ───── */
+.contactSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--sy-ink);
+  color: white;
+}
+
+.contactInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.55fr);
+  align-items: center;
+  gap: 4rem;
+}
+
+.contactInner h2 {
+  max-width: 17ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.contactInner p {
+  max-width: 56ch;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.contactPlaceholder {
+  display: flex;
+  min-height: 9rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(116, 195, 213, 0.5);
+  padding: 2rem;
+}
+
+.contactPlaceholder span { color: rgba(255, 255, 255, 0.55); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.contactPlaceholder strong { color: var(--sy-sky); font-size: 1.15rem; font-weight: 600; }
+
+.footer {
+  display: flex;
+  min-height: 8rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  background: #fbfcfc;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.footerLogo { width: auto; height: 2.5rem; }
+.footer > a:last-child { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--sy-petroleum); font-weight: 700; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 64rem) {
+  .sectionIntro { grid-template-columns: 1fr; gap: 1.5rem; }
+  .capRow { grid-template-columns: 1fr; gap: 1.75rem; }
+  .capRow[data-flip] .capMedia { order: 0; }
+  .methodStep { grid-template-columns: minmax(4rem, 0.2fr) minmax(0, 1fr); }
+  .methodStep p { grid-column: 2; }
+  .pactGrid { grid-template-columns: 1fr; }
+  .pactGrid > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+}
+
+@media (max-width: 42rem) {
+  .heroInner,
+  .contentShell,
+  .pactInner,
+  .contactInner,
+  .footer { width: min(100% - 2rem, 84rem); }
+  .windowStage { width: min(100% - 2rem, 62rem); }
+  .heroHeadline { font-size: clamp(2.3rem, 12vw, 3.4rem); }
+  .heroActions { flex-direction: column; align-items: stretch; width: 100%; }
+  .primaryCta,
+  .secondaryCta { width: 100%; }
+  .heroSignal span:not(:last-child)::after { width: 1rem; margin-inline: 0.5rem; }
+  .windowAddress { display: none; }
+  .capabilitiesSection,
+  .methodSection { padding-block: 4.5rem; }
+  .methodStep { grid-template-columns: 1fr; gap: 0.75rem; }
+  .methodStep p { grid-column: 1; }
+  .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .footer { min-height: 12rem; flex-direction: column; justify-content: center; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

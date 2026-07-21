@@ -1,0 +1,57 @@
+.testimonialSection {
+  padding-block: clamp(4rem, 8vw, 7rem);
+  background: color-mix(in srgb, var(--cc-sky) 16%, white);
+}
+
+.testimonialInner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
+.quoteMark {
+  align-self: start;
+  color: var(--cc-petroleum);
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 0.8;
+}
+
+.testimonialInner blockquote p {
+  max-width: 50ch;
+  font-size: clamp(1.35rem, 2.5vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.testimonialInner blockquote footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.testimonialInner blockquote footer span { font-weight: 700; }
+.testimonialInner blockquote footer small { color: var(--text-secondary); }
+
+.portraitPlaceholder {
+  display: grid;
+  width: 7rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-gris) 58%, white);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 42rem) {
+  .testimonialInner { grid-template-columns: auto 1fr; }
+  .portraitPlaceholder { grid-column: 2; width: 5.5rem; }
+}

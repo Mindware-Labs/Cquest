@@ -1,0 +1,55 @@
+.contactSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--cc-ink);
+  color: white;
+}
+
+.contactInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.55fr);
+  align-items: center;
+  gap: 4rem;
+}
+
+/* Shares its big-display-heading typography with MetricsSection's h2/p
+   (both use the page's "big statement" scale) — duplicated here rather than
+   shared, since plain CSS Modules has no mixin/@extend. */
+.contactInner h2 {
+  max-width: 17ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+  color: white;
+}
+
+.contactInner p {
+  max-width: 56ch;
+  align-self: end;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.contactPlaceholder {
+  display: flex;
+  min-height: 9rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(116, 195, 213, 0.5);
+  padding: 2rem;
+}
+
+.contactPlaceholder span { color: rgba(255, 255, 255, 0.55); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.contactPlaceholder strong { color: var(--cc-sky); font-size: 1.15rem; font-weight: 600; }
+
+@media (max-width: 42rem) {
+  .contactInner h2 { font-size: clamp(2.2rem, 11vw, 3.2rem); }
+  .contactInner { grid-template-columns: 1fr; gap: 2.5rem; }
+}

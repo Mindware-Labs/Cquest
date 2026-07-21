@@ -1,0 +1,17 @@
+.footer {
+  display: flex;
+  min-height: 8rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  background: #fbfcfc;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.footerLogo { width: auto; height: 2.5rem; }
+.footer > a:last-child { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--cc-petroleum); font-weight: 700; }
+
+@media (max-width: 42rem) {
+  .footer { min-height: 12rem; flex-direction: column; justify-content: center; text-align: center; }
+}
