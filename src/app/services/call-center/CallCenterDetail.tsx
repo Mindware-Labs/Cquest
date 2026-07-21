@@ -2,13 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useState, type ReactNode } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+  type Variants,
+} from "motion/react";
+import { useRef, useState, type ReactNode } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import { SERVICES, type ServiceIconName } from "@/components/services/data";
 import styles from "./call-center.module.css";
 
 const CALL_CENTER = SERVICES.find((service) => service.id === "call-center")!;
+
+const MotionLink = motion.create(Link);
 
 const CAPABILITY_META: Record<string, { icon: ServiceIconName; channels: readonly string[] }> = {
   "Customer service": { icon: "headset", channels: ["Phone", "Email", "Chat", "Social media"] },
@@ -110,20 +121,79 @@ const METRICS = [
   { label: "Quality score", value: "95%+", status: "QA scorecard standard" },
 ] as const;
 
-const processContainerVariants = {
+/* ── Motion language ──────────────────────────────────────
+   One curve carries the whole page (ease-out-quint, the site-wide EASE_OUT),
+   and two gestures do the talking: content sharpens up out of a soft blur
+   (presence, never a flat fade), and hero lines rise from behind a clipped
+   edge like a curtain lifting. Scroll-linked depth (hero parallax, the
+   process line drawing itself) is what makes the page feel tied to the
+   scroll rather than merely decorated by it. */
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const VIEWPORT = { once: true, margin: "-80px" } as const;
+
+// Stagger container — reveals its children in sequence, not all at once.
+const groupVariants: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 
-const processItemVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+// The premium replacement for a flat fade: y-rise + focus-pull out of blur.
+const focusRiseVariants: Variants = {
+  hidden: { opacity: 0, y: 26, filter: "blur(10px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: EASE_OUT } },
 };
 
-const processLineVariants = {
+// Blur-only reveal for elements that own a CSS hover transform — animating a
+// transform here would leave a lingering inline value that blocks the hover.
+const softRiseVariants: Variants = {
+  hidden: { opacity: 0, filter: "blur(10px)" },
+  visible: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.85, ease: EASE_OUT } },
+};
+
+// Hairline rules draw along their length, a beat before the heading lifts.
+const ruleXVariants: Variants = {
   hidden: { scaleX: 0 },
-  visible: { scaleX: 1, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
+  visible: { scaleX: 1, transition: { duration: 0.7, ease: EASE_OUT } },
 };
+const ruleYVariants: Variants = {
+  hidden: { scaleY: 0 },
+  visible: { scaleY: 1, transition: { duration: 0.7, ease: EASE_OUT } },
+};
+
+// Timeline: the socket lights up, then its label sharpens in just behind it.
+const stepVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+const nodeVariants: Variants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: { scale: 1, opacity: 1, transition: { duration: 0.55, ease: EASE_OUT } },
+};
+
+// Hero: word lines lift in sequence on load, from behind their own clip edge.
+const heroCopyVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+};
+const heroLinesVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.11 } },
+};
+const heroCurtainVariants: Variants = {
+  hidden: { y: "120%" },
+  visible: { y: "0%", transition: { duration: 1.05, ease: EASE_OUT } },
+};
+
+// Pass-through container: consumes a stagger slot and forwards the label to a
+// nested motion child without adding a transform of its own.
+const passThroughVariants: Variants = { hidden: {}, visible: {} };
+
+const HERO_LINES = [
+  { text: "Every", strong: false },
+  { text: "customer", strong: false },
+  { text: "moment,", strong: false },
+  { text: "covered.", strong: true },
+] as const;
 
 function Arrow({ direction = "right" }: { direction?: "right" | "down" }) {
   return (
@@ -133,32 +203,41 @@ function Arrow({ direction = "right" }: { direction?: "right" | "down" }) {
   );
 }
 
-function HeroMedia() {
+function HeroMedia({ mediaY, mediaScale }: { mediaY: MotionValue<string>; mediaScale: MotionValue<number> }) {
   return (
     <div className={styles.heroMedia}>
-      <Image
-        src="/hero-callcenter.jpg"
-        alt="Call center workstations with headsets and keyboards ready for agents"
-        fill
-        priority
-        sizes="(min-width: 64rem) 55vw, 100vw"
-        className={styles.heroMediaImg}
-      />
+      <motion.div className={styles.heroMediaParallax} style={{ y: mediaY, scale: mediaScale }} aria-hidden>
+        <Image
+          src="/hero-callcenter.jpg"
+          alt="Call center workstations with headsets and keyboards ready for agents"
+          fill
+          priority
+          sizes="(min-width: 64rem) 55vw, 100vw"
+          className={styles.heroMediaImg}
+        />
+      </motion.div>
       <span className={styles.heroMediaTint} aria-hidden />
       <span className={styles.heroMediaScrim} aria-hidden />
     </div>
   );
 }
 
-function SectionIntro({ title, description, compact = false }: { title: ReactNode; description?: string; compact?: boolean }) {
+function SectionIntro({ title, description, compact = false, reduced }: { title: ReactNode; description?: string; compact?: boolean; reduced: boolean }) {
   return (
-    <div className={styles.sectionIntro} data-compact={compact || undefined}>
-      <div className={styles.sectionIntroHeading}>
-        <span className={styles.sectionIntroRule} aria-hidden />
-        <h2>{title}</h2>
-      </div>
-      {description && <p>{description}</p>}
-    </div>
+    <motion.div
+      className={styles.sectionIntro}
+      data-compact={compact || undefined}
+      initial={reduced ? false : "hidden"}
+      whileInView={reduced ? undefined : "visible"}
+      viewport={VIEWPORT}
+      variants={groupVariants}
+    >
+      <motion.div className={styles.sectionIntroHeading} variants={stepVariants}>
+        <motion.span className={styles.sectionIntroRule} aria-hidden variants={compact ? ruleYVariants : ruleXVariants} />
+        <motion.h2 variants={focusRiseVariants}>{title}</motion.h2>
+      </motion.div>
+      {description && <motion.p variants={focusRiseVariants}>{description}</motion.p>}
+    </motion.div>
   );
 }
 
@@ -168,38 +247,76 @@ export default function CallCenterDetail() {
   const active = CALL_CENTER.details.find((item) => item.title === activeCapability)!;
   const activeMeta = CAPABILITY_META[active.title];
 
+  // Hero parallax departure — the media zooms and drifts on its own axis while
+  // the copy lifts away and dissolves, so leaving the hero reads as depth, not
+  // a scroll past a static banner.
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const mediaY = useTransform(heroProgress, [0, 1], reduced ? ["0%", "0%"] : ["0%", "8%"]);
+  const mediaScale = useTransform(heroProgress, [0, 1], reduced ? [1, 1] : [1, 1.12]);
+  const copyY = useTransform(heroProgress, [0, 1], reduced ? [0, 0] : [0, -60]);
+  const copyOpacity = useTransform(heroProgress, [0, 0.85], reduced ? [1, 1] : [1, 0]);
+
+  // The process connecting line draws itself as the timeline scrolls through —
+  // spring-smoothed so it trails the scroll like a needle, not a scrubber.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: lineProgress } = useScroll({
+    target: trackRef,
+    offset: ["start 82%", "end 60%"],
+  });
+  const lineScale = useSpring(
+    useTransform(lineProgress, [0, 1], reduced ? [1, 1] : [0, 1]),
+    { stiffness: 120, damping: 28, restDelta: 0.001 },
+  );
+
   return (
     <article className={styles.page}>
-      <header className={styles.hero}>
+      <header ref={heroRef} className={styles.hero}>
         <div className={styles.heroGrid}>
-          <div className={styles.heroCopy}>
-            <Link href="/#services" className={styles.breadcrumb}>Services <span aria-hidden>/</span> Call Center</Link>
-            <div className={styles.liveLine}><span aria-hidden />Operational coverage across every customer channel</div>
-            <h1 className={styles.heroHeadline}>
-              <span>Every</span>
-              <span>customer</span>
-              <span>moment,</span>
-              <span className={styles.heroHeadlineStrong}>covered.</span>
-            </h1>
-            <p className={styles.heroLead}>Inbound and outbound contact-center operations designed around the moments that matter to your customers.</p>
-            <div className={styles.heroActions}>
+          <motion.div
+            className={styles.heroCopy}
+            style={{ y: copyY, opacity: copyOpacity }}
+            variants={heroCopyVariants}
+            initial={reduced ? false : "hidden"}
+            animate="visible"
+          >
+            <MotionLink href="/#services" className={styles.breadcrumb} variants={focusRiseVariants}>Services <span aria-hidden>/</span> Call Center</MotionLink>
+            <motion.div className={styles.liveLine} variants={focusRiseVariants}><span aria-hidden />Operational coverage across every customer channel</motion.div>
+            <motion.h1 className={styles.heroHeadline} variants={heroLinesVariants}>
+              {HERO_LINES.map((line) => (
+                <motion.span key={line.text} className={styles.heroLineMask} variants={passThroughVariants}>
+                  <motion.span className={line.strong ? `${styles.heroLine} ${styles.heroHeadlineStrong}` : styles.heroLine} variants={heroCurtainVariants}>{line.text}</motion.span>
+                </motion.span>
+              ))}
+            </motion.h1>
+            <motion.p className={styles.heroLead} variants={focusRiseVariants}>Inbound and outbound contact-center operations designed around the moments that matter to your customers.</motion.p>
+            <motion.div className={styles.heroActions} variants={focusRiseVariants}>
               <a href="#contact" className={styles.primaryCta}>Request a quote <Arrow /></a>
               <a href="#capabilities" className={styles.secondaryCta}>Explore capabilities <Arrow direction="down" /></a>
-            </div>
-            <div className={styles.heroSignal} aria-label="Page highlights">
+            </motion.div>
+            <motion.div className={styles.heroSignal} aria-label="Page highlights" variants={focusRiseVariants}>
               <span>People</span><span>Process</span><span>Technology</span>
-            </div>
-          </div>
-          <HeroMedia />
+            </motion.div>
+          </motion.div>
+          <HeroMedia mediaY={mediaY} mediaScale={mediaScale} />
         </div>
       </header>
 
       <div>
         <section id="capabilities" className={styles.capabilitiesSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>Capabilities built around<br />the conversation</>} description="A clear structure for presenting what each service includes, how it works, and the benefit it creates for the client." />
-            <div className={styles.capabilityLayout}>
-              <div className={styles.capabilityIndex} role="tablist" aria-label="Call Center capabilities">
+            <SectionIntro title={<>Capabilities built around<br />the conversation</>} description="A clear structure for presenting what each service includes, how it works, and the benefit it creates for the client." reduced={reduced} />
+            <motion.div
+              className={styles.capabilityLayout}
+              initial={reduced ? false : "hidden"}
+              whileInView={reduced ? undefined : "visible"}
+              viewport={VIEWPORT}
+              variants={groupVariants}
+            >
+              <motion.div className={styles.capabilityIndex} role="tablist" aria-label="Call Center capabilities" variants={focusRiseVariants}>
                 {CALL_CENTER.details.map((item, index) => {
                   const selected = item.title === activeCapability;
                   return (
@@ -208,11 +325,11 @@ export default function CallCenterDetail() {
                     </button>
                   );
                 })}
-              </div>
+              </motion.div>
 
-              <div id="capability-panel" role="tabpanel" className={styles.capabilityPanel}>
+              <motion.div id="capability-panel" role="tabpanel" className={styles.capabilityPanel} variants={focusRiseVariants}>
                 <AnimatePresence mode="wait" initial={false}>
-                  <motion.div key={active.title} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: [0.22, 1, 0.36, 1] }}>
+                  <motion.div key={active.title} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
                     <div className={styles.capabilityHeading}>
                       <span className={styles.capabilityIcon}><ServiceIcon name={activeMeta.icon} /></span>
                       <div><p>Selected capability</p><h3>{active.title}</h3></div>
@@ -239,33 +356,33 @@ export default function CallCenterDetail() {
                     </div>
                   </motion.div>
                 </AnimatePresence>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         <section id="method" className={styles.processSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title={<>A method the client<br />can understand</>} description="Every engagement follows the same disciplined sequence, from first discovery call to the ongoing work of getting better." />
-            <div className={styles.processTrack}>
+            <SectionIntro title={<>A method the client<br />can understand</>} description="Every engagement follows the same disciplined sequence, from first discovery call to the ongoing work of getting better." reduced={reduced} />
+            <div ref={trackRef} className={styles.processTrack}>
               <motion.span
                 className={styles.processLine}
                 aria-hidden
-                initial={reduced ? false : "hidden"}
-                whileInView={reduced ? undefined : "visible"}
-                viewport={{ once: true, margin: "-100px" }}
-                variants={processLineVariants}
+                style={{ scaleX: lineScale }}
               />
               <motion.ol
                 className={styles.processList}
                 initial={reduced ? false : "hidden"}
                 whileInView={reduced ? undefined : "visible"}
-                viewport={{ once: true, margin: "-100px" }}
-                variants={processContainerVariants}
+                viewport={{ once: true, margin: "-60px" }}
+                variants={groupVariants}
               >
                 {PROCESS.map((step, index) => (
-                  <motion.li key={step.title} variants={processItemVariants}>
-                    <span className={styles.processNumber}>0{index + 1}</span><h3>{step.title}</h3><p>{step.description}</p>
+                  <motion.li key={step.title} className={styles.processStep} variants={stepVariants}>
+                    <motion.span className={styles.processNode} aria-hidden variants={nodeVariants} />
+                    <motion.div className={styles.processBody} variants={focusRiseVariants}>
+                      <span className={styles.processNumber}>0{index + 1}</span><h3>{step.title}</h3><p>{step.description}</p>
+                    </motion.div>
                   </motion.li>
                 ))}
               </motion.ol>
@@ -275,21 +392,27 @@ export default function CallCenterDetail() {
 
         <section id="metrics" className={styles.metricsSection}>
           <div className={styles.contentShell}>
-            <div className={styles.metricsHeading}>
-              <div className={styles.metricsHeadingCopy}>
-                <span className={styles.metricsRule} aria-hidden />
-                <h2>Performance that can be demonstrated.</h2>
-              </div>
-            </div>
+            <motion.div
+              className={styles.metricsHeading}
+              initial={reduced ? false : "hidden"}
+              whileInView={reduced ? undefined : "visible"}
+              viewport={VIEWPORT}
+              variants={groupVariants}
+            >
+              <motion.div className={styles.metricsHeadingCopy} variants={stepVariants}>
+                <motion.span className={styles.metricsRule} aria-hidden variants={ruleYVariants} />
+                <motion.h2 variants={focusRiseVariants}>Performance that can be demonstrated.</motion.h2>
+              </motion.div>
+            </motion.div>
             <motion.dl
               className={styles.metricList}
               initial={reduced ? false : "hidden"}
               whileInView={reduced ? undefined : "visible"}
-              viewport={{ once: true, margin: "-100px" }}
-              variants={processContainerVariants}
+              viewport={VIEWPORT}
+              variants={groupVariants}
             >
               {METRICS.map((metric) => (
-                <motion.div key={metric.label} variants={processItemVariants}>
+                <motion.div key={metric.label} variants={softRiseVariants}>
                   <dt>{metric.label}</dt>
                   <dd>{metric.value}</dd>
                   <span className={styles.metricStatus}><span className={styles.metricDot} aria-hidden />{metric.status}</span>
@@ -301,17 +424,17 @@ export default function CallCenterDetail() {
 
         <section id="clients" className={styles.clientsSection}>
           <div className={styles.contentShell}>
-            <SectionIntro title="Clients who trust the operation" />
+            <SectionIntro title="Clients who trust the operation" reduced={reduced} />
             <motion.ul
               className={styles.logoWall}
               aria-label="Client logos"
               initial={reduced ? false : "hidden"}
               whileInView={reduced ? undefined : "visible"}
-              viewport={{ once: true, margin: "-100px" }}
-              variants={processContainerVariants}
+              viewport={VIEWPORT}
+              variants={groupVariants}
             >
               {CLIENT_LOGOS.map((brand) => (
-                <motion.li key={brand.name} variants={processItemVariants}>
+                <motion.li key={brand.name} variants={softRiseVariants}>
                   <span className={styles.logoImageWrap} data-size={"size" in brand ? brand.size : undefined}>
                     <Image src={brand.src} alt={`${brand.name} logo`} fill sizes="(min-width: 64rem) 12vw, 30vw" className={styles.logoImage} />
                   </span>
@@ -322,18 +445,30 @@ export default function CallCenterDetail() {
         </section>
 
         <section className={styles.testimonialSection}>
-          <div className={styles.testimonialInner}>
-            <span className={styles.quoteMark} aria-hidden>“</span>
-            <blockquote><p>Approved client testimonial will appear in this space.</p><footer><span>Client name</span><small>Role · Company</small></footer></blockquote>
-            <div className={styles.portraitPlaceholder}>Portrait<br />1:1</div>
-          </div>
+          <motion.div
+            className={styles.testimonialInner}
+            initial={reduced ? false : "hidden"}
+            whileInView={reduced ? undefined : "visible"}
+            viewport={VIEWPORT}
+            variants={groupVariants}
+          >
+            <motion.span className={styles.quoteMark} aria-hidden variants={focusRiseVariants}>“</motion.span>
+            <motion.blockquote variants={focusRiseVariants}><p>Approved client testimonial will appear in this space.</p><footer><span>Client name</span><small>Role · Company</small></footer></motion.blockquote>
+            <motion.div className={styles.portraitPlaceholder} variants={focusRiseVariants}>Portrait<br />1:1</motion.div>
+          </motion.div>
         </section>
 
         <section id="contact" className={styles.contactSection}>
-          <div className={styles.contactInner}>
-            <div><h2>Let’s design the right operation.</h2><p>This section is prepared to connect with the smart quote form and direct contact channels in the next phase.</p></div>
-            <div className={styles.contactPlaceholder}><span>Quote form integration</span><strong>Pending connection</strong></div>
-          </div>
+          <motion.div
+            className={styles.contactInner}
+            initial={reduced ? false : "hidden"}
+            whileInView={reduced ? undefined : "visible"}
+            viewport={VIEWPORT}
+            variants={groupVariants}
+          >
+            <motion.div variants={focusRiseVariants}><h2>Let’s design the right operation.</h2><p>This section is prepared to connect with the smart quote form and direct contact channels in the next phase.</p></motion.div>
+            <motion.div className={styles.contactPlaceholder} variants={focusRiseVariants}><span>Quote form integration</span><strong>Pending connection</strong></motion.div>
+          </motion.div>
         </section>
       </div>
 

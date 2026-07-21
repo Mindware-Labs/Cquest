@@ -174,6 +174,25 @@ a:hover > .arrowDown {
   font-weight: 800;
 }
 
+/* Each headline word is a clip window; the word rides up from behind its
+   own bottom edge (a curtain lift, not a fade). The padding-bottom carries
+   the descenders inside the clip box, and the negative margin between lines
+   gives that padding back so the tight leading is preserved. */
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.heroLineMask:not(:last-child) {
+  margin-bottom: -0.12em;
+}
+
+.heroLine {
+  display: block;
+  will-change: transform;
+}
+
 .heroLead {
   max-width: 30ch;
   margin-top: 1.1rem;
@@ -222,6 +241,15 @@ a:hover > .arrowDown {
   border-block: 0;
   border-right: 0;
   background: #29495a;
+}
+
+/* Oversized so the scroll-linked drift + zoom never expose an edge: 8% of
+   vertical overscan plus the 1.12 scale keep the frame covered through the
+   whole parallax range. */
+.heroMediaParallax {
+  position: absolute;
+  inset: -8% 0;
+  will-change: transform;
 }
 
 .heroMediaImg {
@@ -291,6 +319,7 @@ a:hover > .arrowDown {
   height: 2px;
   margin-bottom: 1.1rem;
   background: var(--cc-sky);
+  transform-origin: left center;
 }
 
 .sectionIntro h2 {
@@ -324,6 +353,7 @@ a:hover > .arrowDown {
   width: 2px;
   height: 1.2rem;
   margin-bottom: 0.85rem;
+  transform-origin: top center;
 }
 
 .sectionIntro[data-compact] h2 {
@@ -566,6 +596,8 @@ a:hover > .arrowDown {
   padding-top: clamp(1.5rem, 2.2vw, 1.85rem);
 }
 
+/* Scrubbed to the section's scroll progress — the timeline literally draws
+   itself as you read down it, left to right. */
 .processLine {
   position: absolute;
   top: clamp(1.5rem, 2.2vw, 1.85rem);
@@ -575,6 +607,7 @@ a:hover > .arrowDown {
   background: linear-gradient(90deg, transparent, var(--cc-sky) 6%, var(--cc-sky) 94%, transparent);
   opacity: 0.6;
   transform-origin: left center;
+  will-change: transform;
 }
 
 .processList li {
@@ -583,6 +616,7 @@ a:hover > .arrowDown {
   padding-right: 1.5rem;
 }
 
+/* The empty socket, always present on the line. */
 .processList li::before {
   content: "";
   position: absolute;
@@ -594,6 +628,26 @@ a:hover > .arrowDown {
   border-radius: 50%;
   background: var(--background);
   transform: translate(-0.2rem, -50%);
+}
+
+/* The light that fills the socket — blooms in as the step reveals, so each
+   node reads as switching on when the drawing line reaches it. Positioned
+   with offsets (no CSS transform) so Framer owns the scale/opacity cleanly. */
+.processNode {
+  position: absolute;
+  top: -0.275rem;
+  left: -0.2rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--cc-sky);
+  box-shadow: 0 0 0.5rem 0.06rem color-mix(in srgb, var(--cc-sky) 55%, transparent);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.processBody {
+  will-change: transform, opacity;
 }
 
 .processNumber {
@@ -655,6 +709,7 @@ a:hover > .arrowDown {
   height: 1.4rem;
   margin-bottom: 1rem;
   background: var(--cc-sky);
+  transform-origin: top center;
 }
 
 .metricsHeading h2 { color: white; }
@@ -929,6 +984,7 @@ a:hover > .arrowDown {
   .processLine { display: none; }
   .processList li { padding-right: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--cc-rule); }
   .processList li::before { display: none; }
+  .processNode { display: none; }
   .metricList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metricList > div:nth-child(4) { border-left: 0; }
   .metricList > div:nth-child(n + 4) { border-top: 1px solid rgba(255, 255, 255, 0.18); }
