@@ -33,13 +33,14 @@
 
 .shell {
   width: 100%;
-  max-width: 46rem;
+  max-width: 56rem;
   margin: 0 auto;
-  /* Top padding clears the fixed Navbar. */
-  padding: clamp(6.5rem, 8vw + 4rem, 9.5rem) 1.25rem clamp(3rem, 8vw, 5rem);
+  /* Top padding clears the fixed Navbar; kept tight so the wizard sits high
+     enough to complete a step without scrolling at 100% zoom. */
+  padding: clamp(5rem, 5vw + 3rem, 6.5rem) 1.25rem clamp(2rem, 5vw, 3rem);
   display: flex;
   flex-direction: column;
-  gap: clamp(1.75rem, 4vw, 2.5rem);
+  gap: clamp(1.1rem, 2.5vw, 1.6rem);
 }
 
 /* ── Intro ─────────────────────────────────────────────── */
@@ -57,28 +58,25 @@
 }
 
 .introTitle {
-  margin-top: 0.7rem;
+  margin-top: 0.5rem;
   font-family: var(--font-heading);
-  font-size: clamp(1.9rem, 5.5vw, 2.9rem);
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.06;
+  line-height: 1.1;
   color: var(--foreground);
 }
 
 .introAccent {
-  background: linear-gradient(100deg, var(--brand-petroleo), var(--brand-celeste));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--brand-petroleo);
 }
 
 .introLead {
-  margin: 0.9rem auto 0;
-  max-width: 42ch;
+  margin: 0.6rem auto 0;
+  max-width: 44ch;
   color: var(--text-secondary);
-  font-size: clamp(0.98rem, 2.5vw, 1.075rem);
-  line-height: 1.55;
+  font-size: clamp(0.92rem, 2.2vw, 1rem);
+  line-height: 1.5;
 }
 
 /* ── Trust strip ───────────────────────────────────────── */

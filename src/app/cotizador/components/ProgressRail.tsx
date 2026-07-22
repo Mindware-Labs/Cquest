@@ -28,7 +28,8 @@ export default function ProgressRail({
               type="button"
               className={styles.railNode}
               onClick={() => reachable && onJump(index)}
-              disabled={!reachable}
+              aria-disabled={!reachable || undefined}
+              tabIndex={reachable ? undefined : -1}
               aria-current={index === current ? "step" : undefined}
             >
               <span className={styles.railDot}>

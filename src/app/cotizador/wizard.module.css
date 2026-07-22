@@ -3,20 +3,24 @@
    a footer with Back / Continue. The active service's colour flows in through
    --svc / --svc-glow (set inline on .wizard), so rail, selections, focus rings
    and buttons all re-tint to the chosen line. Error red is the only literal
-   colour — there's no brand token for it. */
+   colour — there's no brand token for it.
+
+   Tuned to sit inside one viewport per step: sharp 2px corners (matching the
+   system's button geometry), compact chrome, chip-style choices, and a
+   two-column question grid on desktop so Step 2 never needs a scroll. */
 
 .wizard {
   --error: #c0392b;
   position: relative;
-  border-radius: clamp(16px, 3vw, 22px);
+  border-radius: 2px;
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  padding: clamp(1.35rem, 4vw, 2.35rem);
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
   overflow: hidden;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 30px 60px -34px color-mix(in srgb, var(--ink) 32%, transparent),
-    0 10px 26px -20px color-mix(in srgb, var(--ink) 38%, transparent);
+    0 24px 50px -34px color-mix(in srgb, var(--ink) 30%, transparent),
+    0 8px 22px -20px color-mix(in srgb, var(--ink) 36%, transparent);
 }
 
 /* Service-tinted hairline along the very top edge. */
@@ -24,7 +28,7 @@
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: 3px;
+  height: 2px;
   background: linear-gradient(90deg, var(--svc), var(--svc-glow));
   transition: background 0.4s var(--ease-out);
 }
@@ -35,8 +39,8 @@
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 0 1.6rem;
-  margin: 0 0 clamp(1.25rem, 3.5vw, 1.9rem);
+  padding: 0 0 1.3rem;
+  margin: 0 0 clamp(1rem, 2.5vw, 1.4rem);
   list-style: none;
 }
 
@@ -60,7 +64,7 @@
   flex: 0 0 auto;
 }
 
-.railNode:not(:disabled) {
+.railNode:not([aria-disabled]) {
   cursor: pointer;
 }
 
@@ -73,13 +77,13 @@
 .railDot {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.7rem;
+  height: 1.7rem;
   border-radius: 999px;
   border: 1.5px solid var(--border);
   background: var(--surface-raised);
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   transition:
     background-color 0.35s var(--ease-out),
@@ -89,17 +93,17 @@
 }
 
 .railCheck {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .railLabel {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 0.4rem);
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--muted);
@@ -111,7 +115,6 @@
   flex: 1 1 auto;
   height: 1.5px;
   margin: 0 0.4rem;
-  border-radius: 2px;
   background: var(--border);
 }
 
@@ -120,7 +123,6 @@
   inset: 0;
   transform-origin: left;
   transform: scaleX(0);
-  border-radius: 2px;
   background: linear-gradient(90deg, var(--svc), var(--svc-glow));
   transition: transform 0.55s var(--ease-out);
 }
@@ -153,7 +155,7 @@
 
 .body {
   position: relative;
-  min-height: clamp(19rem, 40vh, 25rem);
+  min-height: clamp(11rem, 22vh, 14rem);
 }
 
 .step {
@@ -161,21 +163,21 @@
 }
 
 .stepHead {
-  margin-bottom: clamp(1.25rem, 3vw, 1.75rem);
+  margin-bottom: clamp(0.85rem, 2vw, 1.15rem);
 }
 
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--svc);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.45rem;
 }
 
 .stepTitle {
   font-family: var(--font-heading);
-  font-size: clamp(1.3rem, 3.4vw, 1.7rem);
+  font-size: clamp(1.15rem, 2.6vw, 1.4rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.15;
@@ -183,18 +185,18 @@
 }
 
 .stepLead {
-  margin-top: 0.55rem;
+  margin-top: 0.4rem;
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  max-width: 44ch;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  max-width: 46ch;
 }
 
 /* ── Step 1 · service cards ────────────────────────────── */
 
 .serviceGrid {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.6rem;
   grid-template-columns: 1fr;
 }
 
@@ -209,9 +211,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.65rem;
-  padding: 1.15rem 1.15rem 1.25rem;
-  border-radius: 14px;
+  gap: 0.5rem;
+  padding: 0.95rem 1rem 1.05rem;
+  border-radius: 2px;
   text-align: left;
   border: 1px solid var(--border);
   background: var(--surface-raised);
@@ -226,7 +228,7 @@
 .serviceCard:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--svc) 50%, var(--border));
-  box-shadow: 0 16px 32px -20px color-mix(in srgb, var(--svc) 60%, transparent);
+  box-shadow: 0 14px 28px -20px color-mix(in srgb, var(--svc) 60%, transparent);
 }
 
 .serviceCard:focus-visible {
@@ -239,40 +241,40 @@
   background: linear-gradient(180deg, color-mix(in srgb, var(--svc) 10%, var(--surface-raised)), var(--surface-raised));
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--svc) 45%, transparent),
-    0 18px 36px -20px color-mix(in srgb, var(--svc) 55%, transparent);
+    0 16px 32px -20px color-mix(in srgb, var(--svc) 55%, transparent);
 }
 
 .serviceIcon {
   display: grid;
   place-items: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 12px;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 2px;
   color: var(--svc);
   background: color-mix(in srgb, var(--svc) 12%, transparent);
 }
 
 .serviceLabel {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--foreground);
 }
 
 .serviceStrapline {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   line-height: 1.4;
   color: var(--text-secondary);
 }
 
 .serviceMark {
   position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
+  top: 0.75rem;
+  right: 0.75rem;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
   color: #fff;
   background: var(--svc);
@@ -289,16 +291,18 @@
 }
 
 .serviceCheck {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
 /* ── Step 2 · questions ────────────────────────────────── */
+/* Stacked one below another. The wide card lets each question's chips flow on a
+   single row, so the line-up stays short without a second column. */
 
 .questions {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.35rem, 3.5vw, 1.9rem);
+  gap: clamp(0.9rem, 2.2vw, 1.3rem);
 }
 
 .group {
@@ -310,10 +314,10 @@
 
 .legend {
   padding: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--foreground);
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.5rem;
 }
 
 .req {
@@ -322,8 +326,8 @@
 }
 
 .groupHelp {
-  margin: -0.4rem 0 0.7rem;
-  font-size: 0.85rem;
+  margin: -0.25rem 0 0.5rem;
+  font-size: 0.8rem;
   color: var(--text-tertiary);
 }
 
@@ -331,39 +335,33 @@
   color: var(--error);
 }
 
+/* Choices as compact chips that wrap — dense, minimal, and much shorter than a
+   stack of full-width option cards. */
 .optionGrid {
-  display: grid;
-  gap: 0.6rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 560px) {
-  .optionGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .option {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 0.95rem;
-  border-radius: 12px;
+  gap: 0.45rem;
+  padding: 0.48rem 0.8rem;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--surface-raised);
+  color: var(--foreground);
   cursor: pointer;
   transition:
-    transform 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out),
-    background-color 0.22s var(--ease-out),
-    box-shadow 0.22s var(--ease-out);
+    border-color 0.2s var(--ease-out),
+    background-color 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
 }
 
 .option:hover {
-  transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--svc) 45%, var(--border));
-  box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--svc) 60%, transparent);
 }
 
 .option:has(input:focus-visible) {
@@ -372,11 +370,9 @@
 }
 
 .option:has(input:checked) {
-  border-color: color-mix(in srgb, var(--svc) 65%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--svc) 8%, var(--surface-raised)), var(--surface-raised));
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--svc) 42%, transparent),
-    0 10px 24px -18px color-mix(in srgb, var(--svc) 50%, transparent);
+  border-color: var(--svc);
+  background: color-mix(in srgb, var(--svc) 12%, var(--surface-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 35%, transparent);
 }
 
 .srInput {
@@ -395,66 +391,32 @@
   color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
 }
 
-.optionText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
+.optionIcon svg {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .optionLabel {
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--foreground);
 }
 
-.optionHint {
-  font-size: 0.78rem;
-  color: var(--text-tertiary);
+.option:has(input:checked) .optionLabel {
+  font-weight: 600;
 }
 
-.optionMark {
-  margin-left: auto;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: 1.5px solid var(--border);
-  color: #fff;
-  flex: 0 0 auto;
-  transition:
-    background-color 0.2s var(--ease-out),
-    border-color 0.2s var(--ease-out);
-}
-
-.optionCheck {
-  width: 0.8rem;
-  height: 0.8rem;
-  opacity: 0;
-  transform: scale(0.5);
-  transition:
-    opacity 0.18s var(--ease-out),
-    transform 0.18s var(--ease-out);
-}
-
-.option:has(input:checked) .optionMark {
-  background: var(--svc);
-  border-color: var(--svc);
-}
-
-.option:has(input:checked) .optionCheck {
-  opacity: 1;
-  transform: scale(1);
+.option:has(input:checked) .optionIcon {
+  color: var(--svc);
 }
 
 /* ── Step 3 · contact + text fields ────────────────────── */
 
 .contactGrid {
   display: grid;
-  gap: 1rem;
+  gap: 0.7rem;
   grid-template-columns: 1fr;
-  margin-bottom: clamp(1.35rem, 3.5vw, 1.75rem);
+  margin-bottom: clamp(1rem, 2.5vw, 1.35rem);
 }
 
 @media (min-width: 560px) {
@@ -466,7 +428,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
   min-width: 0;
 }
 
@@ -475,20 +437,20 @@
 }
 
 .fieldLabel {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--foreground);
 }
 
 .input {
   width: 100%;
-  padding: 0.8rem 0.95rem;
-  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--surface-raised);
   color: var(--foreground);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   line-height: 1.4;
   transition:
     border-color 0.2s var(--ease-out),
@@ -508,21 +470,57 @@
 
 .inputError {
   border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 12%, transparent);
 }
 
 .inputError:focus {
   border-color: var(--error);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 20%, transparent);
 }
 
+/* Error feedback: a small alert glyph + message that eases in just below the
+   field, so a correction reads as guidance rather than a slap. */
 .fieldError {
-  font-size: 0.8rem;
-  color: var(--error);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--error) 92%, var(--foreground));
+  animation: fieldErrorIn 0.3s var(--ease-out);
+}
+
+.group .fieldError {
+  margin-top: 0.55rem;
+}
+
+.fieldErrorIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: 0 0 auto;
+}
+
+@keyframes fieldErrorIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fieldError {
+    animation: none;
+  }
 }
 
 .consent {
-  margin-top: 1.1rem;
-  font-size: 0.8rem;
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
   line-height: 1.5;
   color: var(--text-tertiary);
 }
@@ -534,13 +532,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: clamp(1.25rem, 3vw, 1.75rem);
-  padding-top: clamp(1rem, 2.5vw, 1.4rem);
+  margin-top: clamp(0.9rem, 2vw, 1.2rem);
+  padding-top: clamp(0.75rem, 1.6vw, 1rem);
   border-top: 1px solid var(--border);
 }
 
 .footerMeta {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--text-tertiary);
@@ -548,7 +546,7 @@
 
 .footerActions {
   display: flex;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 /* ── Buttons (shared by wizard + confirmation) ─────────── */
@@ -557,14 +555,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  min-height: 2.875rem;
-  padding: 0 1.4rem;
-  border-radius: 9px;
+  min-height: 2.75rem;
+  padding: 0 1.35rem;
+  border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--svc) 78%, #000);
   background: var(--svc);
   color: #fff;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   cursor: pointer;
   box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--svc) 70%, transparent);
   transition:
@@ -622,14 +620,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.875rem;
-  padding: 0 1.25rem;
-  border-radius: 9px;
+  min-height: 2.75rem;
+  padding: 0 1.2rem;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-secondary);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   cursor: pointer;
   transition:
     border-color 0.25s var(--ease-out),
@@ -656,13 +654,13 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: clamp(0.5rem, 2vw, 1.5rem) 0;
+  padding: clamp(0.5rem, 2vw, 1.25rem) 0;
 }
 
 .confirmGlyph {
-  width: 4.5rem;
-  height: 4.5rem;
-  margin-bottom: 1.25rem;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.1rem;
   color: var(--svc);
 }
 
@@ -688,7 +686,7 @@
 
 .confirmTitle {
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-size: clamp(1.35rem, 3.6vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.15;
@@ -696,20 +694,20 @@
 }
 
 .confirmLead {
-  margin-top: 0.6rem;
+  margin-top: 0.55rem;
   max-width: 44ch;
   color: var(--text-secondary);
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   line-height: 1.55;
 }
 
 .summary {
   width: 100%;
   max-width: 30rem;
-  margin: clamp(1.5rem, 4vw, 2rem) 0 0;
+  margin: clamp(1.35rem, 3.5vw, 1.75rem) 0 0;
   text-align: left;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 2px;
   overflow: hidden;
   background: color-mix(in srgb, var(--svc) 4%, var(--surface-raised));
 }
@@ -718,7 +716,7 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.7rem 0.95rem;
+  padding: 0.65rem 0.95rem;
   border-top: 1px solid var(--border);
   font-size: 0.9rem;
 }
@@ -743,5 +741,5 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.65rem;
-  margin-top: clamp(1.5rem, 4vw, 2rem);
+  margin-top: clamp(1.35rem, 3.5vw, 1.75rem);
 }

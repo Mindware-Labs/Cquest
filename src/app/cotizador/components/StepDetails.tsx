@@ -1,22 +1,26 @@
 "use client";
 
-import { isAnswered, type Answers, type Questionnaire } from "../data";
+import type { Answers, Questionnaire } from "../data";
 import styles from "../wizard.module.css";
 import { Field, OptionGroup } from "./fields";
 
 /* Step 2 — the service-specific questions, rendered straight from the
    questionnaire model so this component never needs to know which service it's
-   showing. Choice questions become OptionGroups; free-text becomes a Field. */
+   showing. Choice questions become OptionGroups; free-text becomes a Field. The
+   `errors` map is Zod's verdict (keyed by question id), shown once the prospect
+   has tried to advance. */
 export default function StepDetails({
   questionnaire,
   answers,
   onChange,
   showErrors,
+  errors,
 }: {
   questionnaire: Questionnaire;
   answers: Answers;
   onChange: (id: string, value: string | string[]) => void;
   showErrors: boolean;
+  errors: Record<string, string>;
 }) {
   return (
     <div className={styles.step}>
@@ -27,33 +31,27 @@ export default function StepDetails({
 
       <div className={styles.questions}>
         {questionnaire.questions.map((question) => {
+          const message = showErrors ? errors[question.id] : undefined;
+
           if (question.kind === "single" || question.kind === "multi") {
-            const invalid =
-              showErrors &&
-              Boolean(question.required) &&
-              !isAnswered(answers[question.id]);
             return (
               <OptionGroup
                 key={question.id}
                 question={question}
                 value={answers[question.id]}
                 onChange={(value) => onChange(question.id, value)}
-                invalid={invalid}
+                error={message}
               />
             );
           }
 
-          const invalid =
-            showErrors &&
-            Boolean(question.required) &&
-            !isAnswered(answers[question.id]);
           return (
             <Field
               key={question.id}
               field={question}
               value={(answers[question.id] as string) ?? ""}
               onChange={(value) => onChange(question.id, value)}
-              error={invalid ? "Required" : undefined}
+              error={message}
             />
           );
         })}

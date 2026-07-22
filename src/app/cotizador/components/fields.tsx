@@ -3,7 +3,7 @@
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { Choice, Question } from "../data";
 import styles from "../wizard.module.css";
-import { Check } from "./icons";
+import { Alert } from "./icons";
 
 /* ── Choice group (single / multi) ────────────────────────
    Built on native radio/checkbox inputs kept visually hidden but focusable:
@@ -14,13 +14,14 @@ export function OptionGroup({
   question,
   value,
   onChange,
-  invalid,
+  error,
 }: {
   question: Question;
   value: string | string[] | undefined;
   onChange: (next: string | string[]) => void;
-  invalid?: boolean;
+  error?: string;
 }) {
+  const invalid = Boolean(error);
   const multi = question.kind === "multi";
   const selected = new Set(
     Array.isArray(value) ? value : value ? [value] : [],
@@ -37,8 +38,6 @@ export function OptionGroup({
     onChange([...next]);
   }
 
-  const dense = (question.choices?.length ?? 0) > 4;
-
   return (
     <fieldset
       className={styles.group}
@@ -54,7 +53,7 @@ export function OptionGroup({
         )}
       </legend>
       {question.help && <p className={styles.groupHelp}>{question.help}</p>}
-      <div className={`${styles.optionGrid} ${dense ? styles.optionGridDense : ""}`}>
+      <div className={styles.optionGrid}>
         {question.choices?.map((choice: Choice) => (
           <label key={choice.value} className={styles.option}>
             <input
@@ -70,18 +69,16 @@ export function OptionGroup({
                 <ServiceIcon name={choice.icon} />
               </span>
             )}
-            <span className={styles.optionText}>
-              <span className={styles.optionLabel}>{choice.label}</span>
-              {choice.hint && (
-                <span className={styles.optionHint}>{choice.hint}</span>
-              )}
-            </span>
-            <span className={styles.optionMark} aria-hidden>
-              <Check className={styles.optionCheck} />
-            </span>
+            <span className={styles.optionLabel}>{choice.label}</span>
           </label>
         ))}
       </div>
+      {error && (
+        <p className={styles.fieldError} role="alert">
+          <Alert className={styles.fieldErrorIcon} />
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }
@@ -95,15 +92,37 @@ const AUTOCOMPLETE: Record<string, string> = {
   phone: "tel",
 };
 
+// Auto-punctuate a phone number as it's typed: digits group into 809-000-0000,
+// with an optional +1 country code kept in front (North American / Dominican
+// numbering plan). Non-digits the user types are ignored — the dashes appear on
+// their own.
+function formatPhone(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  let prefix = "";
+  if (digits.length > 10 && digits.startsWith("1")) {
+    prefix = "+1 ";
+    digits = digits.slice(1);
+  }
+  digits = digits.slice(0, 10);
+  const groups = [
+    digits.slice(0, 3),
+    digits.slice(3, 6),
+    digits.slice(6, 10),
+  ].filter(Boolean);
+  return prefix + groups.join("-");
+}
+
 export function Field({
   field,
   value,
   onChange,
+  onBlur,
   error,
 }: {
   field: Question;
   value: string;
   onChange: (next: string) => void;
+  onBlur?: () => void;
   error?: string;
 }) {
   const id = `q-${field.id}`;
@@ -116,9 +135,15 @@ export function Field({
     required: field.required,
     "aria-invalid": error ? true : undefined,
     "aria-describedby": error ? errorId : undefined,
+    onBlur,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => onChange(event.target.value),
+    ) =>
+      onChange(
+        field.kind === "tel"
+          ? formatPhone(event.target.value)
+          : event.target.value,
+      ),
     className: `${styles.input} ${error ? styles.inputError : ""}`,
   };
 
@@ -133,7 +158,7 @@ export function Field({
         )}
       </label>
       {field.kind === "textarea" ? (
-        <textarea {...shared} rows={4} />
+        <textarea {...shared} rows={3} />
       ) : (
         <input
           {...shared}
@@ -156,6 +181,7 @@ export function Field({
       )}
       {error && (
         <span id={errorId} className={styles.fieldError} role="alert">
+          <Alert className={styles.fieldErrorIcon} />
           {error}
         </span>
       )}

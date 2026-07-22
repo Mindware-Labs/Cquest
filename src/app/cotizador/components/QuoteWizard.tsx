@@ -5,11 +5,11 @@ import { AnimatePresence, motion, type Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
 import {
-  CONTACT_FIELDS,
-  EMAIL_RE,
   QUESTIONNAIRES,
+  contactSchema,
+  detailsSchema,
+  fieldErrors,
   getService,
-  isAnswered,
   type Answers,
   type QuoteSubmission,
 } from "../data";
@@ -47,22 +47,41 @@ export default function QuoteWizard({
   const questionnaire = service ? QUESTIONNAIRES[service] : null;
   const accent = getService(service);
 
+  // Step 2 (Details) is validated with Zod, off a schema built from the active
+  // service's questionnaire — one source of truth for the gate and the field
+  // errors surfaced under each question.
+  const detailsResult = useMemo(
+    () =>
+      questionnaire ? detailsSchema(questionnaire).safeParse(details) : null,
+    [questionnaire, details],
+  );
+
+  const detailErrors = useMemo(
+    () =>
+      detailsResult && !detailsResult.success
+        ? fieldErrors(detailsResult.error)
+        : {},
+    [detailsResult],
+  );
+
+  // Step 3 (Contact) runs through its own Zod schema — required + real email and
+  // phone format checks — so gating and field feedback share one verdict.
+  const contactResult = useMemo(
+    () => contactSchema.safeParse(contact),
+    [contact],
+  );
+
+  const contactErrors = useMemo(
+    () => (contactResult.success ? {} : fieldErrors(contactResult.error)),
+    [contactResult],
+  );
+
   // Per-step gate: what has to be true before "Continue" moves on.
   const canAdvance = useMemo(() => {
     if (step === 0) return service !== null;
-    if (step === 1) {
-      if (!questionnaire) return false;
-      return questionnaire.questions.every(
-        (question) =>
-          !question.required || isAnswered(details[question.id]),
-      );
-    }
-    const requiredFilled = CONTACT_FIELDS.every(
-      (field) => !field.required || isAnswered(contact[field.id]),
-    );
-    const emailValid = EMAIL_RE.test((contact.email as string) ?? "");
-    return requiredFilled && emailValid;
-  }, [step, service, questionnaire, details, contact]);
+    if (step === 1) return detailsResult?.success ?? false;
+    return contactResult.success;
+  }, [step, service, detailsResult, contactResult]);
 
   const selectService = useCallback(
     (id: ServiceId) => {
@@ -220,6 +239,7 @@ export default function QuoteWizard({
                       answers={details}
                       onChange={setDetail}
                       showErrors={showErrors}
+                      errors={detailErrors}
                     />
                   )}
                   {step === 2 && (
@@ -227,6 +247,7 @@ export default function QuoteWizard({
                       answers={contact}
                       onChange={setContactField}
                       showErrors={showErrors}
+                      errors={contactErrors}
                     />
                   )}
                 </motion.div>
