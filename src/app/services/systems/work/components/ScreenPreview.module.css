@@ -1,0 +1,332 @@
+/* ── Screen previews — synthetic, image-free interfaces drawn inside a
+   browser-chrome frame, one scale down from the Hero's product window. Local
+   dark tokens keep this file self-contained regardless of the page it's
+   dropped into (the same choice SystemPreview.module.css makes). */
+
+.frame {
+  --wp-ink: #0f1a21;
+  --wp-sky: #74c3d5;
+  --wp-blue: #4b98b1;
+  --wp-green: #8ecb46;
+  --wp-amber: #e0a94c;
+  --wp-red: #e2685f;
+  --wp-muted: rgba(255, 255, 255, 0.32);
+  position: relative;
+  width: 100%;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--wp-sky) 30%, transparent);
+  background: var(--wp-ink);
+  box-shadow:
+    0 46px 80px -46px rgba(6, 12, 16, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dots { display: flex; gap: 0.34rem; }
+.dots span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+
+.address {
+  flex: 1;
+  max-width: 20rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: var(--ratio, 16 / 9);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(0.9rem, 1.8vw, 1.35rem);
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(75, 152, 177, 0.16), transparent 55%),
+    var(--wp-ink);
+}
+
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.04) 1px, transparent 1px);
+  background-size: 1.7rem 1.7rem;
+  mask-image: radial-gradient(ellipse 92% 88% at 50% 42%, #000 55%, transparent 94%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 42%, #000 55%, transparent 94%);
+  pointer-events: none;
+}
+
+.screen > * { position: relative; }
+
+.icoSky { color: var(--wp-sky); }
+
+/* 1 · Contact Center */
+.ccTabs { display: flex; gap: clamp(0.9rem, 2vw, 1.4rem); }
+
+.ccTabs span {
+  padding-bottom: 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  border-bottom: 2px solid transparent;
+}
+
+.ccTabs span[data-active="true"] {
+  color: #fff;
+  border-bottom-color: var(--wp-sky);
+}
+
+.ccToolbar { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+
+.ccSearch {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.7rem;
+  padding: 0 0.6rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6rem;
+}
+
+.ccSearch svg { width: 0.78rem; height: 0.78rem; }
+
+.ccSchedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.7rem;
+  padding: 0 0.6rem;
+  border-radius: 0.45rem;
+  background: var(--wp-sky);
+  color: var(--wp-ink);
+  font-size: 0.58rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ccSchedule svg { width: 0.7rem; height: 0.7rem; }
+
+.ccList { display: flex; flex-direction: column; gap: 0.32rem; margin-top: 0.55rem; flex: 1; min-height: 0; }
+
+.ccRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) minmax(3.5rem, 5rem) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+}
+
+.ccRow[data-live="true"] {
+  border-color: rgba(116, 195, 213, 0.32);
+  background: rgba(116, 195, 213, 0.09);
+}
+
+.ccDirection {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.35rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ccRow[data-live="true"] .ccDirection { color: var(--wp-sky); }
+.ccDirection svg { width: 0.75rem; height: 0.75rem; }
+
+.ccLines { display: flex; flex-direction: column; gap: 0.28rem; min-width: 0; }
+.ccId { font-size: 0.62rem; font-weight: 600; color: rgba(255, 255, 255, 0.82); white-space: nowrap; }
+.ccBar { height: 0.28rem; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+
+.ccBarTrack { height: 0.28rem; border-radius: 2px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.ccBarFill { display: block; height: 100%; border-radius: 2px; background: var(--wp-blue); }
+
+.ccPill {
+  justify-self: end;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--t);
+  background: color-mix(in srgb, var(--t) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--t) 32%, transparent);
+}
+
+/* 2 · Agent dashboard + 3 · Analytics (shared head/tiles/chart) */
+.dashHead { display: flex; align-items: center; }
+
+.dashLive, .rangeChip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.rangeChip {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.rangeChip svg { width: 0.65rem; height: 0.65rem; }
+
+.dashLive i {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--wp-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--wp-green) 60%, transparent);
+  animation: spLive 2.4s var(--ease-out) infinite;
+}
+
+@keyframes spLive { 50% { box-shadow: 0 0 0 0.32rem rgba(142, 203, 70, 0); } }
+
+.dashTiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin-top: 0.55rem; }
+
+.dashTile {
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.dashTileLabel { display: block; font-size: 0.48rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.42); }
+
+.dashTileValue {
+  display: block;
+  margin-top: 0.18rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(0.9rem, 1.6vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.dashChart {
+  position: relative;
+  flex: 1;
+  min-height: 2.4rem;
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.25rem, 0.9vw, 0.5rem);
+  padding-bottom: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dashBar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  transform-origin: bottom;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--wp-sky) 78%, transparent), color-mix(in srgb, var(--wp-blue) 32%, transparent));
+}
+
+.dashBar[data-peak="true"] {
+  background: linear-gradient(180deg, var(--wp-green), color-mix(in srgb, var(--wp-green) 38%, transparent));
+  box-shadow: 0 0 10px -2px color-mix(in srgb, var(--wp-green) 55%, transparent);
+}
+
+/* Follow-up accountability (agent dashboard) */
+.followLabel { margin-top: 0.75rem; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.45); }
+.followList { display: flex; flex-direction: column; gap: 0.32rem; margin-top: 0.45rem; flex: 1; min-height: 0; }
+
+.followRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.followDot { width: 0.4rem; height: 0.4rem; flex: none; border-radius: 50%; background: var(--t); }
+.followId { flex: none; font-size: 0.6rem; font-weight: 600; color: rgba(255, 255, 255, 0.8); }
+.followBar { flex: 1; height: 0.26rem; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
+.followTime { flex: none; font-size: 0.56rem; color: rgba(255, 255, 255, 0.42); }
+
+/* 4 · Per-site reporting */
+.repHead { display: flex; align-items: center; gap: 0.6rem; }
+.repLabel { font-size: 0.62rem; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
+.repExports { margin-left: auto; display: flex; gap: 0.4rem; }
+
+.repChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.repChip svg { width: 0.62rem; height: 0.62rem; }
+
+.repList { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.65rem; flex: 1; min-height: 0; }
+
+.repRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(3.5rem, 5rem) 2.4rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.repLines { display: flex; flex-direction: column; gap: 0.28rem; }
+.repBar { height: 0.3rem; border-radius: 2px; background: rgba(255, 255, 255, 0.28); }
+.repSub { height: 0.24rem; border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+
+.repSlaTrack { height: 0.28rem; border-radius: 2px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.repSlaFill { display: block; height: 100%; border-radius: 2px; background: var(--wp-green); }
+.repSlaValue { justify-self: end; font-size: 0.58rem; font-weight: 700; color: rgba(255, 255, 255, 0.75); }
+
+@media (max-width: 30rem) {
+  .ccRow { grid-template-columns: 1.2rem minmax(0, 1fr) auto; }
+  .ccBarTrack { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashLive i { animation-duration: 0.01ms; }
+}
