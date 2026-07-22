@@ -1,13 +1,18 @@
-/* Case-study subpage — a designed empty state (holding page). Light and airy,
-   consistent with the Selected work gallery it opens from. Kept intentionally
-   minimal: this is the frame the real write-up drops into later. */
+/* ── Systems case study — an editorial, premium write-up of a shipped build.
+   Light and airy, consistent with the Selected work gallery it opens from.
+   Uniform vertical rhythm (shell gap) with hairline dividers marking the bigger
+   breaks; small tracked accent labels; reserved, clearly-labeled screenshot
+   slots the real captures drop into later. */
+
 .page {
+  --accent: #4b98b1; /* systems blue */
+  --rule: color-mix(in srgb, var(--foreground) 12%, transparent);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   color: var(--foreground);
   background:
-    radial-gradient(120% 55% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 9%, transparent), transparent 60%),
+    radial-gradient(120% 45% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 9%, transparent), transparent 60%),
     #fbfcfc;
 }
 
@@ -15,9 +20,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: clamp(2.25rem, 5.5vh, 3.75rem);
   width: min(100% - 2.5rem, 68rem);
   margin-inline: auto;
-  padding-top: clamp(7rem, 14vh, 10rem);
+  padding-top: clamp(6.5rem, 13vh, 9.5rem);
   padding-bottom: clamp(3.5rem, 8vh, 6rem);
 }
 
@@ -37,7 +43,12 @@
 .back svg { width: 1rem; height: 1rem; transition: transform 260ms var(--ease-out); }
 .back:hover svg { transform: translateX(-0.2rem); }
 
-.head { margin-top: clamp(1.75rem, 5vh, 3rem); }
+/* ── Header ── */
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
 .chip {
   display: inline-flex;
@@ -49,78 +60,106 @@
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--brand-petroleo) 55%, var(--foreground));
-  background: color-mix(in srgb, var(--brand-celeste) 12%, white);
-  border: 1px solid color-mix(in srgb, var(--brand-celeste) 30%, transparent);
+  color: color-mix(in srgb, var(--accent) 60%, var(--foreground));
+  background: color-mix(in srgb, var(--accent) 10%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-.chip svg { width: 0.9rem; height: 0.9rem; color: var(--brand-petroleo); }
+.chip svg { width: 0.9rem; height: 0.9rem; color: var(--accent); }
 
 .title {
   margin-top: 1.25rem;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2.5rem, 5.5vw, 4rem);
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem);
   font-weight: 600;
   letter-spacing: -0.035em;
-  line-height: 1.02;
+  line-height: 1.03;
   color: var(--foreground);
   text-wrap: balance;
+  max-width: 20ch;
 }
 
 .lede {
   margin-top: 1.25rem;
-  max-width: 52ch;
+  max-width: 60ch;
   color: var(--text-secondary);
-  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  font-size: clamp(1rem, 1.15vw, 1.1rem);
   line-height: 1.75;
   text-wrap: pretty;
 }
 
-/* Reserved frame — the same recessed plate the gallery uses, at full width. */
-.frame {
-  position: relative;
-  margin-top: clamp(2.5rem, 6vh, 4rem);
+.meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
   width: 100%;
-  aspect-ratio: 16 / 9;
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+}
+
+.metaItem { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.metaLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.metaValue {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.35;
+}
+
+/* ── Screenshot slot (reserved frame) ── */
+.shot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--shot-ratio, 16 / 9);
   overflow: hidden;
   display: grid;
   place-items: center;
-  border-radius: 1rem;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background:
-    radial-gradient(130% 90% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 10%, transparent), transparent 62%),
+    radial-gradient(130% 90% at 50% 0%, color-mix(in srgb, var(--brand-celeste) 9%, transparent), transparent 62%),
     var(--surface-sunken);
 }
 
-.slot {
+.shotInner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   padding: 1rem;
   text-align: center;
 }
 
-.slotIcon {
+.shotIcon {
   display: grid;
   place-items: center;
-  width: 4rem;
-  height: 4rem;
-  border-radius: 0.9rem;
-  color: var(--brand-petroleo);
-  background: color-mix(in srgb, var(--brand-celeste) 14%, white);
-  border: 1px solid color-mix(in srgb, var(--brand-celeste) 30%, transparent);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 2px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
-.slotIcon svg { width: 1.9rem; height: 1.9rem; }
-.slotLabel { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
-.slotMeta { color: var(--muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.shotIcon svg { width: 1.7rem; height: 1.7rem; }
+.shotLabel { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; max-width: 34ch; }
+.shotMeta { color: var(--muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 
 .tick {
   position: absolute;
   width: 0.8rem;
   height: 0.8rem;
-  border: 0 solid color-mix(in srgb, var(--brand-petroleo) 40%, transparent);
+  border: 0 solid color-mix(in srgb, var(--accent) 45%, transparent);
   opacity: 0.7;
   pointer-events: none;
 }
@@ -130,11 +169,313 @@
 .tick[data-c="bl"] { bottom: 0.75rem; left: 0.75rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
 .tick[data-c="br"] { bottom: 0.75rem; right: 0.75rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }
 
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--rule);
+}
+
+/* ── Section scaffolding ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.sectionLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.sectionTitle {
+  margin-top: 0.7rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.55rem, 2.6vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.prose {
+  margin-top: 1rem;
+  max-width: 66ch;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.prose strong { color: var(--foreground); font-weight: 600; }
+
+/* ── Challenge / solution split ── */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  width: 100%;
+}
+
+.splitCol .sectionLabel + .prose,
+.splitCol .prose { margin-top: 1rem; }
+
+/* ── How it works — numbered steps ── */
+.steps {
+  width: 100%;
+  margin-top: 1.75rem;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+  padding: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: baseline;
+  padding: 1.35rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.stepNum {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepTitle {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.stepText {
+  margin-top: 0.45rem;
+  max-width: 62ch;
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+/* ── Architecture flow ── */
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.75rem;
+}
+
+.flowNode {
+  padding: 0.55rem 0.9rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.flowNode[data-accent] {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, white);
+  color: color-mix(in srgb, var(--accent) 65%, var(--foreground));
+}
+
+.flowArrow { color: var(--muted); font-size: 1rem; }
+
+/* ── Real-time & integrations blocks ── */
+.blocks {
+  width: 100%;
+  margin-top: 1.75rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.block {
+  padding: clamp(1.25rem, 2.5vw, 1.6rem);
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.blockIcon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 2px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.blockIcon svg { width: 1.35rem; height: 1.35rem; }
+
+.blockTitle {
+  margin-top: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.blockText {
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+/* ── Technology stack ── */
+.stack {
+  width: 100%;
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.stackGroup {
+  display: grid;
+  grid-template-columns: minmax(8rem, 10rem) 1fr;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: baseline;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.stackGroup:last-child { border-bottom: 1px solid var(--rule); }
+
+.stackLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brand-petroleo) 70%, var(--foreground));
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.techChip {
+  padding: 0.4rem 0.75rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+/* ── Security grid ── */
+.security {
+  width: 100%;
+  margin-top: 1.75rem;
+  display: grid;
+  gap: 1.35rem 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.secItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.secIcon {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 11%, white);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.secIcon svg { width: 1.1rem; height: 1.1rem; }
+
+.secTitle {
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--foreground);
+}
+
+.secText {
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Scope chips ── */
+.manages {
+  width: 100%;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.manageChip {
+  position: relative;
+  padding: 0.45rem 0.8rem 0.45rem 1.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.manageChip::before {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
+/* ── Gallery ── */
+.gallery {
+  width: 100%;
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+
+/* ── CTA ── */
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: clamp(2.5rem, 6vh, 3.5rem);
+  margin-top: clamp(1rem, 3vh, 2rem);
 }
 
 .primary,
@@ -152,7 +493,11 @@
   line-height: 1;
   text-transform: uppercase;
   border: 1px solid transparent;
-  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out), border-color 240ms var(--ease-out), transform 180ms var(--ease-out);
+  transition:
+    background-color 240ms var(--ease-out),
+    color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out),
+    transform 180ms var(--ease-out);
 }
 
 .primary { background: var(--brand-petroleo); color: #fff; }
@@ -164,8 +509,16 @@
 .primary svg { width: 1rem; height: 1rem; transition: transform 240ms var(--ease-out); }
 .primary:hover svg { transform: translateX(0.2rem); }
 
+/* ── Responsive ── */
+@media (max-width: 52rem) {
+  .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+  .split { grid-template-columns: 1fr; gap: 1.75rem; }
+  .stackGroup { grid-template-columns: 1fr; gap: 0.75rem; }
+}
+
 @media (max-width: 42rem) {
   .shell { width: min(100% - 2rem, 68rem); }
+  .step { grid-template-columns: 2.5rem 1fr; gap: 1rem; }
   .actions { flex-direction: column; align-items: stretch; }
   .primary,
   .secondary { width: 100%; }

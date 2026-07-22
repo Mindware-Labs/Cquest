@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import SectionIntro from "@/components/services/SectionIntro";
 import {
@@ -9,12 +10,11 @@ import {
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
 import FrameTicks from "./FrameTicks";
-import frame from "./Frame.module.css";
 import styles from "./PhotosSection.module.css";
 
 const PHOTOS = [
-  { title: "Back-office team at work", meta: "4:3 · real team photo, WebP" },
-  { title: "Process floor detail", meta: "4:3 · real facility photo, WebP" },
+  { title: "Back-office team at work", src: "/bpo-services/bpo-floor2.png" },
+  { title: "Process floor detail", src: "/bpo-services/bpo-floor3.jpeg" },
 ] as const;
 
 export default function PhotosSection({ reduced }: { reduced: boolean }) {
@@ -23,7 +23,6 @@ export default function PhotosSection({ reduced }: { reduced: boolean }) {
       <div className={container.container}>
         <SectionIntro
           title="The operation up close"
-          description="Real photos of the team and facilities will live here — evidence of the operation, not stock imagery."
           reduced={reduced}
           accentColor="var(--bp-teal)"
         />
@@ -40,12 +39,14 @@ export default function PhotosSection({ reduced }: { reduced: boolean }) {
               className={styles.photoFrame}
               variants={softRiseVariants}
             >
+              <Image
+                src={photo.src}
+                alt={photo.title}
+                fill
+                sizes="(max-width: 42rem) 100vw, 50vw"
+                className={styles.photoImage}
+              />
               <FrameTicks />
-              <div className={frame.frameLabel}>
-                <span>Image placeholder</span>
-                <strong>{photo.title}</strong>
-                <small>{photo.meta}</small>
-              </div>
             </motion.div>
           ))}
         </motion.div>

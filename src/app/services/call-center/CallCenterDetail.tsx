@@ -9,7 +9,6 @@ import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import MetricsSection from "./components/MetricsSection";
 import ProcessSection from "./components/ProcessSection";
-import TestimonialSection from "./components/TestimonialSection";
 import styles from "./call-center.module.css";
 
 export default function CallCenterDetail() {
@@ -28,7 +27,6 @@ export default function CallCenterDetail() {
         <ProcessSection reduced={reduced} />
         <MetricsSection reduced={reduced} />
         <ClientsSection reduced={reduced} />
-        <TestimonialSection reduced={reduced} />
         <ContactSection reduced={reduced} />
       </div>
       <Footer />

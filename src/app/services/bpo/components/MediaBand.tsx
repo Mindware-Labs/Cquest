@@ -1,11 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { softRiseVariants } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
 import FrameTicks from "./FrameTicks";
-import frame from "./Frame.module.css";
 import styles from "./MediaBand.module.css";
 
 export default function MediaBand({ reduced }: { reduced: boolean }) {
@@ -32,12 +32,14 @@ export default function MediaBand({ reduced }: { reduced: boolean }) {
         viewport={{ once: true, margin: "-40px" }}
         variants={softRiseVariants}
       >
+        <Image
+          src="/bpo-services/bpo-floor.jpeg"
+          alt="BPO operations floor"
+          fill
+          sizes="100vw"
+          className={styles.bandImage}
+        />
         <FrameTicks />
-        <figcaption className={frame.frameLabel}>
-          <span>Image placeholder</span>
-          <strong>BPO operations floor</strong>
-          <small>Full-width band · 21:9 · real facility photo, WebP</small>
-        </figcaption>
       </motion.figure>
     </div>
   );

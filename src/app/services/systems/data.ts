@@ -73,7 +73,19 @@ export type Work = {
 };
 
 export const WORKS: readonly Work[] = [
-  { build: "CRM", icon: "layout", featured: true, href: "/services/systems/work" },
+  {
+    build: "Platform",
+    icon: "layout",
+    featured: true,
+    href: "/services/systems/work",
+    title: "Contact-center operations platform",
+    sector: "Contact center · Support operations",
+    summary:
+      "One system of record for a whole phone operation — calls captured automatically from cloud telephony, worked as tickets and campaigns, and rolled up into live dashboards and per-site reporting.",
+    outcome: { value: "Real-time", label: "call-to-report visibility" },
+    // image: "/apps/contact-center.webp", // drop a WebP here to replace the reserved slot
+    // alt: "Contact Center — the unified calls, tickets and records view",
+  },
 ];
 
 export const HERO_LINES = [
