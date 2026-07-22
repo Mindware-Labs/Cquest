@@ -70,12 +70,13 @@
 }
 
 .workMedia[data-featured] {
-  aspect-ratio: 16 / 9;
-  border-bottom: 0;
+  aspect-ratio: 1858 / 946;
+  align-self: start;
+  border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
 }
 
-.workShot { object-fit: cover; }
+.workShot { object-fit: contain; }
 
 .workSlot {
   display: flex;

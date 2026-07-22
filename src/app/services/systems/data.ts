@@ -83,8 +83,8 @@ export const WORKS: readonly Work[] = [
     summary:
       "One system of record for a whole phone operation — calls captured automatically from cloud telephony, worked as tickets and campaigns, and rolled up into live dashboards and per-site reporting.",
     outcome: { value: "Real-time", label: "call-to-report visibility" },
-    // image: "/apps/contact-center.webp", // drop a WebP here to replace the reserved slot
-    // alt: "Contact Center — the unified calls, tickets and records view",
+    image: "/rig-hut/system-015-cropped.png",
+    alt: "Aircall integration screen inside the platform, showing the softphone sign-in prompt and AI call summary, key topics and transcript panels.",
   },
 ];
 
@@ -93,3 +93,59 @@ export const HERO_LINES = [
   { text: "around how", strong: false },
   { text: "you work.", strong: true },
 ] as const;
+
+/* ── Clients we've built for ───────────────────────────────
+   Real operations running a system we designed and built — the systems-
+   specific slice of what each account gets from Center Quest. Some of these
+   clients also appear on the Call Center clients page with a different
+   `provides` write-up (their call-center scope, not their systems scope). */
+export const CLIENT_LOGOS = [
+  {
+    name: "Rig Hut",
+    src: "/brands/righut.jpeg",
+    about:
+      "Rig Hut is a provider of parking management software purpose built for industrial parking applications. Truck parking facilities utilize Rig Hut to manage their inventory, accurately represent vacancies to the market, process payments and generate comprehensive reports for their yards.\n\nUtilizing a powerful suite of management tools, rest assured knowing your customer database, payments and communications are all processed and stored securely within the Rig Hut environment.",
+    source: "https://www.linkedin.com/company/rig-hut/",
+    provides:
+      "We designed and built Rig Hut's internal Operations platform end to end — tracking outbound campaigns like accounts receivable and onboarding, with every case followable from first contact to close. We also integrated Aircall's cloud telephony directly into that platform, so agents place and answer calls from the very screen where the case lives — collapsing three separate tools their team used to juggle into one connected system.",
+  },
+  {
+    name: "Paso Rápido",
+    src: "/brands/pasoRapido.png",
+    size: "large",
+    about:
+      "It is the first public trust created by the Dominican State, through Fiduciaria Reservas, S.A., under Trust Agreement number one (01), signed on October 18, 2013. Represented by the Ministry of Public Works and Communications (MOPC), ratified by resolution number 156-13 issued by the National Congress on 11/25/2013 and published in Official Gazette 10735.",
+    source: "https://rdvial.gob.do/quienes-somos/",
+    provides:
+      "We built their internal operations system, connecting every department through internal notes so processes keep moving and every case or complaint that comes in by email gets tracked through to resolution.",
+  },
+  {
+    name: "Plastifar",
+    src: "/brands/plastifar.png",
+    size: "compact",
+    about:
+      "Plastifar S.A. was founded on July 20, 1992, by Engineer Alejandro Farach Cruz. It was created to meet the packaging needs of the pharmaceutical industry, with a commitment to the highest standards of hygiene and quality in the production of its containers.",
+    source: "https://plastifar.com/es/?page_id=11194",
+    provides:
+      "We built their internal operations system — every department connected through internal notes, so processes keep moving and every case or complaint that comes in gets constant follow-up.",
+  },
+  {
+    name: "Fiduciaria Reservas",
+    src: "/brands/fiduciariaReservas.jpg",
+    about:
+      "A trust is a contract through which one or more persons transfer assets or rights to a trustee entity to create a separate estate, administered by that entity for the benefit of another person or of the person who transferred the assets.",
+    source: "https://www.fiduciariareservas.com/",
+    provides:
+      "We built the system behind fdi.com.do — a self-service admin panel where their team uploads new property listings themselves. No manual back-and-forth: what needs to go up gets added directly, with no developer in the loop.",
+  },
+  {
+    name: "Astur Caribe",
+    src: "/brands/astur.jpg",
+    about:
+      "Astur Caribe has 33 years of experience in the market, offering bathroom furniture, shower enclosures and hardware.",
+    provides:
+      "We implemented a WhatsApp-based sales system for their team, giving customers a direct channel to inquire and buy.",
+  },
+] as const;
+
+export type ClientLogo = (typeof CLIENT_LOGOS)[number];

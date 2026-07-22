@@ -58,7 +58,7 @@ export default function WorkSection({ reduced }: { reduced: boolean }) {
       <div className={container.container}>
         <SectionIntro
           title={<>Selected work</>}
-          description="A recent build. Open the plate for the full case study — the challenge, the system we shipped, and how it works end to end."
+          description="Open the plate for the full case study — the challenge, the system we shipped, and how it works end to end."
           reduced={reduced}
           accentColor="var(--sy-blue)"
         />

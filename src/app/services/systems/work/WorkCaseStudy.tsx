@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
@@ -11,6 +12,7 @@ import {
   groupVariants,
   ruleXVariants,
   softRiseVariants,
+  stepVariants,
   VIEWPORT,
 } from "@/components/services/motion";
 import {
@@ -105,49 +107,60 @@ const TECH: { group: string; items: string[] }[] = [
   },
 ];
 
-const SECURITY: { title: string; text: string }[] = [
+const SECURITY: { title: string; tag: string; text: string }[] = [
   {
     title: "HttpOnly BFF session",
+    tag: "Session",
     text: "The auth token lives in an HttpOnly, Secure cookie the browser's JavaScript can never read; a backend-for-frontend attaches it server-to-server on every request.",
   },
   {
     title: "JWT + bcrypt",
+    tag: "Auth",
     text: "Stateless JWT authentication with bcrypt-hashed passwords. The API refuses to start without its signing secret.",
   },
   {
     title: "Role-based access",
+    tag: "Access",
     text: "Three roles — agent, admin, dev — enforced both at the API with guards and at the edge with route gates.",
   },
   {
     title: "Scoped socket tokens",
+    tag: "Access",
     text: "WebSockets use a separate ~2-minute token the REST API explicitly rejects, so a leaked socket token can never reach your data.",
   },
   {
     title: "Distributed rate limiting",
+    tag: "Rate limits",
     text: "A Redis-backed limiter shared across server replicas, keyed per user, with tighter limits on login and password reset.",
   },
   {
     title: "Constant-time webhooks",
+    tag: "Webhooks",
     text: "Inbound telephony webhooks are authenticated with a constant-time token comparison that resists timing attacks.",
   },
   {
     title: "Strict input validation",
+    tag: "Validation",
     text: "Every request body is validated and stripped to an allow-list before it reaches any business logic.",
   },
   {
     title: "Hardened transport",
+    tag: "Transport",
     text: "Helmet security headers with a content-security policy, CORS locked to the frontend origin, and per-request timeouts.",
   },
   {
     title: "Safe file handling",
+    tag: "Storage",
     text: "Uploads are size-capped and stored privately; files are served only through short-lived presigned URLs — never public objects.",
   },
   {
     title: "Careful secrets & data",
+    tag: "Secrets",
     text: "Secrets read from the environment and masked in logs, destructive schema sync disabled by default, sensitive fields excluded from responses, and soft deletes throughout.",
   },
   {
     title: "Scoped API keys",
+    tag: "API keys",
     text: "Programmatic access uses hashed API keys with explicit scopes, expiry and last-used tracking.",
   },
 ];
@@ -157,6 +170,53 @@ const MANAGES = [
   "Sites", "Owners", "Phone lines", "SMS analytics", "Notifications", "Users & agents",
   "Reports & exports", "API keys", "Configurable dictionaries",
 ];
+
+type FlowIconName = "browser" | "gateway" | "api" | "database";
+
+const FLOW: { name: string; role: string; icon: FlowIconName; accent?: boolean }[] = [
+  { name: "Browser", role: "Client", icon: "browser" },
+  { name: "Next.js BFF", role: "Session · proxy", icon: "gateway", accent: true },
+  { name: "NestJS API", role: "Domain · data", icon: "api", accent: true },
+  { name: "PostgreSQL · Redis · S3", role: "Data stores", icon: "database" },
+];
+
+/* Monoline glyphs for the architecture nodes (viewBox 0 0 24 24, currentColor
+   stroke) — a window, a proxy relay, API braces, a datastore cylinder. */
+const FLOW_ICON: Record<FlowIconName, ReactNode> = {
+  browser: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 9.5h18M6.5 7.3h.01M9 7.3h.01" />
+    </>
+  ),
+  gateway: (
+    <>
+      <path d="M4 9h13M14 6l3 3-3 3" />
+      <path d="M20 15H7M10 12l-3 3 3 3" />
+    </>
+  ),
+  api: (
+    <>
+      <path d="M8.5 4C6.8 4 6.8 6 6.8 8c0 1.4-.9 2-1.8 2 .9 0 1.8.6 1.8 2 0 2 0 4 1.7 4" />
+      <path d="M15.5 4c1.7 0 1.7 2 1.7 4 0 1.4.9 2 1.8 2-.9 0-1.8.6-1.8 2 0 2 0 4-1.7 4" />
+    </>
+  ),
+  database: (
+    <>
+      <ellipse cx="12" cy="6" rx="7" ry="2.6" />
+      <path d="M5 6v12c0 1.44 3.13 2.6 7 2.6s7-1.16 7-2.6V6" />
+      <path d="M5 12c0 1.44 3.13 2.6 7 2.6s7-1.16 7-2.6" />
+    </>
+  ),
+};
+
+function FlowGlyph({ name }: { name: FlowIconName }) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      {FLOW_ICON[name]}
+    </svg>
+  );
+}
 
 /* Small accent rule + kicker + heading — the section-opening beat every
    block below shares, echoing SectionIntro's rule-then-title grammar at a
@@ -190,31 +250,33 @@ export default function WorkCaseStudy() {
           Back to Systems
         </Link>
 
-        {/* ── Header ── */}
+        {/* ── Header — editorial masthead: title block + spec sheet ── */}
         <motion.header
           className={styles.head}
           initial={reduced ? false : "hidden"}
           animate="visible"
           variants={groupVariants}
         >
-          <motion.span className={styles.chip} variants={focusRiseVariants}>
-            <ServiceIcon name="layout" />
-            Case study · Platform
-          </motion.span>
-          <motion.h1 className={styles.title} variants={focusRiseVariants}>
-            A contact-center operations platform
-          </motion.h1>
-          <motion.p className={styles.lede} variants={focusRiseVariants}>
-            A custom platform that runs an entire call-center operation from one
-            place — automatically capturing every call from cloud telephony,
-            turning it into a trackable record, and rolling calls, tickets,
-            campaigns and follow-ups into real-time dashboards and reporting.
-          </motion.p>
-          <motion.dl className={styles.meta} variants={focusRiseVariants}>
+          <motion.div className={styles.headMain} variants={groupVariants}>
+            <motion.span className={styles.chip} variants={focusRiseVariants}>
+              <ServiceIcon name="layout" />
+              Case study · Platform
+            </motion.span>
+            <motion.h1 className={styles.title} variants={focusRiseVariants}>
+              A contact-center operations platform
+            </motion.h1>
+            <motion.p className={styles.lede} variants={focusRiseVariants}>
+              A custom platform that runs an entire call-center operation from one
+              place — automatically capturing every call from cloud telephony,
+              turning it into a trackable record, and rolling calls, tickets,
+              campaigns and follow-ups into real-time dashboards and reporting.
+            </motion.p>
+          </motion.div>
+          <motion.dl className={styles.spec} variants={focusRiseVariants}>
             {META.map((item) => (
-              <div key={item.label} className={styles.metaItem}>
-                <dt className={styles.metaLabel}>{item.label}</dt>
-                <dd className={styles.metaValue}>{item.value}</dd>
+              <div key={item.label} className={styles.specRow}>
+                <dt className={styles.specLabel}>{item.label}</dt>
+                <dd className={styles.specValue}>{item.value}</dd>
               </div>
             ))}
           </motion.dl>
@@ -261,23 +323,25 @@ export default function WorkCaseStudy() {
         {/* ── How it works, step by step ── */}
         <section className={styles.section}>
           <SectionHead label="How it works" title="From a ringing phone to a report" reduced={reduced} />
-          <motion.ol
-            className={styles.steps}
-            initial={reduced ? false : "hidden"}
-            whileInView={reduced ? undefined : "visible"}
-            viewport={VIEWPORT}
-            variants={groupVariants}
-          >
+          <ol className={styles.steps}>
             {STEPS.map((step, index) => (
-              <motion.li key={step.title} className={styles.step} variants={focusRiseVariants}>
-                <span className={styles.stepNum} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
-                <div className={styles.stepBody}>
-                  <h3 className={styles.stepTitle}>{step.title}</h3>
-                  <p className={styles.stepText}>{step.text}</p>
-                </div>
+              <motion.li
+                key={step.title}
+                className={styles.step}
+                initial={reduced ? false : "hidden"}
+                whileInView={reduced ? undefined : "visible"}
+                viewport={VIEWPORT}
+                variants={stepVariants}
+              >
+                <motion.span className={styles.stepRule} aria-hidden variants={ruleXVariants} />
+                <motion.span className={styles.stepNum} aria-hidden variants={focusRiseVariants}>
+                  {String(index + 1).padStart(2, "0")}
+                </motion.span>
+                <motion.h3 className={styles.stepTitle} variants={focusRiseVariants}>{step.title}</motion.h3>
+                <motion.p className={styles.stepText} variants={focusRiseVariants}>{step.text}</motion.p>
               </motion.li>
             ))}
-          </motion.ol>
+          </ol>
         </section>
 
         <AgentDashboardScreen reduced={reduced} />
@@ -301,14 +365,30 @@ export default function WorkCaseStudy() {
               whole backend — the browser never holds a token, and every call passes through a
               single, hardened path.
             </motion.p>
-            <motion.div className={styles.flow} aria-hidden variants={focusRiseVariants}>
-              <span className={styles.flowNode}>Browser</span>
-              <span className={styles.flowArrow}>→</span>
-              <span className={styles.flowNode} data-accent>Next.js BFF</span>
-              <span className={styles.flowArrow}>→</span>
-              <span className={styles.flowNode} data-accent>NestJS API</span>
-              <span className={styles.flowArrow}>→</span>
-              <span className={styles.flowNode}>PostgreSQL · Redis · S3</span>
+            <motion.div
+              className={styles.flow}
+              role="img"
+              aria-label="Request path: Browser to Next.js BFF to NestJS API to PostgreSQL, Redis and S3."
+              variants={focusRiseVariants}
+            >
+              {FLOW.map((node, index) => (
+                <Fragment key={node.name}>
+                  <span className={styles.flowNode} data-accent={node.accent || undefined} aria-hidden>
+                    <span className={styles.flowIcon}><FlowGlyph name={node.icon} /></span>
+                    <span className={styles.flowText}>
+                      <span className={styles.flowName}>{node.name}</span>
+                      <span className={styles.flowRole}>{node.role}</span>
+                    </span>
+                  </span>
+                  {index < FLOW.length - 1 && (
+                    <span className={styles.flowArrow} aria-hidden>
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m4.5 2.5 4 3.5-4 3.5" />
+                      </svg>
+                    </span>
+                  )}
+                </Fragment>
+              ))}
             </motion.div>
           </motion.div>
         </section>
@@ -340,24 +420,38 @@ export default function WorkCaseStudy() {
         {/* ── Technology ── */}
         <section className={styles.section}>
           <SectionHead label="Technology" title="The full stack" reduced={reduced} />
-          <motion.div
-            className={styles.stack}
+          <motion.table
+            className={`${styles.table} ${styles.techTable}`}
+            role="table"
             initial={reduced ? false : "hidden"}
             whileInView={reduced ? undefined : "visible"}
             viewport={VIEWPORT}
             variants={groupVariants}
           >
-            {TECH.map((group) => (
-              <motion.div key={group.group} className={styles.stackGroup} variants={focusRiseVariants}>
-                <p className={styles.stackLabel}>{group.group}</p>
-                <ul className={styles.chips}>
-                  {group.items.map((item) => (
-                    <li key={item} className={styles.techChip}>{item}</li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </motion.div>
+            <thead role="rowgroup">
+              <tr className={styles.tableHeadRow} role="row">
+                <th role="columnheader" scope="col">Layer</th>
+                <th role="columnheader" scope="col">Technologies</th>
+              </tr>
+            </thead>
+            <motion.tbody role="rowgroup" variants={groupVariants}>
+              {TECH.map((group, index) => (
+                <motion.tr key={group.group} className={styles.techRow} role="row" variants={focusRiseVariants}>
+                  <th className={styles.techLayer} role="rowheader" scope="row">
+                    <span className={styles.rowIndex} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
+                    <span className={styles.techLayerName}>{group.group}</span>
+                  </th>
+                  <td role="cell">
+                    <ul className={styles.chips}>
+                      {group.items.map((item) => (
+                        <li key={item} className={styles.techChip}>{item}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </motion.tr>
+              ))}
+            </motion.tbody>
+          </motion.table>
         </section>
 
         <div className={styles.divider} />
@@ -365,23 +459,34 @@ export default function WorkCaseStudy() {
         {/* ── Security ── */}
         <section className={styles.section}>
           <SectionHead label="Security" title="Hardened at every layer" reduced={reduced} />
-          <motion.div
-            className={styles.security}
+          <motion.table
+            className={`${styles.table} ${styles.secTable}`}
+            role="table"
             initial={reduced ? false : "hidden"}
             whileInView={reduced ? undefined : "visible"}
             viewport={VIEWPORT}
             variants={groupVariants}
           >
-            {SECURITY.map((item) => (
-              <motion.div key={item.title} className={styles.secItem} variants={focusRiseVariants}>
-                <span className={styles.secIcon}><ServiceIcon name="shield" /></span>
-                <div>
-                  <h3 className={styles.secTitle}>{item.title}</h3>
-                  <p className={styles.secText}>{item.text}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+            <thead role="rowgroup">
+              <tr className={styles.tableHeadRow} role="row">
+                <th role="columnheader" scope="col">Control</th>
+                <th role="columnheader" scope="col">Layer</th>
+                <th role="columnheader" scope="col">What it protects</th>
+              </tr>
+            </thead>
+            <motion.tbody role="rowgroup" variants={groupVariants}>
+              {SECURITY.map((item, index) => (
+                <motion.tr key={item.title} className={styles.secRow} role="row" variants={focusRiseVariants}>
+                  <th className={styles.secControl} role="rowheader" scope="row">
+                    <span className={styles.rowIndex} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
+                    {item.title}
+                  </th>
+                  <td role="cell"><span className={styles.tag}>{item.tag}</span></td>
+                  <td className={styles.secText} role="cell">{item.text}</td>
+                </motion.tr>
+              ))}
+            </motion.tbody>
+          </motion.table>
         </section>
 
         <div className={styles.divider} />
@@ -427,7 +532,7 @@ export default function WorkCaseStudy() {
             actually runs — not a template.
           </motion.p>
           <motion.div className={styles.actions} variants={focusRiseVariants}>
-            <Link href="/services/systems#contact" className={styles.primary}>
+            <Link href="/cotizador?servicio=systems" className={styles.primary}>
               Request a quote <Arrow />
             </Link>
             <Link href="/services/systems#work" className={styles.secondary}>

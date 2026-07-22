@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "motion/react";
+import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import styles from "./ScreenPreview.module.css";
 
@@ -56,11 +57,13 @@ function Frame({
   address,
   ratio = "16 / 9",
   reduced,
+  plain,
   children,
 }: {
   address: string;
   ratio?: string;
   reduced: boolean;
+  plain?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -76,148 +79,75 @@ function Frame({
         <span className={styles.dots} aria-hidden><span /><span /><span /></span>
         <span className={styles.address}>{address}</span>
       </div>
-      <div className={styles.screen}>{children}</div>
+      <div className={styles.screen} data-plain={plain || undefined}>{children}</div>
     </motion.figure>
   );
 }
 
-/* 1 · Contact Center — calls, tickets & manual records in one queue. */
+/* 1 · Contact Center — the platform's executive dashboard: KPI rollups and
+   the calls/tickets trend. A real product screenshot, cropped to the
+   generic KPI rows and de-branded — no client or company names in frame. */
 export function ContactCenterScreen({ reduced }: { reduced: boolean }) {
-  const rows = [
-    { id: "Call #2461", tag: "live", sub: "62%", tone: "var(--wp-sky)", status: "Active", live: true },
-    { id: "Call #2458", tag: "42%", sub: "80%", tone: "var(--wp-green)", status: "Resolved", live: false },
-    { id: "Tkt #0117", tag: "35%", sub: "55%", tone: "var(--wp-amber)", status: "Promise to pay", live: false },
-    { id: "Call #2452", tag: "58%", sub: "38%", tone: "var(--wp-muted)", status: "No answer", live: false },
-    { id: "Call #2449", tag: "48%", sub: "70%", tone: "var(--wp-green)", status: "Resolved", live: false },
-  ] as const;
   return (
-    <Frame address="app.centerquest.do/operations/contact-center" reduced={reduced}>
-      <motion.div className={styles.ccTabs} variants={spRise}>
-        <span data-active="true">Calls</span>
-        <span>Tickets</span>
-        <span>Manual records</span>
-      </motion.div>
-      <motion.div className={styles.ccToolbar} variants={spRise}>
-        <span className={styles.ccSearch}><Ico d={I.search} className={styles.icoSky} />Search calls, customers…</span>
-        <span className={styles.ccSchedule}><Ico d={I.calendar} />Schedule call</span>
-      </motion.div>
-      <motion.div className={styles.ccList} variants={spGroupTight}>
-        {rows.map((r) => (
-          <motion.div key={r.id} className={styles.ccRow} data-live={r.live || undefined} variants={spRise}>
-            <span className={styles.ccDirection} aria-hidden><Ico d={I.call} /></span>
-            <span className={styles.ccLines}>
-              <span className={styles.ccId}>{r.id}</span>
-              <span className={styles.ccBar} style={{ width: r.tag }} />
-            </span>
-            <span className={styles.ccBarTrack}><span className={styles.ccBarFill} style={{ width: r.sub }} /></span>
-            <span className={styles.ccPill} style={{ "--t": r.tone } as CSSProperties}>{r.status}</span>
-          </motion.div>
-        ))}
-      </motion.div>
+    <Frame address="app.centerquest.do/operations/reports" ratio="1819 / 998" reduced={reduced} plain>
+      <Image
+        src="/rig-hut/system-011-redacted.png"
+        alt="Yard report showing contacts, tickets, resolution rate and calls, plus call, ticket and manual-record activity charts and disposition, direction and priority breakdowns."
+        fill
+        sizes="(max-width: 768px) 100vw, 800px"
+        className={styles.shotImg}
+      />
     </Frame>
   );
 }
 
-/* 2 · Agent dashboard — live status + follow-up accountability. */
+/* 2 · Marketing dashboard — contact rate, dispositions and campaign
+   performance. A real product screenshot, with the site-address labels on
+   the campaign chart redacted (no site locations in frame). */
 export function AgentDashboardScreen({ reduced }: { reduced: boolean }) {
-  const tiles = [
-    { label: "Live calls", value: "6" },
-    { label: "Due today", value: "14" },
-    { label: "SLA", value: "97%" },
-  ] as const;
-  const followUps = [
-    { id: "TCK-041", tone: "var(--wp-red)", time: "Overdue" },
-    { id: "TCK-038", tone: "var(--wp-amber)", time: "Due in 2h" },
-    { id: "TCK-032", tone: "var(--wp-green)", time: "Due in 5h" },
-  ] as const;
   return (
-    <Frame address="app.centerquest.do/operations/dashboard" reduced={reduced}>
-      <motion.div className={styles.dashHead} variants={spRise}>
-        <span className={styles.dashLive}><i aria-hidden />Live</span>
-      </motion.div>
-      <motion.div className={styles.dashTiles} variants={spGroupTight}>
-        {tiles.map((t) => (
-          <motion.div key={t.label} className={styles.dashTile} variants={spRise}>
-            <span className={styles.dashTileLabel}>{t.label}</span>
-            <span className={styles.dashTileValue}>{t.value}</span>
-          </motion.div>
-        ))}
-      </motion.div>
-      <motion.div className={styles.followLabel} variants={spRise}>Follow-up accountability</motion.div>
-      <motion.div className={styles.followList} variants={spGroupTight}>
-        {followUps.map((f) => (
-          <motion.div key={f.id} className={styles.followRow} variants={spRise}>
-            <span className={styles.followDot} style={{ "--t": f.tone } as CSSProperties} aria-hidden />
-            <span className={styles.followId}>{f.id}</span>
-            <span className={styles.followBar} />
-            <span className={styles.followTime}>{f.time}</span>
-          </motion.div>
-        ))}
-      </motion.div>
+    <Frame address="app.centerquest.do/operations/dashboard" ratio="1839 / 977" reduced={reduced} plain>
+      <Image
+        src="/rig-hut/system-012-redacted.png"
+        alt="Marketing dashboard showing contact rate, total dispositions, SMS messages and calls per yard, with campaign performance, campaign options, SMS engagement and disposition-mix charts."
+        fill
+        sizes="(max-width: 768px) 100vw, 800px"
+        className={styles.shotImg}
+      />
     </Frame>
   );
 }
 
-/* 3 · Analytics — KPI tiles over a call-volume bar chart. */
+/* 3 · Analytics — call volume, contact-rate insights and agent activity.
+   A real product screenshot, with the agent-name labels on the "Agent
+   activity" chart redacted (no employee names in frame). */
 export function AnalyticsScreen({ reduced }: { reduced: boolean }) {
-  const tiles = [
-    { label: "Calls answered", value: "1,247" },
-    { label: "Avg handle time", value: "1m 52s" },
-    { label: "Contact rate", value: "84%" },
-  ] as const;
-  const bars = [46, 63, 54, 72, 60, 84, 71, 96, 68] as const;
-  const peak = Math.max(...bars);
   return (
-    <Frame address="app.centerquest.do/operations/analytics" ratio="16 / 10" reduced={reduced}>
-      <motion.div className={styles.dashHead} variants={spRise}>
-        <span className={styles.rangeChip}><Ico d={I.calendar} />Monthly</span>
-      </motion.div>
-      <motion.div className={styles.dashTiles} variants={spGroupTight}>
-        {tiles.map((t) => (
-          <motion.div key={t.label} className={styles.dashTile} variants={spRise}>
-            <span className={styles.dashTileLabel}>{t.label}</span>
-            <span className={styles.dashTileValue}>{t.value}</span>
-          </motion.div>
-        ))}
-      </motion.div>
-      <motion.div className={styles.dashChart} variants={spGroupTight}>
-        {bars.map((h, i) => (
-          <motion.span key={i} className={styles.dashBar} data-peak={h === peak || undefined} style={{ height: `${h}%` }} variants={spGrow} />
-        ))}
-      </motion.div>
+    <Frame address="app.centerquest.do/operations/analytics" ratio="1564 / 996" reduced={reduced} plain>
+      <Image
+        src="/rig-hut/system-013-redacted.png"
+        alt="Operations dashboard showing calls answered, average queue wait, average handle time and follow-ups due, with call volume, contact and missed-call insight, agent activity, and follow-up accountability panels."
+        fill
+        sizes="(max-width: 768px) 100vw, 800px"
+        className={styles.shotImg}
+      />
     </Frame>
   );
 }
 
-/* 4 · Per-site reporting — rollups with one-click PDF / Excel export. */
+/* 4 · Per-site reporting — campaign performance rollup with export actions.
+   A real product screenshot, with the campaign name and yard identifier
+   redacted (no client or site names in frame). */
 export function ReportingScreen({ reduced }: { reduced: boolean }) {
-  const sites = [
-    { name: "58%", campaign: "38%", sla: "96%" },
-    { name: "44%", campaign: "50%", sla: "91%" },
-    { name: "62%", campaign: "30%", sla: "98%" },
-    { name: "50%", campaign: "44%", sla: "89%" },
-  ] as const;
   return (
-    <Frame address="app.centerquest.do/operations/reports" ratio="16 / 10" reduced={reduced}>
-      <motion.div className={styles.repHead} variants={spRise}>
-        <span className={styles.repLabel}>Per-site reporting</span>
-        <span className={styles.repExports}>
-          <span className={styles.repChip}><Ico d={I.download} />PDF</span>
-          <span className={styles.repChip}><Ico d={I.download} />XLSX</span>
-        </span>
-      </motion.div>
-      <motion.div className={styles.repList} variants={spGroupTight}>
-        {sites.map((s, i) => (
-          <motion.div key={i} className={styles.repRow} variants={spRise}>
-            <span className={styles.repLines}>
-              <span className={styles.repBar} style={{ width: s.name }} />
-              <span className={styles.repSub} style={{ width: s.campaign }} />
-            </span>
-            <span className={styles.repSlaTrack}><span className={styles.repSlaFill} style={{ width: s.sla }} /></span>
-            <span className={styles.repSlaValue}>{s.sla}</span>
-          </motion.div>
-        ))}
-      </motion.div>
+    <Frame address="app.centerquest.do/operations/reports" ratio="1821 / 826" reduced={reduced} plain>
+      <Image
+        src="/rig-hut/system-014-redacted.png"
+        alt="Campaign report showing customers reached, conversion rate, touches to convert and average resolution, a campaign activity chart, and a conversion funnel from universe to converted."
+        fill
+        sizes="(max-width: 768px) 100vw, 800px"
+        className={styles.shotImg}
+      />
     </Frame>
   );
 }

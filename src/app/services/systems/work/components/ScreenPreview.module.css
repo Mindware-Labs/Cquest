@@ -77,6 +77,15 @@
 
 .screen > * { position: relative; }
 
+.screen[data-plain] {
+  padding: 0;
+  background: none;
+}
+
+.screen[data-plain]::before { content: none; }
+
+.shotImg { object-fit: cover; object-position: top; }
+
 .icoSky { color: var(--wp-sky); }
 
 /* 1 · Contact Center */
