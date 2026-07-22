@@ -64,6 +64,12 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
       transition={{ duration: reduced ? 0 : 0.25, ease: EASE_OUT }}
       onClick={onClose}
     >
+      {/* The shared layoutId morph lives on the logo frame below, not here —
+          stretching one box from a small grid badge straight into a panel
+          that also has to hold a long "provides" write-up made the FLIP
+          target so tall/narrow-then-wide that long copy (Rig Hut) rendered
+          clipped mid-transition. The panel itself just fades/scales in,
+          independent of how much text it ends up holding. */}
       <motion.div
         ref={dialogRef}
         tabIndex={-1}
@@ -71,11 +77,10 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        layoutId={reduced ? undefined : `client-badge-${client.name}`}
-        initial={reduced ? { opacity: 0, scale: 0.98 } : undefined}
-        animate={reduced ? { opacity: 1, scale: 1 } : undefined}
-        exit={reduced ? { opacity: 0, scale: 0.98 } : undefined}
-        transition={{ duration: reduced ? 0.2 : 0.5, ease: EASE_OUT }}
+        initial={{ opacity: 0, scale: 0.97, y: reduced ? 0 : 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: reduced ? 0 : 12 }}
+        transition={{ duration: reduced ? 0.15 : 0.4, ease: EASE_OUT }}
         onClick={(event) => event.stopPropagation()}
       >
         <motion.button
@@ -92,48 +97,59 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
           </svg>
         </motion.button>
 
-        <motion.div initial={reduced ? false : "hidden"} animate="visible" variants={dialogGroupVariants}>
-          <div className={styles.dialogHeader}>
-            <motion.span
-              className={styles.dialogLogoFrame}
-              data-size={"size" in client ? client.size : undefined}
-              variants={logoRiseVariants}
-            >
-              <Image src={client.src} alt={`${client.name} logo`} fill sizes="9rem" className={styles.dialogLogo} />
-            </motion.span>
-            <motion.h3 id={titleId} className={styles.dialogTitle} variants={focusRiseVariants}>{client.name}</motion.h3>
-          </div>
+        {/* The close button stays outside this wrapper so it stays pinned to
+            the panel's corner instead of scrolling away with long copy
+            (Rig Hut's "provides" write-up routinely exceeds one viewport).
+            data-lenis-prevent matters even though Lenis is stop()-ped while
+            the dialog is open: Lenis's own wheel handler still calls
+            event.preventDefault() whenever it's stopped, unless the event's
+            path contains this attribute — without it, mouse-wheel scroll
+            inside the dialog is silently swallowed. */}
+        <div className={styles.dialogScroll} data-lenis-prevent>
+          <motion.div initial={reduced ? false : "hidden"} animate="visible" variants={dialogGroupVariants}>
+            <div className={styles.dialogHeader}>
+              <motion.span
+                className={styles.dialogLogoFrame}
+                data-size={"size" in client ? client.size : undefined}
+                layoutId={reduced ? undefined : `client-badge-${client.name}`}
+                variants={logoRiseVariants}
+              >
+                <Image src={client.src} alt={`${client.name} logo`} fill sizes="9rem" className={styles.dialogLogo} />
+              </motion.span>
+              <motion.h3 id={titleId} className={styles.dialogTitle} variants={focusRiseVariants}>{client.name}</motion.h3>
+            </div>
 
-          <motion.span className={styles.dialogDivider} aria-hidden variants={ruleXVariants} />
+            <motion.span className={styles.dialogDivider} aria-hidden variants={ruleXVariants} />
 
-          <motion.div className={styles.dialogSection} variants={focusRiseVariants}>
-            <h4>About the company</h4>
-            {client.about.split("\n\n").map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-            {"source" in client && client.source && (
-              <div className={styles.dialogCite}>
-                <span className={styles.dialogCiteLabel}>Source</span>
-                <cite>
-                  <a className={styles.dialogCiteLink} href={client.source} target="_blank" rel="noopener noreferrer">
-                    {new URL(client.source).hostname.replace(/^www\./, "")}
-                    <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M8 6h6v6M14 6 6 14" />
-                    </svg>
-                  </a>
-                </cite>
-              </div>
-            )}
+            <motion.div className={styles.dialogSection} variants={focusRiseVariants}>
+              <h4>About the company</h4>
+              {client.about.split("\n\n").map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              {"source" in client && client.source && (
+                <div className={styles.dialogCite}>
+                  <span className={styles.dialogCiteLabel}>Source</span>
+                  <cite>
+                    <a className={styles.dialogCiteLink} href={client.source} target="_blank" rel="noopener noreferrer">
+                      {new URL(client.source).hostname.replace(/^www\./, "")}
+                      <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 6h6v6M14 6 6 14" />
+                      </svg>
+                    </a>
+                  </cite>
+                </div>
+              )}
+            </motion.div>
+            <motion.div className={styles.dialogProvides} variants={focusRiseVariants}>
+              <h4>What Center Quest provides</h4>
+              <p>{client.provides}</p>
+            </motion.div>
+
+            <motion.a href="#contact" className={styles.dialogCta} onClick={onClose} variants={focusRiseVariants}>
+              Discuss a similar engagement <Arrow />
+            </motion.a>
           </motion.div>
-          <motion.div className={styles.dialogProvides} variants={focusRiseVariants}>
-            <h4>What Center Quest provides</h4>
-            <p>{client.provides}</p>
-          </motion.div>
-
-          <motion.a href="#contact" className={styles.dialogCta} onClick={onClose} variants={focusRiseVariants}>
-            Discuss a similar engagement <Arrow />
-          </motion.a>
-        </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );

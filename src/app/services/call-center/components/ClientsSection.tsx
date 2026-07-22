@@ -50,7 +50,7 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
   return (
     <section id="clients" className={styles.clientsSection}>
       <div className={container.container}>
-        <SectionIntro title="Clients who trust the operation" reduced={reduced} accentColor="var(--cc-sky)" />
+        <SectionIntro title="Clients who trust us with their call center operation" reduced={reduced} accentColor="var(--cc-sky)" />
         <motion.ul
           className={styles.logoWall}
           aria-label="Client logos"

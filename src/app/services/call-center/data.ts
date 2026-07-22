@@ -138,7 +138,7 @@ export const CLIENT_LOGOS = [
     source:
       "https://altice.com.do/personal/nosotros/institucional/nosotros/grupo-altice",
     provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Altice.",
+      "We run Altice's customer service and manage the nationwide distribution and sale of Altice SIM chips. Every chip sold is logged and time-stamped, feeding the KPI metrics and sales follow-up the account runs on.",
   },
   {
     name: "Paso Rápido",
@@ -148,7 +148,7 @@ export const CLIENT_LOGOS = [
       "It is the first public trust created by the Dominican State, through Fiduciaria Reservas, S.A., under Trust Agreement number one (01), signed on October 18, 2013. Represented by the Ministry of Public Works and Communications (MOPC), ratified by resolution number 156-13 issued by the National Congress on 11/25/2013 and published in Official Gazette 10735.",
     source: "https://rdvial.gob.do/quienes-somos/",
     provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Paso Rápido.",
+      "We built their internal operations system, connecting every department through internal notes so processes keep moving and every case or complaint that comes in by email gets tracked through to resolution. We also run Customer Support when needed, assisting clients with requests and complaints and coordinating with the internal team until each case is solved.",
   },
   {
     name: "Rig Hut",
@@ -157,34 +157,16 @@ export const CLIENT_LOGOS = [
       "Rig Hut is a provider of parking management software purpose built for industrial parking applications. Truck parking facilities utilize Rig Hut to manage their inventory, accurately represent vacancies to the market, process payments and generate comprehensive reports for their yards.\n\nUtilizing a powerful suite of management tools, rest assured knowing your customer database, payments and communications are all processed and stored securely within the Rig Hut environment.",
     source: "https://www.linkedin.com/company/rig-hut/",
     provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Rig Hut.",
+      "We run Rig Hut's Customer Support, handling client requests and complaints and coordinating directly with their internal team until every case is resolved. Beyond support, we designed and built their internal Operations platform end to end — tracking outbound campaigns like accounts receivable and onboarding, with every case followable from first contact to close. We also integrated Aircall's cloud telephony directly into that platform, so agents place and answer calls from the very screen where the case lives — collapsing three separate tools the team used to juggle into one connected system.",
   },
   {
     name: "Cell Phone",
     src: "/brands/cellphone.jpg",
     about:
-      "Company profile pending — replace with an approved description of Cell Phone's business and industry.",
+      "Cellphone SRL is an authorized distributor of Altice Dominicana, specialized in offering high-quality telecommunications solutions for residential and business customers across the Dominican Republic.\n\nFounded in June 2000, the company has more than two decades of experience in the sector, with branches strategically located in Santo Domingo and other provinces. It stands out for personalized attention, efficient technical support, and access to the latest generation of technology products and services.",
+    source: "https://www.linkedin.com/company/cellphone-s-r-l",
     provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Cell Phone.",
-  },
-  {
-    name: "Plastifar",
-    src: "/brands/plastifar.png",
-    size: "compact",
-    about:
-      "Plastifar S.A. was founded on July 20, 1992, by Engineer Alejandro Farach Cruz. It was created to meet the packaging needs of the pharmaceutical industry, with a commitment to the highest standards of hygiene and quality in the production of its containers.",
-    source: "https://plastifar.com/es/?page_id=11194",
-    provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Plastifar.",
-  },
-  {
-    name: "Fiduciaria Reservas",
-    src: "/brands/fiduciariaReservas.jpg",
-    about:
-      "A trust is a contract through which one or more persons transfer assets or rights to a trustee entity to create a separate estate, administered by that entity for the benefit of another person or of the person who transferred the assets.",
-    source: "https://www.fiduciariareservas.com/",
-    provides:
-      "Service scope pending confirmation with the account team — replace with the capabilities Center Quest delivers for Fiduciaria Reservas.",
+      "We run Cell Phone's call center operation in full — customer service for their subscribers, outbound sales, and a dedicated quality assurance layer that keeps every interaction on standard.",
   },
 ] as const;
 

@@ -19,10 +19,10 @@
   position: relative;
   width: min(100%, 34rem);
   margin-inline: auto;
-  padding: clamp(1.85rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
   border-radius: 2px;
   background: white;
   box-shadow: 0 28px 50px -30px rgba(10, 17, 22, 0.32), 0 4px 12px -4px rgba(10, 17, 22, 0.14);
+  overflow: hidden;
 }
 
 /* Focused programmatically on open (tabIndex=-1) so its aria-labelledby is
@@ -30,6 +30,17 @@
    signals it's active. */
 .clientDialog:focus {
   outline: none;
+}
+
+/* The dialog's own scroll container — capped by the panel's max-height, so a
+   long "provides" write-up scrolls internally instead of stretching the
+   panel past the viewport (and past .dialogClose, which sits outside this
+   wrapper so it never scrolls out of reach). */
+.dialogScroll {
+  max-height: min(85vh, 42rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(1.85rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
 }
 
 .dialogClose {
