@@ -1,0 +1,222 @@
+/* ── Hero — full-width editorial, no side photo. The media lives BELOW as a
+   band that rides up over the hero's bottom edge (same curtain gesture as
+   Home), so the hero is pure typography + the scope rail. */
+.hero {
+  position: relative;
+  padding-top: 5.5rem;
+  padding-bottom: clamp(8rem, 14vw, 11.5rem);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(23, 108, 121, 0.22), transparent 30rem),
+    radial-gradient(circle at 85% 80%, rgba(128, 188, 0, 0.07), transparent 26rem),
+    var(--bp-ink);
+  color: white;
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.55fr);
+  align-items: end;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  padding-top: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.breadcrumb {
+  align-self: flex-start;
+  color: var(--bp-stone);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.breadcrumb span {
+  margin-inline: 0.5rem;
+  color: color-mix(in srgb, var(--bp-stone) 65%, transparent);
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+}
+
+.liveLine {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.25rem, 2.5vh, 2rem);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.liveLine > span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--bp-lime);
+  box-shadow: 0 0 0 0 rgba(128, 188, 0, 0.4);
+  animation: statusPulse 2.8s ease-out infinite;
+}
+
+@keyframes statusPulse {
+  50% { box-shadow: 0 0 0 0.45rem rgba(128, 188, 0, 0); }
+}
+
+.heroHeadline {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.6rem, 6.2vw, 5.25rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.heroHeadlineStrong {
+  font-weight: 800;
+}
+
+/* Curtain masks — each headline line rides up from behind its own clipped
+   bottom edge; padding carries the descenders, the negative margin gives
+   the space back so the tight leading holds. */
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.heroLineMask:not(:last-child) {
+  margin-bottom: -0.12em;
+}
+
+.heroLine {
+  display: block;
+  will-change: transform;
+}
+
+.heroLead {
+  max-width: 46ch;
+  margin-top: 1.25rem;
+  color: var(--bp-stone);
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.primaryCta,
+.secondaryCta {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 2px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 260ms var(--ease-out), color 260ms var(--ease-out), border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
+}
+
+.primaryCta {
+  background: var(--bp-lime);
+  color: var(--bp-ink);
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+}
+
+.primaryCta:hover {
+  background: white;
+  color: var(--bp-ink);
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.secondaryCta {
+  background: var(--bp-charcoal);
+  border-color: color-mix(in srgb, var(--bp-stone) 55%, transparent);
+  color: white;
+}
+
+.secondaryCta:hover {
+  background: var(--bp-lime);
+  border-color: var(--bp-lime);
+  color: var(--bp-ink);
+}
+
+/* Scope rail — the hero's right column: what the line covers, said as a
+   quiet index instead of a photo. */
+.heroMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding-left: clamp(1.25rem, 2vw, 1.75rem);
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.heroMetaLabel {
+  color: color-mix(in srgb, var(--bp-stone) 70%, transparent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.heroMetaList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.heroMetaList li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.heroMetaList li::before {
+  content: "";
+  width: 1.1rem;
+  height: 1px;
+  flex: none;
+  background: color-mix(in srgb, var(--bp-lime) 75%, transparent);
+}
+
+.heroMetaNote {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+@media (max-width: 64rem) {
+  .heroInner { grid-template-columns: 1fr; align-items: start; gap: 2.5rem; }
+  .heroMeta { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.16); padding-left: 0; padding-top: 1.5rem; }
+  .heroMetaList { flex-direction: row; flex-wrap: wrap; column-gap: 1.5rem; }
+}
+
+@media (max-width: 42rem) {
+  .hero { padding-bottom: 7rem; }
+  .heroHeadline { font-size: clamp(2.5rem, 13vw, 3.8rem); }
+  .heroActions { flex-direction: column; align-items: stretch; }
+  .primaryCta,
+  .secondaryCta { width: 100%; }
+}

@@ -11,7 +11,8 @@ import {
   type Question,
   type QuoteSubmission,
 } from "../data";
-import styles from "../wizard.module.css";
+import styles from "./Confirmation.module.css";
+import buttons from "./buttons.module.css";
 
 // Map a stored answer back to its human label(s) for the recap.
 function toLabels(question: Question, answer: string | string[]): string {
@@ -123,10 +124,10 @@ export default function Confirmation({
       )}
 
       <motion.div className={styles.confirmActions} variants={reduced ? undefined : item}>
-        <Link href="/" className={styles.ghostBtn}>
+        <Link href="/" className={buttons.ghostBtn}>
           Back to home
         </Link>
-        <button type="button" onClick={onReset} className={styles.primaryBtn}>
+        <button type="button" onClick={onReset} className={buttons.primaryBtn}>
           Start another request
         </button>
       </motion.div>

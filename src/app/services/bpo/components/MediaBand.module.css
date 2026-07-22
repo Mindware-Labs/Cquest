@@ -1,0 +1,26 @@
+/* ── Media band — the image frame that overlaps the hero. Placeholder for
+   the real operations-floor photo (full-bleed band, 21:9, WebP). */
+.bandWrap {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(-8rem, -10vw, -6rem);
+}
+
+.band {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, color-mix(in srgb, var(--bp-teal) 6%, transparent) 14px 15px),
+    linear-gradient(135deg, color-mix(in srgb, var(--bp-teal) 16%, white), color-mix(in srgb, var(--bp-deep) 10%, white));
+  border: 1px solid color-mix(in srgb, var(--bp-teal) 38%, transparent);
+  box-shadow: 0 34px 60px -38px rgba(10, 17, 22, 0.55), 0 4px 10px -6px rgba(10, 17, 22, 0.2);
+  will-change: transform;
+}
+
+@media (max-width: 42rem) {
+  .bandWrap { margin-top: -5rem; }
+  .band { aspect-ratio: 16 / 10; }
+}

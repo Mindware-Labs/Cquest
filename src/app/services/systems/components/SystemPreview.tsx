@@ -2,7 +2,7 @@
 
 import { motion, type Variants } from "motion/react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import styles from "./systems.module.css";
+import styles from "./SystemPreview.module.css";
 
 /* ── System previews ──────────────────────────────────────────────────────
    Each of the four systems is shown AS its product: a synthetic, image-free

@@ -1,0 +1,204 @@
+/* ── Form primitives — choice groups and text-like fields ─
+   Shared by StepDetails (questions) and StepContact (contact form). The
+   service tint (--svc) and the error red (--error) inherit from the wizard
+   card these always render inside. */
+
+.group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.req {
+  color: var(--svc);
+  margin-left: 0.15rem;
+}
+
+.groupHelp {
+  margin: -0.25rem 0 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+.group[data-invalid] .legend {
+  color: var(--error);
+}
+
+/* Choices as compact chips that wrap — dense, minimal, and much shorter than a
+   stack of full-width option cards. */
+.optionGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.8rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-out),
+    background-color 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
+}
+
+.option:hover {
+  border-color: color-mix(in srgb, var(--svc) 45%, var(--border));
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--svc);
+  outline-offset: 2px;
+}
+
+.option:has(input:checked) {
+  border-color: var(--svc);
+  background: color-mix(in srgb, var(--svc) 12%, var(--surface-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--svc) 35%, transparent);
+}
+
+.srInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.optionIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
+}
+
+.optionIcon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.optionLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.option:has(input:checked) .optionLabel {
+  font-weight: 600;
+}
+
+.option:has(input:checked) .optionIcon {
+  color: var(--svc);
+}
+
+/* ── Text-like fields (text / email / tel / textarea) ──── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.field[data-kind="textarea"] {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  transition:
+    border-color 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--svc);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--svc) 18%, transparent);
+}
+
+.inputError {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 12%, transparent);
+}
+
+.inputError:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 20%, transparent);
+}
+
+/* Error feedback: a small alert glyph + message that eases in just below the
+   field, so a correction reads as guidance rather than a slap. */
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--error) 92%, var(--foreground));
+  animation: fieldErrorIn 0.3s var(--ease-out);
+}
+
+.group .fieldError {
+  margin-top: 0.55rem;
+}
+
+.fieldErrorIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: 0 0 auto;
+}
+
+@keyframes fieldErrorIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fieldError {
+    animation: none;
+  }
+}

@@ -1,0 +1,9 @@
+/* ── Step 2 · questions ────────────────────────────────── */
+/* Stacked one below another. The wide card lets each question's chips flow on a
+   single row, so the line-up stays short without a second column. */
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.9rem, 2.2vw, 1.3rem);
+}

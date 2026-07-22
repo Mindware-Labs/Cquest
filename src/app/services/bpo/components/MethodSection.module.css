@@ -1,0 +1,229 @@
+.methodSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5.5rem, 8vw, 7rem);
+  background: var(--background);
+}
+
+/* ── Method — sticky intro on the left, a vertical spine on the right that
+   draws itself downward as the steps are read. */
+.methodGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.railIntro {
+  position: sticky;
+  top: 6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.railRule {
+  width: 2px;
+  height: 1.6rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(180deg, var(--bp-lime), var(--bp-teal));
+  transform-origin: top center;
+}
+
+.railIntro h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.railIntro p {
+  max-width: 38ch;
+  margin-top: 1.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.railMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.6rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+
+.railMeta span {
+  width: 1.6rem;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, var(--bp-teal), transparent);
+}
+
+.spine {
+  position: relative;
+  padding-left: 2.75rem;
+}
+
+.spineFlow {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Named endpoints — the drawn line travels from "Handover" to "Steady
+   state", making the heading's journey literal. Markers ride the line;
+   labels align to the step titles. */
+.spineEnd {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bp-teal) 80%, var(--muted));
+}
+
+.spineEnd[data-pos="start"] {
+  margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.spineEnd[data-pos="end"] {
+  margin-top: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.spineEndMark {
+  position: absolute;
+  left: -2.75rem;
+  top: 50%;
+  translate: -0.2rem -50%;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 50%;
+}
+
+.spineEnd[data-pos="start"] .spineEndMark {
+  background: var(--bp-teal);
+  box-shadow: 0 0 0.6rem 0.05rem color-mix(in srgb, var(--bp-teal) 55%, transparent);
+}
+
+.spineEnd[data-pos="end"] .spineEndMark {
+  background: var(--bp-lime);
+  box-shadow: 0 0 0.6rem 0.05rem color-mix(in srgb, var(--bp-lime) 60%, transparent);
+}
+
+.spineTrack,
+.spineLine {
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 1.5px;
+}
+
+.spineTrack {
+  background: var(--bp-rule);
+}
+
+/* Scrubbed to the section's scroll — the spine literally draws itself
+   downward, spring-smoothed so it trails the read like a needle. */
+.spineLine {
+  background: linear-gradient(180deg, var(--bp-teal), color-mix(in srgb, var(--bp-lime) 65%, var(--bp-teal)));
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.spineList {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.spineStep {
+  position: relative;
+}
+
+/* Empty socket on the spine, always present. */
+.spineStep::before {
+  content: "";
+  position: absolute;
+  left: -2.75rem;
+  top: 0.35rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1.5px solid color-mix(in srgb, var(--bp-teal) 42%, transparent);
+  border-radius: 50%;
+  background: var(--background);
+  translate: -0.2rem 0;
+}
+
+/* The lit core that fills the socket as the drawing line reaches it —
+   a small teal-to-lime station light with a soft halo. */
+.spineNode {
+  position: absolute;
+  left: calc(-2.75rem - 0.2rem);
+  top: 0.35rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--bp-lime) 55%, var(--bp-teal)), var(--bp-teal) 70%);
+  box-shadow:
+    0 0 0 0.22rem color-mix(in srgb, var(--bp-teal) 10%, transparent),
+    0 0 0.7rem 0.05rem color-mix(in srgb, var(--bp-teal) 50%, transparent);
+  transform-origin: center;
+  transition: box-shadow 360ms var(--ease-out);
+  will-change: transform, opacity;
+}
+
+.spineNumber {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: color-mix(in srgb, var(--bp-teal) 82%, var(--muted));
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+  transition: color 320ms var(--ease-out);
+}
+
+.spineStep h3 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.35rem, 1.9vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.spineStep p {
+  max-width: 52ch;
+  margin-top: 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.72;
+  text-wrap: pretty;
+}
+
+/* Reading a step lifts its station light and warms its index — a quiet
+   invitation, not a control. */
+.spineStep:hover .spineNumber {
+  color: var(--bp-teal);
+}
+
+.spineStep:hover .spineNode {
+  box-shadow:
+    0 0 0 0.3rem color-mix(in srgb, var(--bp-teal) 14%, transparent),
+    0 0 0.95rem 0.08rem color-mix(in srgb, var(--bp-teal) 62%, transparent);
+}
+
+@media (max-width: 64rem) {
+  .methodGrid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .railIntro { position: static; }
+}
+
+@media (max-width: 42rem) {
+  .methodSection { padding-block: 4.5rem; }
+}

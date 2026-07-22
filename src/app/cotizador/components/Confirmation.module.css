@@ -1,0 +1,96 @@
+/* ── Confirmation ──────────────────────────────────────── */
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(0.5rem, 2vw, 1.25rem) 0;
+}
+
+.confirmGlyph {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.1rem;
+  color: var(--svc);
+}
+
+.confirmGlyph svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.confirmRing {
+  fill: none;
+  stroke: color-mix(in srgb, var(--svc) 45%, transparent);
+  stroke-width: 2;
+}
+
+.confirmTick {
+  fill: none;
+  stroke: var(--svc);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.confirmTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 3.6vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--foreground);
+}
+
+.confirmLead {
+  margin-top: 0.55rem;
+  max-width: 44ch;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.summary {
+  width: 100%;
+  max-width: 30rem;
+  margin: clamp(1.35rem, 3.5vw, 1.75rem) 0 0;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--svc) 4%, var(--surface-raised));
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.95rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.summaryRow:first-child {
+  border-top: 0;
+}
+
+.summaryRow dt {
+  color: var(--text-tertiary);
+}
+
+.summaryRow dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: clamp(1.35rem, 3.5vw, 1.75rem);
+}

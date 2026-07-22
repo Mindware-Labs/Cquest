@@ -1,0 +1,102 @@
+/* ── Step 1 · service cards ────────────────────────────── */
+
+.serviceGrid {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .serviceGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.serviceCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.95rem 1rem 1.05rem;
+  border-radius: 2px;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    background-color 0.25s var(--ease-out),
+    box-shadow 0.25s var(--ease-out);
+}
+
+.serviceCard:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--svc) 50%, var(--border));
+  box-shadow: 0 14px 28px -20px color-mix(in srgb, var(--svc) 60%, transparent);
+}
+
+.serviceCard:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 2px;
+}
+
+.serviceCard[data-selected] {
+  border-color: color-mix(in srgb, var(--svc) 70%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--svc) 10%, var(--surface-raised)), var(--surface-raised));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--svc) 45%, transparent),
+    0 16px 32px -20px color-mix(in srgb, var(--svc) 55%, transparent);
+}
+
+.serviceIcon {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 2px;
+  color: var(--svc);
+  background: color-mix(in srgb, var(--svc) 12%, transparent);
+}
+
+.serviceLabel {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.serviceStrapline {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.serviceMark {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--svc);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out);
+}
+
+.serviceCard[data-selected] .serviceMark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.serviceCheck {
+  width: 0.8rem;
+  height: 0.8rem;
+}

@@ -1,0 +1,142 @@
+.capabilitiesSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(4.5rem, 7vw, 6.5rem);
+}
+
+/* ── Capabilities — alternating rows: copy on one side, the product shot
+   frame on the other, flipping each row. Software is shown, not listed. */
+.capRows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 6vw, 5.5rem);
+  margin-top: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+.capRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.capRow[data-flip] .capMedia {
+  order: -1;
+}
+
+.capKicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--sy-petroleum);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.capKicker svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  stroke-width: 1.3;
+  color: var(--foreground);
+}
+
+.capCopy h3 {
+  margin-top: 0.85rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.capCopy > p {
+  max-width: 52ch;
+  margin-top: 0.9rem;
+  color: color-mix(in srgb, var(--foreground) 82%, transparent);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.capIncludes {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.capListLabel {
+  margin-bottom: 0.85rem;
+  color: var(--sy-petroleum);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.capIncludes li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.capIncludes li + li { margin-top: 0.5rem; }
+.capIncludes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--sy-blue);
+}
+
+.capBenefit {
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--sy-sky) 9%, white);
+}
+
+.capBenefit h4 {
+  color: var(--sy-petroleum);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.capBenefit p {
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* The frame around each synthetic preview — same dark window chrome as the
+   hero, lifting slightly on hover. */
+.capMedia {
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(116, 195, 213, 0.28);
+  background: #0f1a21;
+  box-shadow: 0 30px 55px -38px rgba(10, 17, 22, 0.4), 0 3px 8px -5px rgba(10, 17, 22, 0.14);
+  transition: border-color 280ms var(--ease-out), box-shadow 280ms var(--ease-out), transform 280ms var(--ease-out);
+}
+
+.capMedia:hover {
+  border-color: rgba(116, 195, 213, 0.5);
+  box-shadow: 0 40px 66px -38px rgba(10, 17, 22, 0.5), 0 5px 12px -6px rgba(10, 17, 22, 0.18);
+  transform: translateY(-4px);
+}
+
+@media (max-width: 64rem) {
+  .capRow { grid-template-columns: 1fr; gap: 1.75rem; }
+  .capRow[data-flip] .capMedia { order: 0; }
+}
+
+@media (max-width: 42rem) {
+  .capabilitiesSection { padding-block: 4.5rem; }
+}

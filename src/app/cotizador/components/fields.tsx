@@ -2,7 +2,7 @@
 
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { Choice, Question } from "../data";
-import styles from "../wizard.module.css";
+import styles from "./fields.module.css";
 import { Alert } from "./icons";
 
 /* ── Choice group (single / multi) ────────────────────────

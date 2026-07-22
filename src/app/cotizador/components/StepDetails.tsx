@@ -1,7 +1,8 @@
 "use client";
 
 import type { Answers, Questionnaire } from "../data";
-import styles from "../wizard.module.css";
+import shell from "./step.module.css";
+import styles from "./StepDetails.module.css";
 import { Field, OptionGroup } from "./fields";
 
 /* Step 2 — the service-specific questions, rendered straight from the
@@ -23,10 +24,10 @@ export default function StepDetails({
   errors: Record<string, string>;
 }) {
   return (
-    <div className={styles.step}>
-      <header className={styles.stepHead}>
-        <p className={styles.eyebrow}>Step 2 · Details</p>
-        <h2 className={styles.stepTitle}>{questionnaire.lead}</h2>
+    <div className={shell.step}>
+      <header className={shell.stepHead}>
+        <p className={shell.eyebrow}>Step 2 · Details</p>
+        <h2 className={shell.stepTitle}>{questionnaire.lead}</h2>
       </header>
 
       <div className={styles.questions}>

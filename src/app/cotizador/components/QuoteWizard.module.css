@@ -1,0 +1,65 @@
+/* ── Quote wizard ─────────────────────────────────────────
+   One card holds the whole assistant: a progress rail, a sliding step panel and
+   a footer with Back / Continue. The active service's colour flows in through
+   --svc / --svc-glow (set inline on .wizard), so rail, selections, focus rings
+   and buttons all re-tint to the chosen line. Error red is the only literal
+   colour — there's no brand token for it.
+
+   Tuned to sit inside one viewport per step: sharp 2px corners (matching the
+   system's button geometry), compact chrome, chip-style choices, and a
+   two-column question grid on desktop so Step 2 never needs a scroll. */
+
+.wizard {
+  --error: #c0392b;
+  position: relative;
+  border-radius: 2px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 24px 50px -34px color-mix(in srgb, var(--ink) 30%, transparent),
+    0 8px 22px -20px color-mix(in srgb, var(--ink) 36%, transparent);
+}
+
+/* Service-tinted hairline along the very top edge. */
+.wizard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--svc), var(--svc-glow));
+  transition: background 0.4s var(--ease-out);
+}
+
+/* ── Step body ─────────────────────────────────────────── */
+
+.body {
+  position: relative;
+  min-height: clamp(11rem, 22vh, 14rem);
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(0.9rem, 2vw, 1.2rem);
+  padding-top: clamp(0.75rem, 1.6vw, 1rem);
+  border-top: 1px solid var(--border);
+}
+
+.footerMeta {
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.footerActions {
+  display: flex;
+  gap: 0.6rem;
+}

@@ -1,0 +1,88 @@
+/* ── Site-wide ornaments — progress hairline, CTA geometry, hero pieces ── */
+
+/* ── Scroll progress hairline ────────────────────────────
+   Fixed to the very top, above both navbars; grows left-to-right through
+   the brand gradient as the page is read. */
+.cq-scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste));
+  pointer-events: none;
+}
+
+/* Commercial CTA geometry: compact, almost-square corners and tracked caps,
+   matching the brand's editorial button reference while retaining a 44px
+   minimum touch target. Functional controls keep their native shapes. */
+.cq-rect-cta {
+  min-height: 2.75rem;
+  border-radius: 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ── Hero sizing vs the curtain ──────────────────────────
+   The hero adds the curtain's height below the fold, so the services sheet
+   overlaps photo that was never visible — the first viewport stays 100% hero. */
+.cq-hero {
+  min-height: calc(100svh + var(--curtain));
+}
+
+/* ── Hero scroll cue ─────────────────────────────────────
+   A 1px track with a celeste drip running down it — "there's more below",
+   said at whisper volume. The reduced-motion net freezes the drip. */
+.cq-scroll-cue {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.6rem;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.cq-scroll-cue::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 3px;
+  height: 0.85rem;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--brand-celeste));
+  animation: cq-scroll-cue-drip 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes cq-scroll-cue-drip {
+  0% { transform: translateY(-100%); opacity: 0; }
+  22% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { transform: translateY(2.6rem); opacity: 0; }
+}
+
+/* ── Hero photo bloom ────────────────────────────────── */
+
+@keyframes cq-hero-bloom {
+  0%, 100% { opacity: 0.86; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.055) translate3d(-1%, 1%, 0); }
+}
+
+.cq-hero-bloom {
+  animation: cq-hero-bloom 16s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: 78% 42%;
+  will-change: transform, opacity;
+}
+
+/* ── Photographic grain ──────────────────────────────────
+   A static SVG-noise tile at whisper opacity. Costs one paint, no animation —
+   it simply takes the digital sheen off the gradient field. */
+.cq-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.032;
+  mix-blend-mode: multiply;
+}

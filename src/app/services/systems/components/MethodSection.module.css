@@ -1,0 +1,65 @@
+.methodSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5.5rem, 8vw, 7rem);
+  background: var(--background);
+}
+
+/* ── Method — full-width numbered rows whose top hairline draws in as each
+   step reveals; the ghost number carries the sequence. */
+.methodList {
+  margin-top: clamp(2rem, 3.5vw, 3rem);
+}
+
+.methodStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 0.22fr) minmax(0, 0.38fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  padding-block: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.methodRule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--sy-blue), color-mix(in srgb, var(--sy-blue) 20%, transparent));
+  transform-origin: left center;
+}
+
+.methodNumber {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--sy-blue) 55%, transparent);
+}
+
+.methodStep h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.methodStep p {
+  max-width: 58ch;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 64rem) {
+  .methodStep { grid-template-columns: minmax(4rem, 0.2fr) minmax(0, 1fr); }
+  .methodStep p { grid-column: 2; }
+}
+
+@media (max-width: 42rem) {
+  .methodSection { padding-block: 4.5rem; }
+  .methodStep { grid-template-columns: 1fr; gap: 0.75rem; }
+  .methodStep p { grid-column: 1; }
+}

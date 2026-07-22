@@ -1,7 +1,7 @@
 "use client";
 
 import { STEPS } from "../data";
-import styles from "../wizard.module.css";
+import styles from "./ProgressRail.module.css";
 import { Check } from "./icons";
 
 /* The step indicator: three numbered nodes joined by a track that fills as the

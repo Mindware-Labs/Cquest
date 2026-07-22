@@ -7,7 +7,8 @@ import {
   type Answers,
   type Question,
 } from "../data";
-import styles from "../wizard.module.css";
+import shell from "./step.module.css";
+import styles from "./StepContact.module.css";
 import { Field, OptionGroup } from "./fields";
 
 // "Best way to reach you" — modelled as a normal single-choice question so it
@@ -46,11 +47,11 @@ export default function StepContact({
     showErrors || touched.has(id) ? errors[id] : undefined;
 
   return (
-    <div className={styles.step}>
-      <header className={styles.stepHead}>
-        <p className={styles.eyebrow}>Step 3 · Contact</p>
-        <h2 className={styles.stepTitle}>Where should we send your quote?</h2>
-        <p className={styles.stepLead}>
+    <div className={shell.step}>
+      <header className={shell.stepHead}>
+        <p className={shell.eyebrow}>Step 3 · Contact</p>
+        <h2 className={shell.stepTitle}>Where should we send your quote?</h2>
+        <p className={shell.stepLead}>
           We&rsquo;ll only use these details to prepare and send your proposal.
         </p>
       </header>

@@ -1,0 +1,290 @@
+/* ── Hero — centered composition over a blueprint grid, with the product
+   window rising beneath the copy: the deliverable itself is the hero image. */
+.hero {
+  position: relative;
+  padding-top: 5.5rem;
+  padding-bottom: clamp(3.5rem, 6vw, 5.5rem);
+  background:
+    radial-gradient(circle at 50% 12%, rgba(75, 152, 177, 0.16), transparent 30rem),
+    var(--sy-ink);
+  color: white;
+  overflow: clip;
+}
+
+/* Blueprint field — static hairline grid, masked so it frames the copy
+   instead of sitting under it at full strength. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.05) 1px, transparent 1px);
+  background-position: center top;
+  background-size: 3.4rem 3.4rem;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 78%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--sy-blue), transparent);
+  opacity: 0.45;
+}
+
+.heroCopy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: clamp(2.5rem, 6vh, 4.5rem);
+}
+
+.breadcrumb {
+  color: var(--sy-stone);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.breadcrumb span {
+  margin-inline: 0.5rem;
+  color: color-mix(in srgb, var(--sy-stone) 65%, transparent);
+}
+
+.liveLine {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.25rem, 2.5vh, 2rem);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.liveLine > span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--sy-sky);
+  box-shadow: 0 0 0 0 rgba(116, 195, 213, 0.4);
+  animation: statusPulse 2.8s ease-out infinite;
+}
+
+@keyframes statusPulse {
+  50% { box-shadow: 0 0 0 0.45rem rgba(116, 195, 213, 0); }
+}
+
+.heroHeadline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 5.4vw, 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.heroHeadlineStrong {
+  font-weight: 800;
+}
+
+/* Curtain masks — headline lines lift from behind their own clip edge. */
+.heroLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+
+.heroLineMask:not(:last-child) {
+  margin-bottom: -0.12em;
+}
+
+.heroLine {
+  display: block;
+  will-change: transform;
+}
+
+.heroLead {
+  max-width: 52ch;
+  margin-top: 1.25rem;
+  color: var(--sy-stone);
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.primaryCta,
+.secondaryCta {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 2px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 260ms var(--ease-out), color 260ms var(--ease-out), border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.97);
+}
+
+.primaryCta {
+  background: var(--sy-sky);
+  color: var(--sy-ink);
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+}
+
+.primaryCta:hover {
+  background: var(--sy-charcoal);
+  color: white;
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.secondaryCta {
+  background: var(--sy-charcoal);
+  border-color: color-mix(in srgb, var(--sy-stone) 55%, transparent);
+  color: white;
+}
+
+.secondaryCta:hover {
+  background: var(--sy-sky);
+  border-color: var(--sy-sky);
+  color: var(--sy-ink);
+}
+
+.heroSignal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+  margin-top: clamp(1.75rem, 4vh, 2.75rem);
+}
+
+.heroSignal span {
+  display: flex;
+  align-items: center;
+  color: color-mix(in srgb, var(--sy-stone) 70%, transparent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.heroSignal span:not(:last-child)::after {
+  content: "";
+  width: 2.75rem;
+  height: 1px;
+  margin-inline: 1.1rem;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Product window — a browser-chrome frame in perspective; the tilt
+   flattens as the page scrolls, like the product settling onto the desk. */
+.windowStage {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2.5rem, 62rem);
+  margin-inline: auto;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  perspective: 1200px;
+}
+
+.window {
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(116, 195, 213, 0.28);
+  background: #0f1a21;
+  box-shadow:
+    0 60px 90px -50px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform-origin: center top;
+  will-change: transform;
+}
+
+.windowBar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.windowDots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.windowDots span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.windowAddress {
+  flex: 1;
+  max-width: 22rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.windowBody {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 14px, rgba(116, 195, 213, 0.045) 14px 15px),
+    radial-gradient(circle at 50% 0%, rgba(75, 152, 177, 0.16), transparent 60%),
+    #0f1a21;
+}
+
+.windowShot {
+  object-fit: cover;
+}
+
+@media (max-width: 42rem) {
+  .windowStage { width: min(100% - 2rem, 62rem); }
+  .heroHeadline { font-size: clamp(2.3rem, 12vw, 3.4rem); }
+  .heroActions { flex-direction: column; align-items: stretch; width: 100%; }
+  .primaryCta,
+  .secondaryCta { width: 100%; }
+  .heroSignal span:not(:last-child)::after { width: 1rem; margin-inline: 0.5rem; }
+  .windowAddress { display: none; }
+}

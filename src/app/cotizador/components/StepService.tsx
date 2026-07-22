@@ -4,7 +4,8 @@ import type { CSSProperties } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceId } from "@/components/services/data";
 import { SERVICE_CARDS } from "../data";
-import styles from "../wizard.module.css";
+import shell from "./step.module.css";
+import styles from "./StepService.module.css";
 import { Check } from "./icons";
 
 /* Step 1 — pick a business line. Three large radio cards, each carrying its own
@@ -18,11 +19,11 @@ export default function StepService({
   onSelect: (id: ServiceId) => void;
 }) {
   return (
-    <div className={styles.step}>
-      <header className={styles.stepHead}>
-        <p className={styles.eyebrow}>Step 1 · Service</p>
-        <h2 className={styles.stepTitle}>What can we help you with?</h2>
-        <p className={styles.stepLead}>
+    <div className={shell.step}>
+      <header className={shell.stepHead}>
+        <p className={shell.eyebrow}>Step 1 · Service</p>
+        <h2 className={shell.stepTitle}>What can we help you with?</h2>
+        <p className={shell.stepLead}>
           Pick the line of work closest to what you need — you&rsquo;ll refine
           the specifics next.
         </p>

@@ -1,0 +1,37 @@
+/* ── Step shell — the head every wizard step shares (eyebrow · title · lead).
+   Imported by StepService, StepDetails and StepContact alongside their own
+   step-specific modules. */
+
+.step {
+  display: block;
+}
+
+.stepHead {
+  margin-bottom: clamp(0.85rem, 2vw, 1.15rem);
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--svc);
+  margin-bottom: 0.45rem;
+}
+
+.stepTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(1.15rem, 2.6vw, 1.4rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--foreground);
+}
+
+.stepLead {
+  margin-top: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  max-width: 46ch;
+}

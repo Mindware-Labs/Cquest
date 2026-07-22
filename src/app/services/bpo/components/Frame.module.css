@@ -1,0 +1,46 @@
+/* Photo-placeholder frame furniture shared by the media band and the photo
+   grid: the caption stack and the corner crop marks that make the frame read
+   as "a photo goes exactly here". */
+.frameLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.frameLabel span {
+  color: color-mix(in srgb, var(--bp-teal) 80%, var(--foreground));
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.frameLabel strong {
+  color: var(--foreground);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.frameLabel small {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.tick {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 0 solid color-mix(in srgb, var(--bp-teal) 70%, transparent);
+  pointer-events: none;
+}
+
+.tick[data-pos="tl"] { top: 0.65rem; left: 0.65rem; border-top-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="tr"] { top: 0.65rem; right: 0.65rem; border-top-width: 1.5px; border-right-width: 1.5px; }
+.tick[data-pos="bl"] { bottom: 0.65rem; left: 0.65rem; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.tick[data-pos="br"] { bottom: 0.65rem; right: 0.65rem; border-bottom-width: 1.5px; border-right-width: 1.5px; }

@@ -1,0 +1,211 @@
+/* ── SLA section — dark, asymmetric: the claim on the left, the commitments
+   as ledger rows on the right (not a metric table — a service contract). */
+.slaSection {
+  position: relative;
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background:
+    radial-gradient(52% 55% at 12% 16%, color-mix(in srgb, var(--bp-teal) 30%, transparent), transparent 60%),
+    radial-gradient(46% 52% at 92% 90%, color-mix(in srgb, var(--bp-lime) 8%, transparent), transparent 60%),
+    var(--bp-deep);
+  color: white;
+}
+
+.slaSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.slaInner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr);
+  gap: clamp(3rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.slaHeading {
+  position: sticky;
+  top: 6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.slaRule {
+  width: 2px;
+  height: 1.6rem;
+  margin-bottom: 1rem;
+  background: var(--bp-lime);
+  box-shadow: 0 0 0.7rem color-mix(in srgb, var(--bp-lime) 50%, transparent);
+  transform-origin: top center;
+}
+
+.slaHeading h2 {
+  max-width: 15ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.slaHeading p {
+  max-width: 44ch;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.slaMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.slaMetaDot {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bp-lime);
+  box-shadow: 0 0 0 0 rgba(128, 188, 0, 0.4);
+  animation: statusPulse 2.8s ease-out infinite;
+}
+
+@keyframes statusPulse {
+  50% { box-shadow: 0 0 0 0.45rem rgba(128, 188, 0, 0); }
+}
+
+.slaList {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.slaList > div {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "index label value"
+    "index status value";
+  align-items: center;
+  column-gap: clamp(1.1rem, 2.5vw, 2rem);
+  padding: clamp(1.4rem, 2.3vw, 1.7rem) 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  transition: background 320ms var(--ease-out);
+}
+
+.slaList > div:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* A lime hairline draws in from the left on hover — the ledger row
+   underscoring itself. */
+.slaList > div::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--bp-lime), color-mix(in srgb, var(--bp-lime) 15%, transparent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 460ms var(--ease-out);
+}
+
+.slaList > div:hover::after {
+  transform: scaleX(1);
+}
+
+.slaIndex {
+  grid-area: index;
+  align-self: center;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.32);
+  transition: color 320ms var(--ease-out);
+}
+
+.slaList > div:hover .slaIndex {
+  color: var(--bp-lime);
+}
+
+.slaList dt {
+  grid-area: label;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.slaList dd {
+  grid-area: value;
+  color: var(--bp-lime);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.35rem);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: color 320ms var(--ease-out);
+}
+
+.slaList > div:hover dd {
+  color: color-mix(in srgb, var(--bp-lime) 82%, white);
+}
+
+.slaStatus {
+  grid-area: status;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.slaTick {
+  width: 0.9rem;
+  height: 2px;
+  flex: none;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--bp-lime) 62%, transparent);
+  transition: width 320ms var(--ease-out), background 320ms var(--ease-out);
+}
+
+.slaList > div:hover .slaTick {
+  width: 1.4rem;
+  background: var(--bp-lime);
+}
+
+@media (max-width: 64rem) {
+  .slaInner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .slaHeading { position: static; }
+}
+
+@media (max-width: 42rem) {
+  .slaList dd { font-size: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slaMetaDot { animation: none; opacity: 0.85; }
+}

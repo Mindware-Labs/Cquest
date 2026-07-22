@@ -1,0 +1,365 @@
+.capabilitiesSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(4.5rem, 7vw, 6.5rem) clamp(4rem, 6vw, 5.5rem);
+}
+
+/* ── Discipline rack — six disciplines held to one standard.
+   A horizontal rack of expanding slats: each discipline is a persistent
+   vertical spine (index · icon · rotated name) that unfolds sideways to
+   reveal its full spec, like drawing a file from a drawer. The lit baseline
+   under the open slat is "one standard" made visible — every discipline
+   meets the same line. Collapses to a vertical accordion under 64rem. */
+.rack {
+  --rail: 4.5rem;
+  display: flex;
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  height: clamp(28rem, 52vh, 33rem);
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(10, 17, 22, 0.05);
+}
+
+.slat {
+  position: relative;
+  flex: 0 0 var(--rail);
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--bp-teal) 2%, #fff));
+  /* the standard baseline — faint under closed slats, lit under the open one */
+  box-shadow: inset 0 -2px 0 var(--bp-rule);
+  transition:
+    flex-grow 720ms var(--ease-out),
+    flex-basis 720ms var(--ease-out),
+    background 480ms var(--ease-out),
+    box-shadow 480ms var(--ease-out);
+}
+
+.slat + .slat {
+  border-left: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.slat[data-active] {
+  flex: 1 1 26rem;
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--bp-teal) 5%, #fff));
+  box-shadow: inset 0 -2px 0 var(--bp-lime);
+}
+
+/* Spine — the always-present vertical tab; the button that owns selection. */
+.slatSpine {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 var(--rail);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.3rem 0.5rem 1.45rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+}
+
+.slatSpine:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: -3px;
+  border-radius: 5px;
+}
+
+.slatNumber {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+  transition: color 400ms var(--ease-out);
+}
+
+.slatIcon {
+  color: color-mix(in srgb, var(--bp-teal) 52%, var(--muted));
+  transition: color 400ms var(--ease-out);
+}
+
+.slatIcon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  stroke-width: 1.5;
+}
+
+/* Rotated name — reads bottom-to-top like a book spine; anchored to the
+   base of the closed slat, it fades out as the slat opens (the label
+   "stands up" into the panel's horizontal heading). */
+.slatTitle {
+  margin-top: auto;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--text-tertiary);
+  transition: color 400ms var(--ease-out), opacity 340ms var(--ease-out);
+}
+
+.slatChevron {
+  display: none;
+}
+
+.slat[data-active] .slatNumber,
+.slat[data-active] .slatIcon {
+  color: var(--bp-teal);
+}
+
+.slat[data-active] .slatTitle {
+  opacity: 0;
+}
+
+/* Detail — clipped to zero width while closed; revealed beside the spine as
+   the slat unfolds. */
+.slatDetail {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.slatDetailInner {
+  width: 100%;
+  max-width: 40rem;
+  padding: clamp(1.5rem, 2.4vw, 2.25rem) clamp(1.6rem, 2.6vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* Choreographed inner reveal — each block lifts out of a hair of blur on a
+   short stagger once its slat is open. */
+.slatDetailInner > * {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(6px);
+  transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out), filter 560ms var(--ease-out);
+}
+
+.slat[data-active] .slatDetailInner > * {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+.slat[data-active] .slatDetailInner > :nth-child(1) { transition-delay: 140ms; }
+.slat[data-active] .slatDetailInner > :nth-child(2) { transition-delay: 200ms; }
+.slat[data-active] .slatDetailInner > :nth-child(3) { transition-delay: 250ms; }
+.slat[data-active] .slatDetailInner > :nth-child(4) { transition-delay: 310ms; }
+
+.slatKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--bp-teal);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.slatKickerDot {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--bp-lime);
+}
+
+.slatName {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.55rem, 2.3vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.slatLead {
+  max-width: 52ch;
+  color: var(--text-tertiary);
+  font-size: 0.97rem;
+  line-height: 1.68;
+  text-wrap: pretty;
+}
+
+.slatPanels {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(1.25rem, 2.4vw, 2.25rem);
+  margin-top: 0.35rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid color-mix(in srgb, var(--bp-teal) 16%, transparent);
+}
+
+.slatLabel {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: var(--bp-teal);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.slatIncludes ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slatIncludes li {
+  position: relative;
+  padding-left: 1.05rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.slatIncludes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: var(--bp-lime);
+}
+
+.slatBenefit {
+  align-self: start;
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bp-teal) 6%, #fff);
+}
+
+.slatBenefit p {
+  margin-top: 0.15rem;
+  color: var(--text-secondary);
+  font-size: 0.93rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.rackHint {
+  margin-top: 1.1rem;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+
+.rackHint span {
+  margin-right: 0.4rem;
+  color: color-mix(in srgb, var(--bp-teal) 60%, transparent);
+}
+
+/* Rack → vertical accordion. Spines lie flat as row headers, details reveal
+   downward. */
+@media (max-width: 64rem) {
+  .rack {
+    flex-direction: column;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .slat {
+    flex: none;
+    width: 100%;
+    flex-direction: column;
+    box-shadow: inset 0 -1px 0 var(--bp-rule);
+  }
+
+  .slat[data-active] {
+    flex: none;
+    box-shadow: inset 0 -1px 0 var(--bp-rule);
+    background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--bp-teal) 4%, #fff));
+  }
+
+  .slat + .slat {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+
+  .slatSpine {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 1.15rem 1.3rem;
+    text-align: left;
+  }
+
+  .slatTitle {
+    margin-top: 0;
+    margin-right: auto;
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-size: 1.05rem;
+    color: var(--foreground);
+  }
+
+  .slat[data-active] .slatTitle {
+    opacity: 1;
+    color: var(--bp-teal);
+  }
+
+  .slatChevron {
+    display: block;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: none;
+    color: var(--text-tertiary);
+    transition: transform 360ms var(--ease-out), color 360ms var(--ease-out);
+  }
+
+  .slat[data-active] .slatChevron {
+    transform: rotate(180deg);
+    color: var(--bp-teal);
+  }
+
+  .slatDetail {
+    display: block;
+    width: 100%;
+    max-height: 0;
+    transition: max-height 620ms var(--ease-out);
+  }
+
+  .slat[data-active] .slatDetail {
+    max-height: 40rem;
+  }
+
+  .slatDetailInner {
+    max-width: none;
+    padding: 0 1.3rem 1.6rem;
+  }
+
+  .slatName {
+    display: none;
+  }
+
+  .slatPanels {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .capabilitiesSection { padding-block: 4.5rem; }
+  .slatSpine { padding: 1rem 1.1rem; }
+  .slatDetailInner { padding: 0 1.1rem 1.4rem; }
+}

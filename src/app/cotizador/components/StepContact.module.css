@@ -1,0 +1,21 @@
+/* ── Step 3 · contact ──────────────────────────────────── */
+
+.contactGrid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+  margin-bottom: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+@media (min-width: 560px) {
+  .contactGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.consent {
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}

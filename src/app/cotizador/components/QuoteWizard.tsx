@@ -14,7 +14,8 @@ import {
   type QuoteSubmission,
 } from "../data";
 import { submitQuote } from "../submitQuote";
-import styles from "../wizard.module.css";
+import styles from "./QuoteWizard.module.css";
+import buttons from "./buttons.module.css";
 import Confirmation from "./Confirmation";
 import ProgressRail from "./ProgressRail";
 import StepContact from "./StepContact";
@@ -228,7 +229,6 @@ export default function QuoteWizard({
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  className={styles.panel}
                 >
                   {step === 0 && (
                     <StepService value={service} onSelect={selectService} />
@@ -260,7 +260,7 @@ export default function QuoteWizard({
                 {step > 0 && (
                   <button
                     type="button"
-                    className={styles.ghostBtn}
+                    className={buttons.ghostBtn}
                     onClick={goBack}
                     disabled={submitting}
                   >
@@ -269,7 +269,7 @@ export default function QuoteWizard({
                 )}
                 <button
                   type="button"
-                  className={styles.primaryBtn}
+                  className={buttons.primaryBtn}
                   onClick={goNext}
                   disabled={submitting}
                   data-inactive={!canAdvance || undefined}
@@ -282,7 +282,7 @@ export default function QuoteWizard({
                         ? "Sending…"
                         : "Request my quote"}
                   </span>
-                  {step < 2 && <Arrow className={styles.btnArrow} />}
+                  {step < 2 && <Arrow className={buttons.btnArrow} />}
                 </button>
               </div>
             </div>

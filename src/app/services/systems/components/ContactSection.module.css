@@ -1,0 +1,6 @@
+.contactSection {
+  scroll-margin-top: 2rem;
+  padding-block: clamp(3.25rem, 6vw, 5rem);
+  background: var(--sy-ink);
+  color: white;
+}

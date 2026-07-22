@@ -1,0 +1,99 @@
+/* ── Commitments — dark band, three large statements. */
+.pactSection {
+  position: relative;
+  scroll-margin-top: 2rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--sy-deep);
+  color: white;
+}
+
+.pactSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.pactHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.pactRule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--sy-sky);
+  transform-origin: top center;
+}
+
+.pactHeading h2 {
+  max-width: 20ch;
+  color: white;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.pactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 4rem;
+  border-block: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.pactGrid > div {
+  position: relative;
+  padding: 1.85rem 1.5rem 1.65rem;
+  transition: background 320ms var(--ease-out), transform 320ms var(--ease-out);
+}
+
+.pactGrid > div::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: transparent;
+  transition: background 320ms var(--ease-out);
+}
+
+.pactGrid > div:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-2px);
+}
+
+.pactGrid > div:hover::before {
+  background: linear-gradient(90deg, transparent, var(--sy-sky), transparent);
+}
+
+.pactGrid > div + div { border-left: 1px solid rgba(255, 255, 255, 0.18); }
+
+.pactGrid h3 {
+  color: var(--sy-sky);
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.pactGrid p {
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+@media (max-width: 64rem) {
+  .pactGrid { grid-template-columns: 1fr; }
+  .pactGrid > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+}

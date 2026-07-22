@@ -1,0 +1,117 @@
+/* ── Progress rail ─────────────────────────────────────── */
+
+.rail {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 0 1.3rem;
+  margin: 0 0 clamp(1rem, 2.5vw, 1.4rem);
+  list-style: none;
+}
+
+.railItem {
+  display: flex;
+  align-items: center;
+}
+
+.railItem:not(:last-child) {
+  flex: 1 1 auto;
+}
+
+.railNode {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+  flex: 0 0 auto;
+}
+
+.railNode:not([aria-disabled]) {
+  cursor: pointer;
+}
+
+.railNode:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+.railDot {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition:
+    background-color 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out),
+    color 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
+}
+
+.railCheck {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.railLabel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  transition: color 0.35s var(--ease-out);
+}
+
+.railTrack {
+  position: relative;
+  flex: 1 1 auto;
+  height: 1.5px;
+  margin: 0 0.4rem;
+  background: var(--border);
+}
+
+.railFill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--svc), var(--svc-glow));
+  transition: transform 0.55s var(--ease-out);
+}
+
+.railFill[data-filled] {
+  transform: scaleX(1);
+}
+
+.railItem[data-state="current"] .railDot {
+  border-color: var(--svc);
+  color: var(--svc);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--svc) 14%, transparent);
+}
+
+.railItem[data-state="current"] .railLabel {
+  color: var(--foreground);
+}
+
+.railItem[data-state="done"] .railDot {
+  background: var(--svc);
+  border-color: var(--svc);
+  color: #fff;
+}
+
+.railItem[data-state="done"] .railLabel {
+  color: var(--text-secondary);
+}
