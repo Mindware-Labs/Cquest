@@ -56,6 +56,7 @@ export const dictionary: Dictionary = {
     fixFields: "Please fix the highlighted fields.",
     sending: "Sending your quote request…",
     sent: "Quote request sent.",
+    submitError: "We couldn't send your request. Your answers are still here — please try again.",
     back: "Back",
     continue: "Continue",
     sendingButton: "Sending…",

@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import ServiceIcon from "@/components/services/ServiceIcon";
-import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { localeHref } from "@/i18n/localeHref";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
 export default function DesktopNav({
@@ -16,7 +14,6 @@ export default function DesktopNav({
   inverse?: boolean;
   links: readonly NavLink[];
 }) {
-  const { lang } = useI18n();
   const [hovered, setHovered] = useState<string | null>(null);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
   const navRef = useRef<HTMLUListElement>(null);
@@ -124,14 +121,14 @@ export default function DesktopNav({
                 </svg>
               </button>
             ) : (
-              <a
-                href={localeHref(lang, href)}
+              <LocalizedLink
+                href={href}
                 onClick={(event) => href === "#" && event.preventDefault()}
                 onFocus={() => setHovered(label)}
                 className={`relative z-10 block rounded-[2px] px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${inverse ? "text-white/78 hover:text-white focus-visible:outline-celeste" : "text-foreground/80 hover:text-petroleo focus-visible:outline-petroleo"}`}
               >
                 {label}
-              </a>
+              </LocalizedLink>
             )}
 
             {children && (
@@ -196,8 +193,8 @@ export default function DesktopNav({
                       <ul className="flex flex-col">
                         {children.map((child) => (
                           <li key={child.label}>
-                            <a
-                              href={localeHref(lang, child.href)}
+                            <LocalizedLink
+                              href={child.href}
                               onClick={() => setOpenLabel(null)}
                               className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                 inverse
@@ -206,7 +203,7 @@ export default function DesktopNav({
                               }`}
                             >
                               {child.label}
-                            </a>
+                            </LocalizedLink>
                           </li>
                         ))}
                       </ul>

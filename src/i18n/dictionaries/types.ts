@@ -55,6 +55,7 @@ export interface Dictionary {
     fixFields: string;
     sending: string;
     sent: string;
+    submitError: string;
     back: string;
     continue: string;
     sendingButton: string;

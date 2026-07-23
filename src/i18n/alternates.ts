@@ -7,10 +7,9 @@ import { defaultLocale, locales, type Locale } from "./config";
 // the route's locale-less path ("" for home, "/services/operations", ...), no
 // trailing slash.
 //
-// Note: no metadataBase is configured (production domain isn't known at the
-// time this was written), so these resolve as relative URLs — correct for
-// same-origin hreflang discovery, but Next will warn during build. Set
-// metadataBase once the production domain is decided.
+// Relative URLs here resolve against the `metadataBase` set in
+// [lang]/layout.tsx's generateMetadata — same NEXT_PUBLIC_SITE_URL as
+// sitemap.ts/robots.ts, so canonical/hreflang/sitemap all agree on one domain.
 export function localeAlternates(lang: Locale, path: string): Metadata["alternates"] {
   const languages = Object.fromEntries(locales.map((locale) => [locale, `/${locale}${path}`]));
   return {

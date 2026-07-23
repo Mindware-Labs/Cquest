@@ -56,6 +56,7 @@ export const dictionary: Dictionary = {
     fixFields: "Corrige los campos resaltados.",
     sending: "Enviando tu solicitud de cotización…",
     sent: "Solicitud de cotización enviada.",
+    submitError: "No pudimos enviar tu solicitud. Tus respuestas siguen aquí — inténtalo de nuevo.",
     back: "Atrás",
     continue: "Continuar",
     sendingButton: "Enviando…",

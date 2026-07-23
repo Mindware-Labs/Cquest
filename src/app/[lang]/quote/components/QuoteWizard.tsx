@@ -20,12 +20,13 @@ import {
 import { submitQuote } from "../submitQuote";
 import styles from "./QuoteWizard.module.css";
 import buttons from "./buttons.module.css";
+import fieldStyles from "./fields.module.css";
 import Confirmation from "./Confirmation";
 import ProgressRail from "./ProgressRail";
 import StepContact from "./StepContact";
 import StepDetails from "./StepDetails";
 import StepService from "./StepService";
-import { Arrow } from "./icons";
+import { Alert, Arrow } from "./icons";
 
 type Status = "form" | "submitting" | "done";
 
@@ -84,6 +85,7 @@ export default function QuoteWizard({
   const [direction, setDirection] = useState(1);
   const [showErrors, setShowErrors] = useState(false);
   const [status, setStatus] = useState<Status>("form");
+  const [submitFailed, setSubmitFailed] = useState(false);
   const [focusAttempt, setFocusAttempt] = useState(0);
   const [honeypot, setHoneypot] = useState("");
   const stepPanelRef = useRef<HTMLDivElement>(null);
@@ -173,6 +175,7 @@ export default function QuoteWizard({
   const submit = useCallback(async () => {
     if (!service) return;
     setStatus("submitting");
+    setSubmitFailed(false);
     try {
       const recaptchaToken = await getRecaptchaToken();
       await (onSubmit ?? submitQuote)({
@@ -186,8 +189,11 @@ export default function QuoteWizard({
       });
       setStatus("done");
     } catch {
-      // Keep the prospect's answers intact so they can retry.
+      // Keep the prospect's answers intact so they can retry, but surface the
+      // failure — silently dropping back to the form left the prospect with
+      // no idea whether it was sent or whether retrying is worth it.
       setStatus("form");
+      setSubmitFailed(true);
     }
   }, [service, details, contact, lang, honeypot, onSubmit]);
 
@@ -289,7 +295,7 @@ export default function QuoteWizard({
       ? dict.wizard.sending
       : status === "done"
         ? dict.wizard.sent
-        : `${format(dict.wizard.stepAnnounce, { n: step + 1, label: stepLabel(step as 0 | 1 | 2) })}${
+        : `${submitFailed ? `${dict.wizard.submitError} ` : ""}${format(dict.wizard.stepAnnounce, { n: step + 1, label: stepLabel(step as 0 | 1 | 2) })}${
             showErrors && !canAdvance ? ` ${dict.wizard.fixFields}` : ""
           }`;
 
@@ -378,6 +384,13 @@ export default function QuoteWizard({
                 </motion.div>
               </AnimatePresence>
             </div>
+
+            {submitFailed && (
+              <p className={fieldStyles.fieldError} role="alert">
+                <Alert className={fieldStyles.fieldErrorIcon} />
+                {dict.wizard.submitError}
+              </p>
+            )}
 
             <div className={styles.footer}>
               <p className={styles.footerMeta}>{format(dict.wizard.stepOf, { n: step + 1 })}</p>

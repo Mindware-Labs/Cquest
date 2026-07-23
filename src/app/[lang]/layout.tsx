@@ -26,17 +26,20 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
   es: "Center Quest es un aliado dominicano de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas para operaciones en República Dominicana.",
 };
 
+// Same SITE_URL pattern as sitemap.ts/robots.ts — one env var, one fallback,
+// kept in sync across all three so canonical/hreflang/JSON-LD/metadataBase
+// all resolve against the same domain.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
+
 // Minimal, honest Organization schema — only fields we actually have (name,
 // url, logo). No phone/address/sameAs: none exist anywhere in the codebase
 // yet, and inventing them would make the markup wrong rather than useful.
-// `url`/`logo` are relative since no production domain is set (see
-// sitemap.ts's SITE_URL note) — upgrade both to absolute once it is.
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Center Quest",
-  url: "/",
-  logo: "/logo.png",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
 };
 
 const SITE_TITLE: Record<Locale, string> = {
@@ -44,7 +47,7 @@ const SITE_TITLE: Record<Locale, string> = {
   es: "Center Quest — Call Center, Operaciones y Desarrollo de Sistemas",
 };
 
-const OG_TITLE: Record<Locale, string> = {
+export const OG_TITLE: Record<Locale, string> = {
   en: "Center Quest — We power operations. You drive growth.",
   es: "Center Quest — Nosotros impulsamos las operaciones. Tú impulsas el crecimiento.",
 };
@@ -62,6 +65,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const lang = await resolveLang(params);
   return {
+    metadataBase: new URL(SITE_URL),
     title: SITE_TITLE[lang],
     description: SITE_DESCRIPTION[lang],
     keywords: [

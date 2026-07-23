@@ -1,11 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/i18n/I18nProvider";
-import { localeHref } from "@/i18n/localeHref";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { NAV_EASE_OUT, type NavLink } from "./data";
+
+// The portal needs `document.body`, unavailable during SSR — this is the
+// idiomatic client-only-flag (see the React docs linked from the
+// react-hooks/set-state-in-effect rule) instead of an effect that calls
+// setState on mount, which forces an extra render pass.
+function subscribeNever() {
+  return () => {};
+}
+function getIsClient() {
+  return true;
+}
+function getIsServer() {
+  return false;
+}
 
 type MobileSidebarProps = {
   id: string;
@@ -28,16 +42,20 @@ export default function MobileSidebar({
   ctaLabel,
   theme = "light",
 }: MobileSidebarProps) {
-  const { dict, lang } = useI18n();
+  const { dict } = useI18n();
   const resolvedCtaLabel = ctaLabel ?? dict.common.contactUs;
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeNever, getIsClient, getIsServer);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
 
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
+  // Reset the accordion the moment `open` flips closed — adjusting state
+  // during render (guarded by a "did this prop change" check) instead of in
+  // an effect, per the React docs' "Adjusting state when a prop changes"
+  // pattern, so it takes effect on this render rather than a follow-up one.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (!open) setOpenLabel(null);
-  }, [open]);
+  }
 
   // A real sidebar has to lock the page behind it — otherwise the backdrop
   // reads as decorative instead of modal. Lenis scrolls by moving
@@ -131,8 +149,8 @@ export default function MobileSidebar({
                       <ChevronIcon open={openLabel === label} />
                     </button>
                   ) : (
-                    <a
-                      href={localeHref(lang, href)}
+                    <LocalizedLink
+                      href={href}
                       onClick={(event) => {
                         if (href === "#") event.preventDefault();
                         onClose();
@@ -144,7 +162,7 @@ export default function MobileSidebar({
                       }`}
                     >
                       {label}
-                    </a>
+                    </LocalizedLink>
                   )}
                   {children && (
                     <AnimatePresence initial={false}>
@@ -160,8 +178,8 @@ export default function MobileSidebar({
                         >
                           {children.map((child) => (
                             <li key={child.label} className="py-1">
-                              <a
-                                href={localeHref(lang, child.href)}
+                              <LocalizedLink
+                                href={child.href}
                                 onClick={onClose}
                                 className={`block touch-manipulation py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                   dark
@@ -170,7 +188,7 @@ export default function MobileSidebar({
                                 }`}
                               >
                                 {child.label}
-                              </a>
+                              </LocalizedLink>
                             </li>
                           ))}
                         </motion.ul>
@@ -185,15 +203,15 @@ export default function MobileSidebar({
                 transition={{ duration: 0.4, delay: 0.1 + links.length * 0.06, ease: NAV_EASE_OUT }}
                 className="pt-4"
               >
-                <a
-                  href={localeHref(lang, ctaHref)}
+                <LocalizedLink
+                  href={ctaHref}
                   onClick={onClose}
                   className={`cq-rect-cta flex touch-manipulation items-center justify-center px-6 py-3 text-center transition-transform duration-150 ease-out active:scale-[0.96] ${
                     dark ? "bg-celeste text-foreground" : "bg-petroleo text-white"
                   }`}
                 >
                   {resolvedCtaLabel}
-                </a>
+                </LocalizedLink>
               </motion.li>
             </ul>
           </motion.div>

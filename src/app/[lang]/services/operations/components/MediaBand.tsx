@@ -50,7 +50,6 @@ export default function MediaBand({ reduced }: { reduced: boolean }) {
               src="/bpo-services/bpo-floor.jpeg"
               alt={ALT[lang]}
               fill
-              preload
               sizes="100vw"
               className={styles.bandImage}
             />
