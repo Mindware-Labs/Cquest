@@ -47,7 +47,7 @@ export const PROCESS = [
 
 export const COMMITMENTS = [
   { title: "Working software every cycle", description: "Progress you can click, in weekly builds — not a final reveal months later." },
-  { title: "Code and data are yours", description: "Full ownership, documentation and handover. No lock-in to us or to anyone." },
+  { title: "The license is yours to keep", description: "We sell you the full license to the code we build — nothing retained on our end, nothing to license back later." },
   { title: "Support after go-live", description: "Launch is the midpoint, not the end — the system keeps evolving with the operation it serves." },
 ] as const;
 

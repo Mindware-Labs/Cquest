@@ -121,7 +121,7 @@ export function emailShell(opts: {
         <tr>
           <td style="background:${C.panel};border-top:1px solid ${C.line};padding:22px 32px;">
             <div style="font-size:12px;font-weight:700;letter-spacing:0.24em;color:${C.muted};text-transform:uppercase;">Center Quest</div>
-            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; BPO &middot; Systems Development</div>
+            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; Operations &middot; Systems Development</div>
           </td>
         </tr>
       </table>

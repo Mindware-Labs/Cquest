@@ -75,7 +75,7 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
       <motion.div
         className={styles.rack}
         role="group"
-        aria-label="BPO disciplines"
+        aria-label="Operations disciplines"
         initial={reduced ? false : "hidden"}
         whileInView={reduced ? undefined : "visible"}
         viewport={VIEWPORT}

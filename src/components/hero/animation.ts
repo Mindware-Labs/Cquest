@@ -1,4 +1,5 @@
 import type { Variants } from "motion/react";
+import { SERVICE_ICON, SERVICES } from "@/components/services/data";
 
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const HEADLINE_ROTATE_MS = 4600;
@@ -14,11 +15,12 @@ export const HERO_NAV_LINKS = [
   {
     label: "Services",
     href: "#services",
-    children: [
-      { label: "Call Center", href: "/services/call-center" },
-      { label: "BPO", href: "/services/bpo" },
-      { label: "Systems Development", href: "/services/systems" },
-    ],
+    children: SERVICES.map((service) => ({
+      label: service.label,
+      href: service.href,
+      description: service.strapline,
+      icon: SERVICE_ICON[service.id],
+    })),
   },
   { label: "Success stories", href: "#success-stories" },
   { label: "About", href: "#about" },

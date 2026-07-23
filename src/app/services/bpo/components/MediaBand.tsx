@@ -34,7 +34,7 @@ export default function MediaBand({ reduced }: { reduced: boolean }) {
       >
         <Image
           src="/bpo-services/bpo-floor.jpeg"
-          alt="BPO operations floor"
+          alt="Operations floor"
           fill
           sizes="100vw"
           className={styles.bandImage}

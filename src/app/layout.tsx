@@ -17,7 +17,7 @@ const switzer = localFont({
 });
 
 const SITE_DESCRIPTION =
-  "Center Quest is a Dominican operations partner across three business lines: Call Center, BPO (Business Process Outsourcing), and Systems Development for operations.";
+  "Center Quest is a Dominican operations partner across three business lines: Call Center, Operations (BPO / Business Process Outsourcing), and Systems Development for operations.";
 
 // Paints the mobile browser chrome in the hero's ink so the first screen
 // reads as one continuous dark surface instead of a white browser band.
@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Center Quest — Call Center, BPO & Systems Development",
+  title: "Center Quest — Call Center, Operations & Systems Development",
   description: SITE_DESCRIPTION,
   keywords: [
     "call center República Dominicana",

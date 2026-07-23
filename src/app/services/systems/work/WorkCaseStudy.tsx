@@ -533,7 +533,7 @@ export default function WorkCaseStudy() {
           </motion.p>
           <motion.div className={styles.actions} variants={focusRiseVariants}>
             <Link href="/cotizador?servicio=systems" className={styles.primary}>
-              Request a quote <Arrow />
+              Give us a quest <Arrow />
             </Link>
             <Link href="/services/systems#work" className={styles.secondary}>
               Back to Systems

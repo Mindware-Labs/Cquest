@@ -47,7 +47,7 @@ export default function HeroImage() {
           variants={riseVariants}
           className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/90"
         >
-          Call center, BPO and systems development for operations — one partner
+          Call center, operations and systems development — one partner
           across your three growth priorities.
         </motion.p>
         <motion.div variants={riseVariants} className="mt-10">
@@ -69,7 +69,7 @@ export default function HeroImage() {
           >
             <motion.path variants={checkDrawVariants} d="M2.5 8.5 6 12l7.5-8" />
           </svg>
-          Call Center · BPO · Systems Development — 24/7 coverage
+          Call Center · Operations · Systems Development — 24/7 coverage
         </motion.p>
       </motion.div>
 

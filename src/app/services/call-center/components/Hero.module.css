@@ -31,49 +31,6 @@
   padding: clamp(1.75rem, 4vw, 3rem) clamp(2rem, 5vw, 5rem) clamp(1.75rem, 3.5vw, 2.75rem) 0;
 }
 
-.breadcrumb {
-  align-self: flex-start;
-  color: var(--cc-stone);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.breadcrumb span {
-  margin-inline: 0.5rem;
-  color: color-mix(in srgb, var(--cc-stone) 65%, transparent);
-}
-
-.liveLine {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: clamp(1.25rem, 2.5vh, 2rem);
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.875rem;
-  letter-spacing: 0.01em;
-}
-
-.liveLine > span {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 50%;
-  background: var(--cc-jade);
-  box-shadow: 0 0 0 0 rgba(31, 143, 111, 0.4);
-  animation: statusPulse 2.8s ease-out infinite;
-}
-
-/* Holds its breath while the tab is hidden — a bare attribute selector, so
-   it applies regardless of which module's `.page` class set the flag. */
-[data-ambient-active="false"] .liveLine > span {
-  animation-play-state: paused;
-}
-
-@keyframes statusPulse {
-  50% { box-shadow: 0 0 0 0.45rem rgba(31, 143, 111, 0); }
-}
-
 .heroHeadline {
   display: flex;
   flex-direction: column;
@@ -250,7 +207,6 @@
 @media (max-width: 42rem) {
   .heroCopy { min-height: 39rem; padding-block: 3rem; }
   .heroHeadline { font-size: clamp(2.4rem, 13vw, 3.6rem); }
-  .liveLine { margin-top: 2.5rem; }
   .heroActions { flex-direction: column; align-items: stretch; }
   .primaryCta,
   .secondaryCta { width: 100%; }

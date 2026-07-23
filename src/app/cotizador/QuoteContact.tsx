@@ -80,7 +80,7 @@ export default function QuoteContact({
         </motion.ol>
 
         <Link href={`/cotizador?servicio=${service}`} className={styles.cta}>
-          Request a quote
+          Give us a quest
           <Arrow className={styles.ctaArrow} />
         </Link>
         <span className={styles.reassure}>Free · no commitment</span>

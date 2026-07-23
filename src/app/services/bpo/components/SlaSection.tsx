@@ -38,7 +38,7 @@ export default function SlaSection({ reduced }: { reduced: boolean }) {
             </motion.h2>
           </motion.div>
           <motion.p variants={focusRiseVariants}>
-            BPO is judged on what it delivers, day after day. These are the
+            Operations is judged on what it delivers, day after day. These are the
             commitments every engagement is measured against.
           </motion.p>
           <motion.p className={styles.slaMeta} variants={focusRiseVariants}>

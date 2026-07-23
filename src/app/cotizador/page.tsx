@@ -5,7 +5,7 @@ import { resolveService } from "./data";
 export const metadata: Metadata = {
   title: "Request a quote | Center Quest",
   description:
-    "Tell us what you need across Call Center, BPO or Systems Development and get a tailored proposal in under a minute.",
+    "Tell us what you need across Call Center, Operations or Systems Development and get a tailored proposal in under a minute.",
 };
 
 // Service pages deep-link in with ?servicio=<id> (also accepts ?service=). In

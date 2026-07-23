@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { EASE_OUT, HERO_NAV_LINKS } from "./animation";
 
@@ -41,18 +42,7 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
           />
         </a>
 
-        <ul className="hidden items-center gap-2 md:flex">
-          {HERO_NAV_LINKS.map(({ label, href }) => (
-            <li key={label}>
-              <a
-                href={href}
-                className="relative block rounded-full px-5 py-2.5 text-[0.9375rem] font-medium text-white/90 transition-colors duration-300 after:absolute after:inset-x-5 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-celeste after:transition-transform after:duration-300 after:ease-out hover:text-white hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
-              >
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <DesktopNav reduced={reduced} inverse links={HERO_NAV_LINKS} />
 
         <MotionLink
           ref={ctaRef}

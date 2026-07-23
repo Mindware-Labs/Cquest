@@ -35,7 +35,7 @@ export default function QuoteExperience({
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.8, ease: EASE_OUT }}
         >
-          <p className={styles.introEyebrow}>Request a quote</p>
+          <p className={styles.introEyebrow}>Give us a quest</p>
           <h1 className={styles.introTitle}>
             {preset ? (
               <>

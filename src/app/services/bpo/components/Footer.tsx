@@ -15,7 +15,7 @@ export default function Footer() {
           className={styles.footerLogo}
         />
       </Link>
-      <p>Call Center · BPO · Systems Development</p>
+      <p>Call Center · Operations · Systems Development</p>
       <Link href="/#services">Back to all services</Link>
     </footer>
   );

@@ -9,7 +9,7 @@ export default function ContactSection({ reduced }: { reduced: boolean }) {
       <QuoteContact
         service="bpo"
         heading="Let’s take the busywork off your plate."
-        lede="Answer a few questions and we’ll come back with a tailored BPO proposal — usually within one business day."
+        lede="Answer a few questions and we’ll come back with a tailored Operations proposal — usually within one business day."
         reduced={reduced}
       />
     </section>

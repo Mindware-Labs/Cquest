@@ -18,8 +18,6 @@ import container from "@/components/services/Container.module.css";
 import { HERO_LINES } from "../data";
 import styles from "./Hero.module.css";
 
-const MotionLink = motion.create(Link);
-
 function WindowDots() {
   return (
     <span className={styles.windowDots} aria-hidden>
@@ -52,8 +50,6 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           initial={reduced ? false : "hidden"}
           animate="visible"
         >
-          <MotionLink href="/#services" className={styles.breadcrumb} variants={focusRiseVariants}>Services <span aria-hidden>/</span> Systems Development</MotionLink>
-          <motion.div className={styles.liveLine} variants={focusRiseVariants}><span aria-hidden />Custom systems for operations</motion.div>
           <motion.h1 className={styles.heroHeadline} variants={heroLinesVariants}>
             {HERO_LINES.map((line) => (
               <motion.span key={line.text} className={styles.heroLineMask} variants={passThroughVariants}>
@@ -63,7 +59,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </motion.h1>
           <motion.p className={styles.heroLead} variants={focusRiseVariants}>CRMs, dashboards and operations automation built around how your business actually works — not the other way around.</motion.p>
           <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-            <Link href="/cotizador?servicio=systems" className={styles.primaryCta}>Request a quote <Arrow /></Link>
+            <Link href="/cotizador?servicio=systems" className={styles.primaryCta}>Give us a quest <Arrow /></Link>
             <a href="#capabilities" className={styles.secondaryCta}>See what we build <Arrow direction="down" /></a>
           </motion.div>
           <motion.div className={styles.heroSignal} aria-label="Page highlights" variants={focusRiseVariants}>

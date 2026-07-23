@@ -1,4 +1,14 @@
-export type NavLink = { label: string; href: string; children?: readonly NavLink[] };
+import { SERVICE_ICON, SERVICES, type ServiceIconName } from "@/components/services/data";
+
+export type NavLink = {
+  label: string;
+  href: string;
+  // Set only on the "Services" children below — their presence is what
+  // tells DesktopNav to render the mega-menu layout instead of a plain list.
+  description?: string;
+  icon?: ServiceIconName;
+  children?: readonly NavLink[];
+};
 
 // Every service detail page opens on a dark, full-bleed hero (photo or ink
 // gradient) with the navbar floating transparently on top of it — so its nav
@@ -16,11 +26,12 @@ export const NAV_LINKS = [
   {
     label: "Services",
     href: "/#services",
-    children: [
-      { label: "Call Center", href: "/services/call-center" },
-      { label: "BPO", href: "/services/bpo" },
-      { label: "Systems Development", href: "/services/systems" },
-    ],
+    children: SERVICES.map((service) => ({
+      label: service.label,
+      href: service.href,
+      description: service.strapline,
+      icon: SERVICE_ICON[service.id],
+    })),
   },
   { label: "Sectors", href: "#" },
   { label: "Contact", href: "/cotizador" },

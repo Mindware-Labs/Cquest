@@ -14,8 +14,6 @@ import container from "@/components/services/Container.module.css";
 import { HERO_LINES } from "../data";
 import styles from "./Hero.module.css";
 
-const MotionLink = motion.create(Link);
-
 export default function Hero({ reduced }: { reduced: boolean }) {
   return (
     <header data-hero-boundary className={styles.hero}>
@@ -26,17 +24,6 @@ export default function Hero({ reduced }: { reduced: boolean }) {
         animate="visible"
       >
         <div className={styles.heroCopy}>
-          <MotionLink
-            href="/#services"
-            className={styles.breadcrumb}
-            variants={focusRiseVariants}
-          >
-            Services <span aria-hidden>/</span> BPO
-          </MotionLink>
-          <motion.div className={styles.liveLine} variants={focusRiseVariants}>
-            <span aria-hidden />
-            Business Process Outsourcing under clear SLAs
-          </motion.div>
           <motion.h1
             className={styles.heroHeadline}
             variants={heroLinesVariants}
@@ -69,7 +56,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             variants={focusRiseVariants}
           >
             <Link href="/cotizador?servicio=bpo" className={styles.primaryCta}>
-              Request a quote <Arrow />
+              Give us a quest <Arrow />
             </Link>
             <a href="#capabilities" className={styles.secondaryCta}>
               Explore capabilities <Arrow direction="down" />
