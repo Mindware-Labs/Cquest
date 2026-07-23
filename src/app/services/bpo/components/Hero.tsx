@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import {
   focusRiseVariants,
@@ -9,21 +10,34 @@ import {
   heroCurtainVariants,
   heroLinesVariants,
   passThroughVariants,
+  softRiseVariants,
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
 import { HERO_LINES } from "../data";
 import styles from "./Hero.module.css";
 
 export default function Hero({ reduced }: { reduced: boolean }) {
+  // Hero departure with depth — as the page scrolls, the copy lifts away and
+  // dissolves while the scope card trails at a slower rate, so leaving the
+  // hero reads as two planes separating rather than one block scrolling by.
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const copyY = useTransform(heroProgress, [0, 1], reduced ? [0, 0] : [0, -58]);
+  const copyOpacity = useTransform(heroProgress, [0, 0.85], reduced ? [1, 1] : [1, 0]);
+  const metaY = useTransform(heroProgress, [0, 1], reduced ? [0, 0] : [0, -26]);
+
   return (
-    <header data-hero-boundary className={styles.hero}>
+    <header ref={heroRef} data-hero-boundary className={styles.hero}>
       <motion.div
         className={`${container.container} ${styles.heroInner}`}
         variants={heroCopyVariants}
         initial={reduced ? false : "hidden"}
         animate="visible"
       >
-        <div className={styles.heroCopy}>
+        <motion.div className={styles.heroCopy} style={{ y: copyY, opacity: copyOpacity }}>
           <motion.h1
             className={styles.heroHeadline}
             variants={heroLinesVariants}
@@ -62,10 +76,13 @@ export default function Hero({ reduced }: { reduced: boolean }) {
               Explore capabilities <Arrow direction="down" />
             </a>
           </motion.div>
-        </div>
+        </motion.div>
+        {/* softRise (opacity/blur only) keeps the transform channel free for
+            the scroll-linked metaY — variant and MotionValue never fight. */}
         <motion.aside
           className={styles.heroMeta}
-          variants={focusRiseVariants}
+          variants={softRiseVariants}
+          style={{ y: metaY }}
           aria-label="Operating scope"
         >
           <span className={styles.heroMetaLabel}>Operating scope</span>

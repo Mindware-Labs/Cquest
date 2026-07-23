@@ -33,10 +33,11 @@ export const heroContentVariants: Variants = {
 };
 
 export const riseVariants: Variants = {
-  hidden: { opacity: 0, y: 22 },
+  hidden: { opacity: 0, y: 22, filter: "blur(8px)" },
   visible: {
     opacity: 1,
     y: 0,
+    filter: "blur(0px)",
     transition: { duration: 0.8, ease: EASE_OUT },
   },
 };

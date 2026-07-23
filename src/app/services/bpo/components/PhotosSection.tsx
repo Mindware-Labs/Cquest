@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import SectionIntro from "@/components/services/SectionIntro";
 import {
   groupVariants,
+  mediaRevealVariants,
+  mediaSettleVariants,
   softRiseVariants,
   VIEWPORT,
 } from "@/components/services/motion";
@@ -39,13 +41,20 @@ export default function PhotosSection({ reduced }: { reduced: boolean }) {
               className={styles.photoFrame}
               variants={softRiseVariants}
             >
-              <Image
-                src={photo.src}
-                alt={photo.title}
-                fill
-                sizes="(max-width: 42rem) 100vw, 50vw"
-                className={styles.photoImage}
-              />
+              {/* Frame sharpens in (its CSS keeps the hover lift); inside,
+                  the crop wipes open while the photo settles from a slight
+                  overscale — the grid's stagger offsets the two reveals. */}
+              <motion.div className={styles.photoReveal} variants={mediaRevealVariants}>
+                <motion.div className={styles.photoZoom} variants={mediaSettleVariants}>
+                  <Image
+                    src={photo.src}
+                    alt={photo.title}
+                    fill
+                    sizes="(max-width: 42rem) 100vw, 50vw"
+                    className={styles.photoImage}
+                  />
+                </motion.div>
+              </motion.div>
               <FrameTicks />
             </motion.div>
           ))}

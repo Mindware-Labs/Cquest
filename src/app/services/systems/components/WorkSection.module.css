@@ -76,6 +76,14 @@
   border-right: 1px solid var(--border);
 }
 
+/* Reveal layers for the screenshot: outer carries the clip-path wipe, inner
+   the settle-from-overscale — both animated by WorkSection.tsx. */
+.workReveal,
+.workZoom {
+  position: absolute;
+  inset: 0;
+}
+
 .workShot { object-fit: contain; }
 
 .workSlot {

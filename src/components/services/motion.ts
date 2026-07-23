@@ -65,3 +65,32 @@ export const heroCurtainVariants: Variants = {
 // Pass-through container: consumes a stagger slot and forwards the label to a
 // nested motion child without adding a transform of its own.
 export const passThroughVariants: Variants = { hidden: {}, visible: {} };
+
+// Stat/ledger card: the card itself only sharpens out of blur (its CSS owns
+// the hover transform), then its inner lines cascade up inside it — the row
+// lands first, the figures settle a beat later.
+export const statCardVariants: Variants = {
+  hidden: { opacity: 0, filter: "blur(10px)" },
+  visible: {
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.85, ease: EASE_OUT, staggerChildren: 0.09, delayChildren: 0.1 },
+  },
+};
+export const statLineVariants: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT } },
+};
+
+// Cinematic photo reveal, split across two layers of one gesture: the crop
+// wipes open from its bottom edge while the image inside settles from a
+// slight overscale. Both live on inner wrappers so the frame element keeps
+// its border, shadow and CSS hover transform untouched.
+export const mediaRevealVariants: Variants = {
+  hidden: { clipPath: "inset(100% 0% 0% 0%)" },
+  visible: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.05, ease: EASE_OUT } },
+};
+export const mediaSettleVariants: Variants = {
+  hidden: { scale: 1.16 },
+  visible: { scale: 1, transition: { duration: 1.35, ease: EASE_OUT } },
+};

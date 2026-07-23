@@ -84,6 +84,18 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
               onClick={() => setActiveCapability(item.title)}
               onKeyDown={(event) => handleCapabilityKeyDown(event, index)}
             >
+              {/* The active highlight is one shared element that glides from
+                  tab to tab (layoutId), instead of switching on and off in
+                  place. Under reduced motion it renders without the id and
+                  simply appears. */}
+              {selected && (
+                <motion.span
+                  aria-hidden
+                  className={styles.tabInk}
+                  layoutId={reduced ? undefined : "cc-capability-ink"}
+                  transition={{ type: "spring", stiffness: 420, damping: 38 }}
+                />
+              )}
               <span className={styles.tabNumber}>0{index + 1}</span><span className={styles.tabLabel}>{item.title}</span><Arrow className={styles.tabArrow} />
             </button>
           );
@@ -93,30 +105,44 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
       <motion.div id="capability-panel" role="tabpanel" className={styles.capabilityPanel} variants={focusRiseVariants}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={active.title} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
-            <div className={styles.capabilityHeading}>
-              <span className={styles.capabilityIcon}><ServiceIcon name={activeMeta.icon} /></span>
-              <div><p>Selected capability</p><h3>{active.title}</h3></div>
-            </div>
-            <p className={styles.capabilityDescription}>{active.description}</p>
-            <div className={styles.detailGrid}>
-              <div>
-                <h4>What it includes</h4>
-                <ul>{CAPABILITY_DETAIL[active.title].includes.map((item) => (<li key={item}>{item}</li>))}</ul>
-              </div>
-              <div className={styles.clientBenefit}>
-                <h4>Client benefit</h4>
-                <p>{CAPABILITY_DETAIL[active.title].benefit}</p>
-              </div>
-            </div>
-            <div className={styles.channelRow}>
-              <span>Channels / touchpoints</span>
-              <ul>{activeMeta.channels.map((channel) => (
-                <li key={channel}>
-                  <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel] ?? "messages"} /></span>
-                  {channel}
-                </li>
-              ))}</ul>
-            </div>
+            {/* The panel slides in as one sheet, but its blocks land on a
+                cascade — heading first, then description, spec, channels —
+                so a tab switch reads as content settling, not swapping. */}
+            {[
+              <div key="heading" className={styles.capabilityHeading}>
+                <span className={styles.capabilityIcon}><ServiceIcon name={activeMeta.icon} /></span>
+                <div><p>Selected capability</p><h3>{active.title}</h3></div>
+              </div>,
+              <p key="description" className={styles.capabilityDescription}>{active.description}</p>,
+              <div key="detail" className={styles.detailGrid}>
+                <div>
+                  <h4>What it includes</h4>
+                  <ul>{CAPABILITY_DETAIL[active.title].includes.map((item) => (<li key={item}>{item}</li>))}</ul>
+                </div>
+                <div className={styles.clientBenefit}>
+                  <h4>Client benefit</h4>
+                  <p>{CAPABILITY_DETAIL[active.title].benefit}</p>
+                </div>
+              </div>,
+              <div key="channels" className={styles.channelRow}>
+                <span>Channels / touchpoints</span>
+                <ul>{activeMeta.channels.map((channel) => (
+                  <li key={channel}>
+                    <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel] ?? "messages"} /></span>
+                    {channel}
+                  </li>
+                ))}</ul>
+              </div>,
+            ].map((block, order) => (
+              <motion.div
+                key={block.key}
+                initial={reduced ? false : { opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: EASE_OUT, delay: reduced ? 0 : 0.05 + order * 0.06 }}
+              >
+                {block}
+              </motion.div>
+            ))}
           </motion.div>
         </AnimatePresence>
       </motion.div>

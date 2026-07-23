@@ -18,6 +18,7 @@
 }
 
 .capabilityTab {
+  position: relative;
   display: grid;
   flex: 1 1 auto;
   width: 100%;
@@ -32,7 +33,7 @@
   background: transparent;
   color: var(--text-secondary);
   text-align: left;
-  transition: color 240ms var(--ease-out), background 240ms var(--ease-out), border-color 240ms var(--ease-out);
+  transition: color 240ms var(--ease-out);
 }
 
 .capabilityTab:hover {
@@ -40,9 +41,24 @@
 }
 
 .capabilityTab[data-active] {
-  background: color-mix(in srgb, var(--cc-sky) 14%, transparent);
-  border-left-color: var(--cc-sky);
   color: var(--cc-petroleum);
+}
+
+/* The active-tab highlight lives on its own layer so a single shared element
+   (layoutId in CapabilitiesSection.tsx) can glide between tabs instead of
+   the background switching on and off in place. It covers the button's
+   transparent 3px spacer edge with the sky accent. */
+.tabInk {
+  position: absolute;
+  inset: 0 0 0 -3px;
+  background: color-mix(in srgb, var(--cc-sky) 14%, transparent);
+  border-left: 3px solid var(--cc-sky);
+  pointer-events: none;
+}
+
+.capabilityTab > :not(.tabInk) {
+  position: relative;
+  z-index: 1;
 }
 
 /* `.tabArrow` is applied by CapabilitiesSection itself via Arrow's

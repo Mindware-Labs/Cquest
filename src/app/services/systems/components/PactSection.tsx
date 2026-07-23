@@ -5,7 +5,8 @@ import {
   focusRiseVariants,
   groupVariants,
   ruleYVariants,
-  softRiseVariants,
+  statCardVariants,
+  statLineVariants,
   stepVariants,
   VIEWPORT,
 } from "@/components/services/motion";
@@ -37,9 +38,9 @@ export default function PactSection({ reduced }: { reduced: boolean }) {
           variants={groupVariants}
         >
           {COMMITMENTS.map((item) => (
-            <motion.div key={item.title} variants={softRiseVariants}>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
+            <motion.div key={item.title} variants={statCardVariants}>
+              <motion.h3 variants={statLineVariants}>{item.title}</motion.h3>
+              <motion.p variants={statLineVariants}>{item.description}</motion.p>
             </motion.div>
           ))}
         </motion.div>

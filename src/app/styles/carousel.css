@@ -485,15 +485,20 @@
 }
 
 /* ── V2 capability tags ──────────────────────────────────
-   Capabilities as quiet tags, deliberately STATIC — the slide's living
-   backdrop owns the motion, so the tags spend no boldness of their own.
+   Capabilities as quiet tags — the slide's living backdrop owns the
+   ongoing motion, so at rest the tags spend no boldness of their own.
    They borrow the hero CTA's rectangular language at readout scale:
    2px radius, hairline border in the service tint, a barely-there fill
    falling from white into the tint, and a 1px specular catch along the
    top edge (the same light the sheet's shoulder catches). Monoline icon
-   in the service colour, letterspaced caps label. No hover states, no
-   transitions — they are statements, not controls. */
+   in the service colour, letterspaced caps label.
+   On hover they answer quietly: the hairline and shadow bloom in the
+   service tint, the icon nods, and a specular sweep crosses the face —
+   the lift itself is a Motion spring on the tag (CapabilityTags.tsx),
+   which owns the transform channel end to end. */
 .cq-cap {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -508,6 +513,45 @@
     0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
     0 10px 20px -16px color-mix(in srgb, var(--svc) 50%, transparent);
   cursor: default;
+  transition:
+    border-color 320ms var(--ease-out),
+    background 320ms var(--ease-out),
+    box-shadow 420ms var(--ease-out);
+}
+
+.cq-cap:hover {
+  border-color: color-mix(in srgb, var(--svc) 58%, transparent);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.85),
+    color-mix(in srgb, var(--svc) 13%, transparent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 4px color-mix(in srgb, var(--ink) 7%, transparent),
+    0 14px 26px -14px color-mix(in srgb, var(--svc) 62%, transparent);
+}
+
+/* Specular sweep — a band of light crossing the face once per hover,
+   the same light the sheet's shoulder catches, set in motion. */
+.cq-cap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 68%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cq-cap::after {
+    transition: transform 700ms var(--ease-out);
+  }
+
+  .cq-cap:hover::after {
+    transform: translateX(130%);
+  }
 }
 
 .cq-cap svg {
@@ -516,6 +560,12 @@
   flex-shrink: 0;
   stroke-width: 1.7;
   color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
+  transition: transform 320ms var(--ease-out), color 320ms var(--ease-out);
+}
+
+.cq-cap:hover svg {
+  transform: translateY(-1px) scale(1.1);
+  color: color-mix(in srgb, var(--svc) 94%, var(--foreground));
 }
 
 .cq-cap span {

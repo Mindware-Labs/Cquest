@@ -19,6 +19,14 @@
   transition: border-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out), transform 260ms var(--ease-out);
 }
 
+/* Reveal layers: outer carries the clip-path wipe, inner the
+   settle-from-overscale — both animated by PhotosSection.tsx. */
+.photoReveal,
+.photoZoom {
+  position: absolute;
+  inset: 0;
+}
+
 .photoImage {
   object-fit: cover;
 }

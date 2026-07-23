@@ -5,7 +5,8 @@ import {
   focusRiseVariants,
   groupVariants,
   ruleYVariants,
-  softRiseVariants,
+  statCardVariants,
+  statLineVariants,
   stepVariants,
   VIEWPORT,
 } from "@/components/services/motion";
@@ -54,16 +55,16 @@ export default function SlaSection({ reduced }: { reduced: boolean }) {
           variants={groupVariants}
         >
           {SLAS.map((sla, index) => (
-            <motion.div key={sla.label} variants={softRiseVariants}>
-              <span className={styles.slaIndex} aria-hidden>
+            <motion.div key={sla.label} variants={statCardVariants}>
+              <motion.span className={styles.slaIndex} aria-hidden variants={statLineVariants}>
                 0{index + 1}
-              </span>
-              <dt>{sla.label}</dt>
-              <dd>{sla.value}</dd>
-              <span className={styles.slaStatus}>
+              </motion.span>
+              <motion.dt variants={statLineVariants}>{sla.label}</motion.dt>
+              <motion.dd variants={statLineVariants}>{sla.value}</motion.dd>
+              <motion.span className={styles.slaStatus} variants={statLineVariants}>
                 <span className={styles.slaTick} aria-hidden />
                 {sla.status}
-              </span>
+              </motion.span>
             </motion.div>
           ))}
         </motion.dl>

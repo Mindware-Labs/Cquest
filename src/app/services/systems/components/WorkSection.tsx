@@ -8,6 +8,8 @@ import SectionIntro from "@/components/services/SectionIntro";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import {
   groupVariants,
+  mediaRevealVariants,
+  mediaSettleVariants,
   softRiseVariants,
   VIEWPORT,
 } from "@/components/services/motion";
@@ -24,13 +26,21 @@ function WorkMedia({ work, featured = false }: { work: Work; featured?: boolean 
   return (
     <div className={styles.workMedia} data-featured={featured || undefined}>
       {work.image ? (
-        <Image
-          src={work.image}
-          alt={work.alt ?? work.title ?? ""}
-          fill
-          sizes={featured ? "(max-width: 64rem) 100vw, 45rem" : "(max-width: 64rem) 100vw, 22rem"}
-          className={styles.workShot}
-        />
+        /* The screenshot is revealed inside its frame — the crop wipes open
+           upward while the shot settles from a slight overscale. Variants
+           inherit the plate's hidden/visible labels, so the reveal rides the
+           gallery's own entrance. */
+        <motion.div className={styles.workReveal} variants={mediaRevealVariants}>
+          <motion.div className={styles.workZoom} variants={mediaSettleVariants}>
+            <Image
+              src={work.image}
+              alt={work.alt ?? work.title ?? ""}
+              fill
+              sizes={featured ? "(max-width: 64rem) 100vw, 45rem" : "(max-width: 64rem) 100vw, 22rem"}
+              className={styles.workShot}
+            />
+          </motion.div>
+        </motion.div>
       ) : (
         <div className={styles.workSlot}>
           <span className={styles.workSlotIcon}><ServiceIcon name={work.icon} /></span>

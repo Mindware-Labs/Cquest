@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import container from "@/components/services/Container.module.css";
-import { focusRiseVariants, groupVariants, ruleYVariants, softRiseVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
+import { focusRiseVariants, groupVariants, ruleYVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { METRICS } from "../data";
 import styles from "./MetricsSection.module.css";
 
@@ -30,10 +30,10 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
           variants={groupVariants}
         >
           {METRICS.map((metric) => (
-            <motion.div key={metric.label} variants={softRiseVariants}>
-              <dt>{metric.label}</dt>
-              <dd>{metric.value}</dd>
-              <span className={styles.metricStatus}><span className={styles.metricDot} aria-hidden />{metric.status}</span>
+            <motion.div key={metric.label} variants={statCardVariants}>
+              <motion.dt variants={statLineVariants}>{metric.label}</motion.dt>
+              <motion.dd variants={statLineVariants}>{metric.value}</motion.dd>
+              <motion.span className={styles.metricStatus} variants={statLineVariants}><span className={styles.metricDot} aria-hidden />{metric.status}</motion.span>
             </motion.div>
           ))}
         </motion.dl>

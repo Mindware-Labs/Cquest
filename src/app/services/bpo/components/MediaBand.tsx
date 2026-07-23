@@ -3,7 +3,11 @@
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
-import { softRiseVariants } from "@/components/services/motion";
+import {
+  mediaRevealVariants,
+  mediaSettleVariants,
+  softRiseVariants,
+} from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
 import FrameTicks from "./FrameTicks";
 import styles from "./MediaBand.module.css";
@@ -32,13 +36,21 @@ export default function MediaBand({ reduced }: { reduced: boolean }) {
         viewport={{ once: true, margin: "-40px" }}
         variants={softRiseVariants}
       >
-        <Image
-          src="/bpo-services/bpo-floor.jpeg"
-          alt="Operations floor"
-          fill
-          sizes="100vw"
-          className={styles.bandImage}
-        />
+        {/* The frame (border, shadow, ticks) sharpens in with the figure;
+            inside it the photo is revealed in two layers of one gesture —
+            the crop wipes open upward while the image settles from a slight
+            overscale. */}
+        <motion.div className={styles.bandReveal} variants={mediaRevealVariants}>
+          <motion.div className={styles.bandZoom} variants={mediaSettleVariants}>
+            <Image
+              src="/bpo-services/bpo-floor.jpeg"
+              alt="Operations floor"
+              fill
+              sizes="100vw"
+              className={styles.bandImage}
+            />
+          </motion.div>
+        </motion.div>
         <FrameTicks />
       </motion.figure>
     </div>

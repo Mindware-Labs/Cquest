@@ -14,6 +14,14 @@
   will-change: transform;
 }
 
+/* Reveal layers: the outer wrapper carries the clip-path wipe, the inner one
+   the settle-from-overscale — both animated by MediaBand.tsx. */
+.bandReveal,
+.bandZoom {
+  position: absolute;
+  inset: 0;
+}
+
 .bandImage {
   object-fit: cover;
 }

@@ -40,6 +40,25 @@ const pageVariants: Variants = {
   }),
 };
 
+/* Inside the turning page the copy arrives as a cascade, not a block: the
+   stage hands each line its cue (kicker → headline → lead → description →
+   tags → CTA) while the page itself is still settling, so the slide reads
+   as layers of one gesture. No `exit` keys — on the way out the children
+   ride the page's own fade untouched. */
+const stageVariants: Variants = {
+  enter: {},
+  center: { transition: { delayChildren: 0.14, staggerChildren: 0.07 } },
+};
+const stageItemVariants: Variants = {
+  enter: { opacity: 0, y: 26, filter: "blur(8px)" },
+  center: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.7, ease: EASE_OUT },
+  },
+};
+
 export default function ServicesCarousel() {
   const reduced = useReducedMotion() ?? false;
   /* Index + direction live together so a single state update drives both
@@ -143,24 +162,44 @@ export default function ServicesCarousel() {
               re-lights and re-themes the field as part of the same gesture. */}
           <SlideBackdrop service={service} />
 
-          <div className="relative mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))]">
+          <motion.div
+            variants={reduced ? undefined : stageVariants}
+            className="relative mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
+          >
+            <motion.p
+              variants={reduced ? undefined : stageItemVariants}
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))]"
+            >
               Business line · 0{index + 1}
-            </p>
-            <h2 className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.6rem)] font-semibold leading-[1.04] tracking-[-0.03em]">
+            </motion.p>
+            <motion.h2
+              variants={reduced ? undefined : stageItemVariants}
+              className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.6rem)] font-semibold leading-[1.04] tracking-[-0.03em]"
+            >
               {service.label}
-            </h2>
-            <p className="mt-4 max-w-[38ch] text-balance font-heading text-[clamp(1.05rem,2vw,1.35rem)] font-medium leading-snug text-foreground/90">
+            </motion.h2>
+            <motion.p
+              variants={reduced ? undefined : stageItemVariants}
+              className="mt-4 max-w-[38ch] text-balance font-heading text-[clamp(1.05rem,2vw,1.35rem)] font-medium leading-snug text-foreground/90"
+            >
               {service.shortLabel}
-            </p>
-            <p className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base">
+            </motion.p>
+            <motion.p
+              variants={reduced ? undefined : stageItemVariants}
+              className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base"
+            >
               {service.strapline} {service.description}
-            </p>
+            </motion.p>
 
-            <CapabilityTags service={service} />
+            <CapabilityTags service={service} reduced={reduced} />
 
-            <ServiceCta service={service} />
-          </div>
+            {/* The CTA rides its own cascade slot on a wrapper — the link
+                itself keeps its transform channels for the magnetic
+                pointer-follow and press springs. */}
+            <motion.div variants={reduced ? undefined : stageItemVariants}>
+              <ServiceCta service={service} />
+            </motion.div>
+          </motion.div>
         </motion.article>
       </AnimatePresence>
 
