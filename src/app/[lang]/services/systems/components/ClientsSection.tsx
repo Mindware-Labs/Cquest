@@ -6,15 +6,31 @@ import { useEffect, useRef, useState } from "react";
 import SectionIntro from "@/components/services/SectionIntro";
 import container from "@/components/services/Container.module.css";
 import { groupVariants, softRiseVariants, VIEWPORT } from "@/components/services/motion";
+import { useI18n } from "@/i18n/I18nProvider";
 import { CLIENT_LOGOS } from "../data";
 import ClientDialog from "./ClientDialog";
 import styles from "./ClientsSection.module.css";
+
+const COPY = {
+  en: {
+    heading: "Clients we've built custom systems for",
+    logosAriaLabel: "Client logos",
+    viewDetails: (name: string) => `${name} — view details`,
+  },
+  es: {
+    heading: "Clientes para los que hemos construido sistemas a la medida",
+    logosAriaLabel: "Logos de clientes",
+    viewDetails: (name: string) => `${name} — ver detalles`,
+  },
+};
 
 // Client dialog state and the logo grid live here, isolated from the rest of
 // the page — opening/closing the dialog only re-renders this section. Same
 // component this page's design mirrors from Call Center's ClientsSection,
 // just re-themed to the systems accent and re-scoped to systems clients.
 export default function ClientsSection({ reduced }: { reduced: boolean }) {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const [activeClientName, setActiveClientName] = useState<string | null>(null);
   const activeClient = CLIENT_LOGOS.find((client) => client.name === activeClientName) ?? null;
   const clientTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -52,10 +68,10 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
   return (
     <section id="clients" className={styles.clientsSection}>
       <div className={container.container}>
-        <SectionIntro title="Clients we've built custom systems for" reduced={reduced} accentColor="var(--sy-blue)" />
+        <SectionIntro title={t.heading} reduced={reduced} accentColor="var(--sy-blue)" />
         <motion.ul
           className={styles.logoWall}
-          aria-label="Client logos"
+          aria-label={t.logosAriaLabel}
           initial={reduced ? false : "hidden"}
           whileInView={reduced ? undefined : "visible"}
           viewport={VIEWPORT}
@@ -71,7 +87,7 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
                 className={styles.logoTrigger}
                 onClick={() => openClientDialog(brand.name)}
                 aria-haspopup="dialog"
-                aria-label={`${brand.name} — view details`}
+                aria-label={t.viewDetails(brand.name)}
               >
                 <motion.span
                   className={styles.logoImageWrap}

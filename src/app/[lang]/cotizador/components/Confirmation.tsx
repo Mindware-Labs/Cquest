@@ -1,21 +1,25 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import Link from "next/link";
 import { motion, type Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { format } from "@/i18n/format";
+import type { Locale } from "@/i18n/config";
 import {
   QUESTIONNAIRES,
   getService,
   isAnswered,
-  type Question,
+  resolveQuestion,
+  type ResolvedQuestion,
   type QuoteSubmission,
 } from "../data";
 import styles from "./Confirmation.module.css";
 import buttons from "./buttons.module.css";
 
 // Map a stored answer back to its human label(s) for the recap.
-function toLabels(question: Question, answer: string | string[]): string {
+function toLabels(question: ResolvedQuestion, answer: string | string[]): string {
   const values = Array.isArray(answer) ? answer : [answer];
   return values
     .map(
@@ -27,13 +31,15 @@ function toLabels(question: Question, answer: string | string[]): string {
 }
 
 // The recap shown on success: service first, then every choice answered
-// (free-text notes are left out — too long for a chip row).
-function summarize(submission: QuoteSubmission) {
+// (free-text notes are left out — too long for a chip row). Resolved against
+// the viewer's current language, which is the same one they submitted in.
+function summarize(submission: QuoteSubmission, lang: Locale) {
   const rows: { label: string; value: string }[] = [];
-  for (const question of QUESTIONNAIRES[submission.service].questions) {
-    if (question.kind === "textarea") continue;
-    const answer = submission.details[question.id];
+  for (const raw of QUESTIONNAIRES[submission.service].questions) {
+    if (raw.kind === "textarea") continue;
+    const answer = submission.details[raw.id];
     if (!isAnswered(answer)) continue;
+    const question = resolveQuestion(raw, lang);
     rows.push({ label: question.label, value: toLabels(question, answer) });
   }
   return rows;
@@ -62,8 +68,9 @@ export default function Confirmation({
   onReset: () => void;
   reduced: boolean;
 }) {
+  const { dict, lang } = useI18n();
   const service = getService(submission.service);
-  const rows = summarize(submission);
+  const rows = summarize(submission, lang);
   const name = ((submission.contact.name as string) ?? "").split(" ")[0];
 
   return (
@@ -101,18 +108,17 @@ export default function Confirmation({
       </motion.div>
 
       <motion.h2 className={styles.confirmTitle} variants={reduced ? undefined : item}>
-        {name ? `Thanks, ${name} — ` : "Thanks — "}your request is in.
+        {name ? format(dict.wizard.confirmation.thanksNamed, { name }) : dict.wizard.confirmation.thanksGeneric}
       </motion.h2>
       <motion.p className={styles.confirmLead} variants={reduced ? undefined : item}>
-        Our team will review your {service?.label ?? "quote"} request and get
-        back to you within one business day.
+        {format(dict.wizard.confirmation.note, { service: service?.label[lang] ?? dict.wizard.confirmation.fallbackService })}
       </motion.p>
 
       {rows.length > 0 && (
         <motion.dl className={styles.summary} variants={reduced ? undefined : item}>
           <div className={styles.summaryRow}>
-            <dt>Service</dt>
-            <dd>{service?.label}</dd>
+            <dt>{dict.wizard.confirmation.serviceLabel}</dt>
+            <dd>{service?.label[lang]}</dd>
           </div>
           {rows.map((row) => (
             <div key={row.label} className={styles.summaryRow}>
@@ -124,11 +130,11 @@ export default function Confirmation({
       )}
 
       <motion.div className={styles.confirmActions} variants={reduced ? undefined : item}>
-        <Link href="/" className={buttons.ghostBtn}>
-          Back to home
-        </Link>
+        <LocalizedLink href="/" className={buttons.ghostBtn}>
+          {dict.wizard.confirmation.backHome}
+        </LocalizedLink>
         <button type="button" onClick={onReset} className={buttons.primaryBtn}>
-          Start another request
+          {dict.wizard.confirmation.startAnother}
         </button>
       </motion.div>
     </motion.div>

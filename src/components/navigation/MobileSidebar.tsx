@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
+import { useI18n } from "@/i18n/I18nProvider";
+import { localeHref } from "@/i18n/localeHref";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
 type MobileSidebarProps = {
@@ -24,9 +25,11 @@ export default function MobileSidebar({
   onClose,
   links,
   ctaHref,
-  ctaLabel = "Contact us",
+  ctaLabel,
   theme = "light",
 }: MobileSidebarProps) {
+  const { dict, lang } = useI18n();
+  const resolvedCtaLabel = ctaLabel ?? dict.common.contactUs;
   const [mounted, setMounted] = useState(false);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
 
@@ -92,7 +95,7 @@ export default function MobileSidebar({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close menu"
+                aria-label={dict.nav.menuClose}
                 className={`flex h-10 w-10 touch-manipulation items-center justify-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                   dark
                     ? "border-white/20 text-white hover:bg-white/10 focus-visible:outline-celeste"
@@ -129,7 +132,7 @@ export default function MobileSidebar({
                     </button>
                   ) : (
                     <a
-                      href={href}
+                      href={localeHref(lang, href)}
                       onClick={(event) => {
                         if (href === "#") event.preventDefault();
                         onClose();
@@ -158,7 +161,7 @@ export default function MobileSidebar({
                           {children.map((child) => (
                             <li key={child.label} className="py-1">
                               <a
-                                href={child.href}
+                                href={localeHref(lang, child.href)}
                                 onClick={onClose}
                                 className={`block touch-manipulation py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                   dark
@@ -182,15 +185,15 @@ export default function MobileSidebar({
                 transition={{ duration: 0.4, delay: 0.1 + links.length * 0.06, ease: NAV_EASE_OUT }}
                 className="pt-4"
               >
-                <Link
-                  href={ctaHref}
+                <a
+                  href={localeHref(lang, ctaHref)}
                   onClick={onClose}
                   className={`cq-rect-cta flex touch-manipulation items-center justify-center px-6 py-3 text-center transition-transform duration-150 ease-out active:scale-[0.96] ${
                     dark ? "bg-celeste text-foreground" : "bg-petroleo text-white"
                   }`}
                 >
-                  {ctaLabel}
-                </Link>
+                  {resolvedCtaLabel}
+                </a>
               </motion.li>
             </ul>
           </motion.div>

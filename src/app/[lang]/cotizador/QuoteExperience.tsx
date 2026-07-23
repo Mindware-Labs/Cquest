@@ -4,15 +4,10 @@ import { motion, useReducedMotion } from "motion/react";
 import Navbar from "@/components/Navbar";
 import { EASE_OUT } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
 import QuoteWizard from "./components/QuoteWizard";
 import { getService } from "./data";
 import styles from "./cotizador.module.css";
-
-const TRUST = [
-  { icon: ClockIcon, text: "Reply within one business day" },
-  { icon: FreeIcon, text: "No commitment, no cost" },
-  { icon: LockIcon, text: "Your details stay private" },
-];
 
 export default function QuoteExperience({
   initialService,
@@ -21,8 +16,14 @@ export default function QuoteExperience({
   initialService: ServiceId | null;
   initialStep?: number;
 }) {
+  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
   const preset = getService(initialService);
+  const trust = [
+    { icon: ClockIcon, text: dict.quoteExperience.trust[0] },
+    { icon: FreeIcon, text: dict.quoteExperience.trust[1] },
+    { icon: LockIcon, text: dict.quoteExperience.trust[2] },
+  ];
 
   return (
     <div className={styles.page}>
@@ -37,22 +38,19 @@ export default function QuoteExperience({
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.8, ease: EASE_OUT }}
         >
-          <p className={styles.introEyebrow}>Give us a quest</p>
+          <p className={styles.introEyebrow}>{dict.quoteExperience.eyebrow}</p>
           <h1 className={styles.introTitle}>
             {preset ? (
               <>
-                Let&rsquo;s scope your{" "}
-                <span className={styles.introAccent}>{preset.label}</span>{" "}
-                operation.
+                {dict.quoteExperience.titleWithService[0]}
+                <span className={styles.introAccent}>{preset.label[lang]}</span>
+                {dict.quoteExperience.titleWithService[1]}
               </>
             ) : (
-              <>Let&rsquo;s scope your operation.</>
+              dict.quoteExperience.titleGeneric
             )}
           </h1>
-          <p className={styles.introLead}>
-            Answer a few quick questions and we&rsquo;ll come back with a
-            tailored proposal — usually within one business day.
-          </p>
+          <p className={styles.introLead}>{dict.quoteExperience.lead}</p>
         </motion.header>
 
         <motion.div
@@ -69,7 +67,7 @@ export default function QuoteExperience({
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4, ease: EASE_OUT }}
         >
-          {TRUST.map(({ icon: Icon, text }) => (
+          {trust.map(({ icon: Icon, text }) => (
             <li key={text} className={styles.trustItem}>
               <Icon />
               <span>{text}</span>

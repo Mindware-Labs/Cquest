@@ -12,26 +12,44 @@ import {
   VIEWPORT,
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
+import { useI18n } from "@/i18n/I18nProvider";
 import { BPO, CAPABILITY_DETAIL } from "../data";
 import styles from "./CapabilitiesSection.module.css";
+
+const COPY = {
+  en: {
+    title: <>Six disciplines,<br />one standard</>,
+    description: "Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you.",
+    groupLabel: "Operations disciplines",
+    heldToOneSla: "Held to one SLA",
+    rackHint: "Select a discipline to open its full spec. Every one runs under the same SLA.",
+    whatItIncludes: "What it includes",
+    clientBenefit: "Client benefit",
+  },
+  es: {
+    title: <>Seis disciplinas,<br />un solo estándar</>,
+    description: "Cada disciplina cumple el mismo estándar operativo. Abre una para ver exactamente qué cubre — y el beneficio que te entrega.",
+    groupLabel: "Disciplinas de operaciones",
+    heldToOneSla: "Bajo un solo SLA",
+    rackHint: "Selecciona una disciplina para ver su ficha completa. Todas operan bajo el mismo SLA.",
+    whatItIncludes: "Qué incluye",
+    clientBenefit: "Beneficio para el cliente",
+  },
+};
 
 // Two independent renderings share the same data: a horizontal rack of
 // expanding slats above `lg` (mouse-driven, hover glides between them), and
 // a plain vertical accordion below it (each discipline opens in place on
 // tap — no hover state to fake, no fixed max-height to guess at).
 export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   return (
     <section id="capabilities" className={styles.capabilitiesSection}>
       <div className={container.container}>
         <SectionIntro
-          title={
-            <>
-              Six disciplines,
-              <br />
-              one standard
-            </>
-          }
-          description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you."
+          title={t.title}
+          description={t.description}
           reduced={reduced}
           accentColor="var(--bp-teal)"
         />
@@ -47,6 +65,8 @@ export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
 }
 
 function DesktopCapabilities({ reduced }: { reduced: boolean }) {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const total = BPO.details.length;
   const [activeIndex, setActiveIndex] = useState(0);
   const slatRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -75,18 +95,18 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
       <motion.div
         className={styles.rack}
         role="group"
-        aria-label="Operations disciplines"
+        aria-label={t.groupLabel}
         initial={reduced ? false : "hidden"}
         whileInView={reduced ? undefined : "visible"}
         viewport={VIEWPORT}
         variants={groupVariants}
       >
           {BPO.details.map((item, index) => {
-            const detail = CAPABILITY_DETAIL[item.title];
+            const detail = CAPABILITY_DETAIL[item.id];
             const active = index === activeIndex;
             return (
               <motion.div
-                key={item.title}
+                key={item.id}
                 className={styles.slat}
                 data-active={active || undefined}
                 variants={softRiseVariants}
@@ -111,7 +131,7 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
                   <span className={styles.slatIcon} aria-hidden>
                     <ServiceIcon name={item.icon} />
                   </span>
-                  <span className={styles.slatTitle}>{item.title}</span>
+                  <span className={styles.slatTitle}>{item.title[lang]}</span>
                   <svg
                     className={styles.slatChevron}
                     aria-hidden
@@ -129,30 +149,30 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
                   className={styles.slatDetail}
                   id={`bpo-panel-${index}`}
                   role="region"
-                  aria-label={item.title}
+                  aria-label={item.title[lang]}
                   aria-hidden={!active}
                 >
                   <div className={styles.slatDetailInner}>
                     <span className={styles.slatKicker}>
                       <span className={styles.slatKickerDot} aria-hidden />
-                      Held to one SLA
+                      {t.heldToOneSla}
                     </span>
-                    <span className={styles.slatName}>{item.title}</span>
-                    <p className={styles.slatLead}>{item.description}</p>
+                    <span className={styles.slatName}>{item.title[lang]}</span>
+                    <p className={styles.slatLead}>{item.description[lang]}</p>
                     <div className={styles.slatPanels}>
                       <div className={styles.slatIncludes}>
                         <span className={styles.slatLabel}>
-                          What it includes
+                          {t.whatItIncludes}
                         </span>
                         <ul>
-                          {detail.includes.map((line) => (
+                          {detail.includes[lang].map((line) => (
                             <li key={line}>{line}</li>
                           ))}
                         </ul>
                       </div>
                       <div className={styles.slatBenefit}>
-                        <span className={styles.slatLabel}>Client benefit</span>
-                        <p>{detail.benefit}</p>
+                        <span className={styles.slatLabel}>{t.clientBenefit}</span>
+                        <p>{detail.benefit[lang]}</p>
                       </div>
                     </div>
                   </div>
@@ -162,14 +182,15 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
           })}
       </motion.div>
       <p className={styles.rackHint}>
-        <span aria-hidden>—</span> Select a discipline to open its full spec.
-        Every one runs under the same SLA.
+        <span aria-hidden>—</span> {t.rackHint}
       </p>
     </>
   );
 }
 
 function MobileCapabilities({ reduced }: { reduced: boolean }) {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
@@ -181,12 +202,12 @@ function MobileCapabilities({ reduced }: { reduced: boolean }) {
       variants={groupVariants}
     >
       {BPO.details.map((item, index) => {
-        const detail = CAPABILITY_DETAIL[item.title];
+        const detail = CAPABILITY_DETAIL[item.id];
         const open = index === openIndex;
         const panelId = `bpo-accordion-panel-${index}`;
 
         return (
-          <motion.div key={item.title} className={styles.accordionItem} data-active={open || undefined} variants={focusRiseVariants}>
+          <motion.div key={item.id} className={styles.accordionItem} data-active={open || undefined} variants={focusRiseVariants}>
             <button
               type="button"
               id={`bpo-accordion-header-${index}`}
@@ -197,7 +218,7 @@ function MobileCapabilities({ reduced }: { reduced: boolean }) {
             >
               <span className={styles.accordionNumber}>0{index + 1}</span>
               <span className={styles.accordionIcon}><ServiceIcon name={item.icon} /></span>
-              <span className={styles.accordionTitle}>{item.title}</span>
+              <span className={styles.accordionTitle}>{item.title[lang]}</span>
               <ChevronIcon open={open} />
             </button>
             <AnimatePresence initial={false}>
@@ -215,17 +236,17 @@ function MobileCapabilities({ reduced }: { reduced: boolean }) {
                   <div className={styles.accordionPanelInner}>
                     <span className={styles.accordionKicker}>
                       <span className={styles.accordionKickerDot} aria-hidden />
-                      Held to one SLA
+                      {t.heldToOneSla}
                     </span>
-                    <p className={styles.accordionLead}>{item.description}</p>
+                    <p className={styles.accordionLead}>{item.description[lang]}</p>
                     <div className={styles.accordionPanels}>
                       <div className={styles.accordionIncludes}>
-                        <span className={styles.accordionLabel}>What it includes</span>
-                        <ul>{detail.includes.map((line) => (<li key={line}>{line}</li>))}</ul>
+                        <span className={styles.accordionLabel}>{t.whatItIncludes}</span>
+                        <ul>{detail.includes[lang].map((line) => (<li key={line}>{line}</li>))}</ul>
                       </div>
                       <div className={styles.accordionBenefit}>
-                        <span className={styles.accordionLabel}>Client benefit</span>
-                        <p>{detail.benefit}</p>
+                        <span className={styles.accordionLabel}>{t.clientBenefit}</span>
+                        <p>{detail.benefit[lang]}</p>
                       </div>
                     </div>
                   </div>

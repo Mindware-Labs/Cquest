@@ -32,8 +32,8 @@ export async function submitQuote(submission: QuoteSubmission): Promise<void> {
   const questionnaire = QUESTIONNAIRES[submission.service];
   const detailsValid =
     Boolean(questionnaire) &&
-    detailsSchema(questionnaire).safeParse(submission.details).success;
-  const contactValid = contactSchema.safeParse(submission.contact).success;
+    detailsSchema(questionnaire, submission.locale).safeParse(submission.details).success;
+  const contactValid = contactSchema(submission.locale).safeParse(submission.contact).success;
   if (!detailsValid || !contactValid) {
     throw new Error("Invalid quote submission");
   }

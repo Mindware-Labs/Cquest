@@ -1,12 +1,28 @@
 import type { Metadata } from "next";
 import QuoteExperience from "./QuoteExperience";
 import { resolveService } from "./data";
+import type { Locale } from "@/i18n/config";
+import { localeAlternates } from "@/i18n/alternates";
+import { resolveLang } from "@/i18n/resolveLangParam";
 
-export const metadata: Metadata = {
-  title: "Request a quote | Center Quest",
-  description:
-    "Tell us what you need across Call Center, Operations or Systems Development and get a tailored proposal in under a minute.",
+const TITLE: Record<Locale, string> = {
+  en: "Request a quote | Center Quest",
+  es: "Solicita una cotización | Center Quest",
 };
+
+const DESCRIPTION: Record<Locale, string> = {
+  en: "Tell us what you need across Call Center, Operations or Systems Development and get a tailored proposal in under a minute.",
+  es: "Cuéntanos qué necesitas en Call Center, Operaciones o Desarrollo de Sistemas y recibe una propuesta a tu medida en menos de un minuto.",
+};
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = await resolveLang(params);
+  return {
+    title: TITLE[lang],
+    description: DESCRIPTION[lang],
+    alternates: localeAlternates(lang, "/cotizador"),
+  };
+}
 
 // Service pages deep-link in with ?servicio=<id> (also accepts ?service=). In
 // Next 16 `searchParams` is async, so the page awaits it and hands the resolved

@@ -2,7 +2,35 @@
 
 import { motion, type Variants } from "motion/react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 import styles from "./SystemPreview.module.css";
+
+const COPY = {
+  en: {
+    crmBar: "crm · cases",
+    searchCases: "Search cases",
+    new: "New",
+    statuses: { New: "New", Open: "Open", Won: "Won" },
+    dashboardBar: "dashboard · realtime",
+    live: "Live",
+    automationBar: "workflows · rules",
+    nodes: { Trigger: "Trigger", Rule: "Rule", Notify: "Notify", Update: "Update" },
+    aiBar: "assistant · console",
+    askAssistant: "Ask the assistant",
+  },
+  es: {
+    crmBar: "crm · casos",
+    searchCases: "Buscar casos",
+    new: "Nuevo",
+    statuses: { New: "Nuevo", Open: "Abierto", Won: "Ganado" },
+    dashboardBar: "dashboard · tiempo real",
+    live: "En vivo",
+    automationBar: "flujos · reglas",
+    nodes: { Trigger: "Disparador", Rule: "Regla", Notify: "Notificar", Update: "Actualizar" },
+    aiBar: "asistente · consola",
+    askAssistant: "Pregúntale al asistente",
+  },
+};
 
 /* ── System previews ──────────────────────────────────────────────────────
    Each of the four systems is shown AS its product: a synthetic, image-free
@@ -80,19 +108,21 @@ function Bar({ dots, label }: { dots?: boolean; label: string }) {
 /* 1 · CRMs — a case list. Records land in sequence; one is the open case,
    marked with the accent rail. */
 function CrmPreview() {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const rows = [
-    { code: "Case #4821", tag: "AR", tone: "var(--sy-sky)", status: "New", active: false },
-    { code: "Case #4818", tag: "MJ", tone: "var(--sy-blue)", status: "Open", active: true },
-    { code: "Case #4813", tag: "LP", tone: "var(--pv-green)", status: "Won", active: false },
-    { code: "Case #4807", tag: "DT", tone: "var(--sy-blue)", status: "Open", active: false },
-  ] as const;
+    { code: "Case #4821", tag: "AR", tone: "var(--sy-sky)", status: "New" as const, active: false },
+    { code: "Case #4818", tag: "MJ", tone: "var(--sy-blue)", status: "Open" as const, active: true },
+    { code: "Case #4813", tag: "LP", tone: "var(--pv-green)", status: "Won" as const, active: false },
+    { code: "Case #4807", tag: "DT", tone: "var(--sy-blue)", status: "Open" as const, active: false },
+  ];
   return (
     <>
-      <Bar label="crm · cases" />
+      <Bar label={t.crmBar} />
       <motion.div className={styles.pvScreen} variants={pvGroup}>
         <motion.div className={styles.crmToolbar} variants={pvRise}>
-          <span className={styles.crmSearch}><Ico d={I.search} />Search cases</span>
-          <span className={styles.crmNew}><Ico d={I.plus} />New</span>
+          <span className={styles.crmSearch}><Ico d={I.search} />{t.searchCases}</span>
+          <span className={styles.crmNew}><Ico d={I.plus} />{t.new}</span>
         </motion.div>
         <motion.div className={styles.crmList} variants={pvGroupTight}>
           {rows.map((r) => (
@@ -102,7 +132,7 @@ function CrmPreview() {
                 <span className={styles.crmName}>{r.code}</span>
                 <span className={styles.crmSub} />
               </span>
-              <span className={styles.crmPill} style={{ "--t": r.tone } as CSSProperties}>{r.status}</span>
+              <span className={styles.crmPill} style={{ "--t": r.tone } as CSSProperties}>{t.statuses[r.status]}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -114,6 +144,8 @@ function CrmPreview() {
 /* 2 · Dashboards — live KPIs. Tiles settle in, then the bars grow from their
    baseline; the peak is called out and a live pulse keeps time. */
 function DashboardPreview() {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const tiles = [
     { label: "SLA", value: "98%" },
     { label: "AHT", value: "4:12" },
@@ -123,10 +155,10 @@ function DashboardPreview() {
   const peak = Math.max(...bars);
   return (
     <>
-      <Bar label="dashboard · realtime" />
+      <Bar label={t.dashboardBar} />
       <motion.div className={styles.pvScreen} variants={pvGroup}>
         <motion.div className={styles.dashHead} variants={pvRise}>
-          <span className={styles.dashLive}><i aria-hidden />Live</span>
+          <span className={styles.dashLive}><i aria-hidden />{t.live}</span>
         </motion.div>
         <motion.div className={styles.dashTiles} variants={pvGroupTight}>
           {tiles.map((t) => (
@@ -156,12 +188,14 @@ function DashboardPreview() {
    which branches to two actions; the connectors draw, the nodes pop, and a
    signal keeps flowing down the branches. */
 function AutomationPreview() {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const nodes = [
-    { x: 15, y: 50, label: "Trigger", icon: I.bolt, color: "var(--sy-sky)" },
-    { x: 49, y: 50, label: "Rule", icon: I.rule, color: "var(--sy-blue)" },
-    { x: 82, y: 22, label: "Notify", icon: I.bell, color: "var(--pv-green)" },
-    { x: 82, y: 78, label: "Update", icon: I.check, color: "var(--sy-sky)" },
-  ] as const;
+    { key: "Trigger" as const, x: 15, y: 50, icon: I.bolt, color: "var(--sy-sky)" },
+    { key: "Rule" as const, x: 49, y: 50, icon: I.rule, color: "var(--sy-blue)" },
+    { key: "Notify" as const, x: 82, y: 22, icon: I.bell, color: "var(--pv-green)" },
+    { key: "Update" as const, x: 82, y: 78, icon: I.check, color: "var(--sy-sky)" },
+  ];
   const conns = [
     { d: "M21 50 L43 50", fd: "0s" },
     { d: "M55 50 C66 50 68 22 76 22", fd: "0.7s" },
@@ -169,7 +203,7 @@ function AutomationPreview() {
   ] as const;
   return (
     <>
-      <Bar label="workflows · rules" />
+      <Bar label={t.automationBar} />
       <motion.div className={styles.pvScreen} variants={pvGroup}>
         <motion.div className={styles.autoStage} variants={pvGroupTight}>
           <svg className={styles.autoSvg} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
@@ -188,12 +222,12 @@ function AutomationPreview() {
           </svg>
           {nodes.map((n) => (
             <motion.span
-              key={n.label}
+              key={n.key}
               className={styles.autoNode}
               style={{ left: `${n.x}%`, top: `${n.y}%`, "--n": n.color } as CSSProperties}
               variants={pvPop}
             >
-              <Ico d={n.icon} />{n.label}
+              <Ico d={n.icon} />{t.nodes[n.key]}
             </motion.span>
           ))}
         </motion.div>
@@ -205,9 +239,11 @@ function AutomationPreview() {
 /* 4 · AI Implementation — an agent console. A prompt, the assistant's reply,
    and a live typing indicator over a ready input line. */
 function AiPreview() {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   return (
     <>
-      <Bar label="assistant · console" />
+      <Bar label={t.aiBar} />
       <motion.div className={styles.pvScreen} variants={pvGroup}>
         <motion.div className={styles.aiMsg} data-role="user" variants={pvRise}>
           <span className={styles.aiBubble}>
@@ -227,7 +263,7 @@ function AiPreview() {
           <span /><span /><span />
         </motion.div>
         <motion.div className={styles.aiInput} variants={pvRise}>
-          <span className={styles.aiInputText}>Ask the assistant<span className={styles.aiCaret} /></span>
+          <span className={styles.aiInputText}>{t.askAssistant}<span className={styles.aiCaret} /></span>
           <span className={styles.aiSend}><Ico d={I.send} /></span>
         </motion.div>
       </motion.div>
@@ -235,14 +271,17 @@ function AiPreview() {
   );
 }
 
+// Keyed by the capability's stable id (services/data.ts), not its title —
+// the title is locale-dependent and would silently miss this lookup in
+// whichever language isn't the literal English strings below.
 const PREVIEWS: Record<string, () => ReactElement> = {
-  CRMs: CrmPreview,
-  Dashboards: DashboardPreview,
-  "Operations automation": AutomationPreview,
-  "AI Implementation": AiPreview,
+  crms: CrmPreview,
+  dashboards: DashboardPreview,
+  "operations-automation": AutomationPreview,
+  "ai-implementation": AiPreview,
 };
 
-export default function SystemPreview({ title }: { title: string }) {
-  const Preview = PREVIEWS[title];
+export default function SystemPreview({ id }: { id: string }) {
+  const Preview = PREVIEWS[id];
   return Preview ? <Preview /> : null;
 }

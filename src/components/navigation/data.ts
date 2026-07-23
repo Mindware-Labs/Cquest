@@ -1,4 +1,6 @@
 import { SERVICE_ICON, SERVICES, type ServiceIconName } from "@/components/services/data";
+import type { Dictionary } from "@/i18n/dictionaries/types";
+import type { Locale } from "@/i18n/config";
 
 export type NavLink = {
   label: string;
@@ -21,21 +23,23 @@ export const SERVICE_DETAIL_PAGES = [
   "/services/systems",
 ] as const;
 
-export const NAV_LINKS = [
-  { label: "About us", href: "#" },
-  {
-    label: "Services",
-    href: "/#services",
-    children: SERVICES.map((service) => ({
-      label: service.label,
-      href: service.href,
-      description: service.strapline,
-      icon: SERVICE_ICON[service.id],
-    })),
-  },
-  { label: "Sectors", href: "#" },
-  { label: "Contact", href: "/cotizador" },
-] as const;
+export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+  return [
+    { label: dict.nav.aboutUs, href: "#" },
+    {
+      label: dict.nav.services,
+      href: "/#services",
+      children: SERVICES.map((service) => ({
+        label: service.label[lang],
+        href: service.href,
+        description: service.strapline[lang],
+        icon: SERVICE_ICON[service.id],
+      })),
+    },
+    { label: dict.nav.sectors, href: "#" },
+    { label: dict.nav.contact, href: "/cotizador" },
+  ];
+}
 
 // On a service detail page the logo is the only way back to the home page —
 // this gives every such page an explicit nav item for it too, with a small
@@ -43,42 +47,48 @@ export const NAV_LINKS = [
 // back at the top. Only lists sections that actually exist on "/" today
 // (HeroImage's #hero, ServicesCarousel's #services) — add to this list only
 // once a matching section ships on the home page.
-const HOME_NAV_LINK: NavLink = {
-  label: "Home",
-  href: "/",
-  children: [
-    { label: "Overview", href: "/" },
-    { label: "Services", href: "/#services" },
-  ],
-};
+function getHomeNavLink(dict: Dictionary): NavLink {
+  return {
+    label: dict.nav.home,
+    href: "/",
+    children: [
+      { label: dict.nav.overview, href: "/" },
+      { label: dict.nav.services, href: "/#services" },
+    ],
+  };
+}
 
 // Service detail pages have their own in-page sections — on those routes the
 // navbar should point at real anchors on the page instead of the generic
-// sitewide stubs above. Keyed by pathname so each service page can define its
-// own list without the shared Navbar/DesktopNav/MobileNav needing to know
-// anything about a specific page's structure.
-export const SERVICE_NAV_LINKS: Record<string, readonly NavLink[]> = {
-  "/services/call-center": [
-    HOME_NAV_LINK,
-    { label: "Capabilities", href: "#capabilities" },
-    { label: "Process", href: "#method" },
-    { label: "Results", href: "#metrics" },
-    { label: "Clients", href: "#clients" },
-  ],
-  "/services/bpo": [
-    HOME_NAV_LINK,
-    { label: "Disciplines", href: "#capabilities" },
-    { label: "Method", href: "#method" },
-    { label: "SLAs", href: "#slas" },
-    { label: "Facilities", href: "#facility" },
-  ],
-  "/services/systems": [
-    HOME_NAV_LINK,
-    { label: "Capabilities", href: "#capabilities" },
-    { label: "Method", href: "#method" },
-    { label: "Commitments", href: "#commitments" },
-    { label: "Work", href: "#work" },
-  ],
-};
+// sitewide stubs above. Keyed by the locale-less pathname (see
+// useLocalizedPathname) so each service page can define its own list without
+// the shared Navbar/DesktopNav/MobileNav needing to know anything about a
+// specific page's structure.
+export function getServiceNavLinks(dict: Dictionary): Record<string, readonly NavLink[]> {
+  const home = getHomeNavLink(dict);
+  return {
+    "/services/call-center": [
+      home,
+      { label: dict.serviceSections.callCenter.capabilities, href: "#capabilities" },
+      { label: dict.serviceSections.callCenter.process, href: "#method" },
+      { label: dict.serviceSections.callCenter.results, href: "#metrics" },
+      { label: dict.serviceSections.callCenter.clients, href: "#clients" },
+    ],
+    "/services/bpo": [
+      home,
+      { label: dict.serviceSections.bpo.disciplines, href: "#capabilities" },
+      { label: dict.serviceSections.bpo.method, href: "#method" },
+      { label: dict.serviceSections.bpo.slas, href: "#slas" },
+      { label: dict.serviceSections.bpo.facilities, href: "#facility" },
+    ],
+    "/services/systems": [
+      home,
+      { label: dict.serviceSections.systems.capabilities, href: "#capabilities" },
+      { label: dict.serviceSections.systems.method, href: "#method" },
+      { label: dict.serviceSections.systems.commitments, href: "#commitments" },
+      { label: dict.serviceSections.systems.work, href: "#work" },
+    ],
+  };
+}
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;

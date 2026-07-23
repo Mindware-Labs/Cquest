@@ -1,20 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { NAV_EASE_OUT, NAV_LINKS, SERVICE_DETAIL_PAGES, SERVICE_NAV_LINKS } from "@/components/navigation/data";
+import { NAV_EASE_OUT, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink, useLocalizedPathname } from "@/i18n/LocalizedLink";
 
-const MotionLink = motion.create(Link);
+const MotionLink = motion.create(LocalizedLink);
 
 export default function Navbar() {
+  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
-  const pathname = usePathname();
+  const pathname = useLocalizedPathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const {
@@ -52,9 +53,10 @@ export default function Navbar() {
 
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
   const inverse = serviceDetailPage && !scrolled && !open;
-  const navLinks = SERVICE_NAV_LINKS[pathname] ?? NAV_LINKS;
+  const navLinks = getServiceNavLinks(dict)[pathname] ?? getNavLinks(dict, lang);
   // The quote CTA opens the dedicated /cotizador form — on a service page it
-  // deep-links with that service preselected (Step 2).
+  // deep-links with that service preselected (Step 2). Left un-prefixed here;
+  // MotionLink/LocalizedLink resolves the locale itself.
   const quoteHref = serviceDetailPage
     ? `/cotizador?servicio=${pathname.split("/").pop()}`
     : "/cotizador";
@@ -79,10 +81,10 @@ export default function Navbar() {
       }`}
     >
       <nav
-        aria-label="Main"
+        aria-label={dict.nav.mainNavAriaLabel}
         className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5"
       >
-        <Link href="/" aria-label="Center Quest home" className="shrink-0">
+        <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="shrink-0">
           <Image
             src="/logo.png"
             alt="Center Quest"
@@ -91,7 +93,7 @@ export default function Navbar() {
             preload
             className={`h-12 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />
-        </Link>
+        </LocalizedLink>
 
         <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} />
 
@@ -109,18 +111,18 @@ export default function Navbar() {
             className={`cq-rect-cta group/cta relative hidden items-center overflow-hidden px-6 py-3 shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-[background-color,color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 md:inline-flex ${inverse ? "bg-celeste text-ink focus-visible:outline-celeste" : "bg-petroleo text-white focus-visible:outline-petroleo"}`}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
-            <span className="relative z-10">Contact us</span>
+            <span className="relative z-10">{dict.common.contactUs}</span>
           </MotionLink>
 
           <button
             type="button"
             aria-expanded={open}
             aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? dict.nav.menuClose : dict.nav.menuOpen}
             onClick={() => setOpen((value) => !value)}
             className={`relative flex h-11 w-11 touch-manipulation items-center justify-center rounded-full border backdrop-blur focus-visible:outline-2 focus-visible:outline-offset-2 md:hidden ${inverse ? "border-white/30 bg-white/5 focus-visible:outline-celeste" : "border-border/70 bg-background/60 focus-visible:outline-petroleo"}`}
           >
-            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <span className="sr-only">{open ? dict.nav.menuClose : dict.nav.menuOpen}</span>
             <motion.span
               animate={open ? { rotate: 45, y: 0 } : { rotate: 0, y: -3.5 }}
               transition={{ duration: 0.3, ease: NAV_EASE_OUT }}

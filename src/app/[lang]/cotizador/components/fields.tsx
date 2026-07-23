@@ -1,7 +1,7 @@
 "use client";
 
 import ServiceIcon from "@/components/services/ServiceIcon";
-import type { Choice, Question } from "../data";
+import type { ResolvedChoice as Choice, ResolvedQuestion as Question } from "../data";
 import styles from "./fields.module.css";
 import { Alert } from "./icons";
 

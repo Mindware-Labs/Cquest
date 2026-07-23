@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import { SERVICES } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
+import { format } from "@/i18n/format";
 import CapabilityTags from "./CapabilityTags";
 import ServiceCta from "./ServiceCta";
 import SlideBackdrop from "./SlideBackdrop";
@@ -60,6 +62,7 @@ const stageItemVariants: Variants = {
 };
 
 export default function ServicesCarousel() {
+  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
   /* Index + direction live together so a single state update drives both
      which page renders and which way the turn animates. */
@@ -128,7 +131,7 @@ export default function ServicesCarousel() {
       ref={sectionRef}
       id="services"
       aria-roledescription="carousel"
-      aria-label="Center Quest business lines"
+      aria-label={dict.carousel.ariaLabel}
       data-ambient-active={tabVisible && !reduced}
       style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
       className="cq-carousel-sheet relative isolate h-dvh w-full overflow-hidden text-foreground"
@@ -142,7 +145,7 @@ export default function ServicesCarousel() {
       <AnimatePresence initial={false} custom={direction}>
         <motion.article
           key={service.id}
-          aria-label={`${index + 1} of ${SERVICES.length}: ${service.label}`}
+          aria-label={format(dict.carousel.slideAriaLabel, { index: index + 1, total: SERVICES.length, label: service.label[lang] })}
           custom={direction}
           variants={reduced ? undefined : pageVariants}
           initial="enter"
@@ -170,25 +173,25 @@ export default function ServicesCarousel() {
               variants={reduced ? undefined : stageItemVariants}
               className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))]"
             >
-              Business line · 0{index + 1}
+              {dict.carousel.businessLinePrefix} · 0{index + 1}
             </motion.p>
             <motion.h2
               variants={reduced ? undefined : stageItemVariants}
               className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.6rem)] font-semibold leading-[1.04] tracking-[-0.03em]"
             >
-              {service.label}
+              {service.label[lang]}
             </motion.h2>
             <motion.p
               variants={reduced ? undefined : stageItemVariants}
               className="mt-4 max-w-[38ch] text-balance font-heading text-[clamp(1.05rem,2vw,1.35rem)] font-medium leading-snug text-foreground/90"
             >
-              {service.shortLabel}
+              {service.shortLabel[lang]}
             </motion.p>
             <motion.p
               variants={reduced ? undefined : stageItemVariants}
               className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base"
             >
-              {service.strapline} {service.description}
+              {service.strapline[lang]} {service.description[lang]}
             </motion.p>
 
             <CapabilityTags service={service} reduced={reduced} />
@@ -209,14 +212,14 @@ export default function ServicesCarousel() {
 
       {/* Page indicator: tinted dot per service, current one stretched. */}
       <nav
-        aria-label="Choose service"
+        aria-label={dict.carousel.chooseServiceAriaLabel}
         className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2.5"
       >
         {SERVICES.map((entry, dotIndex) => (
           <button
             key={entry.id}
             type="button"
-            aria-label={entry.label}
+            aria-label={entry.label[lang]}
             aria-current={dotIndex === index ? "true" : undefined}
             onClick={() => goTo(dotIndex)}
             className="rounded-full transition-all duration-500 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-petroleo"

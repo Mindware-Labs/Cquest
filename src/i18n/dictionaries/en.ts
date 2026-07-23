@@ -1,0 +1,102 @@
+import type { Dictionary } from "./types";
+
+export const dictionary: Dictionary = {
+  common: {
+    contactUs: "Contact us",
+    skipToMainContent: "Skip to main content",
+  },
+  nav: {
+    aboutUs: "About us",
+    services: "Services",
+    sectors: "Sectors",
+    contact: "Contact",
+    home: "Home",
+    overview: "Overview",
+    menuOpen: "Open menu",
+    menuClose: "Close menu",
+    mainNavAriaLabel: "Main",
+    homeLinkAriaLabel: "Center Quest home",
+  },
+  serviceSections: {
+    callCenter: { capabilities: "Capabilities", process: "Process", results: "Results", clients: "Clients" },
+    bpo: { disciplines: "Disciplines", method: "Method", slas: "SLAs", facilities: "Facilities" },
+    systems: { capabilities: "Capabilities", method: "Method", commitments: "Commitments", work: "Work" },
+  },
+  footer: {
+    tagline: "Call Center · Operations · Systems Development",
+    backToServices: "Back to all services",
+  },
+  hero: {
+    lead: "Call center, operations and systems development — one partner across your three growth priorities.",
+    coverageLine: "Call Center · Operations · Systems Development — 24/7 coverage",
+    scrollAriaLabel: "Scroll to services",
+    scrollLabel: "Scroll",
+    primaryCta: "Give us a quest",
+    secondaryCta: "See our services",
+    accessibleFallback: "We power operations. You drive growth.",
+    rotating: [
+      { top: "We power operations.", bottom: "You drive growth." },
+      { top: "We answer every call.", bottom: "You keep every client." },
+      { top: "We run the back office.", bottom: "You run the business." },
+      { top: "We build your systems.", bottom: "You set the pace." },
+    ],
+    navLinks: { services: "Services", successStories: "Success stories", about: "About", contact: "Contact" },
+  },
+  carousel: {
+    ariaLabel: "Center Quest business lines",
+    slideAriaLabel: "{index} of {total}: {label}",
+    businessLinePrefix: "Business line",
+    chooseServiceAriaLabel: "Choose service",
+    explorePrefix: "Explore",
+  },
+  wizard: {
+    ariaLabel: "Quote request",
+    stepOf: "Step {n} of 3",
+    stepAnnounce: "Step {n} of 3: {label}.",
+    fixFields: "Please fix the highlighted fields.",
+    sending: "Sending your quote request…",
+    sent: "Quote request sent.",
+    back: "Back",
+    continue: "Continue",
+    sendingButton: "Sending…",
+    submitButton: "Request my quote",
+    step1: {
+      eyebrow: "Step 1 · Service",
+      title: "What can we help you with?",
+      lead: "Pick the line of work closest to what you need — you'll refine the specifics next.",
+      ariaLabel: "Business line",
+    },
+    step2: { eyebrow: "Step 2 · Details" },
+    step3: {
+      eyebrow: "Step 3 · Contact",
+      title: "Where should we send your quote?",
+      lead: "We'll only use these details to prepare and send your proposal.",
+      preferredChannel: "Best way to reach you",
+      consent: "By submitting, you agree to be contacted about your request. We don't share your details with anyone.",
+    },
+    confirmation: {
+      thanksNamed: "Thanks, {name} — your request is in.",
+      thanksGeneric: "Thanks — your request is in.",
+      note: "Our team will review your {service} request and get back to you within one business day.",
+      fallbackService: "quote",
+      serviceLabel: "Service",
+      backHome: "Back to home",
+      startAnother: "Start another request",
+    },
+    progressRailAriaLabel: "Quote steps",
+  },
+  quoteExperience: {
+    trust: ["Reply within one business day", "No commitment, no cost", "Your details stay private"],
+    eyebrow: "Give us a quest",
+    titleWithService: ["Let's scope your ", " operation."],
+    titleGeneric: "Let's scope your operation.",
+    lead: "Answer a few quick questions and we'll come back with a tailored proposal — usually within one business day.",
+  },
+  quoteContact: {
+    meta: "3 steps · about 2 minutes",
+    cta: "Give us a quest",
+    reassure: "Free · no commitment",
+  },
+};
+
+export default dictionary;

@@ -1,0 +1,102 @@
+import type { Dictionary } from "./types";
+
+export const dictionary: Dictionary = {
+  common: {
+    contactUs: "Contáctanos",
+    skipToMainContent: "Saltar al contenido principal",
+  },
+  nav: {
+    aboutUs: "Nosotros",
+    services: "Servicios",
+    sectors: "Sectores",
+    contact: "Contacto",
+    home: "Inicio",
+    overview: "Resumen",
+    menuOpen: "Abrir menú",
+    menuClose: "Cerrar menú",
+    mainNavAriaLabel: "Principal",
+    homeLinkAriaLabel: "Inicio de Center Quest",
+  },
+  serviceSections: {
+    callCenter: { capabilities: "Capacidades", process: "Proceso", results: "Resultados", clients: "Clientes" },
+    bpo: { disciplines: "Disciplinas", method: "Método", slas: "SLAs", facilities: "Instalaciones" },
+    systems: { capabilities: "Capacidades", method: "Método", commitments: "Compromisos", work: "Trabajo" },
+  },
+  footer: {
+    tagline: "Call Center · Operaciones · Desarrollo de Sistemas",
+    backToServices: "Volver a todos los servicios",
+  },
+  hero: {
+    lead: "Call center, operaciones y desarrollo de sistemas — un solo aliado para tus tres prioridades de crecimiento.",
+    coverageLine: "Call Center · Operaciones · Desarrollo de Sistemas — cobertura 24/7",
+    scrollAriaLabel: "Desplazarse a servicios",
+    scrollLabel: "Desplázate",
+    primaryCta: "Cuéntanos tu misión",
+    secondaryCta: "Ver nuestros servicios",
+    accessibleFallback: "Nosotros impulsamos las operaciones. Tú impulsas el crecimiento.",
+    rotating: [
+      { top: "Impulsamos tus operaciones.", bottom: "Tú impulsas el crecimiento." },
+      { top: "Respondemos cada llamada.", bottom: "Tú conservas cada cliente." },
+      { top: "Gestionamos tu back office.", bottom: "Tú gestionas el negocio." },
+      { top: "Construimos tus sistemas.", bottom: "Tú marcas el ritmo." },
+    ],
+    navLinks: { services: "Servicios", successStories: "Casos de éxito", about: "Nosotros", contact: "Contacto" },
+  },
+  carousel: {
+    ariaLabel: "Líneas de negocio de Center Quest",
+    slideAriaLabel: "{index} de {total}: {label}",
+    businessLinePrefix: "Línea de negocio",
+    chooseServiceAriaLabel: "Elegir servicio",
+    explorePrefix: "Explorar",
+  },
+  wizard: {
+    ariaLabel: "Solicitud de cotización",
+    stepOf: "Paso {n} de 3",
+    stepAnnounce: "Paso {n} de 3: {label}.",
+    fixFields: "Corrige los campos resaltados.",
+    sending: "Enviando tu solicitud de cotización…",
+    sent: "Solicitud de cotización enviada.",
+    back: "Atrás",
+    continue: "Continuar",
+    sendingButton: "Enviando…",
+    submitButton: "Solicitar cotización",
+    step1: {
+      eyebrow: "Paso 1 · Servicio",
+      title: "¿En qué podemos ayudarte?",
+      lead: "Elige la línea de trabajo más cercana a lo que necesitas — afinaremos los detalles después.",
+      ariaLabel: "Línea de negocio",
+    },
+    step2: { eyebrow: "Paso 2 · Detalles" },
+    step3: {
+      eyebrow: "Paso 3 · Contacto",
+      title: "¿A dónde enviamos tu cotización?",
+      lead: "Solo usaremos estos datos para preparar y enviarte tu propuesta.",
+      preferredChannel: "Mejor forma de contactarte",
+      consent: "Al enviar, aceptas que te contactemos sobre tu solicitud. No compartimos tus datos con nadie.",
+    },
+    confirmation: {
+      thanksNamed: "Gracias, {name} — tu solicitud está en camino.",
+      thanksGeneric: "Gracias — tu solicitud está en camino.",
+      note: "Nuestro equipo revisará tu solicitud de {service} y te responderá en un día hábil.",
+      fallbackService: "cotización",
+      serviceLabel: "Servicio",
+      backHome: "Volver al inicio",
+      startAnother: "Iniciar otra solicitud",
+    },
+    progressRailAriaLabel: "Pasos de la cotización",
+  },
+  quoteExperience: {
+    trust: ["Respuesta en un día hábil", "Sin compromiso, sin costo", "Tus datos se mantienen privados"],
+    eyebrow: "Cuéntanos tu misión",
+    titleWithService: ["Definamos tu operación de ", "."],
+    titleGeneric: "Definamos tu operación.",
+    lead: "Responde algunas preguntas rápidas y volveremos con una propuesta a tu medida — normalmente en un día hábil.",
+  },
+  quoteContact: {
+    meta: "3 pasos · unos 2 minutos",
+    cta: "Cuéntanos tu misión",
+    reassure: "Gratis · sin compromiso",
+  },
+};
+
+export default dictionary;

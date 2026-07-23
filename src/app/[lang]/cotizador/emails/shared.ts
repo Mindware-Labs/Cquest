@@ -2,10 +2,17 @@ import {
   CONTACT_FIELDS,
   CONTACT_METHODS,
   QUESTIONNAIRES,
+  resolveChoice,
+  resolveQuestion,
   type Answers,
   type Question,
   type QuoteSubmission,
 } from "../data";
+
+// This is Center Quest's own internal sales-notification email — for RD
+// staff, not the prospect — so it stays fixed-Spanish regardless of which
+// language the prospect used on the site. See submitQuote.ts's own note.
+export const EMAIL_LANG = "es" as const;
 
 /* ── Email design system (server-only helpers) ────────────────────────────
    Table-based, inline-styled, self-contained — the way email clients want it.
@@ -43,34 +50,31 @@ export function answerText(
   answer: Answers[string] | undefined,
 ): string {
   if (answer == null) return "—";
+  const resolved = resolveQuestion(question, EMAIL_LANG);
   const values = Array.isArray(answer) ? answer : [answer];
   const labels = values
     .filter((value) => value !== "")
-    .map(
-      (value) =>
-        question.choices?.find((choice) => choice.value === value)?.label ??
-        value,
-    );
+    .map((value) => resolved.choices?.find((choice) => choice.value === value)?.label ?? value);
   return labels.length > 0 ? labels.join(", ") : "—";
 }
 
 export function contactRows(submission: QuoteSubmission): Row[] {
   const rows: Row[] = CONTACT_FIELDS.map((field) => ({
-    label: field.label,
+    label: resolveQuestion(field, EMAIL_LANG).label,
     value: ((submission.contact[field.id] as string) ?? "").trim() || "—",
   }));
   const preferred = submission.contact.preferred as string | undefined;
+  const preferredChoice = CONTACT_METHODS.find((method) => method.value === preferred);
   rows.push({
-    label: "Preferred channel",
-    value:
-      CONTACT_METHODS.find((method) => method.value === preferred)?.label ?? "—",
+    label: "Canal preferido",
+    value: preferredChoice ? resolveChoice(preferredChoice, EMAIL_LANG).label : "—",
   });
   return rows;
 }
 
 export function detailRows(submission: QuoteSubmission): Row[] {
   return QUESTIONNAIRES[submission.service].questions.map((question) => ({
-    label: question.label,
+    label: resolveQuestion(question, EMAIL_LANG).label,
     value: answerText(question, submission.details[question.id]),
   }));
 }
@@ -98,7 +102,7 @@ export function emailShell(opts: {
   body: string;
 }): string {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -113,7 +117,7 @@ export function emailShell(opts: {
         <tr>
           <td style="background:${C.ink};padding:24px 32px;">
             <div style="font-size:15px;font-weight:700;letter-spacing:0.3em;color:#ffffff;text-transform:uppercase;">Center&nbsp;Quest</div>
-            <div style="margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:0.16em;color:${C.celeste};text-transform:uppercase;">Operations partner &middot; Rep&uacute;blica Dominicana</div>
+            <div style="margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:0.16em;color:${C.celeste};text-transform:uppercase;">Aliado de operaciones &middot; Rep&uacute;blica Dominicana</div>
           </td>
         </tr>
         <tr><td style="height:3px;background:${opts.accent};font-size:0;line-height:0;">&nbsp;</td></tr>
@@ -121,7 +125,7 @@ export function emailShell(opts: {
         <tr>
           <td style="background:${C.panel};border-top:1px solid ${C.line};padding:22px 32px;">
             <div style="font-size:12px;font-weight:700;letter-spacing:0.24em;color:${C.muted};text-transform:uppercase;">Center Quest</div>
-            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; Operations &middot; Systems Development</div>
+            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; Operaciones &middot; Desarrollo de Sistemas</div>
           </td>
         </tr>
       </table>

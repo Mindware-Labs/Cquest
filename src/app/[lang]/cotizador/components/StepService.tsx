@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceId } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
 import { SERVICE_CARDS } from "../data";
 import shell from "./step.module.css";
 import styles from "./StepService.module.css";
@@ -18,21 +19,19 @@ export default function StepService({
   value: ServiceId | null;
   onSelect: (id: ServiceId) => void;
 }) {
+  const { dict, lang } = useI18n();
   return (
     <div className={shell.step}>
       <header className={shell.stepHead}>
-        <p className={shell.eyebrow}>Step 1 · Service</p>
-        <h2 className={shell.stepTitle}>What can we help you with?</h2>
-        <p className={shell.stepLead}>
-          Pick the line of work closest to what you need — you&rsquo;ll refine
-          the specifics next.
-        </p>
+        <p className={shell.eyebrow}>{dict.wizard.step1.eyebrow}</p>
+        <h2 className={shell.stepTitle}>{dict.wizard.step1.title}</h2>
+        <p className={shell.stepLead}>{dict.wizard.step1.lead}</p>
       </header>
 
       <div
         className={styles.serviceGrid}
         role="radiogroup"
-        aria-label="Business line"
+        aria-label={dict.wizard.step1.ariaLabel}
       >
         {SERVICE_CARDS.map((service) => {
           const selected = value === service.id;
@@ -55,9 +54,9 @@ export default function StepService({
               <span className={styles.serviceIcon} aria-hidden>
                 <ServiceIcon name={service.leadIcon} />
               </span>
-              <span className={styles.serviceLabel}>{service.label}</span>
+              <span className={styles.serviceLabel}>{service.label[lang]}</span>
               <span className={styles.serviceStrapline}>
-                {service.strapline}
+                {service.strapline[lang]}
               </span>
               <span className={styles.serviceMark} aria-hidden>
                 <Check className={styles.serviceCheck} />

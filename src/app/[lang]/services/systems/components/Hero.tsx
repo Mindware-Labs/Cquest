@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
-import devHeroImage from "../../../../../public/apps/dev-hero.jpeg";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
+import devHeroImage from "@public/apps/dev-hero.jpeg";
 import {
   EASE_OUT,
   focusRiseVariants,
@@ -16,8 +16,26 @@ import {
   softRiseVariants,
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
+import { useI18n } from "@/i18n/I18nProvider";
 import { HERO_LINES } from "../data";
 import styles from "./Hero.module.css";
+
+const COPY = {
+  en: {
+    lead: "CRMs, dashboards and operations automation built around how your business actually works — not the other way around.",
+    seeWhatWeBuild: "See what we build",
+    pageHighlights: "Page highlights",
+    signals: ["CRMs", "Dashboards", "Automation", "AI"],
+    windowAlt: "Center Quest operations platform — dashboard with call volume, agent activity and follow-up accountability",
+  },
+  es: {
+    lead: "CRMs, dashboards y automatización de operaciones construidos según cómo realmente funciona tu negocio — y no al revés.",
+    seeWhatWeBuild: "Ve lo que construimos",
+    pageHighlights: "Aspectos destacados",
+    signals: ["CRMs", "Dashboards", "Automatización", "IA"],
+    windowAlt: "Plataforma de operaciones de Center Quest — dashboard con volumen de llamadas, actividad de agentes y seguimiento de responsabilidades",
+  },
+};
 
 function WindowDots() {
   return (
@@ -28,6 +46,8 @@ function WindowDots() {
 }
 
 export default function Hero({ reduced }: { reduced: boolean }) {
+  const { dict, lang } = useI18n();
+  const t = COPY[lang];
   // The product window arrives tilted in perspective and flattens as the
   // page scrolls — the deliverable settling onto the desk. Transforms are
   // owned by these MotionValues; the entrance variants only touch
@@ -52,19 +72,19 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           animate="visible"
         >
           <motion.h1 className={styles.heroHeadline} variants={heroLinesVariants}>
-            {HERO_LINES.map((line) => (
+            {HERO_LINES[lang].map((line) => (
               <motion.span key={line.text} className={styles.heroLineMask} variants={passThroughVariants}>
                 <motion.span className={line.strong ? `${styles.heroLine} ${styles.heroHeadlineStrong}` : styles.heroLine} variants={heroCurtainVariants}>{line.text}</motion.span>
               </motion.span>
             ))}
           </motion.h1>
-          <motion.p className={styles.heroLead} variants={focusRiseVariants}>CRMs, dashboards and operations automation built around how your business actually works — not the other way around.</motion.p>
+          <motion.p className={styles.heroLead} variants={focusRiseVariants}>{t.lead}</motion.p>
           <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-            <Link href="/cotizador?servicio=systems" className={styles.primaryCta}>Give us a quest <Arrow /></Link>
-            <a href="#capabilities" className={styles.secondaryCta}>See what we build <Arrow direction="down" /></a>
+            <LocalizedLink href="/cotizador?servicio=systems" className={styles.primaryCta}>{dict.hero.primaryCta} <Arrow /></LocalizedLink>
+            <a href="#capabilities" className={styles.secondaryCta}>{t.seeWhatWeBuild} <Arrow direction="down" /></a>
           </motion.div>
-          <motion.div className={styles.heroSignal} aria-label="Page highlights" variants={focusRiseVariants}>
-            <span>CRMs</span><span>Dashboards</span><span>Automation</span><span>AI</span>
+          <motion.div className={styles.heroSignal} aria-label={t.pageHighlights} variants={focusRiseVariants}>
+            {t.signals.map((signal) => <span key={signal}>{signal}</span>)}
           </motion.div>
         </motion.div>
       </div>
@@ -84,7 +104,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           <div className={styles.windowBody}>
             <Image
               src={devHeroImage}
-              alt="Center Quest operations platform — dashboard with call volume, agent activity and follow-up accountability"
+              alt={t.windowAlt}
               fill
               quality={82}
               placeholder="blur"

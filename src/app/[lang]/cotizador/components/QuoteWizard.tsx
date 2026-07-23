@@ -4,12 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
+import { format } from "@/i18n/format";
 import {
   QUESTIONNAIRES,
+  STEPS,
   contactSchema,
   detailsSchema,
   fieldErrors,
   getService,
+  resolveQuestionnaire,
   type Answers,
   type QuoteSubmission,
 } from "../data";
@@ -24,8 +28,6 @@ import StepService from "./StepService";
 import { Arrow } from "./icons";
 
 type Status = "form" | "submitting" | "done";
-
-const STEP_LABEL = ["Service", "Details", "Contact"];
 
 export default function QuoteWizard({
   initialService,
@@ -42,6 +44,7 @@ export default function QuoteWizard({
   onSubmit?: (submission: QuoteSubmission) => Promise<void>;
   reduced: boolean;
 }) {
+  const { dict, lang } = useI18n();
   const startStep = initialService ? (initialStep ?? 1) : 0;
   const [service, setService] = useState<ServiceId | null>(initialService);
   const [details, setDetails] = useState<Answers>({});
@@ -55,7 +58,9 @@ export default function QuoteWizard({
   const stepPanelRef = useRef<HTMLDivElement>(null);
 
   const questionnaire = service ? QUESTIONNAIRES[service] : null;
+  const resolvedQuestionnaire = questionnaire ? resolveQuestionnaire(questionnaire, lang) : null;
   const accent = getService(service);
+  const stepLabel = (index: 0 | 1 | 2) => STEPS[index].copy[lang].label;
 
   // Keep the URL in sync with where the prospect actually is — so a refresh
   // or a copied link doesn't drop them back to Step 1. replaceState (not the
@@ -73,8 +78,8 @@ export default function QuoteWizard({
   // errors surfaced under each question.
   const detailsResult = useMemo(
     () =>
-      questionnaire ? detailsSchema(questionnaire).safeParse(details) : null,
-    [questionnaire, details],
+      questionnaire ? detailsSchema(questionnaire, lang).safeParse(details) : null,
+    [questionnaire, lang, details],
   );
 
   const detailErrors = useMemo(
@@ -88,8 +93,8 @@ export default function QuoteWizard({
   // Step 3 (Contact) runs through its own Zod schema — required + real email and
   // phone format checks — so gating and field feedback share one verdict.
   const contactResult = useMemo(
-    () => contactSchema.safeParse(contact),
-    [contact],
+    () => contactSchema(lang).safeParse(contact),
+    [lang, contact],
   );
 
   const contactErrors = useMemo(
@@ -130,13 +135,13 @@ export default function QuoteWizard({
     if (!service) return;
     setStatus("submitting");
     try {
-      await (onSubmit ?? submitQuote)({ service, details, contact });
+      await (onSubmit ?? submitQuote)({ service, details, contact, locale: lang });
       setStatus("done");
     } catch {
       // Keep the prospect's answers intact so they can retry.
       setStatus("form");
     }
-  }, [service, details, contact, onSubmit]);
+  }, [service, details, contact, lang, onSubmit]);
 
   const goNext = useCallback(() => {
     if (!canAdvance) {
@@ -233,17 +238,17 @@ export default function QuoteWizard({
   // so screen-reader users get the same feedback a sighted prospect sees.
   const liveMessage =
     status === "submitting"
-      ? "Sending your quote request…"
+      ? dict.wizard.sending
       : status === "done"
-        ? "Quote request sent."
-        : `Step ${step + 1} of 3: ${STEP_LABEL[step]}.${
-            showErrors && !canAdvance ? " Please fix the highlighted fields." : ""
+        ? dict.wizard.sent
+        : `${format(dict.wizard.stepAnnounce, { n: step + 1, label: stepLabel(step as 0 | 1 | 2) })}${
+            showErrors && !canAdvance ? ` ${dict.wizard.fixFields}` : ""
           }`;
 
   return (
     <section
       className={styles.wizard}
-      aria-label="Quote request"
+      aria-label={dict.wizard.ariaLabel}
       style={
         {
           "--svc": accent?.color ?? "var(--brand-petroleo)",
@@ -262,7 +267,7 @@ export default function QuoteWizard({
             exit={{ opacity: 0 }}
           >
             <Confirmation
-              submission={{ service: service!, details, contact }}
+              submission={{ service: service!, details, contact, locale: lang }}
               onReset={reset}
               reduced={reduced}
             />
@@ -290,9 +295,9 @@ export default function QuoteWizard({
                   {step === 0 && (
                     <StepService value={service} onSelect={selectService} />
                   )}
-                  {step === 1 && questionnaire && (
+                  {step === 1 && resolvedQuestionnaire && (
                     <StepDetails
-                      questionnaire={questionnaire}
+                      questionnaire={resolvedQuestionnaire}
                       answers={details}
                       onChange={setDetail}
                       showErrors={showErrors}
@@ -312,7 +317,7 @@ export default function QuoteWizard({
             </div>
 
             <div className={styles.footer}>
-              <p className={styles.footerMeta}>Step {step + 1} of 3</p>
+              <p className={styles.footerMeta}>{format(dict.wizard.stepOf, { n: step + 1 })}</p>
               <div className={styles.footerActions}>
                 {step > 0 && (
                   <button
@@ -321,7 +326,7 @@ export default function QuoteWizard({
                     onClick={goBack}
                     disabled={submitting}
                   >
-                    Back
+                    {dict.wizard.back}
                   </button>
                 )}
                 <button
@@ -334,10 +339,10 @@ export default function QuoteWizard({
                 >
                   <span>
                     {step < 2
-                      ? "Continue"
+                      ? dict.wizard.continue
                       : submitting
-                        ? "Sending…"
-                        : "Request my quote"}
+                        ? dict.wizard.sendingButton
+                        : dict.wizard.submitButton}
                   </span>
                   {step < 2 && <Arrow className={buttons.btnArrow} />}
                 </button>

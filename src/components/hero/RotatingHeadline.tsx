@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import {
-  HEADLINE_ROTATE_MS,
-  ROTATING_HEADLINES,
-  tickerFadeVariants,
-  tickerLineVariants,
-} from "./animation";
+import { useI18n } from "@/i18n/I18nProvider";
+import { HEADLINE_ROTATE_MS, tickerFadeVariants, tickerLineVariants } from "./animation";
 
 type Slides = { current: number; previous: number | null };
 
 export default function RotatingHeadline({ reduced }: { reduced: boolean }) {
+  const { dict } = useI18n();
+  const headlines = dict.hero.rotating;
   const [slides, setSlides] = useState<Slides>({ current: 0, previous: null });
 
   useEffect(() => {
@@ -18,21 +16,21 @@ export default function RotatingHeadline({ reduced }: { reduced: boolean }) {
     const timer = window.setInterval(() => {
       if (document.hidden) return;
       setSlides(({ current }) => ({
-        current: (current + 1) % ROTATING_HEADLINES.length,
+        current: (current + 1) % headlines.length,
         previous: current,
       }));
     }, HEADLINE_ROTATE_MS);
 
     return () => window.clearInterval(timer);
-  }, [reduced]);
+  }, [reduced, headlines.length]);
 
   return (
     <h1
       style={{ textWrap: "balance" }}
       className="font-heading grid max-w-[38rem] text-[clamp(2.3rem,5.4vw,4.25rem)] font-extrabold uppercase leading-[1.05] tracking-[-0.01em]"
     >
-      <span className="sr-only">We power operations. You drive growth.</span>
-      {ROTATING_HEADLINES.map((pair, index) => {
+      <span className="sr-only">{dict.hero.accessibleFallback}</span>
+      {headlines.map((pair, index) => {
         const status =
           index === slides.current
             ? "active"

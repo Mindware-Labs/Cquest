@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
 import { STEPS } from "../data";
 import styles from "./ProgressRail.module.css";
 import { Check } from "./icons";
@@ -16,8 +17,9 @@ export default function ProgressRail({
   furthest: number;
   onJump: (index: number) => void;
 }) {
+  const { dict, lang } = useI18n();
   return (
-    <ol className={styles.rail} aria-label="Quote steps">
+    <ol className={styles.rail} aria-label={dict.wizard.progressRailAriaLabel}>
       {STEPS.map((step, index) => {
         const state =
           index < current ? "done" : index === current ? "current" : "upcoming";
@@ -39,7 +41,7 @@ export default function ProgressRail({
                   index + 1
                 )}
               </span>
-              <span className={styles.railLabel}>{step.label}</span>
+              <span className={styles.railLabel}>{step.copy[lang].label}</span>
             </button>
             {index < STEPS.length - 1 && (
               <span className={styles.railTrack} aria-hidden>

@@ -1,11 +1,13 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
-import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceIconName } from "@/components/services/data";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { Locale } from "@/i18n/config";
 import Footer from "../components/Footer";
 import {
   focusRiseVariants,
@@ -27,158 +29,302 @@ import styles from "./work.module.css";
    A published Systems case study, presented generically (no client brand).
    Every claim maps to what the system actually does — nothing invented. */
 
-const META: { label: string; value: string }[] = [
-  { label: "Discipline", value: "Design & engineering" },
-  { label: "Sector", value: "Contact center · Support operations" },
-  { label: "Type", value: "Custom platform" },
-  { label: "Core stack", value: "Next.js · NestJS · PostgreSQL" },
+type Bi = Record<Locale, string>;
+
+const META: { label: Bi; value: Bi }[] = [
+  { label: { en: "Discipline", es: "Disciplina" }, value: { en: "Design & engineering", es: "Diseño e ingeniería" } },
+  { label: { en: "Sector", es: "Sector" }, value: { en: "Contact center · Support operations", es: "Contact center · Operaciones de soporte" } },
+  { label: { en: "Type", es: "Tipo" }, value: { en: "Custom platform", es: "Plataforma a la medida" } },
+  { label: { en: "Core stack", es: "Stack principal" }, value: { en: "Next.js · NestJS · PostgreSQL", es: "Next.js · NestJS · PostgreSQL" } },
 ];
 
-const STEPS: { title: string; text: string }[] = [
+const STEPS: { title: Bi; text: Bi }[] = [
   {
-    title: "A call happens",
-    text: "Inbound or outbound, every call is placed through cloud telephony — agents dial and answer from an embedded softphone right inside the platform.",
+    title: { en: "A call happens", es: "Ocurre una llamada" },
+    text: {
+      en: "Inbound or outbound, every call is placed through cloud telephony — agents dial and answer from an embedded softphone right inside the platform.",
+      es: "Entrante o saliente, cada llamada se realiza a través de telefonía en la nube — los agentes marcan y responden desde un softphone integrado directamente en la plataforma.",
+    },
   },
   {
-    title: "The platform captures it automatically",
-    text: "Telephony posts each event to a verified webhook. The system turns it into a call record, matches or creates the customer, and provisions the agent — with no manual data entry.",
+    title: { en: "The platform captures it automatically", es: "La plataforma la captura automáticamente" },
+    text: {
+      en: "Telephony posts each event to a verified webhook. The system turns it into a call record, matches or creates the customer, and provisions the agent — with no manual data entry.",
+      es: "La telefonía envía cada evento a un webhook verificado. El sistema lo convierte en un registro de llamada, encuentra o crea al cliente, y asigna al agente — sin captura manual de datos.",
+    },
   },
   {
-    title: "The agent works it in one view",
-    text: "In the Contact Center, calls, tickets and manual records share a single list. The agent sets a disposition, a campaign outcome, notes and a follow-up.",
+    title: { en: "The agent works it in one view", es: "El agente lo gestiona en una sola vista" },
+    text: {
+      en: "In the Contact Center, calls, tickets and manual records share a single list. The agent sets a disposition, a campaign outcome, notes and a follow-up.",
+      es: "En el Contact Center, llamadas, tickets y registros manuales comparten una sola lista. El agente define una disposición, un resultado de campaña, notas y un seguimiento.",
+    },
   },
   {
-    title: "Everyone sees it live",
-    text: "Changes push to every screen over WebSockets — live-call indicators, ticket assignments, due callbacks — with no page refresh and no polling.",
+    title: { en: "Everyone sees it live", es: "Todos lo ven en vivo" },
+    text: {
+      en: "Changes push to every screen over WebSockets — live-call indicators, ticket assignments, due callbacks — with no page refresh and no polling.",
+      es: "Los cambios se transmiten a cada pantalla mediante WebSockets — indicadores de llamada en vivo, asignaciones de tickets, devoluciones de llamada pendientes — sin recargar la página ni hacer polling.",
+    },
   },
   {
-    title: "Nothing falls through",
-    text: "Background jobs and schedulers watch for overdue callbacks, follow-ups and scheduled calls, and notify the right agent the moment something comes due.",
+    title: { en: "Nothing falls through", es: "Nada se pierde" },
+    text: {
+      en: "Background jobs and schedulers watch for overdue callbacks, follow-ups and scheduled calls, and notify the right agent the moment something comes due.",
+      es: "Tareas en segundo plano y programadores vigilan devoluciones de llamada, seguimientos y llamadas programadas vencidas, y notifican al agente correcto en el momento en que algo vence.",
+    },
   },
   {
-    title: "It all rolls up",
-    text: "Calls, tickets and outcomes consolidate into per-site and per-campaign dashboards — and into PDF and Excel exports generated on demand.",
+    title: { en: "It all rolls up", es: "Todo se consolida" },
+    text: {
+      en: "Calls, tickets and outcomes consolidate into per-site and per-campaign dashboards — and into PDF and Excel exports generated on demand.",
+      es: "Llamadas, tickets y resultados se consolidan en dashboards por sede y por campaña — y en exportaciones a PDF y Excel generadas bajo demanda.",
+    },
   },
 ];
 
-const SYSTEMS_BLOCKS: { icon: ServiceIconName; title: string; text: string }[] = [
+const SYSTEMS_BLOCKS: { icon: ServiceIconName; title: Bi; text: Bi }[] = [
   {
     icon: "messages",
-    title: "Real-time over WebSockets",
-    text: "A Socket.IO channel pushes live-call changes, ticket assignments and due callbacks to the exact agent who needs them. The client collapses bursts of events into a single debounced refresh, so the UI stays current without polling the server.",
+    title: { en: "Real-time over WebSockets", es: "Tiempo real sobre WebSockets" },
+    text: {
+      en: "A Socket.IO channel pushes live-call changes, ticket assignments and due callbacks to the exact agent who needs them. The client collapses bursts of events into a single debounced refresh, so the UI stays current without polling the server.",
+      es: "Un canal de Socket.IO envía cambios de llamadas en vivo, asignaciones de tickets y devoluciones de llamada pendientes exactamente al agente que las necesita. El cliente agrupa ráfagas de eventos en una sola actualización con debounce, para que la interfaz se mantenga al día sin hacer polling al servidor.",
+    },
   },
   {
     icon: "share",
-    title: "Verified telephony webhooks",
-    text: "Every telephony event arrives on a webhook authenticated with a constant-time token check. An idempotent ingestion engine absorbs the messiness of real phone traffic — duplicate events, transfers, voicemail vs. missed, bridge legs — and normalizes numbers so a customer is never duplicated.",
+    title: { en: "Verified telephony webhooks", es: "Webhooks de telefonía verificados" },
+    text: {
+      en: "Every telephony event arrives on a webhook authenticated with a constant-time token check. An idempotent ingestion engine absorbs the messiness of real phone traffic — duplicate events, transfers, voicemail vs. missed, bridge legs — and normalizes numbers so a customer is never duplicated.",
+      es: "Cada evento de telefonía llega a un webhook autenticado con una verificación de token de tiempo constante. Un motor de ingesta idempotente absorbe el desorden del tráfico telefónico real — eventos duplicados, transferencias, buzón de voz vs. llamada perdida, tramos de puente — y normaliza los números para que un cliente nunca se duplique.",
+    },
   },
   {
     icon: "workflow",
-    title: "Background jobs & scheduling",
-    text: "A Redis-backed job queue (BullMQ) and cron safety-nets flip overdue items, deduplicate notifications at the database level, and reach the right agent — so a promised callback is never quietly missed.",
+    title: { en: "Background jobs & scheduling", es: "Tareas en segundo plano y programación" },
+    text: {
+      en: "A Redis-backed job queue (BullMQ) and cron safety-nets flip overdue items, deduplicate notifications at the database level, and reach the right agent — so a promised callback is never quietly missed.",
+      es: "Una cola de tareas respaldada por Redis (BullMQ) y redes de seguridad con cron marcan los elementos vencidos, deduplican notificaciones a nivel de base de datos, y llegan al agente correcto — para que una devolución de llamada prometida nunca se pierda silenciosamente.",
+    },
   },
   {
     icon: "layers",
-    title: "Integrations",
-    text: "Cloud telephony for calls and SMS with an embedded softphone; a transactional email service for account and reset messages; and object storage for recordings and attachments, served through short-lived presigned URLs.",
+    title: { en: "Integrations", es: "Integraciones" },
+    text: {
+      en: "Cloud telephony for calls and SMS with an embedded softphone; a transactional email service for account and reset messages; and object storage for recordings and attachments, served through short-lived presigned URLs.",
+      es: "Telefonía en la nube para llamadas y SMS con un softphone integrado; un servicio de correo transaccional para mensajes de cuenta y restablecimiento; y almacenamiento de objetos para grabaciones y adjuntos, servidos mediante URLs firmadas de corta duración.",
+    },
   },
 ];
 
-const TECH: { group: string; items: string[] }[] = [
+const TECH: { group: Bi; items: string[] }[] = [
   {
-    group: "Frontend",
+    group: { en: "Frontend", es: "Frontend" },
     items: ["Next.js 16 (App Router)", "React 19 + React Compiler", "TypeScript", "Tailwind CSS v4", "shadcn/ui + Radix", "SWR", "Socket.IO client", "Recharts"],
   },
   {
-    group: "Backend",
+    group: { en: "Backend", es: "Backend" },
     items: ["NestJS 11", "Node + Express", "TypeScript", "TypeORM", "class-validator", "Swagger / OpenAPI"],
   },
   {
-    group: "Data & real-time",
+    group: { en: "Data & real-time", es: "Datos y tiempo real" },
     items: ["PostgreSQL", "Redis", "Socket.IO", "BullMQ"],
   },
   {
-    group: "Infrastructure",
+    group: { en: "Infrastructure", es: "Infraestructura" },
     items: ["Railway (API)", "Vercel (web)", "S3 object storage", "Brevo email"],
   },
   {
-    group: "Quality",
+    group: { en: "Quality", es: "Calidad" },
     items: ["Jest + Supertest", "ESLint + Prettier", "Unlighthouse"],
   },
 ];
 
-const SECURITY: { title: string; tag: string; text: string }[] = [
+const SECURITY: { title: Bi; tag: Bi; text: Bi }[] = [
   {
-    title: "HttpOnly BFF session",
-    tag: "Session",
-    text: "The auth token lives in an HttpOnly, Secure cookie the browser's JavaScript can never read; a backend-for-frontend attaches it server-to-server on every request.",
+    title: { en: "HttpOnly BFF session", es: "Sesión BFF HttpOnly" },
+    tag: { en: "Session", es: "Sesión" },
+    text: {
+      en: "The auth token lives in an HttpOnly, Secure cookie the browser’s JavaScript can never read; a backend-for-frontend attaches it server-to-server on every request.",
+      es: "El token de autenticación vive en una cookie HttpOnly y Secure que el JavaScript del navegador nunca puede leer; un backend-for-frontend la adjunta servidor a servidor en cada solicitud.",
+    },
   },
   {
-    title: "JWT + bcrypt",
-    tag: "Auth",
-    text: "Stateless JWT authentication with bcrypt-hashed passwords. The API refuses to start without its signing secret.",
+    title: { en: "JWT + bcrypt", es: "JWT + bcrypt" },
+    tag: { en: "Auth", es: "Autenticación" },
+    text: {
+      en: "Stateless JWT authentication with bcrypt-hashed passwords. The API refuses to start without its signing secret.",
+      es: "Autenticación JWT sin estado con contraseñas hasheadas con bcrypt. La API se niega a iniciar sin su clave secreta de firma.",
+    },
   },
   {
-    title: "Role-based access",
-    tag: "Access",
-    text: "Three roles — agent, admin, dev — enforced both at the API with guards and at the edge with route gates.",
+    title: { en: "Role-based access", es: "Acceso basado en roles" },
+    tag: { en: "Access", es: "Acceso" },
+    text: {
+      en: "Three roles — agent, admin, dev — enforced both at the API with guards and at the edge with route gates.",
+      es: "Tres roles — agente, admin, dev — aplicados tanto en la API con guards como en el edge con controles de ruta.",
+    },
   },
   {
-    title: "Scoped socket tokens",
-    tag: "Access",
-    text: "WebSockets use a separate ~2-minute token the REST API explicitly rejects, so a leaked socket token can never reach your data.",
+    title: { en: "Scoped socket tokens", es: "Tokens de socket con alcance limitado" },
+    tag: { en: "Access", es: "Acceso" },
+    text: {
+      en: "WebSockets use a separate ~2-minute token the REST API explicitly rejects, so a leaked socket token can never reach your data.",
+      es: "Los WebSockets usan un token separado de ~2 minutos que la API REST rechaza explícitamente, para que un token de socket filtrado nunca pueda alcanzar tus datos.",
+    },
   },
   {
-    title: "Distributed rate limiting",
-    tag: "Rate limits",
-    text: "A Redis-backed limiter shared across server replicas, keyed per user, with tighter limits on login and password reset.",
+    title: { en: "Distributed rate limiting", es: "Limitación de tasa distribuida" },
+    tag: { en: "Rate limits", es: "Límites de tasa" },
+    text: {
+      en: "A Redis-backed limiter shared across server replicas, keyed per user, with tighter limits on login and password reset.",
+      es: "Un limitador respaldado por Redis compartido entre réplicas del servidor, con clave por usuario, con límites más estrictos en el inicio de sesión y el restablecimiento de contraseña.",
+    },
   },
   {
-    title: "Constant-time webhooks",
-    tag: "Webhooks",
-    text: "Inbound telephony webhooks are authenticated with a constant-time token comparison that resists timing attacks.",
+    title: { en: "Constant-time webhooks", es: "Webhooks de tiempo constante" },
+    tag: { en: "Webhooks", es: "Webhooks" },
+    text: {
+      en: "Inbound telephony webhooks are authenticated with a constant-time token comparison that resists timing attacks.",
+      es: "Los webhooks entrantes de telefonía se autentican con una comparación de tokens de tiempo constante que resiste ataques de temporización.",
+    },
   },
   {
-    title: "Strict input validation",
-    tag: "Validation",
-    text: "Every request body is validated and stripped to an allow-list before it reaches any business logic.",
+    title: { en: "Strict input validation", es: "Validación estricta de entradas" },
+    tag: { en: "Validation", es: "Validación" },
+    text: {
+      en: "Every request body is validated and stripped to an allow-list before it reaches any business logic.",
+      es: "Cada cuerpo de solicitud se valida y se reduce a una lista de campos permitidos antes de llegar a cualquier lógica de negocio.",
+    },
   },
   {
-    title: "Hardened transport",
-    tag: "Transport",
-    text: "Helmet security headers with a content-security policy, CORS locked to the frontend origin, and per-request timeouts.",
+    title: { en: "Hardened transport", es: "Transporte reforzado" },
+    tag: { en: "Transport", es: "Transporte" },
+    text: {
+      en: "Helmet security headers with a content-security policy, CORS locked to the frontend origin, and per-request timeouts.",
+      es: "Cabeceras de seguridad Helmet con una política de seguridad de contenido, CORS restringido al origen del frontend, y timeouts por solicitud.",
+    },
   },
   {
-    title: "Safe file handling",
-    tag: "Storage",
-    text: "Uploads are size-capped and stored privately; files are served only through short-lived presigned URLs — never public objects.",
+    title: { en: "Safe file handling", es: "Manejo seguro de archivos" },
+    tag: { en: "Storage", es: "Almacenamiento" },
+    text: {
+      en: "Uploads are size-capped and stored privately; files are served only through short-lived presigned URLs — never public objects.",
+      es: "Las subidas tienen un límite de tamaño y se almacenan de forma privada; los archivos se sirven solo mediante URLs firmadas de corta duración — nunca como objetos públicos.",
+    },
   },
   {
-    title: "Careful secrets & data",
-    tag: "Secrets",
-    text: "Secrets read from the environment and masked in logs, destructive schema sync disabled by default, sensitive fields excluded from responses, and soft deletes throughout.",
+    title: { en: "Careful secrets & data", es: "Manejo cuidadoso de secretos y datos" },
+    tag: { en: "Secrets", es: "Secretos" },
+    text: {
+      en: "Secrets read from the environment and masked in logs, destructive schema sync disabled by default, sensitive fields excluded from responses, and soft deletes throughout.",
+      es: "Los secretos se leen del entorno y se enmascaran en los logs, la sincronización destructiva del esquema está deshabilitada por defecto, los campos sensibles se excluyen de las respuestas, y se usan borrados suaves en todo el sistema.",
+    },
   },
   {
-    title: "Scoped API keys",
-    tag: "API keys",
-    text: "Programmatic access uses hashed API keys with explicit scopes, expiry and last-used tracking.",
+    title: { en: "Scoped API keys", es: "Claves de API con alcance limitado" },
+    tag: { en: "API keys", es: "Claves de API" },
+    text: {
+      en: "Programmatic access uses hashed API keys with explicit scopes, expiry and last-used tracking.",
+      es: "El acceso programático usa claves de API hasheadas con alcances explícitos, expiración y seguimiento de último uso.",
+    },
   },
 ];
 
-const MANAGES = [
-  "Calls", "Tickets", "Manual records", "Scheduled calls", "Customers", "Campaigns",
-  "Sites", "Owners", "Phone lines", "SMS analytics", "Notifications", "Users & agents",
-  "Reports & exports", "API keys", "Configurable dictionaries",
+const MANAGES: Bi[] = [
+  { en: "Calls", es: "Llamadas" },
+  { en: "Tickets", es: "Tickets" },
+  { en: "Manual records", es: "Registros manuales" },
+  { en: "Scheduled calls", es: "Llamadas programadas" },
+  { en: "Customers", es: "Clientes" },
+  { en: "Campaigns", es: "Campañas" },
+  { en: "Sites", es: "Sedes" },
+  { en: "Owners", es: "Propietarios" },
+  { en: "Phone lines", es: "Líneas telefónicas" },
+  { en: "SMS analytics", es: "Analítica de SMS" },
+  { en: "Notifications", es: "Notificaciones" },
+  { en: "Users & agents", es: "Usuarios y agentes" },
+  { en: "Reports & exports", es: "Reportes y exportaciones" },
+  { en: "API keys", es: "Claves de API" },
+  { en: "Configurable dictionaries", es: "Diccionarios configurables" },
 ];
 
 type FlowIconName = "browser" | "gateway" | "api" | "database";
 
-const FLOW: { name: string; role: string; icon: FlowIconName; accent?: boolean }[] = [
-  { name: "Browser", role: "Client", icon: "browser" },
-  { name: "Next.js BFF", role: "Session · proxy", icon: "gateway", accent: true },
-  { name: "NestJS API", role: "Domain · data", icon: "api", accent: true },
-  { name: "PostgreSQL · Redis · S3", role: "Data stores", icon: "database" },
+const FLOW: { name: Bi; role: Bi; icon: FlowIconName; accent?: boolean }[] = [
+  { name: { en: "Browser", es: "Navegador" }, role: { en: "Client", es: "Cliente" }, icon: "browser" },
+  { name: { en: "Next.js BFF", es: "Next.js BFF" }, role: { en: "Session · proxy", es: "Sesión · proxy" }, icon: "gateway", accent: true },
+  { name: { en: "NestJS API", es: "NestJS API" }, role: { en: "Domain · data", es: "Dominio · datos" }, icon: "api", accent: true },
+  { name: { en: "PostgreSQL · Redis · S3", es: "PostgreSQL · Redis · S3" }, role: { en: "Data stores", es: "Almacenes de datos" }, icon: "database" },
 ];
+
+const PAGE_COPY = {
+  en: {
+    back: "Back to Systems",
+    chip: "Case study · Platform",
+    title: "A contact-center operations platform",
+    lede: "A custom platform that runs an entire call-center operation from one place — automatically capturing every call from cloud telephony, turning it into a trackable record, and rolling calls, tickets, campaigns and follow-ups into real-time dashboards and reporting.",
+    challenge: "The challenge",
+    challengeText: "The operation ran inbound and outbound phone campaigns — onboarding and collections — across dozens of client sites on behalf of their owners. Calls, SMS, support tickets, manual notes and follow-ups lived in different places. Phone activity was logged by hand, there was no single record of a customer, and no live view of what the floor was doing right now.",
+    solution: "The solution",
+    solutionText: "We designed and built one system of record for the whole phone operation. Cloud telephony feeds calls in automatically; each interaction becomes a record an agent can classify and follow up; and everything the operation touches — customers, campaigns, sites, tickets — rolls up into real-time dashboards and per-site reporting the team can export on demand.",
+    howItWorksLabel: "How it works",
+    howItWorksTitle: "From a ringing phone to a report",
+    architectureLabel: "Architecture",
+    architectureTitle: "Two services, one front door",
+    architectureProse: "The browser only ever talks to a Next.js backend-for-frontend (BFF), which holds the session and forwards every request, server-to-server, to a NestJS API. That API owns the data in PostgreSQL, with Redis for queues and rate limiting and object storage for call recordings and attachments. One proxy sits in front of the whole backend — the browser never holds a token, and every call passes through a single, hardened path.",
+    flowAriaLabel: "Request path: Browser to Next.js BFF to NestJS API to PostgreSQL, Redis and S3.",
+    realtimeLabel: "Real-time & integrations",
+    realtimeTitle: "Built to stay live",
+    technologyLabel: "Technology",
+    technologyTitle: "The full stack",
+    layer: "Layer",
+    technologies: "Technologies",
+    securityLabel: "Security",
+    securityTitle: "Hardened at every layer",
+    control: "Control",
+    whatItProtects: "What it protects",
+    managesLabel: "What it manages",
+    managesTitle: "One system, the whole operation",
+    systemLabel: "The system",
+    systemTitle: "More of the platform",
+    closingTitle: "Thinking about a system like this?",
+    closingLede: "Every build starts with a conversation about how your operation actually runs — not a template.",
+  },
+  es: {
+    back: "Volver a Systems",
+    chip: "Caso de éxito · Plataforma",
+    title: "Una plataforma de operaciones para contact center",
+    lede: "Una plataforma a la medida que gestiona toda una operación de call center desde un solo lugar — capturando automáticamente cada llamada desde telefonía en la nube, convirtiéndola en un registro rastreable, y consolidando llamadas, tickets, campañas y seguimientos en dashboards y reportes en tiempo real.",
+    challenge: "El reto",
+    challengeText: "La operación gestionaba campañas telefónicas entrantes y salientes — onboarding y cobros — en docenas de sedes de clientes en representación de sus propietarios. Llamadas, SMS, tickets de soporte, notas manuales y seguimientos vivían en lugares distintos. La actividad telefónica se registraba a mano, no existía un registro único del cliente, ni una vista en vivo de lo que estaba haciendo el piso en ese momento.",
+    solution: "La solución",
+    solutionText: "Diseñamos y construimos un único sistema central para toda la operación telefónica. La telefonía en la nube alimenta las llamadas automáticamente; cada interacción se convierte en un registro que un agente puede clasificar y dar seguimiento; y todo lo que la operación toca — clientes, campañas, sedes, tickets — se consolida en dashboards en tiempo real y reportes por sede que el equipo puede exportar bajo demanda.",
+    howItWorksLabel: "Cómo funciona",
+    howItWorksTitle: "De un teléfono sonando a un reporte",
+    architectureLabel: "Arquitectura",
+    architectureTitle: "Dos servicios, una sola puerta de entrada",
+    architectureProse: "El navegador solo se comunica con un backend-for-frontend (BFF) de Next.js, que mantiene la sesión y reenvía cada solicitud, servidor a servidor, a una API de NestJS. Esa API es dueña de los datos en PostgreSQL, con Redis para colas y limitación de tasa, y almacenamiento de objetos para grabaciones de llamadas y adjuntos. Un solo proxy se ubica frente a todo el backend — el navegador nunca guarda un token, y cada llamada pasa por un único camino reforzado.",
+    flowAriaLabel: "Ruta de la solicitud: navegador a Next.js BFF a API de NestJS a PostgreSQL, Redis y S3.",
+    realtimeLabel: "Tiempo real e integraciones",
+    realtimeTitle: "Construido para mantenerse en vivo",
+    technologyLabel: "Tecnología",
+    technologyTitle: "El stack completo",
+    layer: "Capa",
+    technologies: "Tecnologías",
+    securityLabel: "Seguridad",
+    securityTitle: "Reforzado en cada capa",
+    control: "Control",
+    whatItProtects: "Qué protege",
+    managesLabel: "Qué gestiona",
+    managesTitle: "Un solo sistema, toda la operación",
+    systemLabel: "El sistema",
+    systemTitle: "Más de la plataforma",
+    closingTitle: "¿Piensas en un sistema como este?",
+    closingLede: "Cada proyecto empieza con una conversación sobre cómo funciona realmente tu operación — no con una plantilla.",
+  },
+};
 
 /* Monoline glyphs for the architecture nodes (viewBox 0 0 24 24, currentColor
    stroke) — a window, a proxy relay, API braces, a datastore cylinder. */
@@ -238,17 +384,19 @@ function SectionHead({ label, title, reduced }: { label: string; title: string; 
 }
 
 export default function WorkCaseStudy() {
+  const { dict, lang } = useI18n();
+  const t = PAGE_COPY[lang];
   const reduced = useReducedMotion() ?? false;
 
   return (
     <article className={styles.page}>
       <div className={styles.shell}>
-        <Link href="/services/systems#work" className={styles.back}>
+        <LocalizedLink href="/services/systems#work" className={styles.back}>
           <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M16 10H4M8.5 5.5 4 10l4.5 4.5" />
           </svg>
-          Back to Systems
-        </Link>
+          {t.back}
+        </LocalizedLink>
 
         {/* ── Header — editorial masthead: title block + spec sheet ── */}
         <motion.header
@@ -260,23 +408,20 @@ export default function WorkCaseStudy() {
           <motion.div className={styles.headMain} variants={groupVariants}>
             <motion.span className={styles.chip} variants={focusRiseVariants}>
               <ServiceIcon name="layout" />
-              Case study · Platform
+              {t.chip}
             </motion.span>
             <motion.h1 className={styles.title} variants={focusRiseVariants}>
-              A contact-center operations platform
+              {t.title}
             </motion.h1>
             <motion.p className={styles.lede} variants={focusRiseVariants}>
-              A custom platform that runs an entire call-center operation from one
-              place — automatically capturing every call from cloud telephony,
-              turning it into a trackable record, and rolling calls, tickets,
-              campaigns and follow-ups into real-time dashboards and reporting.
+              {t.lede}
             </motion.p>
           </motion.div>
           <motion.dl className={styles.spec} variants={focusRiseVariants}>
             {META.map((item) => (
-              <div key={item.label} className={styles.specRow}>
-                <dt className={styles.specLabel}>{item.label}</dt>
-                <dd className={styles.specValue}>{item.value}</dd>
+              <div key={item.label[lang]} className={styles.specRow}>
+                <dt className={styles.specLabel}>{item.label[lang]}</dt>
+                <dd className={styles.specValue}>{item.value[lang]}</dd>
               </div>
             ))}
           </motion.dl>
@@ -294,25 +439,15 @@ export default function WorkCaseStudy() {
         >
           <div className={styles.split}>
             <motion.div className={styles.splitCol} variants={focusRiseVariants}>
-              <p className={styles.sectionLabel}>The challenge</p>
+              <p className={styles.sectionLabel}>{t.challenge}</p>
               <p className={styles.prose}>
-                The operation ran inbound and outbound phone campaigns —
-                onboarding and collections — across dozens of client sites on
-                behalf of their owners. Calls, SMS, support tickets, manual notes
-                and follow-ups lived in different places. Phone activity was
-                logged by hand, there was no single record of a customer, and no
-                live view of what the floor was doing right now.
+                {t.challengeText}
               </p>
             </motion.div>
             <motion.div className={styles.splitCol} variants={focusRiseVariants}>
-              <p className={styles.sectionLabel}>The solution</p>
+              <p className={styles.sectionLabel}>{t.solution}</p>
               <p className={styles.prose}>
-                We designed and built one system of record for the whole phone
-                operation. Cloud telephony feeds calls in automatically; each
-                interaction becomes a record an agent can classify and follow up;
-                and everything the operation touches — customers, campaigns,
-                sites, tickets — rolls up into real-time dashboards and per-site
-                reporting the team can export on demand.
+                {t.solutionText}
               </p>
             </motion.div>
           </div>
@@ -322,11 +457,11 @@ export default function WorkCaseStudy() {
 
         {/* ── How it works, step by step ── */}
         <section className={styles.section}>
-          <SectionHead label="How it works" title="From a ringing phone to a report" reduced={reduced} />
+          <SectionHead label={t.howItWorksLabel} title={t.howItWorksTitle} reduced={reduced} />
           <ol className={styles.steps}>
             {STEPS.map((step, index) => (
               <motion.li
-                key={step.title}
+                key={step.title[lang]}
                 className={styles.step}
                 initial={reduced ? false : "hidden"}
                 whileInView={reduced ? undefined : "visible"}
@@ -337,8 +472,8 @@ export default function WorkCaseStudy() {
                 <motion.span className={styles.stepNum} aria-hidden variants={focusRiseVariants}>
                   {String(index + 1).padStart(2, "0")}
                 </motion.span>
-                <motion.h3 className={styles.stepTitle} variants={focusRiseVariants}>{step.title}</motion.h3>
-                <motion.p className={styles.stepText} variants={focusRiseVariants}>{step.text}</motion.p>
+                <motion.h3 className={styles.stepTitle} variants={focusRiseVariants}>{step.title[lang]}</motion.h3>
+                <motion.p className={styles.stepText} variants={focusRiseVariants}>{step.text[lang]}</motion.p>
               </motion.li>
             ))}
           </ol>
@@ -350,7 +485,7 @@ export default function WorkCaseStudy() {
 
         {/* ── Architecture ── */}
         <section className={styles.section}>
-          <SectionHead label="Architecture" title="Two services, one front door" reduced={reduced} />
+          <SectionHead label={t.architectureLabel} title={t.architectureTitle} reduced={reduced} />
           <motion.div
             initial={reduced ? false : "hidden"}
             whileInView={reduced ? undefined : "visible"}
@@ -358,26 +493,21 @@ export default function WorkCaseStudy() {
             variants={groupVariants}
           >
             <motion.p className={styles.prose} variants={focusRiseVariants}>
-              The browser only ever talks to a Next.js <strong>backend-for-frontend (BFF)</strong>,
-              which holds the session and forwards every request, server-to-server, to a NestJS API.
-              That API owns the data in PostgreSQL, with Redis for queues and rate limiting and
-              object storage for call recordings and attachments. One proxy sits in front of the
-              whole backend — the browser never holds a token, and every call passes through a
-              single, hardened path.
+              {t.architectureProse}
             </motion.p>
             <motion.div
               className={styles.flow}
               role="img"
-              aria-label="Request path: Browser to Next.js BFF to NestJS API to PostgreSQL, Redis and S3."
+              aria-label={t.flowAriaLabel}
               variants={focusRiseVariants}
             >
               {FLOW.map((node, index) => (
-                <Fragment key={node.name}>
+                <Fragment key={node.name[lang]}>
                   <span className={styles.flowNode} data-accent={node.accent || undefined} aria-hidden>
                     <span className={styles.flowIcon}><FlowGlyph name={node.icon} /></span>
                     <span className={styles.flowText}>
-                      <span className={styles.flowName}>{node.name}</span>
-                      <span className={styles.flowRole}>{node.role}</span>
+                      <span className={styles.flowName}>{node.name[lang]}</span>
+                      <span className={styles.flowRole}>{node.role[lang]}</span>
                     </span>
                   </span>
                   {index < FLOW.length - 1 && (
@@ -397,7 +527,7 @@ export default function WorkCaseStudy() {
 
         {/* ── Real-time & integrations ── */}
         <section className={styles.section}>
-          <SectionHead label="Real-time & integrations" title="Built to stay live" reduced={reduced} />
+          <SectionHead label={t.realtimeLabel} title={t.realtimeTitle} reduced={reduced} />
           <motion.div
             className={styles.blocks}
             initial={reduced ? false : "hidden"}
@@ -406,10 +536,10 @@ export default function WorkCaseStudy() {
             variants={groupVariants}
           >
             {SYSTEMS_BLOCKS.map((block) => (
-              <motion.div key={block.title} className={styles.block} variants={softRiseVariants}>
+              <motion.div key={block.title[lang]} className={styles.block} variants={softRiseVariants}>
                 <span className={styles.blockIcon}><ServiceIcon name={block.icon} /></span>
-                <h3 className={styles.blockTitle}>{block.title}</h3>
-                <p className={styles.blockText}>{block.text}</p>
+                <h3 className={styles.blockTitle}>{block.title[lang]}</h3>
+                <p className={styles.blockText}>{block.text[lang]}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -419,7 +549,7 @@ export default function WorkCaseStudy() {
 
         {/* ── Technology ── */}
         <section className={styles.section}>
-          <SectionHead label="Technology" title="The full stack" reduced={reduced} />
+          <SectionHead label={t.technologyLabel} title={t.technologyTitle} reduced={reduced} />
           <motion.table
             className={`${styles.table} ${styles.techTable}`}
             role="table"
@@ -430,16 +560,16 @@ export default function WorkCaseStudy() {
           >
             <thead role="rowgroup">
               <tr className={styles.tableHeadRow} role="row">
-                <th role="columnheader" scope="col">Layer</th>
-                <th role="columnheader" scope="col">Technologies</th>
+                <th role="columnheader" scope="col">{t.layer}</th>
+                <th role="columnheader" scope="col">{t.technologies}</th>
               </tr>
             </thead>
             <motion.tbody role="rowgroup" variants={groupVariants}>
               {TECH.map((group, index) => (
-                <motion.tr key={group.group} className={styles.techRow} role="row" variants={focusRiseVariants}>
+                <motion.tr key={group.group[lang]} className={styles.techRow} role="row" variants={focusRiseVariants}>
                   <th className={styles.techLayer} role="rowheader" scope="row">
                     <span className={styles.rowIndex} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
-                    <span className={styles.techLayerName}>{group.group}</span>
+                    <span className={styles.techLayerName}>{group.group[lang]}</span>
                   </th>
                   <td role="cell">
                     <ul className={styles.chips}>
@@ -458,7 +588,7 @@ export default function WorkCaseStudy() {
 
         {/* ── Security ── */}
         <section className={styles.section}>
-          <SectionHead label="Security" title="Hardened at every layer" reduced={reduced} />
+          <SectionHead label={t.securityLabel} title={t.securityTitle} reduced={reduced} />
           <motion.table
             className={`${styles.table} ${styles.secTable}`}
             role="table"
@@ -469,20 +599,20 @@ export default function WorkCaseStudy() {
           >
             <thead role="rowgroup">
               <tr className={styles.tableHeadRow} role="row">
-                <th role="columnheader" scope="col">Control</th>
-                <th role="columnheader" scope="col">Layer</th>
-                <th role="columnheader" scope="col">What it protects</th>
+                <th role="columnheader" scope="col">{t.control}</th>
+                <th role="columnheader" scope="col">{t.layer}</th>
+                <th role="columnheader" scope="col">{t.whatItProtects}</th>
               </tr>
             </thead>
             <motion.tbody role="rowgroup" variants={groupVariants}>
               {SECURITY.map((item, index) => (
-                <motion.tr key={item.title} className={styles.secRow} role="row" variants={focusRiseVariants}>
+                <motion.tr key={item.title[lang]} className={styles.secRow} role="row" variants={focusRiseVariants}>
                   <th className={styles.secControl} role="rowheader" scope="row">
                     <span className={styles.rowIndex} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
-                    {item.title}
+                    {item.title[lang]}
                   </th>
-                  <td role="cell"><span className={styles.tag}>{item.tag}</span></td>
-                  <td className={styles.secText} role="cell">{item.text}</td>
+                  <td role="cell"><span className={styles.tag}>{item.tag[lang]}</span></td>
+                  <td className={styles.secText} role="cell">{item.text[lang]}</td>
                 </motion.tr>
               ))}
             </motion.tbody>
@@ -493,7 +623,7 @@ export default function WorkCaseStudy() {
 
         {/* ── Scope ── */}
         <section className={styles.section}>
-          <SectionHead label="What it manages" title="One system, the whole operation" reduced={reduced} />
+          <SectionHead label={t.managesLabel} title={t.managesTitle} reduced={reduced} />
           <motion.ul
             className={styles.manages}
             initial={reduced ? false : "hidden"}
@@ -502,14 +632,14 @@ export default function WorkCaseStudy() {
             variants={groupVariants}
           >
             {MANAGES.map((item) => (
-              <motion.li key={item} className={styles.manageChip} variants={focusRiseVariants}>{item}</motion.li>
+              <motion.li key={item[lang]} className={styles.manageChip} variants={focusRiseVariants}>{item[lang]}</motion.li>
             ))}
           </motion.ul>
         </section>
 
         {/* ── Screenshot gallery ── */}
         <section className={styles.section}>
-          <SectionHead label="The system" title="More of the platform" reduced={reduced} />
+          <SectionHead label={t.systemLabel} title={t.systemTitle} reduced={reduced} />
           <div className={styles.gallery}>
             <AnalyticsScreen reduced={reduced} />
             <ReportingScreen reduced={reduced} />
@@ -525,19 +655,18 @@ export default function WorkCaseStudy() {
           variants={groupVariants}
         >
           <motion.h2 className={styles.closingTitle} variants={focusRiseVariants}>
-            Thinking about a system like this?
+            {t.closingTitle}
           </motion.h2>
           <motion.p className={styles.closingLede} variants={focusRiseVariants}>
-            Every build starts with a conversation about how your operation
-            actually runs — not a template.
+            {t.closingLede}
           </motion.p>
           <motion.div className={styles.actions} variants={focusRiseVariants}>
-            <Link href="/cotizador?servicio=systems" className={styles.primary}>
-              Give us a quest <Arrow />
-            </Link>
-            <Link href="/services/systems#work" className={styles.secondary}>
-              Back to Systems
-            </Link>
+            <LocalizedLink href="/cotizador?servicio=systems" className={styles.primary}>
+              {dict.hero.primaryCta} <Arrow />
+            </LocalizedLink>
+            <LocalizedLink href="/services/systems#work" className={styles.secondary}>
+              {t.back}
+            </LocalizedLink>
           </motion.div>
         </motion.section>
       </div>

@@ -1,18 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import type { Service } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 
 /* Next's Link with motion capabilities, so the CTA can share the hero's
    magnetic pointer-follow and spring press states. */
-const MotionLink = motion.create(Link);
+const MotionLink = motion.create(LocalizedLink);
 
 /* The hero's primary-CTA language on the slide's action: rectangular 2px
    radius, celeste field, white wipe on hover, chevron nudge, magnetic
    pointer-follow with critically-damped springs. */
 export default function ServiceCta({ service }: { service: Service }) {
+  const { dict, lang } = useI18n();
   const { ref, style, onMouseEnter, onMouseMove, onMouseLeave } =
     useMagnetic<HTMLAnchorElement>(0.2, 3);
 
@@ -33,7 +35,7 @@ export default function ServiceCta({ service }: { service: Service }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
       />
-      <span className="relative z-10">Explore {service.label}</span>
+      <span className="relative z-10">{dict.carousel.explorePrefix} {service.label[lang]}</span>
       <span className="relative z-10 flex h-4 w-4 items-center justify-center text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
         <Chevron />
       </span>

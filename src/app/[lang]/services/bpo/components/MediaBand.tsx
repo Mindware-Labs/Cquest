@@ -9,10 +9,14 @@ import {
   softRiseVariants,
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
+import { useI18n } from "@/i18n/I18nProvider";
 import FrameTicks from "./FrameTicks";
 import styles from "./MediaBand.module.css";
 
+const ALT = { en: "Operations floor", es: "Piso de operaciones" };
+
 export default function MediaBand({ reduced }: { reduced: boolean }) {
+  const { lang } = useI18n();
   // The media band drifts on its own axis as it crosses the viewport, so the
   // hero → content seam reads as depth rather than a stacked block.
   const bandRef = useRef<HTMLDivElement>(null);
@@ -44,7 +48,7 @@ export default function MediaBand({ reduced }: { reduced: boolean }) {
           <motion.div className={styles.bandZoom} variants={mediaSettleVariants}>
             <Image
               src="/bpo-services/bpo-floor.jpeg"
-              alt="Operations floor"
+              alt={ALT[lang]}
               fill
               preload
               sizes="100vw"

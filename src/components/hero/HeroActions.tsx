@@ -1,10 +1,12 @@
-import Link from "next/link";
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 
-const MotionLink = motion.create(Link);
+const MotionLink = motion.create(LocalizedLink);
 
 export default function HeroActions() {
+  const { dict } = useI18n();
   const {
     ref,
     style,
@@ -28,7 +30,7 @@ export default function HeroActions() {
         className="cq-rect-cta group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden bg-celeste py-3 pl-6 pr-[1.375rem] text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
       >
         <span aria-hidden className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100" />
-        <span className="relative z-10">Give us a quest</span>
+        <span className="relative z-10">{dict.hero.primaryCta}</span>
         <span className="relative z-10 flex h-4 w-4 items-center justify-center text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
           <Chevron />
         </span>
@@ -39,7 +41,7 @@ export default function HeroActions() {
         className="group/link relative hidden touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste sm:inline-flex"
       >
         <span className="inline-flex items-center gap-1.5">
-          See our services
+          {dict.hero.secondaryCta}
           <span className="-translate-x-1 text-celeste opacity-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:translate-x-0 group-hover/link:opacity-100">
             <Chevron />
           </span>

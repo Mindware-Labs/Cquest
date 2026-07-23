@@ -6,6 +6,7 @@ import HeroActions from "@/components/hero/HeroActions";
 import HeroBackdrop from "@/components/hero/HeroBackdrop";
 import HeroNav from "@/components/hero/HeroNav";
 import RotatingHeadline from "@/components/hero/RotatingHeadline";
+import { useI18n } from "@/i18n/I18nProvider";
 import {
   EASE_OUT,
   checkDrawVariants,
@@ -14,6 +15,7 @@ import {
 } from "@/components/hero/animation";
 
 export default function HeroImage() {
+  const { dict } = useI18n();
   const reduced = useReducedMotion() ?? false;
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -47,8 +49,7 @@ export default function HeroImage() {
           variants={riseVariants}
           className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/90"
         >
-          Call center, operations and systems development — one partner
-          across your three growth priorities.
+          {dict.hero.lead}
         </motion.p>
         <motion.div variants={riseVariants} className="mt-10">
           <HeroActions />
@@ -69,7 +70,7 @@ export default function HeroImage() {
           >
             <motion.path variants={checkDrawVariants} d="M2.5 8.5 6 12l7.5-8" />
           </svg>
-          Call Center · Operations · Systems Development — 24/7 coverage
+          {dict.hero.coverageLine}
         </motion.p>
       </motion.div>
 
@@ -79,14 +80,14 @@ export default function HeroImage() {
       >
         <motion.a
           href="#services"
-          aria-label="Scroll to services"
+          aria-label={dict.hero.scrollAriaLabel}
           initial={reduced ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: EASE_OUT, delay: 1.4 }}
           className="flex flex-col items-center gap-2.5"
         >
           <span className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-white/55">
-            Scroll
+            {dict.hero.scrollLabel}
           </span>
           <span aria-hidden className="cq-scroll-cue" />
         </motion.a>

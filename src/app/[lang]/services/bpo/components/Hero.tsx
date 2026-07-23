@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import {
   focusRiseVariants,
   heroCopyVariants,
@@ -13,10 +13,30 @@ import {
   softRiseVariants,
 } from "@/components/services/motion";
 import container from "@/components/services/Container.module.css";
+import { useI18n } from "@/i18n/I18nProvider";
 import { HERO_LINES } from "../data";
 import styles from "./Hero.module.css";
 
+const COPY = {
+  en: {
+    lead: "Back office, data processing and omnichannel support — the repeatable work of your operation, run accurately at volume.",
+    exploreCapabilities: "Explore capabilities",
+    operatingScope: "Operating scope",
+    scopeItems: ["Back office", "Data processing", "Omnichannel", "Quality & risk"],
+    note: "Every engagement runs under a documented SLA — accuracy, turnaround and coverage, agreed before launch.",
+  },
+  es: {
+    lead: "Back office, procesamiento de datos y soporte omnicanal — el trabajo repetible de tu operación, ejecutado con precisión a volumen.",
+    exploreCapabilities: "Explorar capacidades",
+    operatingScope: "Alcance operativo",
+    scopeItems: ["Back office", "Procesamiento de datos", "Omnicanal", "Calidad y riesgo"],
+    note: "Cada proyecto opera bajo un SLA documentado — precisión, tiempo de entrega y cobertura, acordados antes del lanzamiento.",
+  },
+};
+
 export default function Hero({ reduced }: { reduced: boolean }) {
+  const { dict, lang } = useI18n();
+  const t = COPY[lang];
   // Hero departure with depth — as the page scrolls, the copy lifts away and
   // dissolves while the scope card trails at a slower rate, so leaving the
   // hero reads as two planes separating rather than one block scrolling by.
@@ -42,7 +62,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             className={styles.heroHeadline}
             variants={heroLinesVariants}
           >
-            {HERO_LINES.map((line) => (
+            {HERO_LINES[lang].map((line) => (
               <motion.span
                 key={line.text}
                 className={styles.heroLineMask}
@@ -62,18 +82,17 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             ))}
           </motion.h1>
           <motion.p className={styles.heroLead} variants={focusRiseVariants}>
-            Back office, data processing and omnichannel support — the
-            repeatable work of your operation, run accurately at volume.
+            {t.lead}
           </motion.p>
           <motion.div
             className={styles.heroActions}
             variants={focusRiseVariants}
           >
-            <Link href="/cotizador?servicio=bpo" className={styles.primaryCta}>
-              Give us a quest <Arrow />
-            </Link>
+            <LocalizedLink href="/cotizador?servicio=bpo" className={styles.primaryCta}>
+              {dict.hero.primaryCta} <Arrow />
+            </LocalizedLink>
             <a href="#capabilities" className={styles.secondaryCta}>
-              Explore capabilities <Arrow direction="down" />
+              {t.exploreCapabilities} <Arrow direction="down" />
             </a>
           </motion.div>
         </motion.div>
@@ -83,18 +102,14 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           className={styles.heroMeta}
           variants={softRiseVariants}
           style={{ y: metaY }}
-          aria-label="Operating scope"
+          aria-label={t.operatingScope}
         >
-          <span className={styles.heroMetaLabel}>Operating scope</span>
+          <span className={styles.heroMetaLabel}>{t.operatingScope}</span>
           <ul className={styles.heroMetaList}>
-            <li>Back office</li>
-            <li>Data processing</li>
-            <li>Omnichannel</li>
-            <li>Quality &amp; risk</li>
+            {t.scopeItems.map((item) => <li key={item}>{item}</li>)}
           </ul>
           <p className={styles.heroMetaNote}>
-            Every engagement runs under a documented SLA — accuracy, turnaround
-            and coverage, agreed before launch.
+            {t.note}
           </p>
         </motion.aside>
       </motion.div>

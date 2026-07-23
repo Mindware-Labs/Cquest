@@ -5,10 +5,28 @@ import { motion, type Variants } from "motion/react";
 import { useEffect, useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import { EASE_OUT, focusRiseVariants, ruleXVariants } from "@/components/services/motion";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { ClientLogo } from "../data";
 import styles from "./ClientDialog.module.css";
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const COPY = {
+  en: {
+    close: "Close",
+    aboutTheCompany: "About the company",
+    source: "Source",
+    whatWeProvide: "What Center Quest provides",
+    discussEngagement: "Discuss a similar engagement",
+  },
+  es: {
+    close: "Cerrar",
+    aboutTheCompany: "Sobre la empresa",
+    source: "Fuente",
+    whatWeProvide: "Qué ofrece Center Quest",
+    discussEngagement: "Hablemos de un proyecto similar",
+  },
+};
 
 // One quiet reveal, staggered — the same primitives every other section on
 // this page uses (rule draws, content sharpens out of blur) rather than a
@@ -24,6 +42,8 @@ const logoRiseVariants: Variants = {
 };
 
 export default function ClientDialog({ client, onClose, reduced }: { client: ClientLogo; onClose: () => void; reduced: boolean }) {
+  const { lang } = useI18n();
+  const t = COPY[lang];
   const titleId = `client-dialog-title-${client.name}`;
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +107,7 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
           type="button"
           className={styles.dialogClose}
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t.close}
           initial={reduced ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: reduced ? 0 : 0.3, ease: EASE_OUT, delay: reduced ? 0 : 0.15 }}
@@ -122,13 +142,13 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
             <motion.span className={styles.dialogDivider} aria-hidden variants={ruleXVariants} />
 
             <motion.div className={styles.dialogSection} variants={focusRiseVariants}>
-              <h4>About the company</h4>
-              {client.about.split("\n\n").map((paragraph) => (
+              <h4>{t.aboutTheCompany}</h4>
+              {client.about[lang].split("\n\n").map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
               {"source" in client && client.source && (
                 <div className={styles.dialogCite}>
-                  <span className={styles.dialogCiteLabel}>Source</span>
+                  <span className={styles.dialogCiteLabel}>{t.source}</span>
                   <cite>
                     <a className={styles.dialogCiteLink} href={client.source} target="_blank" rel="noopener noreferrer">
                       {new URL(client.source).hostname.replace(/^www\./, "")}
@@ -141,12 +161,12 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
               )}
             </motion.div>
             <motion.div className={styles.dialogProvides} variants={focusRiseVariants}>
-              <h4>What Center Quest provides</h4>
-              <p>{client.provides}</p>
+              <h4>{t.whatWeProvide}</h4>
+              <p>{client.provides[lang]}</p>
             </motion.div>
 
             <motion.a href="#contact" className={styles.dialogCta} onClick={onClose} variants={focusRiseVariants}>
-              Discuss a similar engagement <Arrow />
+              {t.discussEngagement} <Arrow />
             </motion.a>
           </motion.div>
         </div>

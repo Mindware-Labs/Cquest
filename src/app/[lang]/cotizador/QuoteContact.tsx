@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { motion, type Variants } from "motion/react";
 import {
   EASE_OUT,
@@ -11,6 +10,9 @@ import {
   VIEWPORT,
 } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { STEPS } from "./data";
 import { Arrow } from "./components/icons";
 import styles from "./QuoteContact.module.css";
 
@@ -22,14 +24,6 @@ import styles from "./QuoteContact.module.css";
    /cotizador form with this service pre-selected (Step 2); the full step-by-step
    wizard lives there, not inline. currentColor carries the neutrals so the block
    reads on each service's dark ink; --brand-celeste carries the accent. */
-
-// Preview of the three steps the prospect walks through in /cotizador, so the
-// "3 steps" promise is concrete — laid out like the capability index rows.
-const STEPS = [
-  { n: "01", label: "Service" },
-  { n: "02", label: "Details" },
-  { n: "03", label: "Contact" },
-] as const;
 
 const rowVariants: Variants = {
   hidden: { opacity: 0, y: 8 },
@@ -47,6 +41,7 @@ export default function QuoteContact({
   lede?: string;
   reduced: boolean;
 }) {
+  const { dict, lang } = useI18n();
   return (
     <motion.div
       className={styles.inner}
@@ -68,22 +63,22 @@ export default function QuoteContact({
       </motion.div>
 
       <motion.div className={styles.card} variants={focusRiseVariants}>
-        <span className={styles.cardMeta}>3 steps · about 2 minutes</span>
+        <span className={styles.cardMeta}>{dict.quoteContact.meta}</span>
 
         <motion.ol className={styles.stepList} variants={stepVariants}>
-          {STEPS.map((step) => (
-            <motion.li key={step.n} className={styles.stepRow} variants={rowVariants}>
-              <span className={styles.stepNum}>{step.n}</span>
-              <span className={styles.stepLabel}>{step.label}</span>
+          {STEPS.map((step, index) => (
+            <motion.li key={step.id} className={styles.stepRow} variants={rowVariants}>
+              <span className={styles.stepNum}>0{index + 1}</span>
+              <span className={styles.stepLabel}>{step.copy[lang].label}</span>
             </motion.li>
           ))}
         </motion.ol>
 
-        <Link href={`/cotizador?servicio=${service}`} className={styles.cta}>
-          Give us a quest
+        <LocalizedLink href={`/cotizador?servicio=${service}`} className={styles.cta}>
+          {dict.quoteContact.cta}
           <Arrow className={styles.ctaArrow} />
-        </Link>
-        <span className={styles.reassure}>Free · no commitment</span>
+        </LocalizedLink>
+        <span className={styles.reassure}>{dict.quoteContact.reassure}</span>
       </motion.div>
     </motion.div>
   );

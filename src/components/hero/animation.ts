@@ -1,31 +1,29 @@
 import type { Variants } from "motion/react";
 import { SERVICE_ICON, SERVICES } from "@/components/services/data";
+import type { Dictionary } from "@/i18n/dictionaries/types";
+import type { Locale } from "@/i18n/config";
+import type { NavLink } from "@/components/navigation/data";
 
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const HEADLINE_ROTATE_MS = 4600;
 
-export const ROTATING_HEADLINES = [
-  { top: "We power operations.", bottom: "You drive growth." },
-  { top: "We answer every call.", bottom: "You keep every client." },
-  { top: "We run the back office.", bottom: "You run the business." },
-  { top: "We build your systems.", bottom: "You set the pace." },
-] as const;
-
-export const HERO_NAV_LINKS = [
-  {
-    label: "Services",
-    href: "#services",
-    children: SERVICES.map((service) => ({
-      label: service.label,
-      href: service.href,
-      description: service.strapline,
-      icon: SERVICE_ICON[service.id],
-    })),
-  },
-  { label: "Success stories", href: "#success-stories" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "/cotizador" },
-] as const;
+export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+  return [
+    {
+      label: dict.hero.navLinks.services,
+      href: "#services",
+      children: SERVICES.map((service) => ({
+        label: service.label[lang],
+        href: service.href,
+        description: service.strapline[lang],
+        icon: SERVICE_ICON[service.id],
+      })),
+    },
+    { label: dict.hero.navLinks.successStories, href: "#success-stories" },
+    { label: dict.hero.navLinks.about, href: "#about" },
+    { label: dict.hero.navLinks.contact, href: "/cotizador" },
+  ];
+}
 
 export const heroContentVariants: Variants = {
   hidden: {},

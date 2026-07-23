@@ -3,6 +3,7 @@
 import { motion, type Variants } from "motion/react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { Service } from "@/components/services/data";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -39,6 +40,7 @@ export default function CapabilityTags({
   service: Service;
   reduced: boolean;
 }) {
+  const { lang } = useI18n();
   return (
     <motion.ul
       variants={reduced ? undefined : tagRowVariants}
@@ -46,15 +48,15 @@ export default function CapabilityTags({
     >
       {service.details.map((detail) => (
         <motion.li
-          key={detail.title}
+          key={detail.id}
           variants={reduced ? undefined : tagVariants}
           whileHover={reduced ? undefined : { y: -3, scale: 1.03 }}
           transition={{ type: "spring", stiffness: 420, damping: 26 }}
-          title={detail.description}
+          title={detail.description[lang]}
           className="cq-cap"
         >
           <ServiceIcon name={detail.icon} />
-          <span>{detail.title}</span>
+          <span>{detail.title[lang]}</span>
         </motion.li>
       ))}
     </motion.ul>

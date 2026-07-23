@@ -1,6 +1,7 @@
 "use client";
 
-import type { Answers, Questionnaire } from "../data";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { Answers, ResolvedQuestionnaire } from "../data";
 import shell from "./step.module.css";
 import styles from "./StepDetails.module.css";
 import { Field, OptionGroup } from "./fields";
@@ -17,16 +18,17 @@ export default function StepDetails({
   showErrors,
   errors,
 }: {
-  questionnaire: Questionnaire;
+  questionnaire: ResolvedQuestionnaire;
   answers: Answers;
   onChange: (id: string, value: string | string[]) => void;
   showErrors: boolean;
   errors: Record<string, string>;
 }) {
+  const { dict } = useI18n();
   return (
     <div className={shell.step}>
       <header className={shell.stepHead}>
-        <p className={shell.eyebrow}>Step 2 · Details</p>
+        <p className={shell.eyebrow}>{dict.wizard.step2.eyebrow}</p>
         <h2 className={shell.stepTitle}>{questionnaire.lead}</h2>
       </header>
 

@@ -1,8 +1,10 @@
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import ServiceIcon from "@/components/services/ServiceIcon";
+import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { localeHref } from "@/i18n/localeHref";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
 export default function DesktopNav({
@@ -14,6 +16,7 @@ export default function DesktopNav({
   inverse?: boolean;
   links: readonly NavLink[];
 }) {
+  const { lang } = useI18n();
   const [hovered, setHovered] = useState<string | null>(null);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
   const navRef = useRef<HTMLUListElement>(null);
@@ -122,7 +125,7 @@ export default function DesktopNav({
               </button>
             ) : (
               <a
-                href={href}
+                href={localeHref(lang, href)}
                 onClick={(event) => href === "#" && event.preventDefault()}
                 onFocus={() => setHovered(label)}
                 className={`relative z-10 block rounded-[2px] px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${inverse ? "text-white/78 hover:text-white focus-visible:outline-celeste" : "text-foreground/80 hover:text-petroleo focus-visible:outline-petroleo"}`}
@@ -155,7 +158,7 @@ export default function DesktopNav({
                         <ul className={`grid grid-cols-3 divide-x ${inverse ? "divide-white/12" : "divide-border/60"}`}>
                           {children.map((child) => (
                             <li key={child.label}>
-                              <Link
+                              <LocalizedLink
                                 href={child.href}
                                 onClick={() => setOpenLabel(null)}
                                 className="group relative flex h-full flex-col gap-3 p-5 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-celeste"
@@ -184,7 +187,7 @@ export default function DesktopNav({
                                 >
                                   {child.description}
                                 </span>
-                              </Link>
+                              </LocalizedLink>
                             </li>
                           ))}
                         </ul>
@@ -194,7 +197,7 @@ export default function DesktopNav({
                         {children.map((child) => (
                           <li key={child.label}>
                             <a
-                              href={child.href}
+                              href={localeHref(lang, child.href)}
                               onClick={() => setOpenLabel(null)}
                               className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                 inverse
