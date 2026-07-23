@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { locales, type Locale } from "./config";
+import { defaultLocale, locales, type Locale } from "./config";
 
 // Every route's metadata must set its own alternates — a blanket value in
 // the root layout would get inherited verbatim by any page that forgets to
@@ -17,7 +17,11 @@ export function localeAlternates(lang: Locale, path: string): Metadata["alternat
     canonical: `/${lang}${path}`,
     languages: {
       ...languages,
-      "x-default": path === "" ? "/" : path,
+      // Must be a URL that itself resolves with a 200 — `proxy.ts` 3xx-redirects
+      // every locale-less path, so pointing x-default at the bare path (as this
+      // used to do) put a redirecting URL in the hreflang cluster, which Google
+      // may discard the whole set over. The default-locale URL is the real page.
+      "x-default": `/${defaultLocale}${path}`,
     },
   };
 }

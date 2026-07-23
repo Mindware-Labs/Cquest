@@ -22,7 +22,48 @@ import { buildSalesEmail } from "./emails/sales";
 
    Env overrides: RESEND_FROM (default "Center Quest <onboarding@resend.dev>"),
    RESEND_TO (sales inbox, default "labsmindware@gmail.com", comma-separated). */
+// Below this, a real prospect can't have finished all 3 steps — reading and
+// answering even the shortest questionnaire takes longer than this in practice.
+const MIN_SUBMIT_MS = 1500;
+
+// Google's own recommended default (see the reCAPTCHA v3 docs) — 1.0 is very
+// likely human, 0.0 is very likely a bot.
+const RECAPTCHA_MIN_SCORE = 0.5;
+const RECAPTCHA_ACTION = "submit_quote";
+
+// No token isn't itself suspicious — it means the client's grecaptcha script
+// never loaded (ad-blocker, privacy extension, network hiccup), which real
+// prospects trigger too. Only an explicit failure (bad token, wrong action,
+// low score) counts as a bot signal; a verify-request failure (Google's API
+// down) fails open rather than blocking real leads on Google's outage.
+async function isFlaggedByRecaptcha(token: string | undefined): Promise<boolean> {
+  if (!token) return false;
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret) return false;
+
+  try {
+    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const result = (await response.json()) as { success: boolean; score?: number; action?: string };
+    return !result.success || result.action !== RECAPTCHA_ACTION || (result.score ?? 0) < RECAPTCHA_MIN_SCORE;
+  } catch {
+    return false;
+  }
+}
+
 export async function submitQuote(submission: QuoteSubmission): Promise<void> {
+  // Anti-spam, layered: a filled honeypot, an implausibly fast submission, or
+  // a low reCAPTCHA score all resolve as if it succeeded (the wizard shows
+  // the normal confirmation) but nothing is sent — tipping off a bot that it
+  // was caught only teaches it to adapt.
+  const tooFast = submission.startedAt !== undefined && Date.now() - submission.startedAt < MIN_SUBMIT_MS;
+  if (submission.honeypot || tooFast || (await isFlaggedByRecaptcha(submission.recaptchaToken))) {
+    return;
+  }
+
   const apiKey = process.env.API_KEY_RESEND;
   if (!apiKey) {
     throw new Error("API_KEY_RESEND is not set");

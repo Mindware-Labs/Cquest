@@ -22,14 +22,14 @@ import styles from "./Hero.module.css";
 
 const COPY = {
   en: {
-    lead: "CRMs, dashboards and operations automation built around how your business actually works — not the other way around.",
+    lead: "Systems development for operations: CRMs, dashboards and automation built around how your business actually works — not the other way around.",
     seeWhatWeBuild: "See what we build",
     pageHighlights: "Page highlights",
     signals: ["CRMs", "Dashboards", "Automation", "AI"],
     windowAlt: "Center Quest operations platform — dashboard with call volume, agent activity and follow-up accountability",
   },
   es: {
-    lead: "CRMs, dashboards y automatización de operaciones construidos según cómo realmente funciona tu negocio — y no al revés.",
+    lead: "Desarrollo de sistemas para operaciones: CRMs, dashboards y automatización construidos según cómo realmente funciona tu negocio — y no al revés.",
     seeWhatWeBuild: "Ve lo que construimos",
     pageHighlights: "Aspectos destacados",
     signals: ["CRMs", "Dashboards", "Automatización", "IA"],

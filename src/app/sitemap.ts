@@ -24,7 +24,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return ROUTES.map((path) => ({
     url: `${SITE_URL}/${defaultLocale}${path}`,
     alternates: {
-      languages: Object.fromEntries(locales.map((locale) => [locale, `${SITE_URL}/${locale}${path}`])),
+      languages: {
+        ...Object.fromEntries(locales.map((locale) => [locale, `${SITE_URL}/${locale}${path}`])),
+        // Kept in sync with the x-default in src/i18n/alternates.ts — a
+        // mismatch between the sitemap's hreflang cluster and the HTML
+        // <link rel="alternate"> tags is grounds for Google to drop the pair.
+        "x-default": `${SITE_URL}/${defaultLocale}${path}`,
+      },
     },
   }));
 }

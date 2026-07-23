@@ -93,4 +93,16 @@ export type QuoteSubmission = {
   /** The prospect's site language when they submitted — not necessarily the
    *  language the internal sales notification is sent in (see emails/sales.ts). */
   locale: Locale;
+  /** Anti-spam layers, all optional: only the real wizard submission
+   *  populates them — a test/embed `onSubmit` override may skip some or all
+   *  of them, which just means that call path gets less checking, not a
+   *  crash. `honeypot` is a field real prospects never see or fill; a
+   *  non-empty value means a bot filled the whole form. `startedAt` is
+   *  `Date.now()` at wizard mount — anything faster than a human could
+   *  plausibly complete all 3 steps is rejected. `recaptchaToken` is a
+   *  reCAPTCHA v3 token from `grecaptcha.execute()`, verified server-side
+   *  against Google's siteverify endpoint (score + action check). */
+  honeypot?: string;
+  startedAt?: number;
+  recaptchaToken?: string;
 };

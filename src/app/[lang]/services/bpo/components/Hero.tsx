@@ -19,14 +19,14 @@ import styles from "./Hero.module.css";
 
 const COPY = {
   en: {
-    lead: "Back office, data processing and omnichannel support — the repeatable work of your operation, run accurately at volume.",
+    lead: "Back office, data processing and omnichannel support — the repeatable work of your operation (BPO), run accurately at volume.",
     exploreCapabilities: "Explore capabilities",
     operatingScope: "Operating scope",
     scopeItems: ["Back office", "Data processing", "Omnichannel", "Quality & risk"],
     note: "Every engagement runs under a documented SLA — accuracy, turnaround and coverage, agreed before launch.",
   },
   es: {
-    lead: "Back office, procesamiento de datos y soporte omnicanal — el trabajo repetible de tu operación, ejecutado con precisión a volumen.",
+    lead: "Back office, procesamiento de datos y soporte omnicanal — el trabajo repetible de tu operación (BPO), ejecutado con precisión a volumen.",
     exploreCapabilities: "Explorar capacidades",
     operatingScope: "Alcance operativo",
     scopeItems: ["Back office", "Procesamiento de datos", "Omnicanal", "Calidad y riesgo"],

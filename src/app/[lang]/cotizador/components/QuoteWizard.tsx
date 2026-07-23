@@ -29,6 +29,36 @@ import { Arrow } from "./icons";
 
 type Status = "form" | "submitting" | "done";
 
+const RECAPTCHA_ACTION = "submit_quote";
+// grecaptcha.execute() itself doesn't time out — if the script never loaded
+// (blocked, ad-blocker, network hiccup) it would hang forever. Race it
+// against a timeout instead: no token just means this submission relies on
+// the honeypot/timing checks alone server-side, not a lost lead.
+const RECAPTCHA_TIMEOUT_MS = 4000;
+
+// Best-effort: resolves with a token when reCAPTCHA is available, or
+// `undefined` when the site key isn't configured, the script hasn't loaded,
+// or it times out. Never rejects — a missing token must not block a real
+// prospect from submitting.
+function getRecaptchaToken(): Promise<string | undefined> {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  if (typeof window === "undefined" || !siteKey || !window.grecaptcha) {
+    return Promise.resolve(undefined);
+  }
+  const { grecaptcha } = window;
+
+  const token = new Promise<string | undefined>((resolve) => {
+    grecaptcha.ready(() => {
+      grecaptcha.execute(siteKey, { action: RECAPTCHA_ACTION }).then(resolve, () => resolve(undefined));
+    });
+  });
+  const timeout = new Promise<string | undefined>((resolve) => {
+    setTimeout(() => resolve(undefined), RECAPTCHA_TIMEOUT_MS);
+  });
+
+  return Promise.race([token, timeout]);
+}
+
 export default function QuoteWizard({
   initialService,
   initialStep,
@@ -55,7 +85,16 @@ export default function QuoteWizard({
   const [showErrors, setShowErrors] = useState(false);
   const [status, setStatus] = useState<Status>("form");
   const [focusAttempt, setFocusAttempt] = useState(0);
+  const [honeypot, setHoneypot] = useState("");
   const stepPanelRef = useRef<HTMLDivElement>(null);
+  // Anti-spam without a reCAPTCHA key: captured once after mount (an effect,
+  // not render — Date.now() during render is impure/unstable), sent with the
+  // submission so submitQuote can reject anything faster than a real prospect
+  // could plausibly complete all 3 steps.
+  const mountedAtRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
 
   const questionnaire = service ? QUESTIONNAIRES[service] : null;
   const resolvedQuestionnaire = questionnaire ? resolveQuestionnaire(questionnaire, lang) : null;
@@ -135,13 +174,22 @@ export default function QuoteWizard({
     if (!service) return;
     setStatus("submitting");
     try {
-      await (onSubmit ?? submitQuote)({ service, details, contact, locale: lang });
+      const recaptchaToken = await getRecaptchaToken();
+      await (onSubmit ?? submitQuote)({
+        service,
+        details,
+        contact,
+        locale: lang,
+        honeypot,
+        startedAt: mountedAtRef.current,
+        recaptchaToken,
+      });
       setStatus("done");
     } catch {
       // Keep the prospect's answers intact so they can retry.
       setStatus("form");
     }
-  }, [service, details, contact, lang, onSubmit]);
+  }, [service, details, contact, lang, honeypot, onSubmit]);
 
   const goNext = useCallback(() => {
     if (!canAdvance) {
@@ -257,6 +305,21 @@ export default function QuoteWizard({
       }
     >
       <p className="sr-only" role="status" aria-live="polite">{liveMessage}</p>
+
+      {/* Honeypot — real prospects never see or reach this field (offscreen,
+          untabbable, unannounced); bots that fill every input blind still find
+          it. A non-empty value on submit makes submitQuote drop the lead
+          silently instead of sending it to Resend. */}
+      <input
+        type="text"
+        name="company_website"
+        value={honeypot}
+        onChange={(event) => setHoneypot(event.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}
+      />
 
       <AnimatePresence mode="wait" initial={false}>
         {status === "done" ? (

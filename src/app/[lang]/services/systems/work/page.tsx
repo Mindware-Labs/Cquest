@@ -6,7 +6,7 @@ import { resolveLang } from "@/i18n/resolveLangParam";
 
 const TITLE: Record<Locale, string> = {
   en: "Contact-center operations platform · Case study | Center Quest",
-  es: "Plataforma de operaciones para contact center · Caso de éxito | Center Quest",
+  es: "Plataforma de contact center · Caso de éxito | Center Quest",
 };
 
 const DESCRIPTION: Record<Locale, string> = {
@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     title: TITLE[lang],
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/services/systems/work"),
+    openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
   };
 }
 

@@ -21,14 +21,14 @@ import styles from "./Hero.module.css";
 const COPY = {
   en: {
     alt: "Call center workstations with headsets and keyboards ready for agents",
-    lead: "Inbound and outbound contact-center operations designed around the moments that matter to your customers.",
+    lead: "Inbound and outbound call center operations in the Dominican Republic, designed around the moments that matter to your customers.",
     exploreCapabilities: "Explore capabilities",
     pageHighlights: "Page highlights",
     signals: ["People", "Process", "Technology"],
   },
   es: {
     alt: "Estaciones de trabajo de call center con diademas y teclados listos para los agentes",
-    lead: "Operaciones de contact center inbound y outbound diseñadas alrededor de los momentos que más importan a tus clientes.",
+    lead: "Operaciones de call center inbound y outbound en República Dominicana, diseñadas alrededor de los momentos que más importan a tus clientes.",
     exploreCapabilities: "Explorar capacidades",
     pageHighlights: "Aspectos destacados",
     signals: ["Personas", "Proceso", "Tecnología"],

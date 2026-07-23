@@ -5,8 +5,8 @@ import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
 const TITLE: Record<Locale, string> = {
-  en: "Call Center | Center Quest",
-  es: "Call Center | Center Quest",
+  en: "Call Center in the Dominican Republic | Center Quest",
+  es: "Call Center en República Dominicana | Center Quest",
 };
 
 const DESCRIPTION: Record<Locale, string> = {
@@ -20,9 +20,29 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     title: TITLE[lang],
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/services/call-center"),
+    openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
   };
 }
 
-export default function CallCenterPage() {
-  return <CallCenterDetail />;
+const SERVICE_JSON_LD = (lang: Locale) => ({
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "Call Center",
+  name: TITLE[lang],
+  description: DESCRIPTION[lang],
+  provider: { "@type": "Organization", name: "Center Quest" },
+  areaServed: "Dominican Republic",
+});
+
+export default async function CallCenterPage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await resolveLang(params);
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICE_JSON_LD(lang)) }}
+      />
+      <CallCenterDetail />
+    </>
+  );
 }

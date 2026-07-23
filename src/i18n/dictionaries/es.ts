@@ -33,7 +33,7 @@ export const dictionary: Dictionary = {
     scrollLabel: "Desplázate",
     primaryCta: "Cuéntanos tu misión",
     secondaryCta: "Ver nuestros servicios",
-    accessibleFallback: "Nosotros impulsamos las operaciones. Tú impulsas el crecimiento.",
+    accessibleFallback: "Call center, operaciones (BPO) y desarrollo de sistemas para operaciones en República Dominicana — nosotros impulsamos las operaciones, tú impulsas el crecimiento.",
     rotating: [
       { top: "Impulsamos tus operaciones.", bottom: "Tú impulsas el crecimiento." },
       { top: "Respondemos cada llamada.", bottom: "Tú conservas cada cliente." },

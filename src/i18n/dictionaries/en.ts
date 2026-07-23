@@ -33,7 +33,7 @@ export const dictionary: Dictionary = {
     scrollLabel: "Scroll",
     primaryCta: "Give us a quest",
     secondaryCta: "See our services",
-    accessibleFallback: "We power operations. You drive growth.",
+    accessibleFallback: "Call center, operations (BPO) and systems development for operations in the Dominican Republic — we power operations, you drive growth.",
     rotating: [
       { top: "We power operations.", bottom: "You drive growth." },
       { top: "We answer every call.", bottom: "You keep every client." },

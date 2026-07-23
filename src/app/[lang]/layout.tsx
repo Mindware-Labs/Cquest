@@ -22,8 +22,21 @@ const switzer = localFont({
 });
 
 const SITE_DESCRIPTION: Record<Locale, string> = {
-  en: "Center Quest is a Dominican operations partner across three business lines: Call Center, Operations (BPO / Business Process Outsourcing), and Systems Development for operations.",
-  es: "Center Quest es un aliado dominicano de operaciones en tres líneas de negocio: Call Center, Operaciones (BPO / Business Process Outsourcing) y Desarrollo de Sistemas para operaciones.",
+  en: "Center Quest is a Dominican operations partner: Call Center, Operations (BPO) and Systems Development for operations in the Dominican Republic.",
+  es: "Center Quest es un aliado dominicano de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas para operaciones en República Dominicana.",
+};
+
+// Minimal, honest Organization schema — only fields we actually have (name,
+// url, logo). No phone/address/sameAs: none exist anywhere in the codebase
+// yet, and inventing them would make the markup wrong rather than useful.
+// `url`/`logo` are relative since no production domain is set (see
+// sitemap.ts's SITE_URL note) — upgrade both to absolute once it is.
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Center Quest",
+  url: "/",
+  logo: "/logo.png",
 };
 
 const SITE_TITLE: Record<Locale, string> = {
@@ -85,6 +98,10 @@ export default async function RootLayout({
       className={`${switzer.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
         <I18nProvider dict={dict} lang={lang}>
           {/* Accessibility: skip to main content */}
           <a href="#main-content" className="skip-link">
