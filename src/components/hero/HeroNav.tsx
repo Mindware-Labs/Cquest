@@ -49,7 +49,7 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
 
         <MotionLink
           ref={ctaRef}
-          href="/cotizador"
+          href="/quote"
           onMouseEnter={onMouseEnter}
           onMouseMove={onMouseMove}
           onMouseLeave={onMouseLeave}
@@ -93,7 +93,7 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
         reduced={reduced}
         onClose={() => setOpen(false)}
         links={heroNavLinks}
-        ctaHref="/cotizador"
+        ctaHref="/quote"
         theme="dark"
       />
     </motion.div>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import BpoDetail from "./BpoDetail";
+import OperationsDetail from "./OperationsDetail";
 import type { Locale } from "@/i18n/config";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   return {
     title: TITLE[lang],
     description: DESCRIPTION[lang],
-    alternates: localeAlternates(lang, "/services/bpo"),
+    alternates: localeAlternates(lang, "/services/operations"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
   };
 }
@@ -34,7 +34,7 @@ const SERVICE_JSON_LD = (lang: Locale) => ({
   areaServed: "Dominican Republic",
 });
 
-export default async function BpoPage({ params }: { params: Promise<{ lang: string }> }) {
+export default async function OperationsPage({ params }: { params: Promise<{ lang: string }> }) {
   const lang = await resolveLang(params);
   return (
     <>
@@ -42,7 +42,7 @@ export default async function BpoPage({ params }: { params: Promise<{ lang: stri
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICE_JSON_LD(lang)) }}
       />
-      <BpoDetail />
+      <OperationsDetail />
     </>
   );
 }

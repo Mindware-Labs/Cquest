@@ -19,7 +19,7 @@ export default function HeroActions() {
     <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
       <MotionLink
         ref={ref}
-        href="/cotizador"
+        href="/quote"
         onMouseEnter={onMouseEnter}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}

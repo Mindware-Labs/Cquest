@@ -9,9 +9,9 @@ import MediaBand from "./components/MediaBand";
 import MethodSection from "./components/MethodSection";
 import PhotosSection from "./components/PhotosSection";
 import SlaSection from "./components/SlaSection";
-import styles from "./bpo.module.css";
+import styles from "./operations.module.css";
 
-export default function BpoDetail() {
+export default function OperationsDetail() {
   const reduced = useReducedMotion() ?? false;
 
   return (

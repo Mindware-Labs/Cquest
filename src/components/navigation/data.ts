@@ -19,7 +19,7 @@ export type NavLink = {
 // a dark hero shouldn't be added to this list.
 export const SERVICE_DETAIL_PAGES = [
   "/services/call-center",
-  "/services/bpo",
+  "/services/operations",
   "/services/systems",
 ] as const;
 
@@ -37,7 +37,7 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
       })),
     },
     { label: dict.nav.sectors, href: "#" },
-    { label: dict.nav.contact, href: "/cotizador" },
+    { label: dict.nav.contact, href: "/quote" },
   ];
 }
 
@@ -74,7 +74,7 @@ export function getServiceNavLinks(dict: Dictionary): Record<string, readonly Na
       { label: dict.serviceSections.callCenter.results, href: "#metrics" },
       { label: dict.serviceSections.callCenter.clients, href: "#clients" },
     ],
-    "/services/bpo": [
+    "/services/operations": [
       home,
       { label: dict.serviceSections.bpo.disciplines, href: "#capabilities" },
       { label: dict.serviceSections.bpo.method, href: "#method" },

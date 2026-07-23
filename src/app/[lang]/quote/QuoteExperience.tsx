@@ -7,7 +7,7 @@ import type { ServiceId } from "@/components/services/data";
 import { useI18n } from "@/i18n/I18nProvider";
 import QuoteWizard from "./components/QuoteWizard";
 import { getService } from "./data";
-import styles from "./cotizador.module.css";
+import styles from "./quote.module.css";
 
 export default function QuoteExperience({
   initialService,

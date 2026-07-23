@@ -88,7 +88,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             className={styles.heroActions}
             variants={focusRiseVariants}
           >
-            <LocalizedLink href="/cotizador?servicio=bpo" className={styles.primaryCta}>
+            <LocalizedLink href="/quote?servicio=bpo" className={styles.primaryCta}>
               {dict.hero.primaryCta} <Arrow />
             </LocalizedLink>
             <a href="#capabilities" className={styles.secondaryCta}>

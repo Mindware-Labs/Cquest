@@ -21,7 +21,7 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
     },
     { label: dict.hero.navLinks.successStories, href: "#success-stories" },
     { label: dict.hero.navLinks.about, href: "#about" },
-    { label: dict.hero.navLinks.contact, href: "/cotizador" },
+    { label: dict.hero.navLinks.contact, href: "/quote" },
   ];
 }
 

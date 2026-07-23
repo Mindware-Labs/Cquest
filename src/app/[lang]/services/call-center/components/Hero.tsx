@@ -91,7 +91,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </motion.h1>
           <motion.p className={styles.heroLead} variants={focusRiseVariants}>{t.lead}</motion.p>
           <motion.div className={styles.heroActions} variants={focusRiseVariants}>
-            <LocalizedLink href="/cotizador?servicio=call-center" className={styles.primaryCta}>{dict.hero.primaryCta} <Arrow /></LocalizedLink>
+            <LocalizedLink href="/quote?servicio=call-center" className={styles.primaryCta}>{dict.hero.primaryCta} <Arrow /></LocalizedLink>
             <a href="#capabilities" className={styles.secondaryCta}>{t.exploreCapabilities} <Arrow direction="down" /></a>
           </motion.div>
           <motion.div className={styles.heroSignal} aria-label={t.pageHighlights} variants={focusRiseVariants}>

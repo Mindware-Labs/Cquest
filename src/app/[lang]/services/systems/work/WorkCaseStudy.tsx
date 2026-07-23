@@ -661,7 +661,7 @@ export default function WorkCaseStudy() {
             {t.closingLede}
           </motion.p>
           <motion.div className={styles.actions} variants={focusRiseVariants}>
-            <LocalizedLink href="/cotizador?servicio=systems" className={styles.primary}>
+            <LocalizedLink href="/quote?servicio=systems" className={styles.primary}>
               {dict.hero.primaryCta} <Arrow />
             </LocalizedLink>
             <LocalizedLink href="/services/systems#work" className={styles.secondary}>

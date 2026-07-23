@@ -4,7 +4,7 @@ import { defaultLocale, locales, type Locale } from "./config";
 // Every route's metadata must set its own alternates — a blanket value in
 // the root layout would get inherited verbatim by any page that forgets to
 // override it, pointing Google at the wrong sibling-locale URL. `path` is
-// the route's locale-less path ("" for home, "/services/bpo", ...), no
+// the route's locale-less path ("" for home, "/services/operations", ...), no
 // trailing slash.
 //
 // Note: no metadataBase is configured (production domain isn't known at the

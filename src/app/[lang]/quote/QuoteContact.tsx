@@ -21,7 +21,7 @@ import styles from "./QuoteContact.module.css";
    heading (with a celeste tick, like Metrics) on the left; an action card built
    from the site's own card idiom — hairline border, celeste top-accent, numbered
    rows echoing the capability index — on the right. Its button opens the dedicated
-   /cotizador form with this service pre-selected (Step 2); the full step-by-step
+   /quote form with this service pre-selected (Step 2); the full step-by-step
    wizard lives there, not inline. currentColor carries the neutrals so the block
    reads on each service's dark ink; --brand-celeste carries the accent. */
 
@@ -74,7 +74,7 @@ export default function QuoteContact({
           ))}
         </motion.ol>
 
-        <LocalizedLink href={`/cotizador?servicio=${service}`} className={styles.cta}>
+        <LocalizedLink href={`/quote?servicio=${service}`} className={styles.cta}>
           {dict.quoteContact.cta}
           <Arrow className={styles.ctaArrow} />
         </LocalizedLink>

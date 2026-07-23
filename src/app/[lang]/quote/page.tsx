@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   return {
     title: TITLE[lang],
     description: DESCRIPTION[lang],
-    alternates: localeAlternates(lang, "/cotizador"),
+    alternates: localeAlternates(lang, "/quote"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
   };
 }
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 // Next 16 `searchParams` is async, so the page awaits it and hands the resolved
 // service to the client experience as a prop — no client-side useSearchParams,
 // so no Suspense boundary is needed.
-export default async function CotizadorPage({
+export default async function QuotePage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

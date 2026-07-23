@@ -128,7 +128,7 @@ export const SERVICES: ReadonlyArray<Service> = [
     },
     color: "#176c79",
     glow: "#80bc00",
-    href: "/services/bpo",
+    href: "/services/operations",
     details: [
       {
         id: "back-office-support",

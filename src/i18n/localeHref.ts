@@ -5,7 +5,7 @@ function isAlreadyPrefixed(path: string): boolean {
 }
 
 // Prefixes an internal absolute href with the active locale — "/" -> "/es",
-// "/cotizador?servicio=bpo" -> "/es/cotizador?servicio=bpo",
+// "/quote?servicio=bpo" -> "/es/quote?servicio=bpo",
 // "/#services" -> "/es#services". Leaves external links, mailto/tel, bare
 // in-page anchors, and already-prefixed hrefs untouched (idempotent, so it's
 // safe to call on a value that might already be localized).

@@ -14,10 +14,10 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.examp
 const ROUTES = [
   "",
   "/services/call-center",
-  "/services/bpo",
+  "/services/operations",
   "/services/systems",
   "/services/systems/work",
-  "/cotizador",
+  "/quote",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

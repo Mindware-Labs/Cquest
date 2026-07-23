@@ -38,6 +38,11 @@ export function resolveService(param?: string | string[]): ServiceId | null {
     callcenter: "call-center",
     call_center: "call-center",
     bpo: "bpo",
+    // The route is "/services/operations" (Navbar derives ?servicio= from the
+    // last URL segment there), while the ServiceId itself stayed "bpo" — only
+    // the display copy and the URL were rebranded, not the internal id.
+    operations: "bpo",
+    operaciones: "bpo",
     systems: "systems",
     "systems-development": "systems",
     sistemas: "systems",

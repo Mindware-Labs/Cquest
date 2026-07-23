@@ -5,7 +5,7 @@ import type { Variants } from "motion/react";
    do the talking: content sharpens up out of a soft blur (presence, never
    a flat fade), and hero lines rise from behind a clipped edge like a
    curtain lifting. Previously duplicated byte-for-byte across
-   CallCenterDetail.tsx, BpoDetail.tsx and SystemsDetail.tsx — now shared. */
+   CallCenterDetail.tsx, OperationsDetail.tsx and SystemsDetail.tsx — now shared. */
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const VIEWPORT = { once: true, margin: "-80px" } as const;
 

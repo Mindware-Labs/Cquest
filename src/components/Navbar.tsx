@@ -54,12 +54,12 @@ export default function Navbar() {
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
   const inverse = serviceDetailPage && !scrolled && !open;
   const navLinks = getServiceNavLinks(dict)[pathname] ?? getNavLinks(dict, lang);
-  // The quote CTA opens the dedicated /cotizador form — on a service page it
+  // The quote CTA opens the dedicated /quote form — on a service page it
   // deep-links with that service preselected (Step 2). Left un-prefixed here;
   // MotionLink/LocalizedLink resolves the locale itself.
   const quoteHref = serviceDetailPage
-    ? `/cotizador?servicio=${pathname.split("/").pop()}`
-    : "/cotizador";
+    ? `/quote?servicio=${pathname.split("/").pop()}`
+    : "/quote";
 
   return (
     <motion.header
