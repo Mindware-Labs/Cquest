@@ -49,7 +49,7 @@ export default function RotatingHeadline({ reduced }: { reduced: boolean }) {
               index === slides.current ? "" : "pointer-events-none"
             }`}
           >
-            <span className="block pb-[0.08em]">
+            <span className="block pb-[0.01em]">
               <motion.span
                 custom={0}
                 variants={variants}
@@ -60,7 +60,7 @@ export default function RotatingHeadline({ reduced }: { reduced: boolean }) {
                 {pair.top}
               </motion.span>
             </span>
-            <span className="block pb-[0.08em]">
+            <span className="block pb-[0.01em]">
               <motion.span
                 custom={1}
                 variants={variants}

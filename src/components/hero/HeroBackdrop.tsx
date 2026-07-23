@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { motion, type MotionValue } from "motion/react";
 import heroImage from "../../../public/hero-image.jpeg";
+import heroImageMobile from "../../../public/hero-mobile.png";
 
 type HeroBackdropProps = {
   imageY: MotionValue<number>;
@@ -16,6 +17,16 @@ export default function HeroBackdrop({ imageY, imageScale }: HeroBackdropProps) 
         className="absolute -inset-y-8 inset-x-0 will-change-transform"
       >
         <Image
+          src={heroImageMobile}
+          alt=""
+          fill
+          preload
+          quality={82}
+          placeholder="blur"
+          sizes="100vw"
+          className="block object-cover object-center md:hidden"
+        />
+        <Image
           src={heroImage}
           alt=""
           fill
@@ -23,7 +34,7 @@ export default function HeroBackdrop({ imageY, imageScale }: HeroBackdropProps) 
           quality={82}
           placeholder="blur"
           sizes="100vw"
-          className="object-cover object-[70%_center]"
+          className="hidden object-cover object-[70%_center] md:block"
         />
       </motion.div>
       <div

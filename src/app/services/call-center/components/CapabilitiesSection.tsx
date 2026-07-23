@@ -69,7 +69,7 @@ export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
                   onClick={() => setActiveCapability(item.title)}
                   onKeyDown={(event) => handleCapabilityKeyDown(event, index)}
                 >
-                  <span className={styles.tabNumber}>0{index + 1}</span><span>{item.title}</span><Arrow className={styles.tabArrow} />
+                  <span className={styles.tabNumber}>0{index + 1}</span><span className={styles.tabLabel}>{item.title}</span><Arrow className={styles.tabArrow} />
                 </button>
               );
             })}

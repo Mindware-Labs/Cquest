@@ -36,7 +36,7 @@ export default function HeroActions() {
 
       <a
         href="#services"
-        className="group/link relative touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+        className="group/link relative hidden touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste sm:inline-flex"
       >
         <span className="inline-flex items-center gap-1.5">
           See our services

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { EASE_OUT, HERO_NAV_LINKS } from "./animation";
 
 const MotionLink = motion.create(Link);
@@ -93,51 +94,15 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
         </button>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="hero-mobile-menu"
-            initial={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
-            animate={reduced ? { opacity: 1 } : { opacity: 1, height: "auto" }}
-            exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: EASE_OUT }}
-            className="overflow-hidden border-t border-white/10 bg-ink/95 backdrop-blur-md md:hidden"
-          >
-            <ul className="flex flex-col px-6 py-4">
-              {HERO_NAV_LINKS.map(({ label, href }, index) => (
-                <motion.li
-                  key={label}
-                  initial={reduced ? false : { opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.05 + index * 0.06, ease: EASE_OUT }}
-                >
-                  <a
-                    href={href}
-                    onClick={() => setOpen(false)}
-                    className="block touch-manipulation border-b border-white/10 py-3 text-base font-medium text-white/90 transition-colors hover:text-celeste focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
-                  >
-                    {label}
-                  </a>
-                </motion.li>
-              ))}
-              <motion.li
-                initial={reduced ? false : { opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.05 + HERO_NAV_LINKS.length * 0.06, ease: EASE_OUT }}
-                className="pt-4"
-              >
-                <Link
-                  href="/cotizador"
-                  onClick={() => setOpen(false)}
-                  className="cq-rect-cta flex touch-manipulation items-center justify-center bg-celeste px-6 py-3 text-center text-foreground transition-transform duration-150 ease-out active:scale-[0.96]"
-                >
-                  Contact us
-                </Link>
-              </motion.li>
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MobileSidebar
+        id="hero-mobile-menu"
+        open={open}
+        reduced={reduced}
+        onClose={() => setOpen(false)}
+        links={HERO_NAV_LINKS}
+        ctaHref="/cotizador"
+        theme="dark"
+      />
     </motion.div>
   );
 }

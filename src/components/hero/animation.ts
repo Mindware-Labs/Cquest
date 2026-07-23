@@ -11,7 +11,15 @@ export const ROTATING_HEADLINES = [
 ] as const;
 
 export const HERO_NAV_LINKS = [
-  { label: "Services", href: "#services" },
+  {
+    label: "Services",
+    href: "#services",
+    children: [
+      { label: "Call Center", href: "/services/call-center" },
+      { label: "BPO", href: "/services/bpo" },
+      { label: "Systems Development", href: "/services/systems" },
+    ],
+  },
   { label: "Success stories", href: "#success-stories" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "/cotizador" },

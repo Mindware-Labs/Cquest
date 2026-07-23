@@ -1,4 +1,4 @@
-export type NavLink = { label: string; href: string };
+export type NavLink = { label: string; href: string; children?: readonly NavLink[] };
 
 // Every service detail page opens on a dark, full-bleed hero (photo or ink
 // gradient) with the navbar floating transparently on top of it — so its nav
@@ -13,7 +13,15 @@ export const SERVICE_DETAIL_PAGES = [
 
 export const NAV_LINKS = [
   { label: "About us", href: "#" },
-  { label: "Services", href: "/#services" },
+  {
+    label: "Services",
+    href: "/#services",
+    children: [
+      { label: "Call Center", href: "/services/call-center" },
+      { label: "BPO", href: "/services/bpo" },
+      { label: "Systems Development", href: "/services/systems" },
+    ],
+  },
   { label: "Sectors", href: "#" },
   { label: "Contact", href: "/cotizador" },
 ] as const;
