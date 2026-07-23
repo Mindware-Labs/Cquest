@@ -38,8 +38,10 @@ export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
 
 function DesktopCapabilities({ reduced }: { reduced: boolean }) {
   const [activeCapability, setActiveCapability] = useState(CALL_CENTER.details[0].title);
-  const active = CALL_CENTER.details.find((item) => item.title === activeCapability)!;
+  const activeIndex = CALL_CENTER.details.findIndex((item) => item.title === activeCapability);
+  const active = CALL_CENTER.details[activeIndex];
   const activeMeta = CAPABILITY_META[active.title];
+  const activeTabId = `capability-tab-${activeIndex}`;
   const capabilityTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // ARIA APG Tabs pattern: arrow keys move focus AND selection (roving
@@ -65,12 +67,13 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
       viewport={VIEWPORT}
       variants={groupVariants}
     >
-      <motion.div className={styles.capabilityIndex} role="tablist" aria-label="Call Center capabilities" variants={focusRiseVariants}>
+      <motion.div className={styles.capabilityIndex} role="tablist" aria-label="Call Center capabilities" aria-orientation="vertical" variants={focusRiseVariants}>
         {CALL_CENTER.details.map((item, index) => {
           const selected = item.title === activeCapability;
           return (
             <button
               key={item.title}
+              id={`capability-tab-${index}`}
               ref={(node) => {
                 capabilityTabRefs.current[index] = node;
               }}
@@ -102,7 +105,7 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
         })}
       </motion.div>
 
-      <motion.div id="capability-panel" role="tabpanel" className={styles.capabilityPanel} variants={focusRiseVariants}>
+      <motion.div id="capability-panel" role="tabpanel" tabIndex={0} aria-labelledby={activeTabId} className={styles.capabilityPanel} variants={focusRiseVariants}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={active.title} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
             {/* The panel slides in as one sheet, but its blocks land on a

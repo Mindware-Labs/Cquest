@@ -27,20 +27,20 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
       className="relative z-20"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 pt-[max(1rem,env(safe-area-inset-top))] sm:px-12 sm:pt-5 lg:px-16">
-        <a href="#" aria-label="Center Quest home" className="shrink-0">
+        <Link href="/" aria-label="Center Quest home" className="shrink-0">
           <Image
             src="/logo.png"
             alt="Center Quest"
             width={173}
             height={128}
-            loading="eager"
+            preload
             className="h-12 w-auto sm:h-14"
             style={{
               filter:
                 "brightness(0) invert(1) drop-shadow(0 1px 6px color-mix(in srgb, var(--ink) 60%, transparent))",
             }}
           />
-        </a>
+        </Link>
 
         <DesktopNav reduced={reduced} inverse links={HERO_NAV_LINKS} />
 

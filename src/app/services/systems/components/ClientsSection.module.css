@@ -4,17 +4,16 @@
   background: #fbfcfc;
 }
 
-/* Full-bleed on purpose (not wrapped in the shared content container) —
-   auto-fit spreads however many logos exist evenly across the whole
-   viewport width instead of leaving a half-empty row inside a fixed column
-   count; the tiles simply get wider as the screen does. */
+/* Wrapped in the shared content container (same as Call Center's) so the
+   wall's left edge lines up with the section title above it. auto-fit still
+   spreads however many logos exist evenly across that width instead of
+   leaving a half-empty row inside a fixed column count. */
 .logoWall {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 1.25rem;
   width: 100%;
   margin-top: 3.5rem;
-  padding-inline: clamp(1.25rem, 5vw, 3.5rem);
 }
 
 .logoWall li {
@@ -103,6 +102,6 @@
 
 @media (max-width: 42rem) {
   .clientsSection { padding-block: 4.5rem; }
-  .logoWall { gap: 0.75rem; padding-inline: 1.25rem; }
+  .logoWall { gap: 0.75rem; }
   .logoWall li { min-height: 8rem; }
 }

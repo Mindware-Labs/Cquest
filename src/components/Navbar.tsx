@@ -88,7 +88,7 @@ export default function Navbar() {
             alt="Center Quest"
             width={173}
             height={128}
-            loading="eager"
+            preload
             className={`h-12 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />
         </Link>

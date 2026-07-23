@@ -135,6 +135,7 @@ export function Field({
     required: field.required,
     "aria-invalid": error ? true : undefined,
     "aria-describedby": error ? errorId : undefined,
+    spellCheck: field.kind === "email" ? false : undefined,
     onBlur,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

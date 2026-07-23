@@ -204,6 +204,7 @@ export default function MobileSidebar({
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
+      aria-hidden
       viewBox="0 0 16 16"
       className={`h-3.5 w-3.5 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
       fill="none"
@@ -220,6 +221,7 @@ function ChevronIcon({ open }: { open: boolean }) {
 function CloseIcon() {
   return (
     <svg
+      aria-hidden
       viewBox="0 0 16 16"
       className="h-4 w-4"
       fill="none"

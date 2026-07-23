@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
@@ -25,28 +25,48 @@ import { Arrow } from "./icons";
 
 type Status = "form" | "submitting" | "done";
 
+const STEP_LABEL = ["Service", "Details", "Contact"];
+
 export default function QuoteWizard({
   initialService,
+  initialStep,
   onSubmit,
   reduced,
 }: {
   initialService: ServiceId | null;
+  /** From the page's own `?step=` read — same seam as `initialService`, so a
+   *  refresh or a copied mid-flow link lands back where the prospect was
+   *  instead of resetting to Step 1. */
+  initialStep?: number;
   /** Defaults to the shared `submitQuote` seam; override for tests/embeds. */
   onSubmit?: (submission: QuoteSubmission) => Promise<void>;
   reduced: boolean;
 }) {
+  const startStep = initialService ? (initialStep ?? 1) : 0;
   const [service, setService] = useState<ServiceId | null>(initialService);
   const [details, setDetails] = useState<Answers>({});
   const [contact, setContact] = useState<Answers>({});
-  // Deep-linked prospects land already on Step 2 with their service chosen.
-  const [step, setStep] = useState(initialService ? 1 : 0);
-  const [furthest, setFurthest] = useState(initialService ? 1 : 0);
+  const [step, setStep] = useState(startStep);
+  const [furthest, setFurthest] = useState(startStep);
   const [direction, setDirection] = useState(1);
   const [showErrors, setShowErrors] = useState(false);
   const [status, setStatus] = useState<Status>("form");
+  const [focusAttempt, setFocusAttempt] = useState(0);
+  const stepPanelRef = useRef<HTMLDivElement>(null);
 
   const questionnaire = service ? QUESTIONNAIRES[service] : null;
   const accent = getService(service);
+
+  // Keep the URL in sync with where the prospect actually is — so a refresh
+  // or a copied link doesn't drop them back to Step 1. replaceState (not the
+  // router) so this never adds a history entry or triggers a navigation.
+  useEffect(() => {
+    if (!service) return;
+    const params = new URLSearchParams(window.location.search);
+    params.set("servicio", service);
+    params.set("step", String(step));
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  }, [service, step]);
 
   // Step 2 (Details) is validated with Zod, off a schema built from the active
   // service's questionnaire — one source of truth for the gate and the field
@@ -121,6 +141,10 @@ export default function QuoteWizard({
   const goNext = useCallback(() => {
     if (!canAdvance) {
       setShowErrors(true);
+      // A counter, not a re-trigger off showErrors itself — showErrors may
+      // already be true from a prior blocked attempt, and state setters that
+      // don't change the value don't re-fire effects.
+      setFocusAttempt((n) => n + 1);
       return;
     }
     setShowErrors(false);
@@ -162,6 +186,24 @@ export default function QuoteWizard({
     setStatus("form");
   }, []);
 
+  // A blocked "Continue" surfaces field errors but otherwise does nothing
+  // visible if the invalid field is off-screen — the prospect has no way to
+  // find it. Move focus to it directly, same as a native form's first-error
+  // behavior. OptionGroup marks its <fieldset> invalid (not itself
+  // focusable), so fall through to the first input inside it.
+  useEffect(() => {
+    if (focusAttempt === 0) return;
+    const container = stepPanelRef.current;
+    if (!container) return;
+    const invalid = container.querySelector<HTMLElement>('[aria-invalid="true"]');
+    if (!invalid) return;
+    const target =
+      invalid.tagName === "FIELDSET"
+        ? invalid.querySelector<HTMLElement>("input, [tabindex]")
+        : invalid;
+    target?.focus();
+  }, [focusAttempt]);
+
   const panelVariants: Variants = {
     enter: (dir: number) =>
       reduced
@@ -186,6 +228,18 @@ export default function QuoteWizard({
 
   const submitting = status === "submitting";
 
+  // One shared announcement for every silent state change in the wizard —
+  // step transitions, a blocked "Continue", and the submit/confirm handoff —
+  // so screen-reader users get the same feedback a sighted prospect sees.
+  const liveMessage =
+    status === "submitting"
+      ? "Sending your quote request…"
+      : status === "done"
+        ? "Quote request sent."
+        : `Step ${step + 1} of 3: ${STEP_LABEL[step]}.${
+            showErrors && !canAdvance ? " Please fix the highlighted fields." : ""
+          }`;
+
   return (
     <section
       className={styles.wizard}
@@ -197,6 +251,8 @@ export default function QuoteWizard({
         } as CSSProperties
       }
     >
+      <p className="sr-only" role="status" aria-live="polite">{liveMessage}</p>
+
       <AnimatePresence mode="wait" initial={false}>
         {status === "done" ? (
           <motion.div
@@ -223,6 +279,7 @@ export default function QuoteWizard({
             <div className={styles.body}>
               <AnimatePresence mode="wait" custom={direction} initial={false}>
                 <motion.div
+                  ref={stepPanelRef}
                   key={step}
                   custom={direction}
                   variants={panelVariants}

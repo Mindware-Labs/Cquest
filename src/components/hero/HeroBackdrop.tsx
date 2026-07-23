@@ -16,11 +16,15 @@ export default function HeroBackdrop({ imageY, imageScale }: HeroBackdropProps) 
         style={{ y: imageY, scale: imageScale }}
         className="absolute -inset-y-8 inset-x-0 will-change-transform"
       >
+        {/* Both images share this box (CSS hidden/md:block toggles which one
+            renders per breakpoint, not a conditional mount) — preload-ing
+            both would fetch both at once. The fork's own docs flag this
+            exact case and recommend fetchPriority over preload here. */}
         <Image
           src={heroImageMobile}
           alt=""
           fill
-          preload
+          fetchPriority="high"
           quality={82}
           placeholder="blur"
           sizes="100vw"
@@ -30,7 +34,7 @@ export default function HeroBackdrop({ imageY, imageScale }: HeroBackdropProps) 
           src={heroImage}
           alt=""
           fill
-          preload
+          fetchPriority="high"
           quality={82}
           placeholder="blur"
           sizes="100vw"

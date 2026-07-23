@@ -19,5 +19,7 @@ export default async function CotizadorPage({
 }) {
   const params = await searchParams;
   const initialService = resolveService(params.servicio ?? params.service);
-  return <QuoteExperience initialService={initialService} />;
+  const stepParam = Number(Array.isArray(params.step) ? params.step[0] : params.step);
+  const initialStep = Number.isInteger(stepParam) && stepParam >= 1 && stepParam <= 2 ? stepParam : undefined;
+  return <QuoteExperience initialService={initialService} initialStep={initialStep} />;
 }

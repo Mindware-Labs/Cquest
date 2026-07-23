@@ -16,8 +16,10 @@ const TRUST = [
 
 export default function QuoteExperience({
   initialService,
+  initialStep,
 }: {
   initialService: ServiceId | null;
+  initialStep?: number;
 }) {
   const reduced = useReducedMotion() ?? false;
   const preset = getService(initialService);
@@ -58,7 +60,7 @@ export default function QuoteExperience({
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.9, delay: 0.12, ease: EASE_OUT }}
         >
-          <QuoteWizard initialService={initialService} reduced={reduced} />
+          <QuoteWizard initialService={initialService} initialStep={initialStep} reduced={reduced} />
         </motion.div>
 
         <motion.ul

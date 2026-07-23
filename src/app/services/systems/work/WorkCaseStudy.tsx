@@ -241,7 +241,7 @@ export default function WorkCaseStudy() {
   const reduced = useReducedMotion() ?? false;
 
   return (
-    <main className={styles.page}>
+    <article className={styles.page}>
       <div className={styles.shell}>
         <Link href="/services/systems#work" className={styles.back}>
           <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
@@ -542,6 +542,6 @@ export default function WorkCaseStudy() {
         </motion.section>
       </div>
       <Footer />
-    </main>
+    </article>
   );
 }
