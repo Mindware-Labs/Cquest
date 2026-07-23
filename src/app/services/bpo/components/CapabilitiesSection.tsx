@@ -1,10 +1,12 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import SectionIntro from "@/components/services/SectionIntro";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import {
+  EASE_OUT,
+  focusRiseVariants,
   groupVariants,
   softRiseVariants,
   VIEWPORT,
@@ -13,7 +15,38 @@ import container from "@/components/services/Container.module.css";
 import { BPO, CAPABILITY_DETAIL } from "../data";
 import styles from "./CapabilitiesSection.module.css";
 
+// Two independent renderings share the same data: a horizontal rack of
+// expanding slats above `lg` (mouse-driven, hover glides between them), and
+// a plain vertical accordion below it (each discipline opens in place on
+// tap — no hover state to fake, no fixed max-height to guess at).
 export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
+  return (
+    <section id="capabilities" className={styles.capabilitiesSection}>
+      <div className={container.container}>
+        <SectionIntro
+          title={
+            <>
+              Six disciplines,
+              <br />
+              one standard
+            </>
+          }
+          description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you."
+          reduced={reduced}
+          accentColor="var(--bp-teal)"
+        />
+        <div className="hidden lg:block">
+          <DesktopCapabilities reduced={reduced} />
+        </div>
+        <div className="block lg:hidden">
+          <MobileCapabilities reduced={reduced} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DesktopCapabilities({ reduced }: { reduced: boolean }) {
   const total = BPO.details.length;
   const [activeIndex, setActiveIndex] = useState(0);
   const slatRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -38,29 +71,16 @@ export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
   };
 
   return (
-    <section id="capabilities" className={styles.capabilitiesSection}>
-      <div className={container.container}>
-        <SectionIntro
-          title={
-            <>
-              Six disciplines,
-              <br />
-              one standard
-            </>
-          }
-          description="Every discipline meets the same operating standard. Open one to see exactly what it covers — and the benefit it hands back to you."
-          reduced={reduced}
-          accentColor="var(--bp-teal)"
-        />
-        <motion.div
-          className={styles.rack}
-          role="group"
-          aria-label="BPO disciplines"
-          initial={reduced ? false : "hidden"}
-          whileInView={reduced ? undefined : "visible"}
-          viewport={VIEWPORT}
-          variants={groupVariants}
-        >
+    <>
+      <motion.div
+        className={styles.rack}
+        role="group"
+        aria-label="BPO disciplines"
+        initial={reduced ? false : "hidden"}
+        whileInView={reduced ? undefined : "visible"}
+        viewport={VIEWPORT}
+        variants={groupVariants}
+      >
           {BPO.details.map((item, index) => {
             const detail = CAPABILITY_DETAIL[item.title];
             const active = index === activeIndex;
@@ -140,12 +160,99 @@ export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
               </motion.div>
             );
           })}
-        </motion.div>
-        <p className={styles.rackHint}>
-          <span aria-hidden>—</span> Select a discipline to open its full spec.
-          Every one runs under the same SLA.
-        </p>
-      </div>
-    </section>
+      </motion.div>
+      <p className={styles.rackHint}>
+        <span aria-hidden>—</span> Select a discipline to open its full spec.
+        Every one runs under the same SLA.
+      </p>
+    </>
+  );
+}
+
+function MobileCapabilities({ reduced }: { reduced: boolean }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  return (
+    <motion.div
+      className={styles.accordion}
+      initial={reduced ? false : "hidden"}
+      whileInView={reduced ? undefined : "visible"}
+      viewport={VIEWPORT}
+      variants={groupVariants}
+    >
+      {BPO.details.map((item, index) => {
+        const detail = CAPABILITY_DETAIL[item.title];
+        const open = index === openIndex;
+        const panelId = `bpo-accordion-panel-${index}`;
+
+        return (
+          <motion.div key={item.title} className={styles.accordionItem} data-active={open || undefined} variants={focusRiseVariants}>
+            <button
+              type="button"
+              id={`bpo-accordion-header-${index}`}
+              className={styles.accordionHeader}
+              aria-expanded={open}
+              aria-controls={panelId}
+              onClick={() => setOpenIndex((current) => (current === index ? null : index))}
+            >
+              <span className={styles.accordionNumber}>0{index + 1}</span>
+              <span className={styles.accordionIcon}><ServiceIcon name={item.icon} /></span>
+              <span className={styles.accordionTitle}>{item.title}</span>
+              <ChevronIcon open={open} />
+            </button>
+            <AnimatePresence initial={false}>
+              {open && (
+                <motion.div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={`bpo-accordion-header-${index}`}
+                  className={styles.accordionPanel}
+                  initial={reduced ? undefined : { height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={reduced ? undefined : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.32, ease: EASE_OUT }}
+                >
+                  <div className={styles.accordionPanelInner}>
+                    <span className={styles.accordionKicker}>
+                      <span className={styles.accordionKickerDot} aria-hidden />
+                      Held to one SLA
+                    </span>
+                    <p className={styles.accordionLead}>{item.description}</p>
+                    <div className={styles.accordionPanels}>
+                      <div className={styles.accordionIncludes}>
+                        <span className={styles.accordionLabel}>What it includes</span>
+                        <ul>{detail.includes.map((line) => (<li key={line}>{line}</li>))}</ul>
+                      </div>
+                      <div className={styles.accordionBenefit}>
+                        <span className={styles.accordionLabel}>Client benefit</span>
+                        <p>{detail.benefit}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden
+      className={styles.accordionChevron}
+      data-open={open || undefined}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m5 8 5 5 5-5" />
+    </svg>
   );
 }
