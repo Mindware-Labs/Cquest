@@ -37,6 +37,21 @@ export const NAV_LINKS = [
   { label: "Contact", href: "/cotizador" },
 ] as const;
 
+// On a service detail page the logo is the only way back to the home page —
+// this gives every such page an explicit nav item for it too, with a small
+// dropdown to jump straight to a section of home instead of always landing
+// back at the top. Only lists sections that actually exist on "/" today
+// (HeroImage's #hero, ServicesCarousel's #services) — add to this list only
+// once a matching section ships on the home page.
+const HOME_NAV_LINK: NavLink = {
+  label: "Home",
+  href: "/",
+  children: [
+    { label: "Overview", href: "/" },
+    { label: "Services", href: "/#services" },
+  ],
+};
+
 // Service detail pages have their own in-page sections — on those routes the
 // navbar should point at real anchors on the page instead of the generic
 // sitewide stubs above. Keyed by pathname so each service page can define its
@@ -44,16 +59,25 @@ export const NAV_LINKS = [
 // anything about a specific page's structure.
 export const SERVICE_NAV_LINKS: Record<string, readonly NavLink[]> = {
   "/services/call-center": [
+    HOME_NAV_LINK,
     { label: "Capabilities", href: "#capabilities" },
     { label: "Process", href: "#method" },
     { label: "Results", href: "#metrics" },
     { label: "Clients", href: "#clients" },
   ],
   "/services/bpo": [
+    HOME_NAV_LINK,
     { label: "Disciplines", href: "#capabilities" },
     { label: "Method", href: "#method" },
     { label: "SLAs", href: "#slas" },
     { label: "Facilities", href: "#facility" },
+  ],
+  "/services/systems": [
+    HOME_NAV_LINK,
+    { label: "Capabilities", href: "#capabilities" },
+    { label: "Method", href: "#method" },
+    { label: "Commitments", href: "#commitments" },
+    { label: "Work", href: "#work" },
   ],
 };
 

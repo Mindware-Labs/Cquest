@@ -43,10 +43,15 @@
   padding: clamp(1.85rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
 }
 
+/* right is inset further than top: at 0.6rem it sat flush against the
+   card's edge, the same spot where .dialogScroll's native scrollbar renders
+   once "provides" copy runs long enough to scroll — the browser draws that
+   scrollbar on top of the button. 1.4rem clears a full-width classic
+   scrollbar (~17px) so the two never overlap, scrolling or not. */
 .dialogClose {
   position: absolute;
   top: 0.6rem;
-  right: 0.6rem;
+  right: 1.4rem;
   display: grid;
   place-items: center;
   width: 2.75rem;

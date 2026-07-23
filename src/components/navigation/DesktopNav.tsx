@@ -144,7 +144,7 @@ export default function DesktopNav({
                         ? `absolute left-0 top-full z-10 mt-3 w-[min(92vw,34rem)] overflow-hidden rounded-[6px] border backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
-                        : `absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-2xl border p-2 shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
+                        : `absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-[6px] border p-2 shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
                     }
