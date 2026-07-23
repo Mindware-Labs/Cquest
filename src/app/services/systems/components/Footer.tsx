@@ -10,8 +10,8 @@ export default function Footer() {
         <Image
           src="/logo.png"
           alt="Center Quest"
-          width={206}
-          height={152}
+          width={173}
+          height={128}
           className={styles.footerLogo}
         />
       </Link>

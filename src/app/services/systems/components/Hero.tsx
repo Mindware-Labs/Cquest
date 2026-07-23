@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
+import devHeroImage from "../../../../../public/apps/dev-hero.jpeg";
 import {
   EASE_OUT,
   focusRiseVariants,
@@ -82,13 +83,14 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </div>
           <div className={styles.windowBody}>
             <Image
-              src="/apps/dev-hero.jpeg"
+              src={devHeroImage}
               alt="Center Quest operations platform — dashboard with call volume, agent activity and follow-up accountability"
               fill
-              quality={100}
+              quality={82}
+              placeholder="blur"
+              preload
               sizes="(min-width: 64rem) 62rem, 100vw"
               className={styles.windowShot}
-              priority
             />
           </div>
         </motion.div>

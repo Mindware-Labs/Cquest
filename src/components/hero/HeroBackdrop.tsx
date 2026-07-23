@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { motion, type MotionValue } from "motion/react";
 import heroImage from "../../../public/hero-image.jpeg";
-import heroImageMobile from "../../../public/hero-mobile.png";
+import heroImageMobile from "../../../public/hero-mobile.jpg";
 
 type HeroBackdropProps = {
   imageY: MotionValue<number>;

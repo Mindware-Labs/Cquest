@@ -86,8 +86,8 @@ export default function Navbar() {
           <Image
             src="/logo.png"
             alt="Center Quest"
-            width={412}
-            height={304}
+            width={173}
+            height={128}
             loading="eager"
             className={`h-12 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />

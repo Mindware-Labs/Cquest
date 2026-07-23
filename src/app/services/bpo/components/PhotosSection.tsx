@@ -13,7 +13,7 @@ import FrameTicks from "./FrameTicks";
 import styles from "./PhotosSection.module.css";
 
 const PHOTOS = [
-  { title: "Back-office team at work", src: "/bpo-services/bpo-floor2.png" },
+  { title: "Back-office team at work", src: "/bpo-services/bpo-floor2.jpg" },
   { title: "Process floor detail", src: "/bpo-services/bpo-floor3.jpeg" },
 ] as const;
 

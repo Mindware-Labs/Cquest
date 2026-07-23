@@ -31,8 +31,8 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
           <Image
             src="/logo.png"
             alt="Center Quest"
-            width={412}
-            height={304}
+            width={173}
+            height={128}
             loading="eager"
             className="h-12 w-auto sm:h-14"
             style={{

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
+import heroCallcenterImage from "../../../../../public/hero-callcenter.jpg";
 import {
   focusRiseVariants,
   heroCopyVariants,
@@ -21,10 +22,12 @@ function HeroMedia({ mediaY, mediaScale }: { mediaY: MotionValue<string>; mediaS
     <div className={styles.heroMedia}>
       <motion.div className={styles.heroMediaParallax} style={{ y: mediaY, scale: mediaScale }} aria-hidden>
         <Image
-          src="/hero-callcenter.jpg"
+          src={heroCallcenterImage}
           alt="Call center workstations with headsets and keyboards ready for agents"
           fill
-          priority
+          preload
+          placeholder="blur"
+          quality={82}
           sizes="(min-width: 64rem) 55vw, 100vw"
           className={styles.heroMediaImg}
         />
