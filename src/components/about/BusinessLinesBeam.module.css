@@ -1,0 +1,163 @@
+.beamFigure {
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+}
+
+/* The stage is the beams' coordinate space: AnimatedBeam measures every
+   endpoint against THIS box, so it must be the positioned ancestor. */
+.beamStage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(3rem, 9vw, 7rem);
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+/* Nodes sit above the beam layer so a path never crosses a label. */
+.node,
+.hub {
+  position: relative;
+  z-index: 1;
+  background: var(--ab-raised);
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  border: 1px solid var(--ab-rule);
+  border-radius: 999px;
+  transition:
+    border-color 320ms var(--ease-out),
+    box-shadow 420ms var(--ease-out);
+}
+
+.node:hover {
+  border-color: color-mix(in srgb, var(--ab-celeste) 55%, var(--ab-rule));
+  box-shadow: 0 0.75rem 2rem -1rem color-mix(in srgb, var(--ab-petroleo) 60%, transparent);
+}
+
+.nodeIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  color: var(--ab-petroleo);
+  background: color-mix(in srgb, var(--ab-celeste) 16%, transparent);
+}
+
+.nodeText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.nodeText strong {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.nodeText small {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ab-petroleo);
+}
+
+/* The hub is the only filled surface in the diagram — the beams arrive
+   somewhere solid instead of dissolving into another outlined pill. */
+.hub {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: clamp(9rem, 18vw, 11.5rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 40%, var(--ab-rule));
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 18%, var(--ab-raised)), var(--ab-raised));
+  box-shadow: 0 1.5rem 3.5rem -2rem color-mix(in srgb, var(--ab-petroleo) 70%, transparent);
+}
+
+.hubText {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--foreground);
+  padding-inline: 1rem;
+}
+
+/* A slow ring breathing out of the hub — the arriving beams have somewhere
+   to land. Gated on the section's ambient contract (AboutSection sets
+   data-ambient-active), so it holds still on a hidden tab and under reduced
+   motion, exactly like every other always-on pulse on the site. */
+.hubPulse {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+:global([data-ambient-active="true"]) .hubPulse {
+  animation: hub-pulse 3.6s var(--ease-out-soft) infinite;
+}
+
+@keyframes hub-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  70% { transform: scale(1.22); opacity: 0; }
+  100% { transform: scale(1.22); opacity: 0; }
+}
+
+.beamCaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* Stacked: sources become a row along the top, hub drops below them. The
+   beams re-measure through their ResizeObserver, so nothing here needs a
+   matching change in the TS. */
+@media (max-width: 48rem) {
+  .beamStage {
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 12vw, 4rem);
+  }
+
+  .sources {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .node {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.85rem 0.5rem;
+    border-radius: 1rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .nodeText {
+    align-items: center;
+  }
+}

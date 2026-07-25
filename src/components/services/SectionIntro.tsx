@@ -9,6 +9,9 @@ import styles from "./SectionIntro.module.css";
  * custom property instead of a hard-coded token, so each page can pass its
  * own brand accent (e.g. `"var(--cc-sky)"`) without this component coupling
  * to any one page's token names.
+ *
+ * `rule` defaults to true — every existing consumer keeps its hairline. Pass
+ * `rule={false}` for a heading that should carry no accent mark above it.
  */
 export default function SectionIntro({
   title,
@@ -16,12 +19,14 @@ export default function SectionIntro({
   compact = false,
   reduced,
   accentColor,
+  rule = true,
 }: {
   title: ReactNode;
   description?: string;
   compact?: boolean;
   reduced: boolean;
   accentColor?: string;
+  rule?: boolean;
 }) {
   return (
     <motion.div
@@ -34,7 +39,9 @@ export default function SectionIntro({
       variants={groupVariants}
     >
       <motion.div className={styles.sectionIntroHeading} variants={stepVariants}>
-        <motion.span className={styles.sectionIntroRule} aria-hidden variants={compact ? ruleYVariants : ruleXVariants} />
+        {rule && (
+          <motion.span className={styles.sectionIntroRule} aria-hidden variants={compact ? ruleYVariants : ruleXVariants} />
+        )}
         <motion.h2 variants={focusRiseVariants}>{title}</motion.h2>
       </motion.div>
       {description && <motion.p variants={focusRiseVariants}>{description}</motion.p>}

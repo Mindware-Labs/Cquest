@@ -1,0 +1,55 @@
+/* ── About palette ────────────────────────────────────────
+   Every value here is DERIVED from what the page already established
+   upstream, so About continues the hero → carousel story instead of opening
+   a third one:
+
+     • Hero  (HeroBackdrop) — `--ink` scrims over the photo, lit by a single
+       celeste bloom at 12%.
+     • Carousel (.cq-carousel-sheet) — a lifted sheet on #fafdff, celeste
+       15% at its top edge, petroleo 9% settling at its bottom.
+
+   About picks up exactly where that sheet leaves off: same cool near-white
+   base, celeste on the way in, petroleo deepening through the middle,
+   verde kept for a single closing accent — DISENIO.md's rule that celeste
+   and petroleo are the primaries and verde is the secondary that must not
+   compete with them. */
+.aboutSection {
+  /* The carousel sheet's own base. Was #fbfcfc — a NEUTRAL near-white butted
+     directly against the carousel's cool #fafdff, which read as a dirty seam
+     at the handoff. Same value now, so the two surfaces are one surface. */
+  --ab-base: #fafdff;
+  --ab-raised: #ffffff;
+  /* Cool sunken band. Was the global --surface-sunken (#f0ede8), a WARM gray
+     from the brand's gris cálido — against a cool base it read yellowish. */
+  --ab-sunken: color-mix(in srgb, var(--brand-petroleo) 6%, var(--ab-base));
+
+  /* Dark bands (Metrics, Values) — the hero's own ink pulled toward
+     petroleo, not the invented #102834 teal that matched nothing on the
+     page. Same material as the hero, seen twice. */
+  --ab-deep: color-mix(in srgb, var(--ink) 84%, var(--brand-petroleo));
+
+  --ab-petroleo: var(--brand-petroleo);
+  --ab-celeste: var(--brand-celeste);
+  --ab-verde: var(--brand-verde);
+
+  /* Hairlines. The dark one is a single token because Metrics and Values
+     were drawing theirs at different alphas (0.18 vs 0.14) — same material,
+     so same edge. */
+  --ab-rule: color-mix(in srgb, var(--brand-petroleo) 22%, transparent);
+  --ab-rule-invert: rgba(255, 255, 255, 0.16);
+
+  background: var(--ab-base);
+  color: var(--foreground);
+  overflow: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aboutSection *,
+  .aboutSection *::before,
+  .aboutSection *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

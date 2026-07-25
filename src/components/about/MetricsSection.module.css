@@ -1,0 +1,109 @@
+.metricsSection {
+  position: relative;
+  scroll-margin-top: 5rem;
+  padding-block: clamp(5rem, 9vw, 8rem);
+  background: var(--ab-deep);
+  color: white;
+}
+
+.metricsSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.metricsGlow {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 32rem;
+  height: 140%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 16%, transparent), transparent 70%);
+  will-change: transform;
+}
+
+.metricsHeading {
+  display: flex;
+}
+
+.metricsHeadingCopy {
+  display: flex;
+  flex-direction: column;
+}
+
+.metricsRule {
+  width: 2px;
+  height: 1.4rem;
+  margin-bottom: 1rem;
+  background: var(--ab-celeste);
+  transform-origin: top center;
+}
+
+.metricsHeading h2 {
+  max-width: 22ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+  color: white;
+}
+
+.metricList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 4rem;
+  border-block: 1px solid var(--ab-rule-invert);
+}
+
+.metricList > div {
+  position: relative;
+  min-height: 10rem;
+  padding: 1.85rem 1.5rem 1.5rem;
+  transition: background 320ms var(--ease-out), transform 320ms var(--ease-out);
+}
+
+.metricList > div:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-2px);
+}
+
+.metricList > div + div { border-left: 1px solid var(--ab-rule-invert); }
+
+.metricList dt {
+  min-height: 2.5rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metricList dd {
+  margin-top: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.25rem, 3.2vw, 3rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ab-celeste);
+}
+
+@media (max-width: 64rem) {
+  .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metricList > div:nth-child(3) { border-left: 0; }
+  .metricList > div:nth-child(n + 3) { border-top: 1px solid var(--ab-rule-invert); }
+}
+
+@media (max-width: 42rem) {
+  .metricsHeading h2 { font-size: clamp(2.2rem, 11vw, 3.2rem); }
+  .metricList { grid-template-columns: 1fr; }
+  .metricList > div { min-height: 8rem; }
+  .metricList > div + div { border-top: 1px solid var(--ab-rule-invert); border-left: 0; }
+}

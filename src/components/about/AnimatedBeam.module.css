@@ -1,0 +1,13 @@
+/* The beam layer is pure decoration sitting under the nodes: it must never
+   intercept a pointer, and it must never be the thing that sizes the
+   container (it is measured FROM the container, so giving it layout size
+   would be a feedback loop). */
+.beamSvg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Overflow visible: a curved path bows outside the container's box by
+     design, and clipping it would sever the beam mid-arc. */
+  overflow: visible;
+}

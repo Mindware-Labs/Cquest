@@ -25,7 +25,7 @@ export const SERVICE_DETAIL_PAGES = [
 
 export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
   return [
-    { label: dict.nav.aboutUs, href: "#" },
+    { label: dict.nav.aboutUs, href: "/#about" },
     {
       label: dict.nav.services,
       href: "/#services",
@@ -54,6 +54,7 @@ function getHomeNavLink(dict: Dictionary): NavLink {
     children: [
       { label: dict.nav.overview, href: "/" },
       { label: dict.nav.services, href: "/#services" },
+      { label: dict.nav.aboutUs, href: "/#about" },
     ],
   };
 }
