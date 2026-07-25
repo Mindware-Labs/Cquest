@@ -142,9 +142,29 @@
     box-shadow 0.2s var(--ease-out);
 }
 
+/* iOS Safari zooms the whole page in whenever a focused input's text is under
+   16px — 0.92rem is 14.7px, so every tap on a field on an iPhone yanked the
+   layout. 16px exactly on touch pointers is the documented threshold. */
+@media (pointer: coarse) {
+  .input {
+    font-size: 16px;
+  }
+}
+
 .input::placeholder {
   color: var(--text-tertiary);
   opacity: 0.55;
+}
+
+/* Browser autofill paints its own background straight over the field, which
+   knocked these out of the card's surface palette (and out of contrast on the
+   error state). The inset shadow is the only way to repaint it. */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 100px var(--surface-raised) inset;
+  caret-color: var(--foreground);
 }
 
 .input:focus {
