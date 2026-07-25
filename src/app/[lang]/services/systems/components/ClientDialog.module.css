@@ -19,8 +19,8 @@
   position: relative;
   width: min(100%, 34rem);
   margin-inline: auto;
-  border-radius: 2px;
-  background: white;
+  border-radius: var(--sy-radius-card);
+  background: var(--sy-card);
   box-shadow: 0 28px 50px -30px rgba(10, 17, 22, 0.32), 0 4px 12px -4px rgba(10, 17, 22, 0.14);
   overflow: hidden;
 }
@@ -58,7 +58,7 @@
   height: 2.75rem;
   border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
   border-radius: 50%;
-  background: white;
+  background: var(--sy-card);
   color: var(--foreground);
   transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out), transform 200ms var(--ease-out);
 }
@@ -94,23 +94,28 @@
   width: 4.75rem;
   height: 4.75rem;
   padding: 0.65rem;
-  border-radius: 0.625rem;
-  background: color-mix(in srgb, var(--foreground) 4%, white);
+  /* No plate and no border — the logo sits directly on the dialog. Purely a
+     sizing box now; see the call-center dialog for the note. */
+  background: transparent;
+  border-radius: var(--sy-radius-card);
 }
 
 /* Wordmark logos (wide, short) drown in a square frame — most of it renders
    as empty tinted background around a thin strip of logo. Give them a frame
    shaped like their own aspect ratio instead, matching the same data-size
    convention the logo wall already uses (see ClientsSection.module.css). */
-.dialogLogoFrame[data-size="compact"] {
-  width: 7.5rem;
-  height: 2.75rem;
-  padding: 0.4rem 0.75rem;
+.dialogLogoFrame[data-size="wide"] {
+  width: 8rem;
+  height: 3.5rem;
+  padding: 0.35rem 0.6rem;
 }
 
-.dialogLogoFrame[data-size="large"] {
-  width: 5.5rem;
-  height: 5.5rem;
+/* The file already carries a generous canvas margin — the frame's own padding
+   on top of it would inset the mark twice. */
+.dialogLogoFrame[data-size="padded"] {
+  width: 8rem;
+  height: 4.75rem;
+  padding: 0;
 }
 
 .dialogLogo {
@@ -129,7 +134,7 @@
   display: block;
   margin-block: 1.5rem;
   height: 1px;
-  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  background: var(--sy-hairline);
   transform-origin: left center;
 }
 
@@ -222,8 +227,8 @@
 .dialogProvides {
   margin-top: 1.35rem;
   padding: 1.1rem 1.15rem;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--sy-sky) 8%, white);
+  border-radius: var(--sy-radius);
+  background: color-mix(in srgb, var(--sy-sky) 8%, var(--sy-card));
   border: 1px solid color-mix(in srgb, var(--sy-sky) 22%, transparent);
 }
 
@@ -236,7 +241,7 @@
   justify-content: center;
   gap: 0.65rem;
   margin-top: 1.85rem;
-  border-radius: 2px;
+  border-radius: var(--sy-radius);
   padding: 0.85rem 1.25rem;
   background: var(--sy-sky);
   color: var(--sy-ink);

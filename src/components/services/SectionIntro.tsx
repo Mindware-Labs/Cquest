@@ -27,6 +27,11 @@ export default function SectionIntro({
     <motion.div
       className={styles.sectionIntro}
       data-compact={compact || undefined}
+      /* Title-only intros were still laid out on the two-column grid, leaving
+         the right half of the row empty and the heading squeezed into a
+         measure it wasn't sized for. Flagged so the CSS can drop to one
+         column and give the title a proper display measure. */
+      data-solo={!description || undefined}
       style={accentColor ? ({ "--section-intro-accent": accentColor } as CSSProperties) : undefined}
       initial={reduced ? false : "hidden"}
       whileInView={reduced ? undefined : "visible"}

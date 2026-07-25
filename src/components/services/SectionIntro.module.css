@@ -37,6 +37,16 @@
   text-wrap: pretty;
 }
 
+/* No description — one column, and the title gets a display measure of its
+   own instead of inheriting half of a two-column row it can't fill. */
+.sectionIntro[data-solo] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sectionIntro[data-solo] h2 {
+  max-width: 24ch;
+}
+
 .sectionIntro[data-compact] {
   grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
   align-items: start;

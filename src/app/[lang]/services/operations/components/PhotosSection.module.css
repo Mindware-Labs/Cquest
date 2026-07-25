@@ -1,5 +1,4 @@
 .photosSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(4.5rem, 7vw, 6rem);
 }
 

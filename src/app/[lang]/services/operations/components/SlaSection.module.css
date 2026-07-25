@@ -2,7 +2,6 @@
    as ledger rows on the right (not a metric table — a service contract). */
 .slaSection {
   position: relative;
-  scroll-margin-top: 2rem;
   padding-block: clamp(5rem, 9vw, 8rem);
   background:
     radial-gradient(52% 55% at 12% 16%, color-mix(in srgb, var(--bp-teal) 30%, transparent), transparent 60%),
@@ -28,9 +27,10 @@
   align-items: start;
 }
 
+/* Matches .railIntro — see the note there on clearing the fixed navbar. */
 .slaHeading {
   position: sticky;
-  top: 6rem;
+  top: var(--bp-sticky-top);
   display: flex;
   flex-direction: column;
 }
@@ -82,6 +82,13 @@
   background: var(--bp-lime);
   box-shadow: 0 0 0 0 rgba(128, 188, 0, 0.4);
   animation: statusPulse 2.8s ease-out infinite;
+}
+
+/* Holds its breath while the tab is hidden, same as the call-center page's
+   status dots. A bare attribute selector so it applies regardless of which
+   module's `.page` class set the flag. */
+[data-ambient-active="false"] .slaMetaDot {
+  animation-play-state: paused;
 }
 
 @keyframes statusPulse {
@@ -160,7 +167,9 @@
   font-family: var(--font-heading), sans-serif;
   font-size: clamp(1.6rem, 2.6vw, 2.35rem);
   font-weight: 300;
-  letter-spacing: 0.01em;
+  /* Display type wants tracking pulled in, not pushed out — +0.01em loosened
+     the figures at exactly the size where they should read tightest. */
+  letter-spacing: -0.02em;
   line-height: 1;
   text-align: right;
   white-space: nowrap;
@@ -187,7 +196,7 @@
   width: 0.9rem;
   height: 2px;
   flex: none;
-  border-radius: 2px;
+  border-radius: var(--bp-radius);
   background: color-mix(in srgb, var(--bp-lime) 62%, transparent);
   transition: width 320ms var(--ease-out), background 320ms var(--ease-out);
 }

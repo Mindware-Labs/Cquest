@@ -1,7 +1,6 @@
 .clientsSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(4.5rem, 7vw, 6rem);
-  background: #fbfcfc;
+  background: var(--cc-surface);
 }
 
 .logoWall {
@@ -14,16 +13,26 @@
 .logoWall li {
   position: relative;
   display: flex;
-  min-height: 8.5rem;
+  min-height: 9.5rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 0.85rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  border-radius: 0.85rem;
+  padding: 1.25rem;
+  border: 1px solid var(--cc-hairline);
+  border-radius: var(--cc-radius-card);
   background: white;
   transition: border-color 240ms var(--ease-out), box-shadow 240ms var(--ease-out), transform 240ms var(--ease-out);
+}
+
+/* Ringed on the card, not on the button nested inside it — the ring used to
+   draw inside the padding, floating loose within the card's own border.
+   Petroleum rather than sky: sky sits at ~1.8:1 on white, under the 3:1 a
+   focus indicator needs to be seen. */
+.logoWall li:has(.logoTrigger:focus-visible) {
+  outline: 2px solid var(--cc-petroleum);
+  outline-offset: 2px;
+  border-color: color-mix(in srgb, var(--cc-sky) 45%, transparent);
 }
 
 .logoWall li::before {
@@ -46,26 +55,51 @@
   transform: translateX(130%);
 }
 
+/* Optical normalisation, not geometric. Every frame is capped on BOTH axes —
+   height alone let the 2.4:1 wordmark run to the full cell width and dwarf
+   the marks beside it, and let the padded square overflow the cell entirely
+   (7rem of logo inside an 8.5rem cell that also carried padding). Each class
+   is tuned so the *ink* reads at the same weight, not the bounding box. */
 .logoImageWrap {
   display: block;
   position: relative;
   width: 100%;
-  height: 5.5rem;
+  max-width: 9rem;
+  height: 4.75rem;
   flex: none;
   filter: grayscale(1) opacity(0.7);
   transition: filter 260ms var(--ease-out), transform 260ms var(--ease-out);
 }
 
-.logoImageWrap[data-size="compact"] {
-  height: 3.25rem;
+/* Art floating in its own canvas margin — the frame has to grow for the mark
+   inside it to land at the same size as a trimmed one. */
+.logoImageWrap[data-size="padded"] {
+  max-width: 13rem;
+  height: 6.75rem;
 }
 
-.logoImageWrap[data-size="large"] {
-  height: 7rem;
+/* Landscape wordmark: width carries it, so the height comes down. */
+.logoImageWrap[data-size="wide"] {
+  max-width: 11.5rem;
+  height: 3.5rem;
+}
+
+/* Opaque background baked into the source file. It can't sit as a floating
+   mark like the others, so it's framed as a deliberate tile — square, its
+   own soft corner — rather than reading as a logo that failed to cut out. */
+.logoImageWrap[data-size="tile"] {
+  max-width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: var(--cc-radius-card);
 }
 
 .logoImage {
   object-fit: contain;
+}
+
+.logoImageWrap[data-size="tile"] .logoImage {
+  object-fit: cover;
 }
 
 .logoWall li:hover .logoImageWrap {
@@ -77,8 +111,13 @@
   .logoWall li::before { display: none; }
 }
 
+/* `display: block` left the logo frame pinned to the trigger's top edge with
+   the slack pooling below it, so every mark sat high in its card. Centred on
+   both axes now — including horizontally, which the frame's new max-width
+   made load-bearing. */
 .logoTrigger {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   border: 0;
@@ -90,9 +129,7 @@
 }
 
 .logoTrigger:focus-visible {
-  outline: 2px solid var(--cc-sky);
-  outline-offset: 3px;
-  border-radius: 0.85rem;
+  outline: none;
 }
 
 @media (max-width: 64rem) {
@@ -102,5 +139,11 @@
 @media (max-width: 42rem) {
   .clientsSection { padding-block: 4.5rem; }
   .logoWall { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
-  .logoWall li { min-height: 8rem; }
+  .logoWall li { min-height: 7.5rem; padding: 1rem; }
+  /* Scaled down together so the optical balance set above survives the
+     narrower cell — the padded frame is what would overflow first. */
+  .logoImageWrap { height: 3.5rem; }
+  .logoImageWrap[data-size="padded"] { height: 5rem; }
+  .logoImageWrap[data-size="wide"] { height: 2.6rem; }
+  .logoImageWrap[data-size="tile"] { max-width: 3.25rem; height: 3.25rem; }
 }

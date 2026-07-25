@@ -1,6 +1,7 @@
 "use client";
 
 import { useReducedMotion } from "motion/react";
+import { useTabVisibility } from "@/hooks/useTabVisibility";
 import CapabilitiesSection from "./components/CapabilitiesSection";
 import ContactSection from "./components/ContactSection";
 import Footer from "./components/Footer";
@@ -14,8 +15,13 @@ import styles from "./operations.module.css";
 export default function OperationsDetail() {
   const reduced = useReducedMotion() ?? false;
 
+  // The SLA band's always-on status pulse holds its breath while the tab is
+  // hidden — same visibilitychange plumbing the call-center page already
+  // used for its status dots; this page was still pulsing in the background.
+  const tabVisible = useTabVisibility();
+
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-ambient-active={tabVisible && !reduced}>
       <Hero reduced={reduced} />
       <MediaBand reduced={reduced} />
       <div>

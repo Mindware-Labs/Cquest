@@ -209,10 +209,19 @@ export const HERO_LINES: Record<Locale, ReadonlyArray<{ text: string; strong: bo
    specific slice of what each account gets from Center Quest. Some of these
    clients also appear on the Call Center clients page with a different
    `provides` write-up (their call-center scope, not their systems scope). */
+/* `size` is an *optical* class, not a scale factor — these five files have
+   nothing in common geometrically (a 2.4:1 wordmark, a small lockup floating
+   in a square canvas of baked-in whitespace, a 5:1 wordmark, and two squarish
+   marks with modest margins), so each needs its own frame to carry the same
+   visual weight in the wall. See ClientsSection.module.css.
+     (default) — squarish mark, modest canvas margin
+     padded    — art sits inside a generous canvas margin
+     wide      — landscape wordmark; gains presence from width, not height */
 export const CLIENT_LOGOS = [
   {
     name: "Rig Hut",
     src: "/brands/righut.jpeg",
+    size: "wide",
     about: {
       en: "Rig Hut is a provider of parking management software purpose built for industrial parking applications. Truck parking facilities utilize Rig Hut to manage their inventory, accurately represent vacancies to the market, process payments and generate comprehensive reports for their yards.\n\nUtilizing a powerful suite of management tools, rest assured knowing your customer database, payments and communications are all processed and stored securely within the Rig Hut environment.",
       es: "Rig Hut es un proveedor de software de gestión de estacionamientos diseñado específicamente para aplicaciones de parqueo industrial. Instalaciones de estacionamiento para camiones utilizan Rig Hut para gestionar su inventario, representar con precisión los espacios disponibles ante el mercado, procesar pagos y generar reportes completos de sus patios.\n\nCon un potente conjunto de herramientas de gestión, ten la tranquilidad de saber que la base de datos de clientes, los pagos y las comunicaciones se procesan y almacenan de forma segura dentro del entorno de Rig Hut.",
@@ -226,7 +235,7 @@ export const CLIENT_LOGOS = [
   {
     name: "Paso Rápido",
     src: "/brands/pasoRapido.png",
-    size: "large",
+    size: "padded",
     about: {
       en: "It is the first public trust created by the Dominican State, through Fiduciaria Reservas, S.A., under Trust Agreement number one (01), signed on October 18, 2013. Represented by the Ministry of Public Works and Communications (MOPC), ratified by resolution number 156-13 issued by the National Congress on 11/25/2013 and published in Official Gazette 10735.",
       es: "Es el primer fideicomiso público creado por el Estado dominicano, a través de Fiduciaria Reservas, S.A., bajo el Contrato de Fideicomiso número uno (01), firmado el 18 de octubre de 2013. Representado por el Ministerio de Obras Públicas y Comunicaciones (MOPC), ratificado mediante la resolución número 156-13 emitida por el Congreso Nacional el 25/11/2013 y publicada en la Gaceta Oficial 10735.",
@@ -240,7 +249,7 @@ export const CLIENT_LOGOS = [
   {
     name: "Plastifar",
     src: "/brands/plastifar.png",
-    size: "compact",
+    size: "wide",
     about: {
       en: "Plastifar S.A. was founded on July 20, 1992, by Engineer Alejandro Farach Cruz. It was created to meet the packaging needs of the pharmaceutical industry, with a commitment to the highest standards of hygiene and quality in the production of its containers.",
       es: "Plastifar S.A. fue fundada el 20 de julio de 1992 por el Ingeniero Alejandro Farach Cruz. Fue creada para atender las necesidades de envasado de la industria farmacéutica, con un compromiso con los más altos estándares de higiene y calidad en la producción de sus envases.",

@@ -1,5 +1,4 @@
 .methodSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(5.5rem, 8vw, 7rem);
   background: var(--background);
 }
@@ -13,9 +12,11 @@
   align-items: start;
 }
 
+/* 6rem left 8px of daylight under an 88px navbar — the pinned heading read as
+   stuck to the chrome rather than parked below it. */
 .railIntro {
   position: sticky;
-  top: 6rem;
+  top: var(--bp-sticky-top);
   display: flex;
   flex-direction: column;
 }

@@ -92,3 +92,10 @@ export function getServiceNavLinks(dict: Dictionary): Record<string, readonly Na
 }
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+/* The fixed bar's height: a 3rem logo (h-12) inside 1.25rem of padding above
+   and below (py-5). Everything that has to reason about clearing it — the
+   dark-hero observer's rootMargin, the scroll-spy's reading line — measures
+   from here instead of re-guessing, which is how the observer ended up on a
+   80px margin against an 88px bar. */
+export const NAV_HEIGHT_PX = 88;

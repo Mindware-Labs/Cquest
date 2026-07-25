@@ -1,5 +1,4 @@
 .capabilitiesSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(4.5rem, 7vw, 6.5rem);
 }
 
@@ -61,7 +60,7 @@
 .capIncludes {
   margin-top: 1.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  border-top: 1px solid var(--sy-hairline);
 }
 
 .capListLabel {
@@ -93,11 +92,15 @@
   background: var(--sy-blue);
 }
 
+/* Same "benefit callout" idiom as the call-center and operations pages —
+   tinted well, accent hairline, square-cut corner. It was this page's one
+   0.75rem radius, floating unbordered under the includes list. */
 .capBenefit {
   margin-top: 1.25rem;
   padding: 1rem 1.15rem;
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--sy-sky) 9%, white);
+  border: 1px solid color-mix(in srgb, var(--sy-sky) 26%, transparent);
+  border-radius: var(--sy-radius);
+  background: color-mix(in srgb, var(--sy-sky) 9%, var(--sy-card));
 }
 
 .capBenefit h4 {
@@ -118,7 +121,7 @@
 /* The frame around each synthetic preview — same dark window chrome as the
    hero, lifting slightly on hover. */
 .capMedia {
-  border-radius: 0.85rem;
+  border-radius: var(--sy-radius-window);
   overflow: hidden;
   border: 1px solid rgba(116, 195, 213, 0.28);
   background: #0f1a21;
