@@ -1,0 +1,113 @@
+.storySection {
+  position: relative;
+  scroll-margin-top: 5rem;
+  padding-block: clamp(4rem, 9vw, 7rem);
+}
+
+/* ── Ambient light ────────────────────────────────────────
+   One cold celeste wash behind the grid, parallaxed on scroll from
+   StorySection.tsx. Its only job is to stop this paper-white section from
+   reading as flat before the dark metrics band hits — it is deliberately
+   too faint to notice as an effect, and never renders under reduced motion. */
+/* No local `overflow: clip` here on purpose: the light is 30rem tall and
+   parallaxed ±14%, so a clip at the section boundary would cut the soft
+   radial into a visible hard edge. Containment is handled one level up by
+   .aboutSection's own `overflow: clip`. */
+.storyAura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.storyAuraLight {
+  position: absolute;
+  top: 12%;
+  right: -14rem;
+  width: 44rem;
+  height: 30rem;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--ab-celeste) 13%, transparent),
+    transparent 72%
+  );
+  will-change: transform;
+}
+
+/* Content sits above the aura; the aura itself keeps its own z-index 0. */
+.storySection > *:not(.storyAura) {
+  position: relative;
+  z-index: 1;
+}
+
+.storyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
+  align-items: start;
+}
+
+.storyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.storyBody p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.85;
+  text-wrap: pretty;
+}
+
+.missionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem;
+  border: 1px solid var(--ab-rule);
+  border-top: 3px solid var(--ab-celeste);
+  background: var(--ab-raised);
+  /* No transform here on purpose: GSAP owns this card's transform for the
+     scroll parallax, so a hover translate would be overwritten every frame.
+     Depth comes from light and edge instead — same reason softRiseVariants
+     exists next door in services/motion.ts. */
+  transition:
+    border-color 320ms var(--ease-out),
+    box-shadow 420ms var(--ease-out);
+}
+
+.missionCard:hover {
+  border-color: color-mix(in srgb, var(--ab-celeste) 45%, var(--ab-rule));
+  border-top-color: var(--ab-celeste);
+  box-shadow: 0 1.25rem 3rem -1.5rem color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
+}
+
+.missionLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ab-petroleo);
+}
+
+.missionText {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+/* The diagram spans the full container width, under both grid columns —
+   it summarises the whole block, not just the body column. */
+.storyBeam {
+  margin-top: clamp(1rem, 2vw, 2rem);
+}
+
+@media (max-width: 64rem) {
+  .storyGrid { grid-template-columns: 1fr; }
+}
