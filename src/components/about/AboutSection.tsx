@@ -3,9 +3,8 @@
 import { useReducedMotion } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import MetricsSection from "./MetricsSection";
-import SectorsSection from "./SectorsSection";
+import PillarsSection from "./PillarsSection";
 import StorySection from "./StorySection";
-import TeamSection from "./TeamSection";
 import ValuesSection from "./ValuesSection";
 import styles from "./AboutSection.module.css";
 
@@ -25,11 +24,10 @@ export default function AboutSection() {
 
   return (
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
-      <StorySection reduced={reduced} />
       <MetricsSection reduced={reduced} />
-      <TeamSection reduced={reduced} />
-      <SectorsSection reduced={reduced} />
+      <StorySection reduced={reduced} />
       <ValuesSection reduced={reduced} />
+      <PillarsSection reduced={reduced} />
     </section>
   );
 }

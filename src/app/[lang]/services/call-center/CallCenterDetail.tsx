@@ -5,7 +5,6 @@ import { useTabVisibility } from "@/hooks/useTabVisibility";
 import CapabilitiesSection from "./components/CapabilitiesSection";
 import ClientsSection from "./components/ClientsSection";
 import ContactSection from "./components/ContactSection";
-import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import MetricsSection from "./components/MetricsSection";
 import ProcessSection from "./components/ProcessSection";
@@ -29,7 +28,6 @@ export default function CallCenterDetail() {
         <ClientsSection reduced={reduced} />
         <ContactSection reduced={reduced} />
       </div>
-      <Footer />
     </article>
   );
 }

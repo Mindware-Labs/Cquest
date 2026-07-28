@@ -3,7 +3,6 @@
 import { useReducedMotion } from "motion/react";
 import CapabilitiesSection from "./components/CapabilitiesSection";
 import ContactSection from "./components/ContactSection";
-import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import MediaBand from "./components/MediaBand";
 import MethodSection from "./components/MethodSection";
@@ -25,7 +24,6 @@ export default function OperationsDetail() {
         <PhotosSection reduced={reduced} />
         <ContactSection reduced={reduced} />
       </div>
-      <Footer />
     </article>
   );
 }

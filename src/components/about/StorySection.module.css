@@ -42,7 +42,7 @@
 
 .storyGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 1fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(15rem, 1fr);
   gap: clamp(2rem, 5vw, 4rem);
   margin-top: clamp(2rem, 4vw, 3rem);
   align-items: start;
@@ -61,40 +61,31 @@
   text-wrap: pretty;
 }
 
-.missionCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 2rem;
+.quoteCard {
+  position: relative;
+  overflow: hidden;
+  padding: 2.25rem 1.85rem 2rem;
   border: 1px solid var(--ab-rule);
   border-top: 3px solid var(--ab-celeste);
   background: var(--ab-raised);
-  /* No transform here on purpose: GSAP owns this card's transform for the
-     scroll parallax, so a hover translate would be overwritten every frame.
-     Depth comes from light and edge instead — same reason softRiseVariants
-     exists next door in services/motion.ts. */
-  transition:
-    border-color 320ms var(--ease-out),
-    box-shadow 420ms var(--ease-out);
 }
 
-.missionCard:hover {
-  border-color: color-mix(in srgb, var(--ab-celeste) 45%, var(--ab-rule));
-  border-top-color: var(--ab-celeste);
-  box-shadow: 0 1.25rem 3rem -1.5rem color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
-}
-
-.missionLabel {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ab-petroleo);
-}
-
-.missionText {
+.quoteMark {
+  position: absolute;
+  top: -1.5rem;
+  left: 1rem;
   font-family: var(--font-heading), sans-serif;
-  font-size: 1.4rem;
+  font-size: 8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--ab-celeste) 22%, transparent);
+  pointer-events: none;
+}
+
+.quoteText {
+  position: relative;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.35;
@@ -102,10 +93,8 @@
   text-wrap: balance;
 }
 
-/* The diagram spans the full container width, under both grid columns —
-   it summarises the whole block, not just the body column. */
 .storyBeam {
-  margin-top: clamp(1rem, 2vw, 2rem);
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 @media (max-width: 64rem) {

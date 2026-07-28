@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { ViewTransition } from "react";
 import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
+import SiteFooter from "@/components/footer/SiteFooter";
+import { CONTACT } from "@/components/footer/data";
 import SmoothScroll from "@/components/SmoothScroll";
 import { locales, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/getDictionary";
@@ -31,15 +33,27 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
 // all resolve against the same domain.
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
 
-// Minimal, honest Organization schema — only fields we actually have (name,
-// url, logo). No phone/address/sameAs: none exist anywhere in the codebase
-// yet, and inventing them would make the markup wrong rather than useful.
+// Organization schema — still only fields we actually have. Phone, email and
+// address are now real (see components/footer/data.ts, the single source both
+// this and the footer read), so they belong here: the requirements list
+// structured data as an SEO deliverable, and address + phone are exactly what
+// a local-business query like "call center República Dominicana" resolves on.
+// No sameAs — no social profiles have been confirmed, and a guessed profile
+// URL is worse than an absent one.
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Center Quest",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
+  email: CONTACT.email,
+  telephone: CONTACT.phoneHref,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: CONTACT.street,
+    addressLocality: CONTACT.city,
+    addressCountry: CONTACT.countryCode,
+  },
 };
 
 const SITE_TITLE: Record<Locale, string> = {
@@ -118,6 +132,10 @@ export default async function RootLayout({
               {children}
             </ViewTransition>
           </main>
+          {/* Outside <main> on purpose: the footer is site chrome, not page
+              content, so it stays put across the ViewTransition instead of
+              being animated out and back in on every navigation. */}
+          <SiteFooter />
         </I18nProvider>
       </body>
     </html>

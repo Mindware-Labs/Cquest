@@ -83,6 +83,8 @@ export default function ServicesCarousel() {
      input becomes page-turn input: down advances, up goes back. At the
      edges (before the first page, after the last) the event is released so
      normal scrolling resumes — that's how the user returns to the hero.
+     "Fills the viewport" is measured as coverage, not as a top-edge test;
+     see the guard below for why that distinction is load-bearing.
      Capture phase + stopPropagation outprioritizes Lenis for consumed
      events, so the smooth-scroller never fights a page turn. A ~1s
      cooldown swallows trackpad momentum so one gesture = one page. */
@@ -90,7 +92,24 @@ export default function ServicesCarousel() {
     const onWheel = (event: WheelEvent) => {
       const section = sectionRef.current;
       if (!section) return;
-      if (section.getBoundingClientRect().top > 4) return;
+
+      /* The carousel may only consume wheel input while it actually FILLS
+         the viewport.
+
+         This used to test `rect.top > 4` alone, which answers "has the
+         carousel reached the top of the screen yet?" — but that stays true
+         forever once you scroll PAST it: further down the page `top` is a
+         large negative number, so the handler kept hijacking the wheel from
+         inside About and the footer. Scrolling back up from there turned
+         carousel pages instead of scrolling, which is the scroll "sticking".
+
+         Measuring how much of the viewport the section covers answers the
+         real question, and is immune to the h-dvh vs. innerHeight mismatch
+         that mobile browser chrome causes. */
+      const rect = section.getBoundingClientRect();
+      const viewport = window.innerHeight;
+      const covered = Math.min(rect.bottom, viewport) - Math.max(rect.top, 0);
+      if (covered < viewport * 0.9) return;
 
       const dir = event.deltaY > 0 ? 1 : -1;
       const atEdge =

@@ -4,7 +4,6 @@ import { useReducedMotion } from "motion/react";
 import CapabilitiesSection from "./components/CapabilitiesSection";
 import ClientsSection from "./components/ClientsSection";
 import ContactSection from "./components/ContactSection";
-import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import MethodSection from "./components/MethodSection";
 import PactSection from "./components/PactSection";
@@ -25,7 +24,6 @@ export default function SystemsDetail() {
         <WorkSection reduced={reduced} />
         <ContactSection reduced={reduced} />
       </div>
-      <Footer />
     </article>
   );
 }

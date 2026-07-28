@@ -8,7 +8,6 @@ import type { ServiceIconName } from "@/components/services/data";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
-import Footer from "../components/Footer";
 import {
   focusRiseVariants,
   groupVariants,
@@ -670,7 +669,6 @@ export default function WorkCaseStudy() {
           </motion.div>
         </motion.section>
       </div>
-      <Footer />
     </article>
   );
 }

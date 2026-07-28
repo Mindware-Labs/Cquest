@@ -36,7 +36,7 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
         icon: SERVICE_ICON[service.id],
       })),
     },
-    { label: dict.nav.sectors, href: "#" },
+    { label: dict.nav.sectors, href: "/#sectors" },
     { label: dict.nav.contact, href: "/quote" },
   ];
 }
