@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { motion, type Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -73,6 +73,14 @@ export default function Confirmation({
   const rows = summarize(submission, lang);
   const name = ((submission.contact.name as string) ?? "").split(" ")[0];
 
+  // The button that submitted the form unmounts with the form itself, which
+  // drops focus to <body> — a keyboard user is left at the top of the document
+  // with no idea anything happened. Move focus onto the confirmation instead.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
     <motion.div
       className={styles.confirm}
@@ -107,7 +115,7 @@ export default function Confirmation({
         </svg>
       </motion.div>
 
-      <motion.h2 className={styles.confirmTitle} variants={reduced ? undefined : item}>
+      <motion.h2 ref={headingRef} tabIndex={-1} className={styles.confirmTitle} variants={reduced ? undefined : item}>
         {name ? format(dict.wizard.confirmation.thanksNamed, { name }) : dict.wizard.confirmation.thanksGeneric}
       </motion.h2>
       <motion.p className={styles.confirmLead} variants={reduced ? undefined : item}>

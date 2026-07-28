@@ -217,6 +217,18 @@ export default function QuoteWizard({
     setFurthest((f) => Math.max(f, next));
   }, [canAdvance, step, submit]);
 
+  // Both the Continue/Send button and Enter-in-a-field route through here.
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      // `status`, not the `submitting` alias — that's declared further down,
+      // and a dep array is evaluated during render.
+      if (status === "submitting") return;
+      goNext();
+    },
+    [goNext, status],
+  );
+
   const goBack = useCallback(() => {
     if (step === 0) return;
     setShowErrors(false);
@@ -312,21 +324,6 @@ export default function QuoteWizard({
     >
       <p className="sr-only" role="status" aria-live="polite">{liveMessage}</p>
 
-      {/* Honeypot — real prospects never see or reach this field (offscreen,
-          untabbable, unannounced); bots that fill every input blind still find
-          it. A non-empty value on submit makes submitQuote drop the lead
-          silently instead of sending it to Resend. */}
-      <input
-        type="text"
-        name="company_website"
-        value={honeypot}
-        onChange={(event) => setHoneypot(event.target.value)}
-        tabIndex={-1}
-        autoComplete="off"
-        aria-hidden="true"
-        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}
-      />
-
       <AnimatePresence mode="wait" initial={false}>
         {status === "done" ? (
           <motion.div
@@ -348,82 +345,106 @@ export default function QuoteWizard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <ProgressRail current={step} furthest={furthest} onJump={jumpTo} />
+            {/* A real <form>, not a <div> of buttons: without it, pressing
+                Enter in any field did nothing at all — the single most common
+                way people submit a form. `noValidate` hands validation to Zod
+                so the browser's own bubbles never pre-empt our messages. */}
+            <form onSubmit={handleSubmit} noValidate>
+              <ProgressRail current={step} furthest={furthest} onJump={jumpTo} />
 
-            <div className={styles.body}>
-              <AnimatePresence mode="wait" custom={direction} initial={false}>
-                <motion.div
-                  ref={stepPanelRef}
-                  key={step}
-                  custom={direction}
-                  variants={panelVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                >
-                  {step === 0 && (
-                    <StepService value={service} onSelect={selectService} />
-                  )}
-                  {step === 1 && resolvedQuestionnaire && (
-                    <StepDetails
-                      questionnaire={resolvedQuestionnaire}
-                      answers={details}
-                      onChange={setDetail}
-                      showErrors={showErrors}
-                      errors={detailErrors}
-                    />
-                  )}
-                  {step === 2 && (
-                    <StepContact
-                      answers={contact}
-                      onChange={setContactField}
-                      showErrors={showErrors}
-                      errors={contactErrors}
-                    />
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+              {/* Honeypot — real prospects never see or reach this field
+                  (offscreen, untabbable, unannounced); bots that fill every
+                  input blind still find it. A non-empty value on submit makes
+                  submitQuote drop the lead silently instead of sending it. */}
+              <input
+                type="text"
+                name="company_website"
+                value={honeypot}
+                onChange={(event) => setHoneypot(event.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}
+              />
 
-            {submitFailed && (
-              <p className={fieldStyles.fieldError} role="alert">
-                <Alert className={fieldStyles.fieldErrorIcon} />
-                {dict.wizard.submitError}
-              </p>
-            )}
-
-            <div className={styles.footer}>
-              <p className={styles.footerMeta}>{format(dict.wizard.stepOf, { n: step + 1 })}</p>
-              <div className={styles.footerActions}>
-                {step > 0 && (
-                  <button
-                    type="button"
-                    className={buttons.ghostBtn}
-                    onClick={goBack}
-                    disabled={submitting}
+              <div className={styles.body}>
+                <AnimatePresence mode="wait" custom={direction} initial={false}>
+                  <motion.div
+                    ref={stepPanelRef}
+                    key={step}
+                    custom={direction}
+                    variants={panelVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
                   >
-                    {dict.wizard.back}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={buttons.primaryBtn}
-                  onClick={goNext}
-                  disabled={submitting}
-                  data-inactive={!canAdvance || undefined}
-                  aria-disabled={!canAdvance}
-                >
-                  <span>
-                    {step < 2
-                      ? dict.wizard.continue
-                      : submitting
-                        ? dict.wizard.sendingButton
-                        : dict.wizard.submitButton}
-                  </span>
-                  {step < 2 && <Arrow className={buttons.btnArrow} />}
-                </button>
+                    {step === 0 && (
+                      <StepService value={service} onSelect={selectService} />
+                    )}
+                    {step === 1 && resolvedQuestionnaire && (
+                      <StepDetails
+                        questionnaire={resolvedQuestionnaire}
+                        answers={details}
+                        onChange={setDetail}
+                        showErrors={showErrors}
+                        errors={detailErrors}
+                      />
+                    )}
+                    {step === 2 && (
+                      <StepContact
+                        answers={contact}
+                        onChange={setContactField}
+                        showErrors={showErrors}
+                        errors={contactErrors}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
-            </div>
+
+              {submitFailed && (
+                <p className={fieldStyles.fieldError} role="alert">
+                  <Alert className={fieldStyles.fieldErrorIcon} />
+                  {dict.wizard.submitError}
+                </p>
+              )}
+
+              <div className={styles.footer}>
+                <p className={styles.footerMeta}>{format(dict.wizard.stepOf, { n: step + 1 })}</p>
+                <div className={styles.footerActions}>
+                  {step > 0 && (
+                    <button
+                      type="button"
+                      className={buttons.ghostBtn}
+                      onClick={goBack}
+                      disabled={submitting}
+                    >
+                      {dict.wizard.back}
+                    </button>
+                  )}
+                  {/* type="submit" is what makes Enter-in-a-field work — the
+                      browser's implicit submission fires the form's first
+                      submit button. Still not `disabled` when invalid, so a
+                      press reveals what's missing instead of going dead. */}
+                  <button
+                    type="submit"
+                    className={buttons.primaryBtn}
+                    disabled={submitting}
+                    data-inactive={!canAdvance || undefined}
+                    aria-disabled={!canAdvance}
+                  >
+                    <span>
+                      {step < 2
+                        ? dict.wizard.continue
+                        : submitting
+                          ? dict.wizard.sendingButton
+                          : dict.wizard.submitButton}
+                    </span>
+                    {step < 2 && <Arrow className={buttons.btnArrow} />}
+                  </button>
+                </div>
+              </div>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

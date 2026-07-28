@@ -132,18 +132,6 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
                     <ServiceIcon name={item.icon} />
                   </span>
                   <span className={styles.slatTitle}>{item.title[lang]}</span>
-                  <svg
-                    className={styles.slatChevron}
-                    aria-hidden
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m5 8 5 5 5-5" />
-                  </svg>
                 </button>
                 <div
                   className={styles.slatDetail}

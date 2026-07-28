@@ -7,9 +7,40 @@
   --bp-stone: color-mix(in srgb, var(--brand-gris) 78%, white);
   --bp-charcoal: #1b2226;
   --bp-rule: color-mix(in srgb, var(--foreground) 14%, transparent);
-  background: #fbfcfc;
+  /* Hairline used *inside* surfaces (card edges, slat dividers) — lighter than
+     --bp-rule, which separates whole rows. Replaces four near-identical
+     foreground 8%/10% mixes that had drifted apart by a couple of percent. */
+  --bp-hairline: color-mix(in srgb, var(--foreground) 9%, transparent);
+
+  /* The page's light surface, previously pasted as a literal into this file,
+     Footer.module.css, and half a dozen `#fff`s in the capability rack. */
+  --bp-surface: #fbfcfc;
+  --bp-card: #fff;
+
+  /* Two-step radius scale, same reasoning as the call-center page: the voice
+     is editorial-sharp (hairline rules, crop-mark frames, square-cut CTAs) so
+     corners stay near zero — --bp-radius for controls and callouts,
+     --bp-radius-card for the larger raised surfaces. */
+  --bp-radius: 2px;
+  --bp-radius-card: 4px;
+
+  /* Sticky rails park here. The navbar is fixed and 5.5rem tall, so anything
+     below that number tucks under it; this matches the anchor offset used for
+     in-page jumps so a pinned heading and a jumped-to heading land alike. */
+  --bp-sticky-top: 7rem;
+
+  background: var(--bp-surface);
   color: var(--foreground);
   overflow: clip;
+}
+
+/* Anchor offset for every in-page jump on this page — the hero's "explore
+   capabilities" CTA. Each section carried scroll-margin-top: 2rem, but the
+   navbar is fixed and 5.5rem tall (logo h-12 + py-5), so a jump parked the
+   target's heading 3.5rem underneath it. Declared once here rather than once
+   per section, sized to the nav plus a little air above the heading. */
+.page section[id] {
+  scroll-margin-top: 7rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

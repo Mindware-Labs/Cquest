@@ -35,6 +35,13 @@
   stroke-linejoin: round;
 }
 
+/* Focused programmatically on mount (tabIndex=-1) so the handoff from the form
+   lands somewhere; no ring, since arriving here isn't a "you tabbed to this"
+   moment — the heading and the drawn tick already say what happened. */
+.confirmTitle:focus {
+  outline: none;
+}
+
 .confirmTitle {
   font-family: var(--font-heading);
   font-size: clamp(1.35rem, 3.6vw, 1.75rem);

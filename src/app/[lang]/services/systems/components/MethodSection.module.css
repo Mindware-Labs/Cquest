@@ -1,5 +1,4 @@
 .methodSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(5.5rem, 8vw, 7rem);
   background: var(--background);
 }

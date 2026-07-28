@@ -1,5 +1,4 @@
 .processSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(5.5rem, 8vw, 7rem);
   background: var(--background);
 }
@@ -80,17 +79,23 @@
 }
 
 .processList h3 {
-  margin-top: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-wrap: balance;
 }
 
+/* 22ch inside a ~16rem column produced three- and four-word lines with hard
+   rags. The column is the real constraint here, so the measure just needs to
+   stop the copy short of the next step's node. */
 .processList p {
-  max-width: 22ch;
+  max-width: 26ch;
   margin-top: 0.6rem;
   color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.7;
+  text-wrap: pretty;
 }
 
 @media (max-width: 64rem) {

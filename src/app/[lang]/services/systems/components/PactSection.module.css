@@ -1,7 +1,6 @@
 /* ── Commitments — dark band, three large statements. */
 .pactSection {
   position: relative;
-  scroll-margin-top: 2rem;
   padding-block: clamp(5rem, 9vw, 8rem);
   background: var(--sy-deep);
   color: white;
@@ -51,7 +50,7 @@
 .pactGrid > div {
   position: relative;
   padding: 1.85rem 1.5rem 1.65rem;
-  transition: background 320ms var(--ease-out), transform 320ms var(--ease-out);
+  transition: background 320ms var(--ease-out);
 }
 
 .pactGrid > div::before {
@@ -65,9 +64,11 @@
   transition: background 320ms var(--ease-out);
 }
 
+/* No lift on hover: these cells share hairline borders with their neighbours,
+   so translating one opens a visible seam in the rule grid. The top accent
+   line below carries the hover instead. */
 .pactGrid > div:hover {
   background: rgba(255, 255, 255, 0.03);
-  transform: translateY(-2px);
 }
 
 .pactGrid > div:hover::before {
@@ -76,13 +77,19 @@
 
 .pactGrid > div + div { border-left: 1px solid rgba(255, 255, 255, 0.18); }
 
+/* Two lines of headline reserved in every cell. The three commitments have
+   titles of different lengths ("Support after go-live" is one line where the
+   other two are two), so without this the paragraphs beneath them started at
+   three different heights across one ruled row. */
 .pactGrid h3 {
+  min-height: 2.3em;
   color: var(--sy-sky);
   font-family: var(--font-heading), sans-serif;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   font-weight: 400;
   letter-spacing: -0.015em;
   line-height: 1.15;
+  text-wrap: balance;
 }
 
 .pactGrid p {
@@ -96,4 +103,7 @@
 @media (max-width: 64rem) {
   .pactGrid { grid-template-columns: 1fr; }
   .pactGrid > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+  /* Stacked, there's no neighbouring cell to line up with — the reserved
+     second line would just be dead space under a one-line title. */
+  .pactGrid h3 { min-height: 0; }
 }

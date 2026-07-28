@@ -9,10 +9,13 @@ export default function DesktopNav({
   reduced,
   inverse = false,
   links,
+  activeHref = null,
 }: {
   reduced: boolean;
   inverse?: boolean;
   links: readonly NavLink[];
+  /** The in-page section currently being read, from useSectionSpy. */
+  activeHref?: string | null;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
@@ -62,14 +65,42 @@ export default function DesktopNav({
     };
   }, [openLabel]);
 
+  const activeLabel = activeHref
+    ? (links.find((link) => link.href === activeHref)?.label ?? null)
+    : null;
+  // One marker, one position at a time: it rests under the section you're
+  // reading and slides to whatever you point at, then slides back. Pointing
+  // somewhere is a stronger signal of intent than where you happen to be, so
+  // hover wins while it lasts.
+  const markedLabel = hovered ?? activeLabel;
+
+  // The rule alone can't carry "you are here" — it's also the hover marker,
+  // so it leaves the active item the moment you point elsewhere. Full-strength
+  // label colour is what stays put.
+  const itemClass = (active: boolean) =>
+    `relative z-10 px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+      inverse
+        ? `${active ? "text-white" : "text-white/78"} hover:text-white focus-visible:outline-celeste`
+        : `${active ? "text-petroleo" : "text-foreground/80"} hover:text-petroleo focus-visible:outline-petroleo`
+    }`;
+
   return (
     <ul
       ref={navRef}
       className="hidden items-center gap-1 md:flex"
       onMouseLeave={() => setHovered(null)}
+      // Focus moves the marker the same way hover does, so it has to release
+      // it the same way too — without this the highlight stayed stuck on the
+      // last item tabbed through until a mouse happened to enter the list.
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHovered(null);
+        }
+      }}
     >
       {links.map(({ label, href, children }) => {
         const isOpen = openLabel === label;
+        const isActive = label === activeLabel;
         // A "Services"-style menu: children carry their own icon + one-line
         // description, so they read as a mega-menu instead of a plain list.
         const isMega = Boolean(children?.[0]?.icon);
@@ -85,16 +116,30 @@ export default function DesktopNav({
             onMouseLeave={() => {
               if (children) scheduleClose();
             }}
+            // Tabbing out of the trigger used to leave the panel hanging open
+            // over the page, because opening was wired to focus but closing
+            // only to mouse, Escape and outside *clicks* — none of which a
+            // keyboard user tabbing forward produces.
+            onBlur={(event) => {
+              if (!children) return;
+              if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+              setOpenLabel((current) => (current === label ? null : current));
+            }}
           >
-            {hovered === label && (
+            {/* A single rule that glides between items rather than a filled
+                tint switching on and off in place. The whole design system
+                speaks in hairline rules and square corners — a rounded
+                highlight pill was the one element in the nav that didn't. */}
+            {markedLabel === label && (
               <motion.span
-                layoutId="nav-hover"
+                aria-hidden
+                layoutId="nav-marker"
                 transition={
                   reduced
                     ? { duration: 0 }
-                    : { type: "spring", stiffness: 400, damping: 32 }
+                    : { type: "spring", stiffness: 400, damping: 34 }
                 }
-                className="absolute inset-0 rounded-[2px] bg-[color-mix(in_srgb,var(--brand-celeste)_16%,transparent)]"
+                className="absolute inset-x-4 bottom-0 h-[2px] bg-celeste"
               />
             )}
             {children ? (
@@ -104,7 +149,7 @@ export default function DesktopNav({
                 aria-expanded={isOpen}
                 onClick={() => setOpenLabel(isOpen ? null : label)}
                 onFocus={() => openMenu(label)}
-                className={`relative z-10 flex items-center gap-1 rounded-[2px] px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${inverse ? "text-white/78 hover:text-white focus-visible:outline-celeste" : "text-foreground/80 hover:text-petroleo focus-visible:outline-petroleo"}`}
+                className={`${itemClass(isActive)} flex items-center gap-1`}
               >
                 {label}
                 <svg
@@ -125,7 +170,10 @@ export default function DesktopNav({
                 href={href}
                 onClick={(event) => href === "#" && event.preventDefault()}
                 onFocus={() => setHovered(label)}
-                className={`relative z-10 block rounded-[2px] px-4 py-2 text-sm font-medium transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 ${inverse ? "text-white/78 hover:text-white focus-visible:outline-celeste" : "text-foreground/80 hover:text-petroleo focus-visible:outline-petroleo"}`}
+                // "location", not "page": these point at sections of the page
+                // you're already on, not at a different page.
+                aria-current={isActive ? "location" : undefined}
+                className={`${itemClass(isActive)} block`}
               >
                 {label}
               </LocalizedLink>
@@ -141,10 +189,14 @@ export default function DesktopNav({
                     transition={{ duration: 0.22, ease: NAV_EASE_OUT }}
                     className={
                       isMega
-                        ? `absolute left-0 top-full z-10 mt-3 w-[min(92vw,34rem)] overflow-hidden rounded-[6px] border backdrop-blur-xl ${
+                        // Centred on its trigger and clamped to the viewport.
+                        // Anchored at left-0 it ran off the right edge at the
+                        // md breakpoint — 34rem of panel starting ~300px in
+                        // needs 844px of room and only had 768px.
+                        ? `absolute left-1/2 top-full z-10 mt-3 w-[min(38rem,calc(100vw-2.5rem))] -translate-x-1/2 overflow-hidden rounded-[4px] border shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
-                        : `absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-[6px] border p-2 shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
+                        : `absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-[4px] border p-2 shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
                     }
@@ -162,7 +214,7 @@ export default function DesktopNav({
                               >
                                 <span
                                   aria-hidden
-                                  className={`absolute inset-2 -z-10 rounded-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+                                  className={`absolute inset-2 -z-10 rounded-[2px] opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
                                     inverse ? "bg-white/[0.06]" : "bg-[color-mix(in_srgb,var(--brand-celeste)_8%,transparent)]"
                                   }`}
                                 />
@@ -196,7 +248,7 @@ export default function DesktopNav({
                             <LocalizedLink
                               href={child.href}
                               onClick={() => setOpenLabel(null)}
-                              className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                              className={`block rounded-[2px] px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                 inverse
                                   ? "text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-celeste"
                                   : "text-foreground/80 hover:bg-[color-mix(in_srgb,var(--brand-celeste)_12%,transparent)] hover:text-petroleo focus-visible:outline-petroleo"

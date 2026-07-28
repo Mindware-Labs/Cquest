@@ -228,6 +228,15 @@ export const PROCESS: ReadonlyArray<{ title: Record<Locale, string>; description
   },
 ];
 
+/* `size` is an *optical* class, not a scale factor — the four source files
+   have nothing in common geometrically (a tall portrait mark, a small lockup
+   floating in a square canvas of baked-in whitespace, a 2.4:1 wordmark, and
+   an opaque coloured tile), so each needs its own frame to carry the same
+   visual weight in the wall. See ClientsSection.module.css.
+     (default) — mark roughly as tall as it is wide, transparent
+     padded    — art sits inside its own generous canvas margin
+     wide      — landscape wordmark; gains presence from width, not height
+     tile      — opaque background baked into the file; framed as a tile */
 export const CLIENT_LOGOS = [
   {
     name: "Altice",
@@ -245,7 +254,7 @@ export const CLIENT_LOGOS = [
   {
     name: "Paso Rápido",
     src: "/brands/pasoRapido.png",
-    size: "large",
+    size: "padded",
     about: {
       en: "It is the first public trust created by the Dominican State, through Fiduciaria Reservas, S.A., under Trust Agreement number one (01), signed on October 18, 2013. Represented by the Ministry of Public Works and Communications (MOPC), ratified by resolution number 156-13 issued by the National Congress on 11/25/2013 and published in Official Gazette 10735.",
       es: "Es el primer fideicomiso público creado por el Estado dominicano, a través de Fiduciaria Reservas, S.A., bajo el Contrato de Fideicomiso número uno (01), firmado el 18 de octubre de 2013. Representado por el Ministerio de Obras Públicas y Comunicaciones (MOPC), ratificado mediante la resolución número 156-13 emitida por el Congreso Nacional el 25/11/2013 y publicada en la Gaceta Oficial 10735.",
@@ -259,6 +268,7 @@ export const CLIENT_LOGOS = [
   {
     name: "Rig Hut",
     src: "/brands/righut.jpeg",
+    size: "wide",
     about: {
       en: "Rig Hut is a provider of parking management software purpose built for industrial parking applications. Truck parking facilities utilize Rig Hut to manage their inventory, accurately represent vacancies to the market, process payments and generate comprehensive reports for their yards.\n\nUtilizing a powerful suite of management tools, rest assured knowing your customer database, payments and communications are all processed and stored securely within the Rig Hut environment.",
       es: "Rig Hut es un proveedor de software de gestión de estacionamientos diseñado específicamente para aplicaciones de parqueo industrial. Instalaciones de estacionamiento para camiones utilizan Rig Hut para gestionar su inventario, representar con precisión los espacios disponibles ante el mercado, procesar pagos y generar reportes completos de sus patios.\n\nCon un potente conjunto de herramientas de gestión, ten la tranquilidad de saber que la base de datos de clientes, los pagos y las comunicaciones se procesan y almacenan de forma segura dentro del entorno de Rig Hut.",
@@ -272,6 +282,7 @@ export const CLIENT_LOGOS = [
   {
     name: "Cell Phone",
     src: "/brands/cellphone.jpg",
+    size: "tile",
     about: {
       en: "Cellphone SRL is an authorized distributor of Altice Dominicana, specialized in offering high-quality telecommunications solutions for residential and business customers across the Dominican Republic.\n\nFounded in June 2000, the company has more than two decades of experience in the sector, with branches strategically located in Santo Domingo and other provinces. It stands out for personalized attention, efficient technical support, and access to the latest generation of technology products and services.",
       es: "Cellphone SRL es un distribuidor autorizado de Altice Dominicana, especializado en ofrecer soluciones de telecomunicaciones de alta calidad para clientes residenciales y empresariales en toda República Dominicana.\n\nFundada en junio de 2000, la empresa cuenta con más de dos décadas de experiencia en el sector, con sucursales ubicadas estratégicamente en Santo Domingo y otras provincias. Se destaca por su atención personalizada, soporte técnico eficiente y acceso a productos y servicios tecnológicos de última generación.",

@@ -8,8 +8,14 @@ import { METRICS } from "../data";
 import styles from "./MetricsSection.module.css";
 
 const COPY = {
-  en: { heading: "Performance that can be demonstrated." },
-  es: { heading: "Desempeño que se puede demostrar." },
+  en: {
+    heading: "Performance that can be demonstrated.",
+    lede: "These are the operating standards an account is designed around — the service levels, response times and quality thresholds every engagement is measured against.",
+  },
+  es: {
+    heading: "Desempeño que se puede demostrar.",
+    lede: "Estos son los estándares operativos alrededor de los cuales se diseña una cuenta — los niveles de servicio, tiempos de respuesta y umbrales de calidad contra los que se mide cada proyecto.",
+  },
 };
 
 export default function MetricsSection({ reduced }: { reduced: boolean }) {
@@ -29,6 +35,9 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
             <motion.span className={styles.metricsRule} aria-hidden variants={ruleYVariants} />
             <motion.h2 variants={focusRiseVariants}>{t.heading}</motion.h2>
           </motion.div>
+          {/* The second column the CSS was always written for — it sat empty,
+              leaving a 20rem hole beside the heading on every desktop view. */}
+          <motion.p variants={focusRiseVariants}>{t.lede}</motion.p>
         </motion.div>
         <motion.dl
           className={styles.metricList}

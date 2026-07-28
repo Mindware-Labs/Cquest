@@ -5,8 +5,14 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { NAV_EASE_OUT, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+import { NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+// The same width utility every service page's sections use. Imported rather
+// than re-expressed in Tailwind so the bar's logo and CTA land on exactly the
+// page grid's outer edges — approximating it is what left the nav's contents
+// inset ~7rem from the content below it.
+import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
+import { useSectionSpy } from "@/hooks/useSectionSpy";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink, useLocalizedPathname } from "@/i18n/LocalizedLink";
 
@@ -45,7 +51,7 @@ export default function Navbar() {
 
     const observer = new IntersectionObserver(
       ([entry]) => setScrolled(!entry.isIntersecting),
-      { rootMargin: "-80px 0px 0px 0px" },
+      { rootMargin: `-${NAV_HEIGHT_PX}px 0px 0px 0px` },
     );
     observer.observe(heroEl);
     return () => observer.disconnect();
@@ -60,13 +66,22 @@ export default function Navbar() {
   const quoteHref = serviceDetailPage
     ? `/quote?servicio=${pathname.split("/").pop()}`
     : "/quote";
+  // On a service page the nav *is* the page's section index, so it should say
+  // where you are, not just where you can go. The marker in DesktopNav rides
+  // this; off a service page there are no in-page anchors and it stays null.
+  const activeHref = useSectionSpy(
+    navLinks.map((link) => link.href),
+    NAV_HEIGHT_PX,
+  );
 
   return (
     <motion.header
       initial={reduced ? false : { opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: NAV_EASE_OUT }}
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-500 ${
+      // backdrop-filter belongs in the transition list too: without it the
+      // glass snapped on while the colour behind it was still easing.
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled || open
           ? "border-b border-border/70 bg-background/80 shadow-[0_1px_12px_rgba(15,32,40,0.04)] backdrop-blur-xl"
           : inverse
@@ -82,7 +97,7 @@ export default function Navbar() {
     >
       <nav
         aria-label={dict.nav.mainNavAriaLabel}
-        className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5"
+        className={`${container.container} flex items-center justify-between py-5`}
       >
         <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="shrink-0">
           <Image
@@ -95,7 +110,7 @@ export default function Navbar() {
           />
         </LocalizedLink>
 
-        <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} />
+        <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} activeHref={activeHref} />
 
         <div className="flex items-center gap-3">
           <MotionLink

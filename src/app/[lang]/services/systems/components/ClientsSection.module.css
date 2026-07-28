@@ -1,7 +1,6 @@
 .clientsSection {
-  scroll-margin-top: 2rem;
   padding-block: clamp(4.5rem, 7vw, 6rem);
-  background: #fbfcfc;
+  background: var(--sy-surface);
 }
 
 /* Wrapped in the shared content container (same as Call Center's) so the
@@ -19,16 +18,26 @@
 .logoWall li {
   position: relative;
   display: flex;
-  min-height: 8.5rem;
+  min-height: 9.5rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 0.85rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  border-radius: 0.85rem;
-  background: white;
+  padding: 1.25rem;
+  border: 1px solid var(--sy-hairline);
+  border-radius: var(--sy-radius-card);
+  background: var(--sy-card);
   transition: border-color 240ms var(--ease-out), box-shadow 240ms var(--ease-out), transform 240ms var(--ease-out);
+}
+
+/* Ringed on the card, not on the button nested inside it — the ring used to
+   draw inside the padding, floating loose within the card's own border.
+   Petroleum rather than sky, which sits under the 3:1 a focus indicator
+   needs against white. */
+.logoWall li:has(.logoTrigger:focus-visible) {
+  outline: 2px solid var(--sy-petroleum);
+  outline-offset: 2px;
+  border-color: color-mix(in srgb, var(--sy-blue) 45%, transparent);
 }
 
 .logoWall li::before {
@@ -51,22 +60,36 @@
   transform: translateX(130%);
 }
 
+/* Optical normalisation, not geometric. Every frame is capped on BOTH axes:
+   height alone let the 5:1 Plastifar wordmark run to the full cell width and
+   dwarf the square marks beside it, and let the padded Paso Rápido canvas
+   (7rem) overflow an 8.5rem cell that also carried padding. Each class is
+   tuned so the *ink* reads at the same weight, not the bounding box.
+     (default) — square-ish mark, modest canvas margin (Fiduciaria, Astur)
+     padded    — art floating in a generous canvas margin (Paso Rápido)
+     wide      — landscape wordmark; width carries it (Rig Hut, Plastifar) */
 .logoImageWrap {
   display: block;
   position: relative;
   width: 100%;
-  height: 5.5rem;
+  max-width: 9rem;
+  height: 4.75rem;
   flex: none;
   filter: grayscale(1) opacity(0.7);
   transition: filter 260ms var(--ease-out), transform 260ms var(--ease-out);
 }
 
-.logoImageWrap[data-size="compact"] {
-  height: 3.25rem;
+.logoImageWrap[data-size="padded"] {
+  max-width: 13rem;
+  height: 6.75rem;
 }
 
-.logoImageWrap[data-size="large"] {
-  height: 7rem;
+/* One class covers both wordmarks because `contain` picks the binding axis:
+   Rig Hut at 2.4:1 is height-bound (8.3rem wide), Plastifar at 5:1 is
+   width-bound (2.3rem tall). Both land at a comparable ink weight. */
+.logoImageWrap[data-size="wide"] {
+  max-width: 11.5rem;
+  height: 3.5rem;
 }
 
 .logoImage {
@@ -82,8 +105,13 @@
   .logoWall li::before { display: none; }
 }
 
+/* `display: block` left the logo frame pinned to the trigger's top edge with
+   the slack pooling below it, so every mark sat high in its card. Centred on
+   both axes now — including horizontally, which the frame's new max-width
+   made load-bearing. */
 .logoTrigger {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   border: 0;
@@ -95,13 +123,16 @@
 }
 
 .logoTrigger:focus-visible {
-  outline: 2px solid var(--sy-blue);
-  outline-offset: 3px;
-  border-radius: 0.85rem;
+  outline: none;
 }
 
 @media (max-width: 42rem) {
   .clientsSection { padding-block: 4.5rem; }
   .logoWall { gap: 0.75rem; }
-  .logoWall li { min-height: 8rem; }
+  .logoWall li { min-height: 7.5rem; padding: 1rem; }
+  /* Scaled down together so the optical balance above survives the narrower
+     cell — the padded frame is what would overflow first. */
+  .logoImageWrap { height: 3.5rem; }
+  .logoImageWrap[data-size="padded"] { height: 5rem; }
+  .logoImageWrap[data-size="wide"] { height: 2.6rem; }
 }

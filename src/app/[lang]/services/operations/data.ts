@@ -183,6 +183,20 @@ export const SLAS: ReadonlyArray<{ label: Record<Locale, string>; value: Record<
   },
 ];
 
+/* Facility photography. Lives here with the rest of the page's content rather
+   than inline in PhotosSection, so swapping a photo or its caption doesn't
+   mean opening a component. */
+export const PHOTOS: ReadonlyArray<{ title: Record<Locale, string>; src: string }> = [
+  {
+    title: { en: "Back-office team at work", es: "Equipo de back office en acción" },
+    src: "/bpo-services/bpo-floor2.jpg",
+  },
+  {
+    title: { en: "Process floor detail", es: "Detalle del piso de procesos" },
+    src: "/bpo-services/bpo-floor3.jpeg",
+  },
+];
+
 export const HERO_LINES: Record<Locale, ReadonlyArray<{ text: string; strong: boolean }>> = {
   en: [
     { text: "The work", strong: false },

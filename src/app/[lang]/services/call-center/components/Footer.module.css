@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  background: #fbfcfc;
+  background: var(--cc-surface);
   color: var(--muted);
   font-size: 0.875rem;
 }

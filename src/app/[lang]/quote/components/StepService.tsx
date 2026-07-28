@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useRef, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceId } from "@/components/services/data";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -20,6 +20,26 @@ export default function StepService({
   onSelect: (id: ServiceId) => void;
 }) {
   const { dict, lang } = useI18n();
+  const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const selectedIndex = SERVICE_CARDS.findIndex((service) => service.id === value);
+
+  // ARIA APG radiogroup: arrows move focus AND selection, and only one radio
+  // sits in the tab order (roving tabindex) so Tab steps over the group rather
+  // than through it. The group declared role="radiogroup" but behaved like
+  // three loose buttons — arrows did nothing and Tab hit all three.
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    const count = SERVICE_CARDS.length;
+    let next: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % count;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + count) % count;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = count - 1;
+    if (next === null) return;
+    event.preventDefault();
+    onSelect(SERVICE_CARDS[next].id);
+    cardRefs.current[next]?.focus();
+  };
+
   return (
     <div className={shell.step}>
       <header className={shell.stepHead}>
@@ -33,7 +53,7 @@ export default function StepService({
         role="radiogroup"
         aria-label={dict.wizard.step1.ariaLabel}
       >
-        {SERVICE_CARDS.map((service) => {
+        {SERVICE_CARDS.map((service, index) => {
           const selected = value === service.id;
           return (
             <button
@@ -41,7 +61,14 @@ export default function StepService({
               type="button"
               role="radio"
               aria-checked={selected}
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
+              // Nothing selected yet: the first card holds the tab stop, so
+              // Tab always reaches the group exactly once.
+              tabIndex={selectedIndex === -1 ? (index === 0 ? 0 : -1) : selected ? 0 : -1}
               onClick={() => onSelect(service.id)}
+              onKeyDown={(event) => handleKeyDown(event, index)}
               className={styles.serviceCard}
               data-selected={selected || undefined}
               style={
