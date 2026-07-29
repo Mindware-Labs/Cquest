@@ -1,13 +1,41 @@
 /* Quest-logo mascot: rolls in as the "Q" ring, stands up, unfolds its base
    and antenna, then types its greeting. Ported from a standalone animation
    prototype — colors below are the mascot's own (sampled from the real
-   logo), independent of the site's celeste/petroleo tokens. */
+   logo), independent of the site's celeste/petroleo tokens.
+
+   ── The shared clock ────────────────────────────────────────────────────
+   Every delay in this file is `calc(var(--qb-t0) + <beat>)`. `--qb-t0` is
+   the same offset the Framer-driven copy uses (BEAT.scene in animation.ts),
+   so the mascot's timeline and the headline's are two tracks on one score
+   instead of two clocks that happen to start near each other. Change a beat
+   here and mirror it in the SCENE table in animation.ts — the typing delay
+   is derived from it.
+
+   Beat sheet (seconds after t0):
+     0.00  roll in, spin, ground shadow stretches, dust puffs
+     1.65  landing squash-and-settle
+     1.70  ground flash + impact ring
+     1.95  stand up
+     2.18  base cradle unfolds
+     2.46  antenna telescopes out
+     2.60  lens wakes, halo blooms
+     2.78  foot lights on
+     2.85  speech bubble pops
+     3.00  typing starts, idle float begins                                */
+
 .stage {
   --qb-cyan: #7fe9e4;
+  /* Shared with BEAT.scene in animation.ts — keep the two in step. */
+  --qb-t0: 0.14s;
 
   position: relative;
   width: 100%;
-  max-width: 1180px;
+  /* The scene is 1240×470 in user units (≈2.64:1) and scales off its width,
+     so on a short viewport an unconstrained width pushes the headline out of
+     the fold. Capping width at 111vh keeps the mascot under ~42vh tall; the
+     cap only engages below roughly 1060px of viewport height, so on a normal
+     desktop it still renders at its full 1180px. */
+  max-width: min(1180px, 111vh);
   margin: 0 auto;
 }
 
@@ -20,6 +48,74 @@
   width: 100%;
   height: auto;
   overflow: visible;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .svgScene {
+    cursor: pointer;
+  }
+}
+
+/* ── Replay control ──────────────────────────────────────
+   The mascot is decorative (aria-hidden), so this is the only affordance
+   that keyboard and screen-reader users can reach. It surfaces on hover for
+   pointer users and on focus for everyone; on touch, where there is no
+   hover to reveal it, it simply sits there at low contrast. */
+.replay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out),
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stage:hover .replay {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .replay:hover {
+    color: #fff;
+    border-color: rgba(127, 233, 228, 0.55);
+  }
+}
+
+@media (hover: none) {
+  .replay {
+    opacity: 0.4;
+    transform: none;
+  }
+}
+
+.replay:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 2px;
+}
+
+/* Asymmetric press: the press-in is quick and definite, the release rides
+   the slower spring-ish curve back. Symmetric timing reads as rubbery. */
+.replay:active {
+  transform: scale(0.93);
+  transition-duration: 90ms;
 }
 
 .say {
@@ -90,7 +186,10 @@
 .bob,
 .core,
 .stem,
-.puff {
+.puff,
+.halo,
+.impact,
+.floorFlash {
   transform-box: fill-box;
 }
 .spin {
@@ -107,6 +206,11 @@
 }
 .puff {
   transform-origin: center bottom;
+}
+.halo,
+.impact,
+.floorFlash {
+  transform-origin: center;
 }
 
 /* resting default = the logo, fully assembled */
@@ -129,79 +233,117 @@
 .lens {
   opacity: 0.9;
 }
+.halo {
+  opacity: 0.9;
+}
 
 .robot.run .travel {
-  animation: rollIn 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both;
+  animation: rollIn 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) var(--qb-t0, 0s) both;
 }
 .robot.run .spin {
-  animation: rollSpin 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both;
+  animation: rollSpin 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) var(--qb-t0, 0s) both;
 }
 .robot.run .core {
   animation:
-    coreLean 2.1s cubic-bezier(0.16, 0.62, 0.22, 1) both,
-    coreScan 5s ease-in-out 3.1s infinite;
+    coreLean 2.1s cubic-bezier(0.16, 0.62, 0.22, 1) var(--qb-t0, 0s) both,
+    coreScan 5s ease-in-out calc(var(--qb-t0, 0s) + 3.1s) infinite;
 }
 .robot.run .bob {
-  animation: settle 0.8s cubic-bezier(0.3, 1.35, 0.4, 1) 1.65s both;
+  animation: settle 0.8s cubic-bezier(0.3, 1.35, 0.4, 1) calc(var(--qb-t0, 0s) + 1.65s) both;
 }
 .robot.run .rise {
-  animation: standUp 0.6s cubic-bezier(0.32, 1.24, 0.42, 1) 1.95s both;
+  animation: standUp 0.6s cubic-bezier(0.32, 1.24, 0.42, 1) calc(var(--qb-t0, 0s) + 1.95s) both;
 }
 .robot.run .cradle {
-  animation: deploy 0.62s cubic-bezier(0.3, 0.75, 0.25, 1) 2.18s both;
+  animation: deploy 0.62s cubic-bezier(0.3, 0.75, 0.25, 1) calc(var(--qb-t0, 0s) + 2.18s) both;
 }
 .robot.run .cradleDetail {
-  animation: detailIn 0.42s ease-out 2.62s both;
+  animation: detailIn 0.42s ease-out calc(var(--qb-t0, 0s) + 2.62s) both;
 }
 .robot.run .footlight {
   animation:
-    tipOn 0.3s ease-out 2.78s both,
-    footBlink 2.8s steps(1, end) 3.4s infinite;
+    tipOn 0.3s ease-out calc(var(--qb-t0, 0s) + 2.78s) both,
+    footBlink 2.8s steps(1, end) calc(var(--qb-t0, 0s) + 3.4s) infinite;
 }
 .robot.run .fr {
-  animation-delay: 2.78s, 4.1s;
+  animation-delay: calc(var(--qb-t0, 0s) + 2.78s), calc(var(--qb-t0, 0s) + 4.1s);
 }
 .robot.run .stem {
-  animation: telescope 0.5s cubic-bezier(0.28, 1.5, 0.45, 1) 2.46s both;
+  animation: telescope 0.5s cubic-bezier(0.28, 1.5, 0.45, 1) calc(var(--qb-t0, 0s) + 2.46s) both;
 }
 .robot.run .idle {
-  animation: idle 3.6s ease-in-out 3s infinite;
+  animation: idle 3.6s ease-in-out calc(var(--qb-t0, 0s) + 3s) infinite;
 }
 .robot.run .shadow {
   animation:
-    shadowRoll 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both,
-    shadowPlant 0.6s ease-out 2.2s forwards;
+    shadowRoll 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) var(--qb-t0, 0s) both,
+    shadowPlant 0.6s ease-out calc(var(--qb-t0, 0s) + 2.2s) forwards;
 }
 .robot.run .lens {
   animation:
-    lensWake 0.45s ease-out 2.6s both,
-    lensPulse 3.6s ease-in-out 3.1s infinite;
+    lensWake 0.45s ease-out calc(var(--qb-t0, 0s) + 2.6s) both,
+    lensPulse 3.6s ease-in-out calc(var(--qb-t0, 0s) + 3.1s) infinite;
+}
+.robot.run .halo {
+  animation:
+    haloWake 0.9s ease-out calc(var(--qb-t0, 0s) + 2.62s) both,
+    haloBreathe 6s ease-in-out calc(var(--qb-t0, 0s) + 3.5s) infinite;
 }
 .robot.run .tip {
   animation:
-    tipOn 0.3s ease-out 2.9s both,
-    tipBlink 2.4s steps(1, end) 3.2s infinite;
+    tipOn 0.3s ease-out calc(var(--qb-t0, 0s) + 2.9s) both,
+    tipBlink 2.4s steps(1, end) calc(var(--qb-t0, 0s) + 3.2s) infinite;
 }
 .robot.run .pip {
-  animation: pipFade 2.6s ease-out both;
+  animation: pipFade 2.6s ease-out var(--qb-t0, 0s) both;
+}
+/* Ground contact: a wide soft flash and a ring pushing outward, on the same
+   frame as the landing squash. Weight is sold by what the floor does, not by
+   what the object does. */
+.robot.run .floorFlash {
+  animation: floorFlash 0.75s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--qb-t0, 0s) + 1.7s) both;
+}
+.robot.run .impact {
+  animation: impact 0.9s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--qb-t0, 0s) + 1.7s) both;
 }
 .robot.run .puff {
   animation: puff 1s ease-out both;
 }
 .robot.run .p1 {
-  animation-delay: 0.28s;
+  animation-delay: calc(var(--qb-t0, 0s) + 0.28s);
 }
 .robot.run .p2 {
-  animation-delay: 0.7s;
+  animation-delay: calc(var(--qb-t0, 0s) + 0.62s);
 }
 .robot.run .p3 {
-  animation-delay: 1.14s;
+  animation-delay: calc(var(--qb-t0, 0s) + 0.96s);
+}
+.robot.run .p4 {
+  animation-delay: calc(var(--qb-t0, 0s) + 1.3s);
+}
+.robot.run .p5 {
+  animation-delay: calc(var(--qb-t0, 0s) + 1.6s);
 }
 .robot.run .say {
-  animation: pop 0.55s cubic-bezier(0.2, 1.5, 0.35, 1) 2.85s forwards;
+  animation: pop 0.55s cubic-bezier(0.2, 1.5, 0.35, 1) calc(var(--qb-t0, 0s) + 2.85s) forwards;
 }
 .robot.run .caret {
-  animation: blink 1s step-end 3s infinite;
+  animation: blink 1s step-end calc(var(--qb-t0, 0s) + 3s) infinite;
+}
+
+/* ── Park the always-on loops ────────────────────────────
+   Six infinite animations used to run for the life of the tab, whether or
+   not the hero was on screen. `data-ambient="off"` (hero scrolled away, or
+   tab hidden) pauses them; the one-shot assembly resumes exactly where it
+   left off when the user comes back, which is the behaviour you want anyway. */
+.robot[data-ambient="off"] .idle,
+.robot[data-ambient="off"] .core,
+.robot[data-ambient="off"] .lens,
+.robot[data-ambient="off"] .halo,
+.robot[data-ambient="off"] .tip,
+.robot[data-ambient="off"] .footlight,
+.robot[data-ambient="off"] .caret {
+  animation-play-state: paused;
 }
 
 /* two exact laps: 942px of travel = 2 x circumference (471.24) */
@@ -354,6 +496,53 @@
     opacity: 0.38;
   }
 }
+@keyframes floorFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.55, 0.5);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25, 1.15);
+  }
+}
+@keyframes impact {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  16% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+@keyframes haloWake {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+@keyframes haloBreathe {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
 @keyframes lensWake {
   0% {
     opacity: 0.12;
@@ -480,20 +669,25 @@
   .robot.run .idle,
   .robot.run .shadow,
   .robot.run .lens,
+  .robot.run .halo,
   .robot.run .tip,
   .robot.run .pip,
   .robot.run .puff,
   .robot.run .say,
   .robot.run .caret,
   .robot.run .cradleDetail,
-  .robot.run .footlight {
+  .robot.run .footlight,
+  .robot.run .impact,
+  .robot.run .floorFlash {
     animation: none !important;
   }
   .say {
     opacity: 1;
     transform: none;
   }
-  .puff {
+  .puff,
+  .impact,
+  .floorFlash {
     opacity: 0;
   }
   .tip {

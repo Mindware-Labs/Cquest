@@ -28,8 +28,12 @@ export interface Dictionary {
     backToServices: string;
   };
   hero: {
+    /** The page's single <h1>. Rendered word-by-word behind masks. */
+    headline: string;
     lead: string;
     primaryCta: string;
+    /** Accessible name for the mascot's replay control. */
+    replayLabel: string;
     navLinks: { services: string; successStories: string; about: string; contact: string };
     typedLine: string;
     onlineLabel: string;

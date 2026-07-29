@@ -27,8 +27,10 @@ export const dictionary: Dictionary = {
     backToServices: "Back to all services",
   },
   hero: {
-    lead: "Call center, operations and systems development — one partner across your three growth priorities.",
+    headline: "Call center, operations and systems development.",
+    lead: "One partner across your three growth priorities.",
     primaryCta: "Give us a quest",
+    replayLabel: "Replay the animation",
     navLinks: { services: "Services", successStories: "Success stories", about: "About", contact: "Contact" },
     typedLine: "give me your quest",
     onlineLabel: "cq · online",

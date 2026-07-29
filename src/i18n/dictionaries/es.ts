@@ -27,8 +27,10 @@ export const dictionary: Dictionary = {
     backToServices: "Volver a todos los servicios",
   },
   hero: {
-    lead: "Call center, operaciones y desarrollo de sistemas — un solo aliado para tus tres prioridades de crecimiento.",
+    headline: "Call center, operaciones y desarrollo de sistemas.",
+    lead: "Un solo aliado para tus tres prioridades de crecimiento.",
     primaryCta: "Cuéntanos tu misión",
+    replayLabel: "Repetir la animación",
     navLinks: { services: "Servicios", successStories: "Casos de éxito", about: "Nosotros", contact: "Contacto" },
     typedLine: "give me your quest",
     onlineLabel: "cq · online",

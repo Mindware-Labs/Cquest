@@ -33,6 +33,198 @@
   min-height: calc(100svh + var(--curtain));
 }
 
+/* ── Hero ambience ───────────────────────────────────────
+   Three soft light bodies drifting behind the mascot on long, offset loops,
+   so the dark field is never quite still. Deliberately built from plain
+   radial-gradients rather than a blurred layer: a `filter: blur()` parent
+   would re-composite the blur on every frame its children move. These only
+   ever animate `transform`, so each one is a single GPU layer.
+
+   Periods are coprime (37s / 43s / 53s) so the composite never visibly
+   repeats. `data-ambient="off"` parks them when the hero is off-screen or
+   the tab is hidden — decorative motion should not bill the user's battery
+   for a section they aren't looking at. */
+.cq-hero-ambience {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cq-hero-glow {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.cq-hero-glow--a {
+  left: -6%;
+  top: 4%;
+  width: clamp(20rem, 46vw, 46rem);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand-petroleo) 34%, transparent),
+    transparent 66%
+  );
+  animation: cq-drift-a 37s var(--ease-in-out-strong) infinite;
+}
+
+.cq-hero-glow--b {
+  right: -10%;
+  top: 22%;
+  width: clamp(18rem, 40vw, 40rem);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand-celeste) 17%, transparent),
+    transparent 68%
+  );
+  animation: cq-drift-b 43s var(--ease-in-out-strong) infinite;
+}
+
+.cq-hero-glow--c {
+  left: 32%;
+  bottom: -22%;
+  width: clamp(22rem, 58vw, 58rem);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand-celeste) 12%, transparent),
+    transparent 62%
+  );
+  animation: cq-drift-c 53s var(--ease-in-out-strong) infinite;
+}
+
+.cq-hero-ambience[data-ambient="off"] .cq-hero-glow {
+  animation-play-state: paused;
+}
+
+@keyframes cq-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(7%, 5%, 0) scale(1.12);
+  }
+}
+
+@keyframes cq-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(-9%, 7%, 0) scale(0.94);
+  }
+}
+
+@keyframes cq-drift-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+  50% {
+    transform: translate3d(5%, -6%, 0) scale(1.1);
+  }
+}
+
+/* Corner falloff, so the composition reads as a lit stage rather than a
+   flat rectangle of colour. Static — one paint, no per-frame cost. */
+.cq-hero-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    118% 88% at 50% 44%,
+    transparent 42%,
+    color-mix(in srgb, var(--ink) 78%, transparent) 100%
+  );
+}
+
+/* ── Hero headline ───────────────────────────────────────
+   Each word is its own clipping box; the inner span slides up from below its
+   own baseline. The padding/negative-margin pair gives descenders somewhere
+   to live so the mask never shaves a "y" or a "p". */
+.cq-hero-h1 {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.85rem, 4.4vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  max-width: 19ch;
+  text-wrap: balance;
+}
+
+.cq-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
+.cq-word > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Accent hairline that opens the copy block. */
+.cq-hero-rule {
+  height: 1px;
+  width: clamp(3.5rem, 9vw, 6rem);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    var(--brand-celeste),
+    color-mix(in srgb, var(--brand-celeste) 0%, transparent)
+  );
+}
+
+/* ── Scroll cue ──────────────────────────────────────────
+   A hairline with a light running down it. Constant motion → `linear`, so
+   the travel reads as a steady signal and not as something easing to a stop. */
+.cq-scroll-cue {
+  position: relative;
+  width: 1px;
+  /* Sized and placed to sit inside the hero's bottom padding band, so it
+     never crowds the headline column or the CTA. */
+  height: 2.25rem;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, #fff 20%, transparent) 45%,
+    transparent
+  );
+}
+
+.cq-scroll-cue::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: 45%;
+  background: linear-gradient(180deg, transparent, var(--brand-celeste), transparent);
+  animation: cq-cue-run 2.6s linear infinite;
+  will-change: transform;
+}
+
+.cq-scroll-cue[data-ambient="off"]::after {
+  animation-play-state: paused;
+}
+
+@keyframes cq-cue-run {
+  0% {
+    transform: translateY(-110%);
+  }
+  100% {
+    transform: translateY(260%);
+  }
+}
+
 /* ── Photographic grain ──────────────────────────────────
    A static SVG-noise tile at whisper opacity. Costs one paint, no animation —
    it simply takes the digital sheen off the gradient field. */
