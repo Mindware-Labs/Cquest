@@ -29,14 +29,11 @@ export interface Dictionary {
   };
   hero: {
     lead: string;
-    coverageLine: string;
-    scrollAriaLabel: string;
-    scrollLabel: string;
     primaryCta: string;
-    secondaryCta: string;
-    accessibleFallback: string;
-    rotating: ReadonlyArray<{ top: string; bottom: string }>;
     navLinks: { services: string; successStories: string; about: string; contact: string };
+    typedLine: string;
+    onlineLabel: string;
+    locationLabel: string;
   };
   carousel: {
     ariaLabel: string;

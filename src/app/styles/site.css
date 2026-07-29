@@ -33,50 +33,6 @@
   min-height: calc(100svh + var(--curtain));
 }
 
-/* ── Hero scroll cue ─────────────────────────────────────
-   A 1px track with a celeste drip running down it — "there's more below",
-   said at whisper volume. The reduced-motion net freezes the drip. */
-.cq-scroll-cue {
-  position: relative;
-  display: block;
-  width: 1px;
-  height: 2.6rem;
-  background: rgba(255, 255, 255, 0.22);
-  overflow: hidden;
-}
-
-.cq-scroll-cue::after {
-  content: "";
-  position: absolute;
-  left: -1px;
-  top: 0;
-  width: 3px;
-  height: 0.85rem;
-  border-radius: 2px;
-  background: linear-gradient(180deg, transparent, var(--brand-celeste));
-  animation: cq-scroll-cue-drip 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-
-@keyframes cq-scroll-cue-drip {
-  0% { transform: translateY(-100%); opacity: 0; }
-  22% { opacity: 1; }
-  72% { opacity: 1; }
-  100% { transform: translateY(2.6rem); opacity: 0; }
-}
-
-/* ── Hero photo bloom ────────────────────────────────── */
-
-@keyframes cq-hero-bloom {
-  0%, 100% { opacity: 0.86; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.055) translate3d(-1%, 1%, 0); }
-}
-
-.cq-hero-bloom {
-  animation: cq-hero-bloom 16s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  transform-origin: 78% 42%;
-  will-change: transform, opacity;
-}
-
 /* ── Photographic grain ──────────────────────────────────
    A static SVG-noise tile at whisper opacity. Costs one paint, no animation —
    it simply takes the digital sheen off the gradient field. */

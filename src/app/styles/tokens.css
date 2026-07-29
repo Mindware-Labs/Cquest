@@ -60,7 +60,7 @@
   --color-verde: var(--brand-verde);
   --color-gris: var(--brand-gris);
 
-  --font-heading: var(--font-switzer);
-  --font-sans: var(--font-switzer);
+  --font-heading: var(--font-josefin);
+  --font-sans: var(--font-josefin);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

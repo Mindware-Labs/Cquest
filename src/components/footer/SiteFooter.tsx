@@ -30,7 +30,7 @@ const MotionLink = motion.create(LocalizedLink);
    (logo, tagline, one back-link). Structurally this is the familiar big-agency close —
    oversized wordmark, link columns, contact block, legal rule — which is the
    shape hirehoratio.com uses too; the material is entirely ours: About's dark
-   band continued one shade deeper, celeste hairlines, Switzer.
+   band continued one shade deeper, celeste hairlines, Josefin Sans.
 
    Deliberate departures from that reference:
      • No photography or decorative imagery — the only image is the brand

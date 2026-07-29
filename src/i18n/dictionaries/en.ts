@@ -28,19 +28,11 @@ export const dictionary: Dictionary = {
   },
   hero: {
     lead: "Call center, operations and systems development — one partner across your three growth priorities.",
-    coverageLine: "Call Center · Operations · Systems Development — 24/7 coverage",
-    scrollAriaLabel: "Scroll to services",
-    scrollLabel: "Scroll",
     primaryCta: "Give us a quest",
-    secondaryCta: "See our services",
-    accessibleFallback: "Call center, operations (BPO) and systems development for operations in the Dominican Republic — we power operations, you drive growth.",
-    rotating: [
-      { top: "We power operations.", bottom: "You drive growth." },
-      { top: "We answer every call.", bottom: "You keep every client." },
-      { top: "We run the back office.", bottom: "You run the business." },
-      { top: "We build your systems.", bottom: "You set the pace." },
-    ],
     navLinks: { services: "Services", successStories: "Success stories", about: "About", contact: "Contact" },
+    typedLine: "give me your quest",
+    onlineLabel: "cq · online",
+    locationLabel: "Santo Domingo",
   },
   carousel: {
     ariaLabel: "Center Quest business lines",

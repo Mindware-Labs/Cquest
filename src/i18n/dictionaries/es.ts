@@ -28,19 +28,11 @@ export const dictionary: Dictionary = {
   },
   hero: {
     lead: "Call center, operaciones y desarrollo de sistemas — un solo aliado para tus tres prioridades de crecimiento.",
-    coverageLine: "Call Center · Operaciones · Desarrollo de Sistemas — cobertura 24/7",
-    scrollAriaLabel: "Desplazarse a servicios",
-    scrollLabel: "Desplázate",
     primaryCta: "Cuéntanos tu misión",
-    secondaryCta: "Ver nuestros servicios",
-    accessibleFallback: "Call center, operaciones (BPO) y desarrollo de sistemas para operaciones en República Dominicana — nosotros impulsamos las operaciones, tú impulsas el crecimiento.",
-    rotating: [
-      { top: "Impulsamos tus operaciones.", bottom: "Tú impulsas el crecimiento." },
-      { top: "Respondemos cada llamada.", bottom: "Tú conservas cada cliente." },
-      { top: "Gestionamos tu back office.", bottom: "Tú gestionas el negocio." },
-      { top: "Construimos tus sistemas.", bottom: "Tú marcas el ritmo." },
-    ],
     navLinks: { services: "Servicios", successStories: "Casos de éxito", about: "Nosotros", contact: "Contacto" },
+    typedLine: "give me your quest",
+    onlineLabel: "cq · online",
+    locationLabel: "Santo Domingo",
   },
   carousel: {
     ariaLabel: "Líneas de negocio de Center Quest",

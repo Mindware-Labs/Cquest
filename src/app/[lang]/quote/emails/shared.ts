@@ -32,7 +32,7 @@ export const C = {
 };
 
 export const FONT =
-  "-apple-system,BlinkMacSystemFont,'Switzer','Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  "-apple-system,BlinkMacSystemFont,'Josefin Sans','Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 export type Row = { label: string; value: string };
 

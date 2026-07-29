@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Josefin_Sans } from "next/font/google";
 import { ViewTransition } from "react";
 import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -12,14 +12,10 @@ import { I18nProvider } from "@/i18n/I18nProvider";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
-const switzer = localFont({
-  src: [
-    { path: "../../fonts/switzer/Switzer-Regular.woff2", weight: "400", style: "normal" },
-    { path: "../../fonts/switzer/Switzer-Medium.woff2", weight: "500", style: "normal" },
-    { path: "../../fonts/switzer/Switzer-SemiBold.woff2", weight: "600", style: "normal" },
-    { path: "../../fonts/switzer/Switzer-Bold.woff2", weight: "700", style: "normal" },
-  ],
-  variable: "--font-switzer",
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-josefin",
   display: "swap",
 });
 
@@ -113,7 +109,7 @@ export default async function RootLayout({
     <html
       lang={lang}
       data-scroll-behavior="smooth"
-      className={`${switzer.variable} h-full antialiased`}
+      className={`${josefin.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <script

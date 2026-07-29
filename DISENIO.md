@@ -31,14 +31,14 @@ Estilo objetivo: premium minimalista, inspirado en Stripe.
 
 | Uso | Fuente | Peso | Fuente de descarga |
 |---|---|---|---|
-| **Titulares (headlines)** | Switzer | Bold / Semibold | [Fontshare](https://www.fontshare.com/fonts/switzer) |
-| **Cuerpo de texto** | Switzer | Regular / Medium | [Fontshare](https://www.fontshare.com/fonts/switzer) |
+| **Fuente principal (cuerpo de texto)** | Josefin Sans | Regular | [Google Fonts](https://fonts.google.com/specimen/Josefin+Sans) |
+| **Fuente secundaria (titulares / énfasis)** | Josefin Sans | Medium | [Google Fonts](https://fonts.google.com/specimen/Josefin+Sans) |
 
 ### Notas de uso
 
-- Una sola familia (Switzer) cubre titulares y cuerpo, diferenciados por peso — Bold/Semibold para títulos, Regular/Medium para lectura — en vez de dos tipografías distintas.
-- Se reemplazó la pareja anterior (Geist + Inter): es la combinación "premium-Stripe" más repetida en sitios asistidos por IA, y no diferenciaba a la marca. Switzer mantiene el mismo carácter neutro-premium (es prima cercana de Söhne/Suisse Int'l, la familia que usa Stripe) sin caer en ese mismo lugar común.
-- Los archivos (`.woff2`, licencia Fontshare Free — gratis para uso comercial) viven en `src/fonts/switzer/` y se cargan vía `next/font/local` en `layout.tsx`, autohospedados (sin depender del CDN de Fontshare en producción).
+- Una sola familia (Josefin Sans) cubre titulares y cuerpo, diferenciados por peso — Medium para títulos y énfasis, Regular para lectura — en vez de dos tipografías distintas.
+- Reemplaza a Switzer (manual de marca oficial actualizado).
+- Se carga vía `next/font/google` (`Josefin_Sans`) en `layout.tsx` con los pesos 400/500 — Next.js la autohospeda en build, sin dependencia de fonts.googleapis.com en producción.
 - Evitar mezclar más de esta familia tipográfica para mantener la coherencia minimalista.
 
 ---

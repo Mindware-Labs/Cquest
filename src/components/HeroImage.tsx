@@ -3,16 +3,10 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import HeroActions from "@/components/hero/HeroActions";
-import HeroBackdrop from "@/components/hero/HeroBackdrop";
 import HeroNav from "@/components/hero/HeroNav";
-import RotatingHeadline from "@/components/hero/RotatingHeadline";
+import QuestBotScene from "@/components/hero/QuestBotScene";
 import { useI18n } from "@/i18n/I18nProvider";
-import {
-  EASE_OUT,
-  checkDrawVariants,
-  heroContentVariants,
-  riseVariants,
-} from "@/components/hero/animation";
+import { heroContentVariants, riseVariants } from "@/components/hero/animation";
 
 export default function HeroImage() {
   const { dict } = useI18n();
@@ -22,11 +16,8 @@ export default function HeroImage() {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const imageY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, 54]);
-  const imageScale = useTransform(scrollYProgress, [0, 1], reduced ? [1, 1] : [1, 1.07]);
   const contentY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, -24]);
   const contentOpacity = useTransform(scrollYProgress, [0, 1], reduced ? [1, 1] : [1, 0.38]);
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], reduced ? [1, 1] : [1, 0]);
 
   return (
     <section
@@ -34,7 +25,15 @@ export default function HeroImage() {
       id="hero"
       className="cq-hero relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
-      <HeroBackdrop imageY={imageY} imageScale={imageScale} />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 78% at 47% 86%, color-mix(in srgb, var(--brand-petroleo) 30%, transparent), transparent 60%), radial-gradient(58% 46% at 47% 22%, color-mix(in srgb, var(--brand-celeste) 8%, transparent), transparent 70%)",
+        }}
+      />
+
       <HeroNav reduced={reduced} />
 
       <motion.div
@@ -42,55 +41,28 @@ export default function HeroImage() {
         initial={reduced ? false : "hidden"}
         animate="visible"
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-6 pb-[calc(max(4rem,env(safe-area-inset-bottom))+var(--curtain))] pt-28 sm:px-12 sm:pt-32 lg:px-16"
+        className="relative z-10 flex flex-1 flex-col"
       >
-        <RotatingHeadline reduced={reduced} />
-        <motion.p
+        <motion.div
           variants={riseVariants}
-          className="mt-5 max-w-[50ch] text-pretty text-[1.125rem] font-light leading-relaxed text-white/90"
+          className="flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10"
         >
-          {dict.hero.lead}
-        </motion.p>
-        <motion.div variants={riseVariants} className="mt-10">
+          <QuestBotScene reduced={reduced} />
+        </motion.div>
+
+        <motion.div
+          variants={riseVariants}
+          className="flex flex-col gap-8 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:flex-row sm:items-end sm:justify-between sm:gap-10 sm:px-6 lg:px-8 xl:px-10"
+        >
+          <p
+            style={{ textWrap: "balance" }}
+            className="max-w-[42ch] text-pretty text-[1.0625rem] font-light leading-relaxed text-white/85"
+          >
+            {dict.hero.lead}
+          </p>
+
           <HeroActions />
         </motion.div>
-        <motion.p
-          variants={riseVariants}
-          className="mt-10 flex items-center gap-2 border-t border-white/12 pt-6 text-[0.875rem] text-white/80"
-        >
-          <svg
-            aria-hidden
-            viewBox="0 0 16 16"
-            className="h-3.5 w-3.5 shrink-0 text-celeste"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <motion.path variants={checkDrawVariants} d="M2.5 8.5 6 12l7.5-8" />
-          </svg>
-          {dict.hero.coverageLine}
-        </motion.p>
-      </motion.div>
-
-      <motion.div
-        style={{ opacity: cueOpacity, bottom: "calc(var(--curtain) + 1.75rem)" }}
-        className="absolute left-1/2 z-10 hidden -translate-x-1/2 md:block"
-      >
-        <motion.a
-          href="#services"
-          aria-label={dict.hero.scrollAriaLabel}
-          initial={reduced ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE_OUT, delay: 1.4 }}
-          className="flex flex-col items-center gap-2.5"
-        >
-          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-white/55">
-            {dict.hero.scrollLabel}
-          </span>
-          <span aria-hidden className="cq-scroll-cue" />
-        </motion.a>
       </motion.div>
     </section>
   );

@@ -1,0 +1,507 @@
+/* Quest-logo mascot: rolls in as the "Q" ring, stands up, unfolds its base
+   and antenna, then types its greeting. Ported from a standalone animation
+   prototype — colors below are the mascot's own (sampled from the real
+   logo), independent of the site's celeste/petroleo tokens. */
+.stage {
+  --qb-cyan: #7fe9e4;
+
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.robot {
+  position: relative;
+}
+
+.svgScene {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.say {
+  position: absolute;
+  left: 55%;
+  top: 9%;
+  width: min(36%, 330px);
+  opacity: 0;
+  transform: translateY(8px) scale(0.94);
+  transform-origin: 0% 100%;
+}
+
+.sayBox {
+  position: relative;
+  padding: 13px 16px 14px;
+  border: 1.5px solid rgba(99, 182, 214, 0.5);
+  background: rgba(6, 29, 42, 0.8);
+  backdrop-filter: blur(6px);
+  border-radius: 15px 15px 15px 3px;
+  box-shadow: 0 20px 54px -22px rgba(48, 128, 162, 0.9);
+}
+
+.sayBox::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  bottom: -13px;
+  width: 15px;
+  height: 14px;
+  background: rgba(6, 29, 42, 0.8);
+  border-left: 1.5px solid rgba(99, 182, 214, 0.5);
+  border-bottom: 1.5px solid rgba(99, 182, 214, 0.5);
+  border-bottom-left-radius: 3px;
+  transform: skewX(-22deg);
+}
+
+.sayEyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--qb-cyan);
+  opacity: 0.72;
+  margin-bottom: 7px;
+}
+
+.sayLine {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(14px, 1.5vw, 20px);
+  line-height: 1.3;
+  min-height: 1.3em;
+  color: #e9f2f8;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.56em;
+  height: 1.05em;
+  margin-left: 0.05em;
+  vertical-align: -0.16em;
+  background: var(--qb-cyan);
+  opacity: 0;
+}
+
+/* ================= animation ================= */
+.spin,
+.bob,
+.core,
+.stem,
+.puff {
+  transform-box: fill-box;
+}
+.spin {
+  transform-origin: center;
+}
+.bob {
+  transform-origin: center bottom;
+}
+.core {
+  transform-origin: center;
+}
+.stem {
+  transform-origin: center bottom;
+}
+.puff {
+  transform-origin: center bottom;
+}
+
+/* resting default = the logo, fully assembled */
+.travel {
+  transform: translateX(560px);
+}
+.rise {
+  transform: translateY(-92.3px);
+}
+.cradle {
+  stroke-dasharray: 274;
+  stroke-dashoffset: 0;
+}
+.stem {
+  transform: scaleY(1);
+}
+.shadow {
+  opacity: 0.5;
+}
+.lens {
+  opacity: 0.9;
+}
+
+.robot.run .travel {
+  animation: rollIn 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both;
+}
+.robot.run .spin {
+  animation: rollSpin 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both;
+}
+.robot.run .core {
+  animation:
+    coreLean 2.1s cubic-bezier(0.16, 0.62, 0.22, 1) both,
+    coreScan 5s ease-in-out 3.1s infinite;
+}
+.robot.run .bob {
+  animation: settle 0.8s cubic-bezier(0.3, 1.35, 0.4, 1) 1.65s both;
+}
+.robot.run .rise {
+  animation: standUp 0.6s cubic-bezier(0.32, 1.24, 0.42, 1) 1.95s both;
+}
+.robot.run .cradle {
+  animation: deploy 0.62s cubic-bezier(0.3, 0.75, 0.25, 1) 2.18s both;
+}
+.robot.run .cradleDetail {
+  animation: detailIn 0.42s ease-out 2.62s both;
+}
+.robot.run .footlight {
+  animation:
+    tipOn 0.3s ease-out 2.78s both,
+    footBlink 2.8s steps(1, end) 3.4s infinite;
+}
+.robot.run .fr {
+  animation-delay: 2.78s, 4.1s;
+}
+.robot.run .stem {
+  animation: telescope 0.5s cubic-bezier(0.28, 1.5, 0.45, 1) 2.46s both;
+}
+.robot.run .idle {
+  animation: idle 3.6s ease-in-out 3s infinite;
+}
+.robot.run .shadow {
+  animation:
+    shadowRoll 1.75s cubic-bezier(0.16, 0.62, 0.22, 1) both,
+    shadowPlant 0.6s ease-out 2.2s forwards;
+}
+.robot.run .lens {
+  animation:
+    lensWake 0.45s ease-out 2.6s both,
+    lensPulse 3.6s ease-in-out 3.1s infinite;
+}
+.robot.run .tip {
+  animation:
+    tipOn 0.3s ease-out 2.9s both,
+    tipBlink 2.4s steps(1, end) 3.2s infinite;
+}
+.robot.run .pip {
+  animation: pipFade 2.6s ease-out both;
+}
+.robot.run .puff {
+  animation: puff 1s ease-out both;
+}
+.robot.run .p1 {
+  animation-delay: 0.28s;
+}
+.robot.run .p2 {
+  animation-delay: 0.7s;
+}
+.robot.run .p3 {
+  animation-delay: 1.14s;
+}
+.robot.run .say {
+  animation: pop 0.55s cubic-bezier(0.2, 1.5, 0.35, 1) 2.85s forwards;
+}
+.robot.run .caret {
+  animation: blink 1s step-end 3s infinite;
+}
+
+/* two exact laps: 942px of travel = 2 x circumference (471.24) */
+@keyframes rollIn {
+  0% {
+    transform: translateX(-382px);
+  }
+  84% {
+    transform: translateX(592px);
+  }
+  100% {
+    transform: translateX(560px);
+  }
+}
+@keyframes rollSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  84% {
+    transform: rotate(744deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
+}
+@keyframes coreLean {
+  0% {
+    transform: rotate(-13deg);
+  }
+  70% {
+    transform: rotate(-11deg);
+  }
+  86% {
+    transform: rotate(8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes coreScan {
+  0%,
+  72%,
+  100% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-8deg);
+  }
+  90% {
+    transform: rotate(7deg);
+  }
+}
+@keyframes settle {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  20% {
+    transform: translateY(0) scale(1.07, 0.9);
+  }
+  52% {
+    transform: translateY(-14px) scale(0.97, 1.04);
+  }
+  78% {
+    transform: translateY(0) scale(1.03, 0.96);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes standUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-92.3px);
+  }
+}
+@keyframes deploy {
+  0% {
+    stroke-dashoffset: 274;
+    opacity: 0.3;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@keyframes telescope {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+@keyframes detailIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes footBlink {
+  0%,
+  90% {
+    opacity: 1;
+  }
+  92%,
+  96% {
+    opacity: 0.2;
+  }
+  98% {
+    opacity: 1;
+  }
+}
+@keyframes idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes shadowRoll {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.65);
+  }
+  14% {
+    opacity: 0.5;
+  }
+  84% {
+    opacity: 0.46;
+    transform: scaleX(1.12);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scaleX(1);
+  }
+}
+@keyframes shadowPlant {
+  0% {
+    transform: scaleX(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scaleX(1.34);
+    opacity: 0.38;
+  }
+}
+@keyframes lensWake {
+  0% {
+    opacity: 0.12;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+@keyframes lensPulse {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes tipOn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes tipBlink {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  88%,
+  94% {
+    opacity: 0.25;
+  }
+  96% {
+    opacity: 1;
+  }
+}
+@keyframes pipFade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.28;
+  }
+}
+@keyframes puff {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  25% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.85) translateY(-14px);
+  }
+}
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .say {
+    left: 50%;
+    top: -4%;
+    width: min(80%, 320px);
+    transform: translate(-50%, 8px) scale(0.94);
+    transform-origin: 50% 100%;
+  }
+  .sayBox {
+    border-radius: 15px;
+  }
+  .sayBox::after {
+    left: 50%;
+    transform: translateX(-50%) rotate(-45deg);
+    border-radius: 0 0 3px 0;
+  }
+  .robot.run .say {
+    animation-name: popMobile;
+  }
+  @keyframes popMobile {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 10px) scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+  }
+}
+
+/* no motion: the logo already assembled, greeting already visible */
+@media (prefers-reduced-motion: reduce) {
+  .robot.run .travel,
+  .robot.run .spin,
+  .robot.run .core,
+  .robot.run .bob,
+  .robot.run .rise,
+  .robot.run .cradle,
+  .robot.run .stem,
+  .robot.run .idle,
+  .robot.run .shadow,
+  .robot.run .lens,
+  .robot.run .tip,
+  .robot.run .pip,
+  .robot.run .puff,
+  .robot.run .say,
+  .robot.run .caret,
+  .robot.run .cradleDetail,
+  .robot.run .footlight {
+    animation: none !important;
+  }
+  .say {
+    opacity: 1;
+    transform: none;
+  }
+  .puff {
+    opacity: 0;
+  }
+  .tip {
+    opacity: 1;
+  }
+  @media (max-width: 760px) {
+    .say {
+      transform: translateX(-50%);
+    }
+  }
+}

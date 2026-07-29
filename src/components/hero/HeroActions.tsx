@@ -16,7 +16,7 @@ export default function HeroActions() {
   } = useMagnetic<HTMLAnchorElement>(0.2, 3);
 
   return (
-    <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
+    <div className="flex items-center">
       <MotionLink
         ref={ref}
         href="/quote"
@@ -35,19 +35,6 @@ export default function HeroActions() {
           <Chevron />
         </span>
       </MotionLink>
-
-      <a
-        href="#services"
-        className="group/link relative hidden touch-manipulation text-[0.9375rem] font-medium text-white/70 transition-colors duration-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste sm:inline-flex"
-      >
-        <span className="inline-flex items-center gap-1.5">
-          {dict.hero.secondaryCta}
-          <span className="-translate-x-1 text-celeste opacity-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:translate-x-0 group-hover/link:opacity-100">
-            <Chevron />
-          </span>
-        </span>
-        <span aria-hidden className="absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-celeste transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:scale-x-100" />
-      </a>
     </div>
   );
 }
