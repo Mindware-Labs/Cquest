@@ -1,12 +1,23 @@
 /* ── Services carousel — the lifted sheet and its living backdrops ──────
    Consumed by src/components/services-carousel/. */
 
-/* The services surface: a lifted sheet (curtain overlap over the hero,
-   rounded shoulders, rim light, ambient field) on a fixed full-viewport
-   carousel stage. */
-.cq-carousel-sheet {
+/* ── The pinned track ────────────────────────────────────
+   The scroll budget for the carousel: SERVICES.length × 100dvh, set inline
+   by the component. It carries the curtain overlap over the hero (and the
+   matching scroll-margin, which SmoothScroll's anchor handler reads to land
+   `#services` correctly) because it is the element that owns the id.
+
+   It must NEVER get `overflow: hidden` — that would make it a scroll
+   container and the sticky stage inside would stop pinning. */
+.cq-carousel-track {
   margin-top: calc(-1 * var(--curtain));
   scroll-margin-top: calc(-1 * var(--curtain));
+}
+
+/* The services surface: a lifted sheet (rounded shoulders, rim light,
+   ambient field) on a full-viewport carousel stage, pinned to the top of
+   the viewport for the length of the track above. */
+.cq-carousel-sheet {
   border-radius: var(--curtain) var(--curtain) 0 0;
   box-shadow:
     0 -22px 44px -20px color-mix(in srgb, var(--ink) 55%, transparent),

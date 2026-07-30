@@ -30,12 +30,16 @@
 
   position: relative;
   width: 100%;
-  /* The scene is 1240×470 in user units (≈2.64:1) and scales off its width,
+  /* The scene is 1200×432 in user units (≈2.78:1) and scales off its width,
      so on a short viewport an unconstrained width pushes the headline out of
-     the fold. Capping width at 111vh keeps the mascot under ~42vh tall; the
-     cap only engages below roughly 1060px of viewport height, so on a normal
-     desktop it still renders at its full 1180px. */
-  max-width: min(1180px, 111vh);
+     the fold. Capping width at 139vh keeps the mascot under ~50vh tall; the
+     cap only engages below roughly 850px of viewport height, so on any normal
+     desktop it now renders at its full 1180px.
+
+     The box still reserves ~12% of its height below the floor line for the
+     shadow and the impact ring — down from ~19% before the trim — so what
+     empty space remains under the mascot is space those two actually use. */
+  max-width: min(1180px, 139vh);
   margin: 0 auto;
 }
 
@@ -118,10 +122,15 @@
   transition-duration: 90ms;
 }
 
+/* `top` is a percentage of the rendered SVG height, so it has to be restated
+   whenever the viewBox height changes or the bubble drifts relative to the
+   mascot. 9.8% of 432 units == the 9% of 470 units it sat at before the box
+   was trimmed: the bubble holds its exact position in the scene's own
+   coordinate space, and simply scales with everything else. */
 .say {
   position: absolute;
   left: 55%;
-  top: 9%;
+  top: 9.8%;
   width: min(36%, 330px);
   opacity: 0;
   transform: translateY(8px) scale(0.94);
@@ -629,7 +638,7 @@
 @media (max-width: 760px) {
   .say {
     left: 50%;
-    top: -4%;
+    top: -4.35%; /* same restatement as above: -4% of 470 in the new 432 box */
     width: min(80%, 320px);
     transform: translate(-50%, 8px) scale(0.94);
     transform-origin: 50% 100%;

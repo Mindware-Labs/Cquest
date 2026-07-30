@@ -189,9 +189,14 @@ export default function QuestBotScene({
         className={cx(styles.robot, runId > 0 && styles.run)}
         data-ambient={ambient ? "on" : "off"}
       >
+        {/* viewBox height trimmed from 470 to 432. The lowest thing the scene
+            ever draws is the ground flash at its widest — absolute y ≈ 410 —
+            so the old box carried 60 units of pure emptiness under the mascot
+            that the layout then had to sit around. 432 keeps ~22 units of
+            headroom. `.say` compensates via its `top` %; see the module CSS. */}
         <svg
           className={styles.svgScene}
-          viewBox="-40 0 1200 470"
+          viewBox="-40 0 1200 432"
           aria-hidden
           onClick={replay}
         >

@@ -152,10 +152,14 @@
 .cq-hero-h1 {
   font-family: var(--font-heading), sans-serif;
   font-weight: 500;
-  font-size: clamp(1.85rem, 4.4vw, 3.4rem);
-  line-height: 1.04;
+  /* Sized down from 3.4rem and given a wider measure: at the old cap the
+     headline was a narrow, very heavy column jammed against the left edge,
+     out of proportion with the mascot above it. A wider measure at a smaller
+     size still resolves to two balanced lines but sits calmer in the frame. */
+  font-size: clamp(1.8rem, 3.9vw, 3rem);
+  line-height: 1.06;
   letter-spacing: -0.02em;
-  max-width: 19ch;
+  max-width: 24ch;
   text-wrap: balance;
 }
 

@@ -107,20 +107,33 @@ export default function HeroImage() {
         animate="visible"
         className="relative z-10 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:px-6 lg:px-8 xl:px-10"
       >
-        <div className="grid items-end gap-x-12 gap-y-7 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <div>
-            <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
+        {/* The headline spans the full measure, and the row beneath it is
+            anchored at both ends — lead on the left, CTA on the right. Hanging
+            the CTA off the headline's own column instead left it stranded in
+            the far corner with nothing on the opposite side to balance the
+            weight of the type. */}
+        <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
 
-            <HeroHeadline text={dict.hero.headline} reduced={reduced} className="mt-6" />
+        <HeroHeadline text={dict.hero.headline} reduced={reduced} className="mt-6" />
 
-            <motion.p
-              variants={rise(BEAT.lead)}
-              style={{ textWrap: "balance" }}
-              className="mt-5 max-w-[42ch] text-pretty text-[1.0625rem] font-light leading-relaxed text-white/85"
-            >
-              {dict.hero.lead}
-            </motion.p>
-          </div>
+        {/* Negative on purpose. The headline's own line box already carries
+            ~28px below its last baseline — one full line of the lead — so zero
+            margin still reads as a full line break. Pulling back 8px claws
+            into that leading and lands at ~20px optically, ~10px between the
+            'y' descender and the lead's cap line. That descender clearance is
+            the hard floor: past roughly -8px the two start to touch.
+
+            The copy block is bottom-anchored — the scene above absorbs the
+            flex slack — so this gap sets how far the headline sits *down* the
+            frame, not how far the lead sits up. */}
+        <div className="-mt-2 grid items-end gap-x-12 gap-y-6 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <motion.p
+            variants={rise(BEAT.lead)}
+            style={{ textWrap: "balance" }}
+            className="max-w-[42ch] text-pretty text-[1.0625rem] font-light leading-relaxed text-white/85"
+          >
+            {dict.hero.lead}
+          </motion.p>
 
           <motion.div variants={rise(BEAT.cta, 14)}>
             <HeroActions />
