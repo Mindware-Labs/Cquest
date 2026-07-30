@@ -126,14 +126,23 @@ html[data-route-arrive] #main-content {
   }
 }
 
-/* Full-route handoff — the Hero CTA's left-to-right surface wipe, scaled up
-   to navigation. Two planes travel in the same direction, a translucent one a
-   beat ahead of the opaque one: on the way in the tint arrives first and ink
-   seals behind it; on the way out ink leaves first and the tint trails off
-   across the new page. Continuous left-to-right both ways, so the whole
-   navigation reads as one gesture rather than a door closing and reopening.
+/* Full-route handoff — ONE blade, ONE pass. It enters from the left, holds
+   only for as long as the route needs to arrive (two frames on a prefetched
+   hop), and carries straight on out the right: the wipe never reverses, so
+   what you see is a single sweep with a different page behind it. An earlier
+   version ran two staggered planes, and a second edge chasing the first read
+   as the curtain passing twice.
 
-   They translate rather than scaleX. Under the old scaleX the 1px light edge
+   Geometry, all in viewport units (the blade is `width: 120%`, so 100% of its
+   own width = 120vw):
+     parked   translateX(-118%) → ink at [-141.6, -21.6], fringe ends at 0
+     covered  translateX( -15%) → ink at [ -18.0, 102.0], viewport sealed
+     gone     translateX( 100%) → ink at [ 120.0, 240.0]
+   The two legs are 123.6vw and 138vw — near enough to equal that matched
+   durations keep the blade at one constant speed across the pause, which is
+   what makes the two legs read as a single gesture.
+
+   It translates rather than scaleX. Under the old scaleX the 1px light edge
    was scaled along with the plane — a fraction of a pixel wide for most of
    the wipe, so the detail never actually read. */
 .cq-route-curtain {
@@ -150,39 +159,13 @@ html[data-route-arrive] #main-content {
   pointer-events: auto;
 }
 
-.cq-route-curtain-veil,
 .cq-route-curtain-panel {
   position: absolute;
-  inset: 0;
-  /* Parked to the left, and — critically — with no transition in the idle
-     state, so returning to idle re-arms the planes on the left instantly
-     instead of sweeping them backwards across the screen. */
-  transform: translate3d(-101%, 0, 0);
-  transition: transform 0s;
-}
-
-.cq-route-curtain:not([data-phase="idle"]) .cq-route-curtain-veil,
-.cq-route-curtain:not([data-phase="idle"]) .cq-route-curtain-panel {
-  will-change: transform;
-}
-
-/* Densest at the leading (right) end, thinning to a celeste haze at the
-   trailing end. That way the band left behind the departing ink — the only
-   part of the veil the incoming page is ever seen through — is the light one,
-   and the page emerges through a haze that lifts rather than a shadow that
-   drags. The 1px edge below carries the light out in front. */
-.cq-route-curtain-veil {
-  background: linear-gradient(
-    92deg,
-    color-mix(in srgb, var(--brand-celeste) 24%, transparent) 0%,
-    color-mix(in srgb, var(--brand-petroleo) 44%, transparent) 46%,
-    color-mix(in srgb, var(--ink) 64%, transparent) 100%
-  );
-}
-
-/* Ink, but not a flat black rectangle — a petroleo bloom trailing the wipe
-   keeps the covered state feeling like a lit surface. */
-.cq-route-curtain-panel {
+  inset-block: 0;
+  left: 0;
+  width: 120%;
+  /* Ink, but not a flat black rectangle — a petroleo bloom behind the leading
+     edge keeps the covered state feeling like a lit surface. */
   background:
     radial-gradient(
       130% 96% at 8% 50%,
@@ -190,83 +173,73 @@ html[data-route-arrive] #main-content {
       transparent 64%
     ),
     var(--ink);
+  /* Parked off to the left, and — critically — with no transition in the idle
+     state, so returning to idle re-arms the blade instantly instead of
+     sweeping it backwards across the screen. */
+  transform: translate3d(-118%, 0, 0);
+  transition: transform 0s;
 }
 
-/* Leading edge (::after, just outside the right side) and trailing edge
-   (::before, just outside the left). Each is only ever on screen in its own
-   phase: the right edge leads the cover and has already left the viewport
-   during the reveal, the left edge does the reverse. */
-.cq-route-curtain-veil::after,
-.cq-route-curtain-panel::after,
-.cq-route-curtain-veil::before,
+.cq-route-curtain:not([data-phase="idle"]) .cq-route-curtain-panel {
+  will-change: transform;
+}
+
+/* Leading fringe — a hard 1px of light against the ink, then a celeste haze
+   thinning out ahead of it. This is what the old second plane was for; folded
+   into the blade itself it gives the same depth without a second edge. It sits
+   outside the ink's right side, so it is off screen for the whole reveal. */
+.cq-route-curtain-panel::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 100%;
+  width: 18%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand-celeste) 68%, white) 0 1px,
+    color-mix(in srgb, var(--brand-petroleo) 46%, transparent) 1px,
+    color-mix(in srgb, var(--brand-celeste) 14%, transparent) 42%,
+    transparent 100%
+  );
+}
+
+/* Trailing wake — the mirror image, outside the ink's left side and therefore
+   only ever on screen during the reveal, where it drags a thinning celeste
+   haze off the newly uncovered page. Softer than the leading fringe: this one
+   is the follow-through, not the announcement. */
 .cq-route-curtain-panel::before {
   content: "";
   position: absolute;
   inset-block: 0;
-  width: 1px;
-}
-
-.cq-route-curtain-veil::after,
-.cq-route-curtain-panel::after {
-  left: 100%;
-}
-
-.cq-route-curtain-veil::before,
-.cq-route-curtain-panel::before {
   right: 100%;
+  width: 14%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--brand-celeste) 12%, transparent) 58%,
+    color-mix(in srgb, var(--brand-petroleo) 34%, transparent) calc(100% - 1px),
+    color-mix(in srgb, var(--brand-celeste) 62%, white) calc(100% - 1px)
+  );
 }
 
-/* The veil's leading edge is the brightest thing in the whole handoff — it is
-   the light that announces the wipe, running ahead of everything else. */
-.cq-route-curtain-veil::after {
-  background: color-mix(in srgb, var(--brand-celeste) 40%, white);
-  box-shadow: 0 0 46px 6px color-mix(in srgb, var(--brand-celeste) 18%, transparent);
-}
-
-/* The ink panel's two edges: a crisp seam against whatever it is covering on
-   the way in, and the line that peels off the new page on the way out. */
-.cq-route-curtain-panel::after,
-.cq-route-curtain-panel::before {
-  background: color-mix(in srgb, var(--brand-celeste) 72%, white);
-  box-shadow: 0 0 30px 3px color-mix(in srgb, var(--brand-celeste) 26%, transparent);
-}
-
-/* The veil's trailing edge is the last thing to leave, so it is barely there —
-   two bright lines chasing each other off screen would read as a glitch. */
-.cq-route-curtain-veil::before {
-  background: color-mix(in srgb, var(--brand-celeste) 26%, transparent);
-  box-shadow: 0 0 36px 4px color-mix(in srgb, var(--brand-celeste) 9%, transparent);
-}
-
-/* Cover — quick and decisive, ease-out so it answers the click on the first
-   frame. Both planes land together at 500ms; the veil simply starts earlier
-   so its edge stays ahead of the ink the whole way. */
-.cq-route-curtain[data-phase="covering"] .cq-route-curtain-veil {
-  transform: translate3d(0, 0, 0);
-  transition: transform 500ms var(--ease-out);
-}
-
+/* The two legs of the single pass. The curves are halves of one ease-in-out:
+   the entry moves on the first frame and keeps building, ending fast; the exit
+   picks up at that same speed and unwinds long. Symmetric ease-out curves on
+   both legs would instead decelerate to a standstill in the middle, which is
+   exactly what would make one pass look like two. */
 .cq-route-curtain[data-phase="covering"] .cq-route-curtain-panel {
-  transform: translate3d(0, 0, 0);
-  transition: transform 430ms var(--ease-out) 70ms;
+  transform: translate3d(-15%, 0, 0);
+  transition: transform 520ms cubic-bezier(0.3, 0.12, 0.72, 0.38);
 }
 
-.cq-route-curtain[data-phase="covered"] .cq-route-curtain-veil,
 .cq-route-curtain[data-phase="covered"] .cq-route-curtain-panel {
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(-15%, 0, 0);
   transition: transform 0s;
 }
 
-/* Reveal — longer and expo-eased, so the new page is uncovered fast and the
-   tail of the motion is the part that lingers. */
 .cq-route-curtain[data-phase="revealing"] .cq-route-curtain-panel {
-  transform: translate3d(101%, 0, 0);
-  transition: transform 600ms var(--ease-out-expo);
-}
-
-.cq-route-curtain[data-phase="revealing"] .cq-route-curtain-veil {
-  transform: translate3d(101%, 0, 0);
-  transition: transform 620ms var(--ease-out-expo) 70ms;
+  transform: translate3d(100%, 0, 0);
+  transition: transform 640ms cubic-bezier(0.2, 0.62, 0.16, 1);
 }
 
 /* Shown only if the route is genuinely slow to arrive. The 380ms delay means

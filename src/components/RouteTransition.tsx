@@ -41,6 +41,22 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const beginCover = useCallback(() => {
+    // Freeze the outgoing page for the whole handoff. Lenis's own
+    // `stopInertiaOnNavigate` only hooks Next's <Link>, and LocalizedLink
+    // preventDefaults and pushes programmatically — so without this the
+    // click's momentum survives the route change and drags the new page away
+    // from the top right after the scroll reset.
+    window.__lenis?.stop();
+    setPhase("covering");
+
+    clearSafetyTimer();
+    safetyTimer.current = window.setTimeout(() => {
+      pendingHref.current = null;
+      setPhase("revealing");
+    }, 8000);
+  }, [clearSafetyTimer]);
+
   const navigate = useCallback(
     (href: string) => {
       const target = new URL(href, window.location.href);
@@ -51,28 +67,21 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
         return;
       }
 
-      // A click that lands mid-handoff is honoured rather than swallowed: the
-      // newest destination always replaces the pending one. While the curtain
-      // is still closing (or closed) that is all there is to do; while it is
-      // opening again the planes reverse from wherever they are and close.
+      // A click that lands mid-handoff is honoured rather than swallowed — the
+      // newest destination always wins — but it never turns the blade around.
+      // Mid-cover it is already travelling the right way and the covered phase
+      // will push whatever is pending by then; mid-reveal it finishes leaving
+      // and the queue below re-enters it from the left.
       pendingHref.current = relativeHref;
-      if (phase === "covering" || phase === "covered") return;
+      if (phase === "covered") {
+        router.push(relativeHref, { scroll: false });
+        return;
+      }
+      if (phase !== "idle") return;
 
-      // Freeze the outgoing page for the whole handoff. Lenis's own
-      // `stopInertiaOnNavigate` only hooks Next's <Link>, and LocalizedLink
-      // preventDefaults and pushes programmatically — so without this the
-      // click's momentum survives the route change and drags the new page
-      // away from the top right after the scroll reset.
-      window.__lenis?.stop();
-      setPhase("covering");
-
-      clearSafetyTimer();
-      safetyTimer.current = window.setTimeout(() => {
-        pendingHref.current = null;
-        setPhase("revealing");
-      }, 8000);
+      beginCover();
     },
-    [clearSafetyTimer, phase, router],
+    [beginCover, phase, router],
   );
 
   const resetScroll = useCallback((href: string) => {
@@ -146,6 +155,24 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     router.push(pendingHref.current, { scroll: false });
   }, [phase, router]);
 
+  // A destination queued by a click that arrived mid-reveal. The blade has now
+  // finished leaving and is parked back on the left, so the next pass can
+  // start. Two frames: the parked transform has to be committed on its own
+  // before the covering transition begins, or the blade animates from wherever
+  // it happened to be rather than from the left.
+  useEffect(() => {
+    if (phase !== "idle" || !pendingHref.current) return;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(beginCover);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [beginCover, phase]);
+
   // Scroll is handed back the moment the reveal starts, not when it ends: the
   // new page is committed and sitting at the top by then, so a wheel event
   // during the wipe is intentional rather than leftover momentum.
@@ -163,19 +190,19 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     [clearSafetyTimer],
   );
 
-  // Both planes transition, and both bubble their transitionend up here, so
-  // each phase advances on the layer that finishes last: the ink panel seals
-  // the cover, the trailing veil closes the reveal.
+  // The blade is the only thing that transitions; its transitionend bubbles up
+  // here and drives both legs of the pass. `covering` ending with nothing
+  // pending (the safety timeout fired) skips straight to sweeping back out.
   const onCurtainTransitionEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
     if (event.propertyName !== "transform") return;
-    const layer = (event.target as HTMLElement).dataset?.curtainLayer;
+    if (!(event.target as HTMLElement).classList.contains("cq-route-curtain-panel")) return;
 
-    if (phase === "covering" && layer === "panel") {
+    if (phase === "covering") {
       setPhase(pendingHref.current ? "covered" : "revealing");
       return;
     }
 
-    if (phase === "revealing" && layer === "veil") setPhase("idle");
+    if (phase === "revealing") setPhase("idle");
   };
 
   return (
@@ -187,8 +214,7 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
         data-phase={phase}
         onTransitionEnd={onCurtainTransitionEnd}
       >
-        <span className="cq-route-curtain-veil" data-curtain-layer="veil" />
-        <span className="cq-route-curtain-panel" data-curtain-layer="panel" />
+        <span className="cq-route-curtain-panel" />
         <span className="cq-route-curtain-mark" />
       </div>
     </RouteTransitionContext.Provider>
