@@ -1,64 +1,38 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useRef, type CSSProperties } from "react";
+import { useReducedMotion } from "motion/react";
 import container from "@/components/services/Container.module.css";
-import { useMagnetic } from "@/hooks/useMagnetic";
+import { useIsomorphicLayoutEffect } from "@/components/about/motion";
+import QuestCta from "@/components/ui/QuestCta";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { CQ_EASE, gsap } from "@/lib/gsap";
-import { useIsomorphicLayoutEffect } from "@/components/about/motion";
-import {
-  CONTACT,
-  COPY,
-  getCompanyLinks,
-  getSectorLinks,
-  getServiceLinks,
-  type FooterLink,
-} from "./data";
+import { BRAND_LINE, CONTACT, COPY, getBaseLinks, getServiceRows } from "./data";
 import styles from "./SiteFooter.module.css";
 
-// Same wrapper Navbar uses for its "Contáctanos" CTA — motion.create() on
-// LocalizedLink rather than a plain motion.a, so the button keeps locale
-// resolution and next/link prefetching while gaining motion props.
-const MotionLink = motion.create(LocalizedLink);
-
 /* ── Site footer ──────────────────────────────────────────
-   A full closing footer, replacing the three near-identical 3-line footers
-   duplicated under each app/[lang]/services/<service>/components/Footer.tsx
-   (logo, tagline, one back-link). Structurally this is the familiar big-agency close —
-   oversized wordmark, link columns, contact block, legal rule — which is the
-   shape hirehoratio.com uses too; the material is entirely ours: About's dark
-   band continued one shade deeper, celeste hairlines, Josefin Sans.
+   The hero opens the site as a lit dark stage; the services sheet is lifted
+   white over it. This closes the loop on the same stage — the hero's own
+   field gradient, its grain tile, its accent hairline, its button — so the
+   page reads as bottoming out where it began rather than ending on an
+   unrelated dark band.
 
-   Deliberate departures from that reference:
-     • No photography or decorative imagery — the only image is the brand
-       logo, kept near its intrinsic 173×128 so it never upscales.
-     • No Legal column. Privacy/Terms routes do not exist in this app yet, and
-       a footer full of 404s costs more trust than it buys.
-     • Sectors resolve to About's #sectors block, not to five invented routes.
-     • No "back to top" control: the browser and Lenis already own that
-       gesture, and the closing row reads better as a single centred line.
+   What it dropped, and why:
+     • The Sectors column. Its five labels all resolved to the same
+       /#sectors anchor: link-shaped decoration, not navigation.
+     • The Company column. Four of its links now sit inline in the closing
+       row, where they cost one line instead of a quarter of the footer.
+     • The pill CTA with its lone darkening wash. It is the hero's button
+       now, shared from ui/QuestCta rather than re-approximated here.
+     • The oversized logo. The closing statement carries the brand weight;
+       the wordmark sits above it at signature scale.
 
-   Why dark: About closes on ValuesSection's `--ab-deep` band. A light footer
-   there would read as a seam; this goes one step deeper than Values instead,
-   so the page reads as bottoming out rather than restarting. */
-
-function LinkColumn({ heading, links }: { heading: string; links: FooterLink[] }) {
-  return (
-    <div className={styles.column}>
-      <h3 className={styles.columnHeading}>{heading}</h3>
-      <ul className={styles.columnList}>
-        {links.map((link) => (
-          <li key={`${link.label}-${link.href}`}>
-            <LocalizedLink href={link.href}>{link.label}</LocalizedLink>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+   Structurally: one statement + one action on the left, a directory of the
+   three business lines and the three ways to reach us on the right, and a
+   single closing rule. Rows and hairlines rather than cards — the three
+   business lines are a list, and boxing them would say otherwise. */
 
 export default function SiteFooter() {
   const { lang, dict } = useI18n();
@@ -66,40 +40,60 @@ export default function SiteFooter() {
   const reduced = useReducedMotion() ?? false;
 
   const footerRef = useRef<HTMLElement>(null);
-  const brandRef = useRef<HTMLDivElement>(null);
+  const ruleRef = useRef<HTMLSpanElement>(null);
+  const statementRef = useRef<HTMLHeadingElement>(null);
 
-  /* The CTA is the navbar's "Contáctanos" button, verbatim: same magnetic
-     pull, same spring, same cq-rect-cta type treatment. Two identical-intent
-     buttons on one page that hover differently is the kind of detail that
-     reads as sloppy without anyone being able to say why. useMagnetic
-     already no-ops under reduced motion, so no extra gate is needed here. */
-  const {
-    ref: ctaRef,
-    style: ctaStyle,
-    onMouseEnter,
-    onMouseMove,
-    onMouseLeave,
-  } = useMagnetic<HTMLAnchorElement>(0.25, 2);
+  /* The footer's one orchestrated beat, and the hero's gesture verbatim: the
+     rule draws along its length, then the statement's words lift from behind
+     their own clip edges, then the directory sharpens out of blur behind it.
+     Three cues on one trigger, not three independent reveals — a page's last
+     block should land, not perform.
 
-  /* The logo wipes up from its own baseline as the footer enters — the one
-     motion beat down here, borrowing About's CURTAIN gesture so the close
-     speaks the same language as the sections above it. Everything else in
-     the footer is static on purpose: a page's last block should settle, not
-     perform. */
+     All GSAP `fromTo`, and no `whileInView` variants, on purpose: fromTo
+     writes the from-state in JS before paint (hence the layout effect), so a
+     run where the script never executes ships a fully visible footer rather
+     than a blank one. Variants would have serialised opacity: 0 into the
+     HTML and depended on hydration to undo it. */
   useIsomorphicLayoutEffect(() => {
-    if (reduced || !brandRef.current) return;
+    if (reduced || !statementRef.current) return;
 
     const ctx = gsap.context(() => {
+      const scrollTrigger = { trigger: footerRef.current, start: "top 88%", once: true };
+
       gsap.fromTo(
-        brandRef.current,
-        { yPercent: 12, autoAlpha: 0, clipPath: "inset(0% 0% 100% 0%)" },
+        ruleRef.current,
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.7, ease: CQ_EASE, scrollTrigger },
+      );
+
+      gsap.fromTo(
+        statementRef.current!.querySelectorAll(`.${styles.word} > span`),
+        { yPercent: 118 },
         {
           yPercent: 0,
-          autoAlpha: 1,
-          clipPath: "inset(0% 0% 0% 0%)",
-          duration: 1.1,
+          duration: 1.05,
           ease: CQ_EASE,
-          scrollTrigger: { trigger: footerRef.current, start: "top 92%", once: true },
+          stagger: 0.055,
+          delay: 0.12,
+          scrollTrigger,
+        },
+      );
+
+      /* The services/services motion language's `softRiseVariants`, in GSAP:
+         opacity plus a focus-pull out of blur, no y-rise. The two blocks own
+         CSS hover transitions on their rows, and presence — never a flat
+         fade — is how everything else on this site arrives. */
+      gsap.fromTo(
+        footerRef.current!.querySelectorAll(`.${styles.block}`),
+        { autoAlpha: 0, filter: "blur(10px)" },
+        {
+          autoAlpha: 1,
+          filter: "blur(0px)",
+          duration: 0.85,
+          ease: CQ_EASE,
+          stagger: 0.12,
+          delay: 0.26,
+          scrollTrigger,
         },
       );
     }, footerRef);
@@ -108,21 +102,35 @@ export default function SiteFooter() {
   }, [reduced]);
 
   const year = new Date().getFullYear();
+  const services = getServiceRows(lang);
 
   return (
     <footer ref={footerRef} className={styles.footer}>
-      {/* A single celeste bloom behind the wordmark — the same one light
-          source About uses, seen once more on the way out. */}
-      <span aria-hidden className={styles.footerGlow} />
+      {/* The hero's field, reprised: static grain over the gradient, a corner
+          falloff so it reads as a lit stage rather than a flat rectangle of
+          colour, and one celeste bloom in the corner that carries the
+          statement — the same single light source, seen once more on the way
+          out. */}
+      <span aria-hidden className={styles.glow} />
+      <span aria-hidden className={`cq-field-grain ${styles.grain}`} />
+      <span aria-hidden className={styles.vignette} />
 
       <div className={`${container.container} ${styles.inner}`}>
-        <div className={styles.top}>
-          <div ref={brandRef} className={styles.brand}>
-            {/* Rendered close to the asset's intrinsic 173×128 rather than
-                blown up to display size — the reason the wordmark isn't set
-                as giant type here anymore is the same reason it can't be a
-                giant PNG: at that scale the logo would be upscaled mush. */}
-            <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className={styles.brandLink}>
+        <div className={styles.close}>
+          <div className={styles.statementBlock}>
+            <LocalizedLink
+              href="/"
+              aria-label={dict.nav.homeLinkAriaLabel}
+              className={styles.brandLink}
+            >
+              {/* Height-constrained, width auto. logo.png is 173×128, so
+                  128 CSS px is the asset's ceiling; at 2.25rem it has pixels
+                  to spare on any display. Whitened with the same
+                  `brightness(0) invert(1)` pair Navbar and HeroNav use on
+                  this exact PNG — brightness(0) crushes every colour to
+                  black, invert(1) flips that to pure white, which is why it
+                  works regardless of the logo's own colours and why the
+                  order matters. */}
               <Image
                 src="/logo.png"
                 alt="Center Quest"
@@ -131,72 +139,117 @@ export default function SiteFooter() {
                 className={styles.brandLogo}
               />
             </LocalizedLink>
-            <p className={styles.tagline}>{dict.footer.tagline}</p>
+
+            <span aria-hidden ref={ruleRef} className={`cq-hero-rule ${styles.rule}`} />
+
+            {/* Two deliberate lines, each word in its own clipping box. The
+                padding/negative-margin pair on .word gives descenders
+                somewhere to live so the mask never shaves a "p" or a "y". */}
+            <h2 ref={statementRef} className={styles.statement}>
+              {BRAND_LINE[lang].map((line, lineIndex) => (
+                <span key={line} className={styles.statementLine}>
+                  {line.split(" ").map((word, wordIndex) => (
+                    // The space is a sibling of the clipping box, never inside it:
+                    // a trailing space within an `overflow: hidden` inline-block is
+                    // collapsed away, and a non-breaking one would stop the
+                    // statement wrapping at all on a narrow screen.
+                    <span key={`${lineIndex}-${wordIndex}-${word}`}>
+                      <span className={styles.word}>
+                        <span>{word}</span>
+                      </span>{" "}
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </h2>
+
+            <div className={styles.ctaRow}>
+              <QuestCta href="/quote" label={t.cta} strength={0.25} maxDistance={2} />
+            </div>
           </div>
 
-          <div className={styles.ctaCard}>
-            <p className={styles.ctaLead}>{t.ctaLead}</p>
-            <MotionLink
-              ref={ctaRef}
-              href="/quote"
-              onMouseEnter={onMouseEnter}
-              onMouseMove={onMouseMove}
-              onMouseLeave={onMouseLeave}
-              style={ctaStyle}
-              whileHover={{ scale: 1.045 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 420, damping: 26 }}
-              className={`cq-rect-cta ${styles.ctaLink}`}
-            >
-              {/* The darkening wash on hover, same as the navbar's — a
-                  separate layer rather than a background-color change, so it
-                  can't fight the magnetic transform for the same property. */}
-              <span aria-hidden className={styles.ctaWash} />
-              <span className={styles.ctaLabel}>{t.cta}</span>
-            </MotionLink>
+          <div className={styles.directory}>
+            <nav className={styles.block} aria-label={t.headings.services}>
+              <h3 className={styles.blockHeading}>{t.headings.services}</h3>
+              <ul className={styles.serviceList}>
+                {services.map((service) => (
+                  <li key={service.id}>
+                    <LocalizedLink
+                      href={service.href}
+                      className={styles.serviceRow}
+                      style={{ "--svc": service.accent } as CSSProperties}
+                    >
+                      <span className={styles.serviceName}>{service.label}</span>
+                      <span className={styles.serviceLead}>{service.lead}</span>
+                      <span aria-hidden className={styles.serviceChevron}>
+                        <Chevron />
+                      </span>
+                    </LocalizedLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className={styles.block}>
+              <h3 className={styles.blockHeading}>{t.headings.contact}</h3>
+              {/* A description list, not a link list: these are labelled
+                  facts, and only two of the three are actionable. */}
+              <dl className={styles.contactList}>
+                <dt>{t.phoneLabel}</dt>
+                <dd>
+                  <a href={`tel:${CONTACT.phoneHref}`}>{CONTACT.phone}</a>
+                </dd>
+                <dt>{t.emailLabel}</dt>
+                <dd>
+                  <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+                </dd>
+                <dt>{t.locationLabel}</dt>
+                {/* <address> is the semantic element for the contact details
+                    of its nearest section — screen readers announce it as
+                    such. Its browser default is italic, reset in the
+                    stylesheet. */}
+                <dd>
+                  <address className={styles.address}>
+                    {CONTACT.street}
+                    <br />
+                    {CONTACT.city}, {CONTACT.country[lang]}
+                  </address>
+                </dd>
+              </dl>
+            </div>
           </div>
         </div>
 
-        <nav className={styles.columns} aria-label={t.columns.company}>
-          <LinkColumn heading={t.columns.company} links={getCompanyLinks(lang)} />
-          <LinkColumn heading={t.columns.services} links={getServiceLinks(lang)} />
-          <LinkColumn heading={t.columns.sectors} links={getSectorLinks(lang)} />
-
-          <div className={styles.column}>
-            <h3 className={styles.columnHeading}>{t.columns.contact}</h3>
-            {/* A description list, not a link list: these are labelled facts
-                (phone, email, location), and only two of the three are
-                actionable. */}
-            <dl className={styles.contactList}>
-              <dt>{t.phoneLabel}</dt>
-              <dd>
-                <a href={`tel:${CONTACT.phoneHref}`}>{CONTACT.phone}</a>
-              </dd>
-              <dt>{t.emailLabel}</dt>
-              <dd>
-                <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-              </dd>
-              <dt>{t.locationLabel}</dt>
-              {/* <address> is the semantic element for contact details of its
-                  nearest section — screen readers announce it as such. Its
-                  browser default is italic, reset in the stylesheet. */}
-              <dd>
-                <address className={styles.address}>
-                  {CONTACT.street}
-                  <br />
-                  {CONTACT.city}, {CONTACT.country[lang]}
-                </address>
-              </dd>
-            </dl>
-          </div>
-        </nav>
-
-        <div className={styles.legal}>
-          <p>
+        <div className={styles.base}>
+          <nav className={styles.baseNav} aria-label={t.navAriaLabel}>
+            {getBaseLinks(lang).map((link) => (
+              <LocalizedLink key={link.href} href={link.href}>
+                {link.label}
+              </LocalizedLink>
+            ))}
+          </nav>
+          <p className={styles.copyright}>
             © {year} Center Quest. {t.rights}
           </p>
         </div>
       </div>
     </footer>
+  );
+}
+
+/* The hero CTA's glyph, at readout scale — the site has one chevron. */
+function Chevron() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 3.5 10.5 8 6 12.5" />
+    </svg>
   );
 }

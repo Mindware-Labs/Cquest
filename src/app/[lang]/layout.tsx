@@ -4,7 +4,7 @@ import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import RouteTransition from "@/components/RouteTransition";
 import SiteFooter from "@/components/footer/SiteFooter";
-import { CONTACT } from "@/components/footer/data";
+import { CONTACT, brandLine } from "@/components/footer/data";
 import SmoothScroll from "@/components/SmoothScroll";
 import { locales, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/getDictionary";
@@ -57,9 +57,13 @@ const SITE_TITLE: Record<Locale, string> = {
   es: "Center Quest — Call Center, Operaciones y Desarrollo de Sistemas",
 };
 
+// Composed from BRAND_LINE rather than restating it: the footer now sets the
+// same sentence as its closing statement, and opengraph-image wants it
+// without the brand prefix (which is why it used to strip that prefix back
+// off with a regex). One source, three surfaces.
 export const OG_TITLE: Record<Locale, string> = {
-  en: "Center Quest — We power operations. You drive growth.",
-  es: "Center Quest — Nosotros impulsamos las operaciones. Tú impulsas el crecimiento.",
+  en: `Center Quest — ${brandLine("en")}`,
+  es: `Center Quest — ${brandLine("es")}`,
 };
 
 // Paints the mobile browser chrome in the hero's ink so the first screen

@@ -1,47 +1,97 @@
-/* ── Footer palette ───────────────────────────────────────
-   Locally scoped rather than reaching for About's `--ab-*` tokens: those are
-   declared on .aboutSection, so they simply do not resolve out here on a
-   service page. Same source values, re-declared where this component can own
-   them — and deliberately one shade DEEPER than About's --ab-deep, so the
-   page reads as bottoming out instead of repeating a band. */
+/* ── Footer — the stage, closed ───────────────────────────
+   Tokens are declared locally rather than reaching for About's `--ab-*`:
+   those are scoped to .aboutSection and simply do not resolve out here on a
+   service page.
+
+   Every alpha below was checked against the DARKEST point of the field
+   (#071116, the gradient's top stop) rather than its average, and the
+   weakest of them still clears 6:1 — comfortably past AA's 4.5:1 floor for
+   the small sizes they are used at. Re-check with
+   webaim.org/resources/contrastchecker if any of them drops.
+
+   The accent each service row lights up in comes from that service's `glow`,
+   never its `color`: the carousel's #3f738d / #176c79 are tuned for a
+   near-white sheet and would land near 2:1 on this ink. */
 .footer {
-  --ft-deep: color-mix(in srgb, var(--ink) 92%, var(--brand-petroleo));
-  --ft-celeste: var(--brand-celeste);
-  --ft-rule: rgba(255, 255, 255, 0.14);
+  --ft-rule: rgba(255, 255, 255, 0.11);
   --ft-text: rgba(255, 255, 255, 0.72);
-  --ft-text-strong: rgba(255, 255, 255, 0.94);
+  --ft-text-strong: rgba(255, 255, 255, 0.96);
+  --ft-dim: rgba(255, 255, 255, 0.62);
+  --ft-label: rgba(255, 255, 255, 0.55);
 
   position: relative;
+  /* `clip` not `hidden`: it contains the bloom without turning the footer
+     into a scroll container. */
   overflow: clip;
-  background: var(--ft-deep);
   color: var(--ft-text);
-  padding-block: clamp(2.25rem, 4.5vw, 3.25rem) clamp(1rem, 2vw, 1.35rem);
+  /* The hero's own field recipe (styles/site.css .cq-hero-field), verbatim —
+     a petroleo wash raking across a near-black vertical gradient. The page
+     closes on the surface it opened with. */
+  background:
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--brand-petroleo) 8%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(180deg, #071116 0%, #0a171e 54%, #081116 100%);
+  padding-block: clamp(3rem, 6.5vw, 5.5rem) clamp(1.1rem, 2.2vw, 1.6rem);
 }
 
-/* Hairline lid: the seam against whatever section ends above is drawn on
-   purpose as a lit edge rather than left as an accidental colour change. */
+/* The lifted sheet's shoulder light, inverted for a dark surface.
+   .cq-carousel-sheet catches a 1.5px white rim and a celeste inner glow
+   along its top edge; this catches the same light at the strength a dark
+   field can carry.
+
+   No rounded shoulders to go with it, though: the footer is the last
+   element on the page, so a top radius would expose the light body
+   background (#f8f7f4) at both corners. */
 .footer::before {
   content: "";
   position: absolute;
   inset-inline: 0;
   top: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--ft-celeste), transparent);
-  opacity: 0.45;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--brand-celeste) 65%, transparent) 22%,
+    color-mix(in srgb, var(--brand-celeste) 24%, transparent) 78%,
+    transparent
+  );
 }
 
-.footerGlow {
+/* One light source, in the corner that carries the statement — the same
+   rule the hero's vignette follows ("weighted low and left; that corner
+   carries the headline, and it is the one part of the frame that must stay
+   clean"), mirrored to the top for a block that is read downward. */
+.glow {
   position: absolute;
-  top: -10rem;
-  left: 50%;
-  width: min(58rem, 130%);
-  height: 24rem;
-  transform: translateX(-50%);
+  top: -13rem;
+  left: -8rem;
+  width: min(50rem, 125%);
+  height: 28rem;
   pointer-events: none;
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--ft-celeste) 14%, transparent),
-    transparent 70%
+    color-mix(in srgb, var(--brand-celeste) 15%, transparent),
+    transparent 72%
+  );
+}
+
+.grain {
+  z-index: 0;
+}
+
+/* Corner falloff, so the block reads as a lit stage rather than a flat
+   rectangle of colour. Static: one paint, no per-frame cost. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    124% 96% at 18% 8%,
+    transparent 34%,
+    color-mix(in srgb, #000 52%, transparent) 100%
   );
 }
 
@@ -50,20 +100,17 @@
   z-index: 1;
 }
 
-/* ── Top: wordmark + CTA ───────────────────────────────── */
-.top {
+/* ── The close ─────────────────────────────────────────── */
+.close {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr);
-  gap: clamp(1.5rem, 4vw, 3rem);
-  align-items: end;
-  padding-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
-  border-bottom: 1px solid var(--ft-rule);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.5fr);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
 }
 
-.brand {
+.statementBlock {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
   align-items: flex-start;
 }
 
@@ -75,165 +122,174 @@
   align-items: center;
 }
 
-/* Height-constrained, width auto. 4rem is not a taste call, it is the
-   asset's ceiling: logo.png is 173×128, so 128 CSS px is all the height it
-   has. On a 2× display a 4rem (64px) box already consumes every one of those
-   128 physical pixels — anything larger starts upscaling and the edges go
-   soft. Raising this further needs a bigger asset or an SVG, not a bigger
-   number.
-
-   White treatment via filter rather than a second asset: there is no white
-   logo file in public/, and Navbar and HeroNav already solve the same
-   dark-surface problem the same way (`brightness(0) invert(1)`) on this
-   exact PNG. `brightness(0)` first crushes every colour to black, then
-   `invert(1)` flips that to pure white — which is why it works regardless of
-   what colours the logo actually contains, and why the order matters. */
+/* Height-constrained, width auto. logo.png is 173×128, so 128 CSS px is the
+   asset's hard ceiling — at 2.25rem (36px) it still has pixels to spare on a
+   2× display. Raising this past 4rem needs a bigger asset or an SVG, not a
+   bigger number. Down here it only has to identify the brand; the statement
+   below carries the weight. */
 .brandLogo {
   width: auto;
-  height: 4rem;
+  height: 2.25rem;
   filter: brightness(0) invert(1);
 }
 
-.tagline {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ft-celeste);
+/* Extends the global .cq-hero-rule — same width, same one-sided gradient,
+   same left origin, so it draws exactly the way the hero's does. */
+.rule {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
 }
 
-.ctaCard {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.ctaLead {
+/* The hero headline's metrics, one step down the scale: the hero stays the
+   loudest type on the site, and this is its answer, not its equal. */
+.statement {
   font-family: var(--font-heading), sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: clamp(1.55rem, 3.2vw, 2.45rem);
+  line-height: 1.08;
   letter-spacing: -0.02em;
-  line-height: 1.35;
   color: var(--ft-text-strong);
+  max-width: 20ch;
+}
+
+.statementLine {
+  display: block;
   text-wrap: balance;
 }
 
-/* Sizing and type come from the global .cq-rect-cta the navbar's CTA uses
-   (0.72rem uppercase, 2.75rem floor) — this adds the colour, the layers and
-   the one deliberate override below, so the two buttons stay in step
-   everywhere it matters.
-
-   No `transform` transition here on purpose: useMagnetic drives x/y and
-   motion drives scale, both on this element's transform every frame. A CSS
-   transition on the same property would fight them. */
-.ctaLink {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  /* Overrides .cq-rect-cta's 2px. The navbar's CTA is square because it sits
-     in a band of straight edges; down here the footer's own nearest
-     neighbours are pills, so a fully rounded end reads as belonging. */
-  border-radius: 999px;
-  /* Clips .ctaWash to the rounded shape — without it the hover wash would
-     paint square corners over the button. */
+/* Each word is its own clipping box; the inner span lifts from below its own
+   baseline. The padding / negative-margin pair gives descenders somewhere to
+   live so the mask never shaves a "p" or a "y". */
+.word {
+  display: inline-block;
   overflow: hidden;
-  padding-inline: 1.35rem;
-  background: var(--ft-celeste);
-  color: var(--ink);
-  box-shadow: 0 2px 10px -4px rgba(0, 0, 0, 0.45);
-  transition: box-shadow 500ms var(--ease-out);
+  vertical-align: bottom;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
 }
 
-.ctaLink:hover {
-  box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.55);
+.word > span {
+  display: inline-block;
+  will-change: transform;
 }
 
-/* Not clipped by the button's own overflow, since an outline paints outside
-   the border box — the focus ring stays a full ring on the rounded shape. */
-.ctaLink:focus-visible {
-  outline: 2px solid var(--ft-celeste);
-  outline-offset: 2px;
+.ctaRow {
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
 }
 
-.ctaWash {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0);
-  transition: background-color 500ms var(--ease-out);
-}
-
-.ctaLink:hover .ctaWash {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.ctaLabel {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Link columns ──────────────────────────────────────── */
-.columns {
+/* ── Directory ─────────────────────────────────────────── */
+.directory {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1.25rem, 3vw, 2.25rem);
-  padding-block: clamp(1.75rem, 3.5vw, 2.5rem);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
 }
 
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.block {
   min-width: 0;
 }
 
-.columnHeading {
+/* Celeste rather than a white at low alpha: it is the brand's own label
+   colour throughout the site, and it clears AA here where a 45%-white would
+   land at about 4.2:1. */
+.blockHeading {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ft-celeste);
+  color: var(--brand-celeste);
+  margin-bottom: 0.85rem;
 }
 
-.columnList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.serviceList {
   list-style: none;
   padding: 0;
   margin: 0;
+  border-bottom: 1px solid var(--ft-rule);
 }
 
-/* Every footer link is a 2.75rem target with its padding INSIDE the row, so
-   the list stays visually tight while each hit area clears the mobile
-   minimum — the usual failure mode of dense footers. */
-.columnList a,
-.contactList a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  font-size: 0.9rem;
-  color: var(--ft-text);
-  transition: color 200ms var(--ease-out);
+/* Rows and hairlines, not cards: the three business lines are a list, and
+   boxing them would say otherwise. The name and its one-line promise are the
+   same pairing the carousel gives each line, at readout scale. */
+.serviceRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 1rem;
+  padding-block: 0.85rem;
+  border-top: 1px solid var(--ft-rule);
 }
 
-/* The 2.75rem floor exists for thumbs. On a mouse-driven pointer it is just
-   dead vertical space multiplied across ~17 links — which is most of what
-   made this footer tall. Tightened only where the input device is precise,
-   so touch keeps its full target. */
-@media (pointer: fine) {
-  .columnList a,
-  .contactList a {
-    min-height: 2rem;
-  }
+/* The separator IS the accent rule. It draws along its own length in the
+   service's colour on hover — the hero rule's gradient and left origin,
+   reused as the row's answer — so the carousel's per-line colour identity
+   shows up as a reward rather than as permanent decoration. */
+.serviceRow::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--svc),
+    color-mix(in srgb, var(--svc) 0%, transparent)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 560ms var(--ease-out);
 }
 
-.columnList a:hover,
-.contactList a:hover {
+.serviceRow:hover::after,
+.serviceRow:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.serviceName {
+  grid-column: 1;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--ft-text-strong);
 }
 
+.serviceLead {
+  grid-column: 1;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ft-dim);
+  text-wrap: pretty;
+  transition: color 320ms var(--ease-out);
+}
+
+.serviceRow:hover .serviceLead {
+  color: var(--ft-text);
+}
+
+.serviceChevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: flex;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: color-mix(in srgb, var(--svc) 55%, transparent);
+  transition: transform 340ms var(--ease-out), color 340ms var(--ease-out);
+}
+
+.serviceChevron svg {
+  width: 100%;
+  height: 100%;
+}
+
+.serviceRow:hover .serviceChevron {
+  transform: translateX(3px);
+  color: var(--svc);
+}
+
+/* ── Contact ───────────────────────────────────────────── */
 .contactList {
   display: flex;
   flex-direction: column;
@@ -241,68 +297,117 @@
 }
 
 .contactList dt {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 0.75rem;
+  color: var(--ft-label);
+  margin-top: 1rem;
 }
 
-.contactList dt:first-child {
+.contactList dt:first-of-type {
   margin-top: 0;
 }
 
 .contactList dd {
   margin: 0;
+  margin-top: 0.15rem;
   font-size: 0.92rem;
   line-height: 1.6;
 }
 
-/* <address> ships italic by default in every browser — correct semantics,
-   wrong typography for a footer column. */
+/* <address> ships italic in every browser — correct semantics, wrong
+   typography for a footer column. */
 .address {
   font-style: normal;
+  color: var(--ft-dim);
 }
 
-/* ── Legal row ─────────────────────────────────────────── */
-/* One centred line. It was a space-between row when it also held a "back to
-   top" link; with a single child, space-between would pin the copyright to
-   the left edge and leave the row looking unfinished. */
-.legal {
-  padding-top: clamp(1rem, 2.5vw, 1.35rem);
+/* ── Closing row ───────────────────────────────────────── */
+.base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.75rem;
+  padding-top: clamp(1rem, 2.2vw, 1.4rem);
   border-top: 1px solid var(--ft-rule);
-  font-size: 0.8rem;
-  text-align: center;
+}
+
+.baseNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 clamp(1rem, 2.5vw, 1.75rem);
+}
+
+.copyright {
+  font-size: 0.78rem;
+  color: var(--ft-label);
   text-wrap: balance;
-  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Links ─────────────────────────────────────────────── */
+/* Every text link is a 2.75rem target with its padding INSIDE the row, so a
+   dense footer still clears the mobile minimum — the usual failure mode down
+   here. On a precise pointer that floor is just dead vertical space, so it
+   tightens where the input device allows it. */
+.baseNav a,
+.contactList a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: 0.88rem;
+  color: var(--ft-text);
+  transition: color 220ms var(--ease-out);
+}
+
+@media (pointer: fine) {
+  .baseNav a,
+  .contactList a {
+    min-height: 2rem;
+  }
+}
+
+.baseNav a:hover,
+.contactList a:hover {
+  color: var(--ft-text-strong);
+}
+
+/* The global focus ring is petroleo, which is nearly invisible on this
+   field. Celeste is the same gesture at a contrast the dark surface can
+   actually carry. */
+.footer :focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 3px;
 }
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 64rem) {
-  .top {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .close {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2.5rem, 6vw, 3.5rem);
   }
 }
 
 @media (max-width: 42rem) {
-  .columns {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .directory {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.25rem;
+  }
+
+  .base {
+    justify-content: flex-start;
   }
 }
 
-/* The wordmark's entrance is GSAP's, and GSAP is already gated on `reduced`
-   in the component. This is the belt-and-braces half for the gradient/hover
+/* The statement's entrance is GSAP's and is already gated on `reduced` in
+   the component. This is the belt-and-braces half for the hover and arrival
    transitions above, matching how .aboutSection handles the same case. */
 @media (prefers-reduced-motion: reduce) {
   .footer *,
-  .footer *::before {
+  .footer *::before,
+  .footer *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }

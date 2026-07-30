@@ -1,5 +1,4 @@
 import { SERVICES } from "@/components/services/data";
-import { ABOUT_SECTORS } from "@/components/about/data";
 import type { Locale } from "@/i18n/config";
 
 /* ── Footer content ───────────────────────────────────────
@@ -8,8 +7,8 @@ import type { Locale } from "@/i18n/config";
    Dictionary carries chrome that multiple components read (nav labels, aria
    text), while a section's own prose stays next to the section.
 
-   Link columns are DERIVED from the same data files the nav and About read
-   (SERVICES, ABOUT_SECTORS) — so a new service appears in the footer without
+   Service links are DERIVED from the same SERVICES file the nav and the
+   carousel read — so a new business line appears in the footer without
    anyone remembering to add it here twice. */
 
 /* The company's real contact details, kept in one place because they are
@@ -31,58 +30,84 @@ export const CONTACT = {
   countryCode: "DO",
 } as const;
 
+/* The one line a visitor should remember, split at the sentence break so the
+   footer can set it as two deliberate display lines and lift each word from
+   behind its own clip edge.
+
+   Single source: app/[lang]/layout.tsx composes the OG title from it and
+   opengraph-image reads it directly. It used to live only inside OG_TITLE
+   with the brand name glued on the front, which is why the OG image had to
+   strip that prefix back off with a regex. */
+export const BRAND_LINE: Record<Locale, readonly [string, string]> = {
+  en: ["We power operations.", "You drive growth."],
+  es: ["Nosotros impulsamos las operaciones.", "Tú impulsas el crecimiento."],
+};
+
+/** The brand line as one sentence — for metadata, where it has no line breaks. */
+export function brandLine(lang: Locale): string {
+  return BRAND_LINE[lang].join(" ");
+}
+
 export type FooterLink = { label: string; href: string };
 
-export function getCompanyLinks(lang: Locale): FooterLink[] {
+/* The closing row's navigation. Deliberately short: Services has its own
+   block above it, and the five Sectors links this footer used to carry all
+   resolved to the same /#sectors anchor — five labels for one destination is
+   link-shaped decoration, not navigation. */
+export function getBaseLinks(lang: Locale): FooterLink[] {
   const t = COPY[lang];
   return [
     { label: t.links.home, href: "/" },
     { label: t.links.about, href: "/#about" },
-    { label: t.links.services, href: "/#services" },
     { label: t.links.team, href: "/#team" },
     { label: t.links.quote, href: "/quote" },
   ];
 }
 
-export function getServiceLinks(lang: Locale): FooterLink[] {
-  return SERVICES.map((service) => ({ label: service.label[lang], href: service.href }));
-}
+/* Each row carries the same pairing the carousel gives a business line — the
+   name, then the one-line promise under it — plus `accent`, the colour the
+   row's hairline lights up in on hover.
 
-/* Sectors point at About's #sectors block rather than at five separate
-   routes: those pages do not exist. A footer that links five labels to one
-   real destination is honest; five links to 404s is not. */
-export function getSectorLinks(lang: Locale): FooterLink[] {
-  return ABOUT_SECTORS.map((sector) => ({ label: sector.label[lang], href: "/#sectors" }));
+   `glow`, not `color`: a service's `color` is tuned for the carousel's
+   near-white sheet (#3f738d, #176c79) and would sit at roughly 2:1 on the
+   footer's ink. `glow` is the light member of each pair and is what the
+   dark field can actually carry. */
+export function getServiceRows(lang: Locale) {
+  return SERVICES.map((service) => ({
+    id: service.id,
+    label: service.label[lang],
+    lead: service.shortLabel[lang],
+    href: service.href,
+    accent: service.glow,
+  }));
 }
 
 export const COPY = {
   en: {
-    columns: { company: "Company", services: "Services", sectors: "Sectors", contact: "Contact" },
+    headings: { services: "Services", contact: "Contact" },
     links: {
       home: "Home",
       about: "About us",
-      services: "Services",
       team: "Our team",
       quote: "Request a quote",
     },
     cta: "Request a quote",
-    ctaLead: "Contact us",
+    navAriaLabel: "Footer",
     rights: "All rights reserved.",
     phoneLabel: "Phone / WhatsApp",
     emailLabel: "Email",
     locationLabel: "Location",
   },
   es: {
-    columns: { company: "Compañía", services: "Servicios", sectors: "Sectores", contact: "Contacto" },
+    headings: { services: "Servicios", contact: "Contacto" },
     links: {
       home: "Inicio",
       about: "Nosotros",
-      services: "Servicios",
       team: "Nuestro equipo",
       quote: "Solicitar cotización",
     },
     cta: "Solicitar cotización",
-    ctaLead: "Contáctanos",
+    navAriaLabel: "Pie de página",
     rights: "Todos los derechos reservados.",
     phoneLabel: "Teléfono / WhatsApp",
     emailLabel: "Correo",

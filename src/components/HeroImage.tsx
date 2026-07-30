@@ -127,7 +127,7 @@ export default function HeroImage() {
           data-revealed={revealed ? "true" : "false"}
         >
           <HeroReactiveGrid ambient={ambient && revealed} reduced={reduced} />
-          <span className="cq-hero-grain" />
+          <span className="cq-field-grain" />
         </div>
 
         <div className="cq-hero-vignette" />

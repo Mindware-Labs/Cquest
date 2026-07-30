@@ -64,10 +64,12 @@
   opacity: 1;
 }
 
-/* ── Grain ───────────────────────────────────────────────
+/* ── Field grain ─────────────────────────────────────────
    A static, low-opacity texture prevents banding without promoting a
-   viewport-sized layer or keeping the compositor busy after the intro. */
-.cq-hero-grain {
+   viewport-sized layer or keeping the compositor busy after the intro.
+   Shared by the two surfaces that use the dark architectural field: the
+   hero, and the footer that closes the page on a reprise of it. */
+.cq-field-grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -134,7 +136,10 @@
   will-change: transform;
 }
 
-/* Accent hairline that opens the copy block. */
+/* The brand's accent hairline — it opens the hero's copy block and, at the
+   other end of the page, the footer's closing statement. Weighted to one
+   side rather than symmetric, so it reads as light falling from a single
+   source instead of as a decorative underline. */
 .cq-hero-rule {
   height: 1px;
   width: clamp(3.5rem, 9vw, 6rem);
