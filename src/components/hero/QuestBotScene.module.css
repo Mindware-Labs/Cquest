@@ -161,10 +161,21 @@
    here rather than on `.say` because `.say` is already driven by the `pop`
    keyframes — two transforms on one element and the last one wins. */
 .sayBox {
+  /* The bubble's edge colour, shared with the tail below. It lives in a
+     custom property because the tail is a pseudo-element with its own
+     hardcoded borders — without this, lighting the box on hover left the
+     tail behind at the resting tone, and the two read as separate objects
+     exactly when the whole thing is meant to feel like one control.
+
+     Custom properties don't interpolate, but they don't need to: swapping
+     this re-resolves `border-color` on both elements, and border-color is
+     what actually transitions. */
+  --say-edge: rgba(99, 182, 214, 0.5);
+
   display: block;
   position: relative;
   padding: 13px 16px 14px;
-  border: 1.5px solid rgba(99, 182, 214, 0.5);
+  border: 1.5px solid var(--say-edge);
   background: rgba(6, 29, 42, 0.8);
   backdrop-filter: blur(6px);
   border-radius: 15px 15px 15px 3px;
@@ -177,14 +188,22 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  /* Setting the variable, not `border-color` — that way the tail lights with
+     the box instead of needing its own hover rule. */
   .sayBox:hover {
+    --say-edge: rgba(127, 233, 228, 0.8);
+
     transform: translateY(-2px);
-    border-color: rgba(127, 233, 228, 0.8);
     box-shadow: 0 28px 62px -22px rgba(48, 128, 162, 1);
   }
 }
 
+/* Keyboard focus lights the same edge as hover, so both routes to the control
+   look alike — the outline alone skips the tail and reads as a different
+   state than the one pointer users get. */
 .sayBox:focus-visible {
+  --say-edge: rgba(127, 233, 228, 0.8);
+
   outline: 2px solid var(--brand-celeste);
   outline-offset: 3px;
 }
@@ -203,10 +222,13 @@
   width: 15px;
   height: 14px;
   background: rgba(6, 29, 42, 0.8);
-  border-left: 1.5px solid rgba(99, 182, 214, 0.5);
-  border-bottom: 1.5px solid rgba(99, 182, 214, 0.5);
+  border-left: 1.5px solid var(--say-edge);
+  border-bottom: 1.5px solid var(--say-edge);
   border-bottom-left-radius: 3px;
   transform: skewX(-22deg);
+  /* Matches the box's own border-color timing, so the edge lights up as one
+     continuous outline rather than in two stages. */
+  transition: border-color 200ms ease;
 }
 
 .sayEyebrow {
