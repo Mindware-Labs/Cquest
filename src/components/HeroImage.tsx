@@ -5,7 +5,6 @@ import {
   motion,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
 } from "motion/react";
 import HeroActions from "@/components/hero/HeroActions";
@@ -41,28 +40,30 @@ export default function HeroImage() {
     offset: ["start start", "end start"],
   });
 
-  /* Lenis delivers scroll in sub-pixel eased steps; feeding that straight into
-     three parallax layers makes them shimmer against each other. One spring
-     smooths the source, so every layer reads off the same settled value. */
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 180,
-    damping: 34,
-    mass: 0.35,
-  });
-
-  /* Depth on exit. Three planes, each leaving at its own rate: the light field
-     lags behind (deep), the mascot leaves fastest and shrinks slightly (near),
-     the copy drifts just enough to feel unpinned. Before, all three shared a
-     single 24px shift — technically parallax, perceptually a flat card. */
-  const fieldY = useTransform(progress, [0, 1], reduced ? ["0%", "0%"] : ["0%", "11%"]);
-  const fieldOpacity = useTransform(progress, [0, 1], reduced ? [1, 1] : [1, 0.55]);
-  const sceneY = useTransform(progress, [0, 1], reduced ? [0, 0] : [0, -104]);
-  const sceneScale = useTransform(progress, [0, 1], reduced ? [1, 1] : [1, 0.94]);
-  const sceneOpacity = useTransform(progress, [0, 1], reduced ? [1, 1] : [1, 0.1]);
-  const copyY = useTransform(progress, [0, 1], reduced ? [0, 0] : [0, -30]);
-  const copyOpacity = useTransform(progress, [0, 1], reduced ? [1, 1] : [1, 0.22]);
+  /* Lenis is the only source of damping. Keeping the transforms directly tied
+     to its eased progress prevents a second spring from lagging behind the
+     gesture. The field recedes subtly while the foreground leaves as one calm
+     plane, matching the physical handoff into the services sheet. */
+  const fieldY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, 54]);
+  const fieldScale = useTransform(scrollYProgress, [0, 1], reduced ? [1, 1] : [1, 1.07]);
+  const sceneY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, -24]);
+  const sceneOpacity = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [1, 1] : [1, 0.38],
+  );
+  const copyY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, -24]);
+  const copyOpacity = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [1, 1] : [1, 0.38],
+  );
   /* The cue has done its job the moment scrolling starts. */
-  const cueOpacity = useTransform(progress, [0, 0.09], reduced ? [1, 1] : [1, 0]);
+  const cueOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.12],
+    reduced ? [1, 1] : [1, 0],
+  );
 
   /* Decorative loops only run while someone can actually see them. */
   useEffect(() => {
@@ -113,8 +114,8 @@ export default function HeroImage() {
     >
       <motion.div
         aria-hidden
-        style={{ y: fieldY, opacity: fieldOpacity }}
-        className="pointer-events-none absolute inset-0"
+        style={{ y: fieldY, scale: fieldScale }}
+        className="pointer-events-none absolute inset-x-0 -inset-y-8"
       >
         {/* A precise operational surface: the grid deforms locally under the
             pointer while the field and vignette preserve content hierarchy. */}
@@ -135,7 +136,7 @@ export default function HeroImage() {
       <HeroNav reduced={reduced} revealed={revealed} />
 
       <motion.div
-        style={{ y: sceneY, scale: sceneScale, opacity: sceneOpacity }}
+        style={{ y: sceneY, opacity: sceneOpacity }}
         className="relative z-10 flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10"
       >
         <motion.div
