@@ -11,9 +11,10 @@ const nextConfig: NextConfig = {
     // optimized output for a month instead of re-transforming every 4 hours.
     minimumCacheTTL: 2678400,
   },
-  experimental: {
-    viewTransition: true,
-  },
+  // No `experimental.viewTransition`. Route transitions are handled entirely
+  // by RouteTransition's curtain; enabling the flag again lets a stray
+  // <ViewTransition> paint route snapshots in the top layer, above the
+  // curtain, which reintroduces the outgoing-page flash. See styles/base.css.
 };
 
 export default nextConfig;

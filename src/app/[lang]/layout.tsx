@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Josefin_Sans } from "next/font/google";
-import { ViewTransition } from "react";
 import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
+import RouteTransition from "@/components/RouteTransition";
 import SiteFooter from "@/components/footer/SiteFooter";
 import { CONTACT } from "@/components/footer/data";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -121,17 +121,22 @@ export default async function RootLayout({
           <a href="#main-content" className="skip-link">
             {dict.common.skipToMainContent}
           </a>
-          <SmoothScroll />
-          <ScrollProgress />
-          <main id="main-content" className="flex flex-1 flex-col">
-            <ViewTransition name="page" exit="page-exit" enter="page-enter">
+          <RouteTransition>
+            <SmoothScroll />
+            <ScrollProgress />
+            {/* No <ViewTransition> here on purpose — RouteTransition's curtain
+                is the single handoff. See the long note in styles/base.css:
+                view-transition snapshots paint in the top layer, above the
+                curtain, which is what made the outgoing page flash back
+                through the wipe. */}
+            <main id="main-content" className="flex flex-1 flex-col">
               {children}
-            </ViewTransition>
-          </main>
-          {/* Outside <main> on purpose: the footer is site chrome, not page
-              content, so it stays put across the ViewTransition instead of
-              being animated out and back in on every navigation. */}
-          <SiteFooter />
+            </main>
+            {/* Outside <main> on purpose: the footer is site chrome, not page
+                content, so it sits under the curtain like everything else
+                rather than being treated as route content. */}
+            <SiteFooter />
+          </RouteTransition>
         </I18nProvider>
       </body>
     </html>

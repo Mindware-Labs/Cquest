@@ -9,6 +9,12 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* The route curtain locks Lenis while it is closed, and Lenis's own
+     `.lenis-stopped` host style is `overflow: hidden` — which would retract
+     the classic scrollbar and shift the whole page sideways mid-wipe. A
+     reserved gutter makes that lock invisible. No-op wherever scrollbars
+     already overlay the content. */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -85,42 +91,224 @@ html.lenis body {
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
-
-  /* The universal selector above can't reach these — they're top-layer
-     pseudo-elements the browser generates for the View Transition API,
-     not part of the normal DOM tree. */
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0s !important;
-  }
 }
 
-/* Cross-route page transition (see app/layout.tsx's <ViewTransition>).
-   Old content leaves quickly and plainly; new content arrives a beat
-   later, slightly slower — an asymmetric fade so the handoff reads as
-   deliberate rather than a hard cut. No slide/scale: the two routes
-   don't share a spatial relationship, so movement would read as noise. */
-::view-transition-old(.page-exit) {
-  animation: 200ms var(--ease-out) both cq-page-fade-out;
+/* ── Cross-route handoff ─────────────────────────────────
+   ONE transition system, deliberately. This used to run React's
+   <ViewTransition name="page"> alongside the curtain below, and the two
+   fought each other: view-transition pseudo-elements are painted in the TOP
+   LAYER, above every normal-flow element regardless of z-index. So the
+   snapshot of the outgoing route — captured at its old scroll offset — was
+   drawn OVER the curtain and kept cross-fading for ~440ms after the URL
+   changed, while the curtain started opening two frames after commit. The
+   wipe peeled back onto that stale snapshot: a phantom fast-scroll of the
+   previous page before the real one appeared, worst when leaving the sticky
+   services track, where the old offset is furthest from the new one.
+
+   The curtain wins the argument because it does what a view transition
+   structurally cannot: cover the screen BEFORE the URL changes, so scroll
+   reset, streamed layout and mount-time animations all happen unseen.
+   Re-adding <ViewTransition> (or next.config's experimental.viewTransition)
+   brings the phantom straight back. */
+
+/* Back/forward is the only navigation that bypasses the curtain — the browser
+   commits it before we ever see a click — so the incoming route gets a short
+   fade of its own instead of a hard cut. Opacity only: a transform on
+   #main-content would turn it into a containing block for every fixed
+   descendant on the page. */
+html[data-route-arrive] #main-content {
+  animation: cq-page-arrive 360ms var(--ease-out) both;
 }
 
-::view-transition-new(.page-enter) {
-  animation: 340ms var(--ease-out-soft) 90ms both cq-page-fade-in;
-}
-
-@keyframes cq-page-fade-out {
-  to {
-    opacity: 0;
-    filter: blur(4px);
-  }
-}
-
-@keyframes cq-page-fade-in {
+@keyframes cq-page-arrive {
   from {
     opacity: 0;
-    filter: blur(4px);
+  }
+}
+
+/* Full-route handoff — the Hero CTA's left-to-right surface wipe, scaled up
+   to navigation. Two planes travel in the same direction, a translucent one a
+   beat ahead of the opaque one: on the way in the tint arrives first and ink
+   seals behind it; on the way out ink leaves first and the tint trails off
+   across the new page. Continuous left-to-right both ways, so the whole
+   navigation reads as one gesture rather than a door closing and reopening.
+
+   They translate rather than scaleX. Under the old scaleX the 1px light edge
+   was scaled along with the plane — a fraction of a pixel wide for most of
+   the wipe, so the detail never actually read. */
+.cq-route-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Swallows clicks for the whole handoff, so an impatient second click can't
+   land on content that is already on its way out. */
+.cq-route-curtain:not([data-phase="idle"]) {
+  pointer-events: auto;
+}
+
+.cq-route-curtain-veil,
+.cq-route-curtain-panel {
+  position: absolute;
+  inset: 0;
+  /* Parked to the left, and — critically — with no transition in the idle
+     state, so returning to idle re-arms the planes on the left instantly
+     instead of sweeping them backwards across the screen. */
+  transform: translate3d(-101%, 0, 0);
+  transition: transform 0s;
+}
+
+.cq-route-curtain:not([data-phase="idle"]) .cq-route-curtain-veil,
+.cq-route-curtain:not([data-phase="idle"]) .cq-route-curtain-panel {
+  will-change: transform;
+}
+
+/* Densest at the leading (right) end, thinning to a celeste haze at the
+   trailing end. That way the band left behind the departing ink — the only
+   part of the veil the incoming page is ever seen through — is the light one,
+   and the page emerges through a haze that lifts rather than a shadow that
+   drags. The 1px edge below carries the light out in front. */
+.cq-route-curtain-veil {
+  background: linear-gradient(
+    92deg,
+    color-mix(in srgb, var(--brand-celeste) 24%, transparent) 0%,
+    color-mix(in srgb, var(--brand-petroleo) 44%, transparent) 46%,
+    color-mix(in srgb, var(--ink) 64%, transparent) 100%
+  );
+}
+
+/* Ink, but not a flat black rectangle — a petroleo bloom trailing the wipe
+   keeps the covered state feeling like a lit surface. */
+.cq-route-curtain-panel {
+  background:
+    radial-gradient(
+      130% 96% at 8% 50%,
+      color-mix(in srgb, var(--brand-petroleo) 30%, transparent),
+      transparent 64%
+    ),
+    var(--ink);
+}
+
+/* Leading edge (::after, just outside the right side) and trailing edge
+   (::before, just outside the left). Each is only ever on screen in its own
+   phase: the right edge leads the cover and has already left the viewport
+   during the reveal, the left edge does the reverse. */
+.cq-route-curtain-veil::after,
+.cq-route-curtain-panel::after,
+.cq-route-curtain-veil::before,
+.cq-route-curtain-panel::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: 1px;
+}
+
+.cq-route-curtain-veil::after,
+.cq-route-curtain-panel::after {
+  left: 100%;
+}
+
+.cq-route-curtain-veil::before,
+.cq-route-curtain-panel::before {
+  right: 100%;
+}
+
+/* The veil's leading edge is the brightest thing in the whole handoff — it is
+   the light that announces the wipe, running ahead of everything else. */
+.cq-route-curtain-veil::after {
+  background: color-mix(in srgb, var(--brand-celeste) 40%, white);
+  box-shadow: 0 0 46px 6px color-mix(in srgb, var(--brand-celeste) 18%, transparent);
+}
+
+/* The ink panel's two edges: a crisp seam against whatever it is covering on
+   the way in, and the line that peels off the new page on the way out. */
+.cq-route-curtain-panel::after,
+.cq-route-curtain-panel::before {
+  background: color-mix(in srgb, var(--brand-celeste) 72%, white);
+  box-shadow: 0 0 30px 3px color-mix(in srgb, var(--brand-celeste) 26%, transparent);
+}
+
+/* The veil's trailing edge is the last thing to leave, so it is barely there —
+   two bright lines chasing each other off screen would read as a glitch. */
+.cq-route-curtain-veil::before {
+  background: color-mix(in srgb, var(--brand-celeste) 26%, transparent);
+  box-shadow: 0 0 36px 4px color-mix(in srgb, var(--brand-celeste) 9%, transparent);
+}
+
+/* Cover — quick and decisive, ease-out so it answers the click on the first
+   frame. Both planes land together at 500ms; the veil simply starts earlier
+   so its edge stays ahead of the ink the whole way. */
+.cq-route-curtain[data-phase="covering"] .cq-route-curtain-veil {
+  transform: translate3d(0, 0, 0);
+  transition: transform 500ms var(--ease-out);
+}
+
+.cq-route-curtain[data-phase="covering"] .cq-route-curtain-panel {
+  transform: translate3d(0, 0, 0);
+  transition: transform 430ms var(--ease-out) 70ms;
+}
+
+.cq-route-curtain[data-phase="covered"] .cq-route-curtain-veil,
+.cq-route-curtain[data-phase="covered"] .cq-route-curtain-panel {
+  transform: translate3d(0, 0, 0);
+  transition: transform 0s;
+}
+
+/* Reveal — longer and expo-eased, so the new page is uncovered fast and the
+   tail of the motion is the part that lingers. */
+.cq-route-curtain[data-phase="revealing"] .cq-route-curtain-panel {
+  transform: translate3d(101%, 0, 0);
+  transition: transform 600ms var(--ease-out-expo);
+}
+
+.cq-route-curtain[data-phase="revealing"] .cq-route-curtain-veil {
+  transform: translate3d(101%, 0, 0);
+  transition: transform 620ms var(--ease-out-expo) 70ms;
+}
+
+/* Shown only if the route is genuinely slow to arrive. The 380ms delay means
+   a prefetched navigation — nearly all of them — never reveals it, so there
+   is no spinner flash on a fast hop. */
+.cq-route-curtain-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 3.5rem;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  background: color-mix(in srgb, white 10%, transparent);
+}
+
+.cq-route-curtain[data-phase="covered"] .cq-route-curtain-mark {
+  animation: cq-curtain-mark-in 420ms var(--ease-out) 380ms both;
+}
+
+.cq-route-curtain[data-phase="covered"] .cq-route-curtain-mark::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, var(--brand-celeste), transparent);
+  animation: cq-curtain-mark-sweep 1200ms var(--ease-in-out-strong) 380ms infinite;
+}
+
+@keyframes cq-curtain-mark-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cq-curtain-mark-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(322%);
   }
 }
 
