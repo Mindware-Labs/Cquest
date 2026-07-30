@@ -30,6 +30,7 @@ export default function QuestBotScene({
   reduced,
   ambient,
   onIntroDone,
+  onReplayStart,
 }: {
   reduced: boolean;
   /** False when the hero is off-screen or the tab is hidden — parks the loops. */
@@ -40,20 +41,23 @@ export default function QuestBotScene({
    * cannot be predicted from the score; the scene has to report it.
    */
   onIntroDone?: () => void;
+  /** Returns the whole hero to act one before a user-requested replay. */
+  onReplayStart?: () => void;
 }) {
   const { dict } = useI18n();
   const line = dict.hero.typedLine;
   const [runId, setRunId] = useState(0);
-  const [typed, setTyped] = useState("");
   /* True once the mascot has finished assembling. Only then does it start
      tracking the pointer — a gaze that fights the roll-in reads as a glitch. */
   const [settled, setSettled] = useState(false);
+  const [replayReady, setReplayReady] = useState(false);
   /* True once the speech bubble has popped, which is when its link becomes
      real. Tracked separately from `settled` because the bubble arrives at
      2.85s and the assembly only finishes at 3.4s — half a second in which an
      invisible link would already be tabbable. */
   const [sayReady, setSayReady] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  const typedLineRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
   /* Held in a ref so a new callback identity from the parent can't restart
      the typing effect — and so replaying the mascot never re-fires it. */
@@ -81,32 +85,39 @@ export default function QuestBotScene({
   const leanX = useTransform(smoothX, [-1, 1], [-4.5, 4.5]);
   const leanY = useTransform(smoothY, [-1, 1], [-2.5, 2.5]);
 
-  const replay = useCallback(() => {
+  const beginRun = useCallback(() => {
     startedRef.current = true;
     setSettled(false);
+    setReplayReady(false);
     setSayReady(false);
-    setTyped("");
+    if (typedLineRef.current) typedLineRef.current.textContent = "";
     setRunId((id) => id + 1);
   }, []);
+
+  const replay = useCallback(() => {
+    if (!replayReady) return;
+    onReplayStart?.();
+    beginRun();
+  }, [beginRun, onReplayStart, replayReady]);
 
   /* One observer does both jobs: kick off the first run when the mascot comes
      into view, and keep reporting so we know when to park the idle loops. */
   useEffect(() => {
     const node = stageRef.current;
     if (!node || !("IntersectionObserver" in window)) {
-      if (!startedRef.current) replay();
+      if (!startedRef.current) beginRun();
       return;
     }
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !startedRef.current) replay();
+        if (entry.isIntersecting && !startedRef.current) beginRun();
       },
       { threshold: 0.25 },
     );
     io.observe(node);
     return () => io.disconnect();
-  }, [replay]);
+  }, [beginRun]);
 
   /* Arm the bubble's link when the bubble appears, and hand the mascot over
      to the pointer once the assembly has resolved. Under reduced motion the
@@ -117,6 +128,7 @@ export default function QuestBotScene({
     const timers: number[] = [];
     if (reduced) {
       timers.push(window.setTimeout(() => setSayReady(true), 0));
+      timers.push(window.setTimeout(() => setSettled(true), 0));
     } else {
       timers.push(window.setTimeout(() => setSayReady(true), sceneAt(SCENE.say)));
       timers.push(window.setTimeout(() => setSettled(true), sceneAt(SCENE.settled)));
@@ -195,18 +207,31 @@ export default function QuestBotScene({
 
     /* Reduced motion has no intro to wait out — release the page at once. */
     if (reduced) {
-      timers.push(window.setTimeout(() => introDoneRef.current?.(), 0));
+      timers.push(
+        window.setTimeout(() => {
+          if (typedLineRef.current) typedLineRef.current.textContent = line;
+          setReplayReady(true);
+          introDoneRef.current?.();
+        }, 0),
+      );
       return () => timers.forEach((t) => window.clearTimeout(t));
     }
 
     const type = (i: number) => {
-      setTyped(line.slice(0, i));
+      if (typedLineRef.current) {
+        typedLineRef.current.textContent = line.slice(0, i);
+      }
       if (i < line.length) {
         timers.push(window.setTimeout(() => type(i + 1), keystrokeDelay(line[i - 1] ?? "")));
         return;
       }
       /* Last keystroke has landed. This is the end of act one. */
-      timers.push(window.setTimeout(() => introDoneRef.current?.(), INTRO_TAIL_MS));
+      timers.push(
+        window.setTimeout(() => {
+          setReplayReady(true);
+          introDoneRef.current?.();
+        }, INTRO_TAIL_MS),
+      );
     };
     /* type(0) writes the empty string first, so the line clears on the exact
        frame typing begins rather than eagerly during this render. */
@@ -215,12 +240,12 @@ export default function QuestBotScene({
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [runId, reduced, line]);
 
-  /* Reduced motion skips the typewriter entirely — the greeting is simply
-     there. Derived rather than pushed into state, so no cascading render. */
-  const shown = reduced ? line : typed;
-
   return (
-    <div ref={stageRef} className={styles.stage}>
+    <div
+      ref={stageRef}
+      className={styles.stage}
+      data-replay-ready={replayReady ? "true" : "false"}
+    >
       <div
         key={runId}
         className={cx(styles.robot, runId > 0 && styles.run)}
@@ -391,7 +416,7 @@ export default function QuestBotScene({
                 worse than useless read aloud. */}
             <div aria-hidden className={styles.sayEyebrow}>{dict.hero.onlineLabel}</div>
             <div aria-hidden className={styles.sayLine}>
-              {shown}
+              <span ref={typedLineRef} />
               <span className={styles.caret} />
             </div>
           </LocalizedLink>
@@ -405,6 +430,7 @@ export default function QuestBotScene({
       <button
         type="button"
         onClick={replay}
+        inert={!replayReady}
         className={styles.replay}
         aria-label={dict.hero.replayLabel}
       >

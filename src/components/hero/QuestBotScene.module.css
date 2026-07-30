@@ -80,7 +80,9 @@
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(6px);
+  visibility: hidden;
   opacity: 0;
+  pointer-events: none;
   transform: scale(0.9);
   transition:
     opacity 220ms var(--ease-out),
@@ -89,8 +91,13 @@
     border-color 150ms ease;
 }
 
+.stage[data-replay-ready="true"] .replay {
+  visibility: visible;
+  pointer-events: auto;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .stage:hover .replay {
+  .stage[data-replay-ready="true"]:hover .replay {
     opacity: 1;
     transform: scale(1);
   }
@@ -102,7 +109,7 @@
 }
 
 @media (hover: none) {
-  .replay {
+  .stage[data-replay-ready="true"] .replay {
     opacity: 0.4;
     transform: none;
   }
@@ -118,7 +125,7 @@
 /* Asymmetric press: the press-in is quick and definite, the release rides
    the slower spring-ish curve back. Symmetric timing reads as rubbery. */
 .replay:active {
-  transform: scale(0.93);
+  transform: scale(0.96);
   transition-duration: 90ms;
 }
 

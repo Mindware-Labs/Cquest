@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   motion,
-  useMotionValue,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -12,6 +11,7 @@ import {
 import HeroActions from "@/components/hero/HeroActions";
 import HeroHeadline from "@/components/hero/HeroHeadline";
 import HeroNav from "@/components/hero/HeroNav";
+import HeroReactiveGrid from "@/components/hero/HeroReactiveGrid";
 import HeroScrollCue from "@/components/hero/HeroScrollCue";
 import QuestBotScene from "@/components/hero/QuestBotScene";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -34,6 +34,7 @@ export default function HeroImage() {
   /* Act one / act two. False means the mascot has the hero to itself. */
   const [revealed, setRevealed] = useState(false);
   const reveal = useCallback(() => setRevealed(true), []);
+  const restartIntro = useCallback(() => setRevealed(false), []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -104,47 +105,6 @@ export default function HeroImage() {
 
   const ambient = onScreen && tabVisible && !reduced;
 
-  /* ── Pointer light ────────────────────────────────────────────────────
-     A wide, dim highlight trailing the cursor. The spring is deliberately
-     slack (low stiffness, high mass) so the light arrives about a second
-     after the pointer does — track it exactly and it reads as a cursor
-     effect; make it lag and it reads as a physical light being carried
-     across the room. Measured against the viewport rather than the section,
-     so there is no rect to read and no layout thrash on pointermove. */
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const lightSpring = { stiffness: 38, damping: 24, mass: 1.4 } as const;
-  const lightX = useTransform(useSpring(pointerX, lightSpring), [-1, 1], ["-40vw", "40vw"]);
-  const lightY = useTransform(useSpring(pointerY, lightSpring), [-1, 1], ["-38vh", "38vh"]);
-
-  useEffect(() => {
-    if (!ambient) return;
-    /* Touch has no hovering pointer, and a stray tap would strand the light
-       in a corner for the rest of the visit. */
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-
-    let frame = 0;
-    let clientX = 0;
-    let clientY = 0;
-    const apply = () => {
-      frame = 0;
-      pointerX.set((clientX / window.innerWidth) * 2 - 1);
-      pointerY.set((clientY / window.innerHeight) * 2 - 1);
-    };
-    const onMove = (event: PointerEvent) => {
-      clientX = event.clientX;
-      clientY = event.clientY;
-      if (frame) return;
-      frame = window.requestAnimationFrame(apply);
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      window.removeEventListener("pointermove", onMove);
-    };
-  }, [ambient, pointerX, pointerY]);
-
   return (
     <section
       ref={sectionRef}
@@ -156,19 +116,16 @@ export default function HeroImage() {
         style={{ y: fieldY, opacity: fieldOpacity }}
         className="pointer-events-none absolute inset-0"
       >
-        {/* Painted back to front: static field, then the moving light, then
-            grain over all of it (it has to dither the gradients it sits on,
-            so it must come after them), then the vignette last so the corner
-            falloff is the final word on contrast. */}
+        {/* A precise operational surface: the grid deforms locally under the
+            pointer while the field and vignette preserve content hierarchy. */}
         <div className="cq-hero-field" />
 
-        <div className="cq-hero-ambience" data-ambient={ambient ? "on" : "off"}>
-          <span className="cq-hero-glow cq-hero-glow--a" />
-          <span className="cq-hero-glow cq-hero-glow--b" />
-          <span className="cq-hero-glow cq-hero-glow--c" />
-          <span className="cq-hero-horizon" />
-          <span className="cq-hero-sweep" />
-          <motion.span className="cq-hero-pointer" style={{ x: lightX, y: lightY }} />
+        <div
+          className="cq-hero-ambience"
+          data-ambient={ambient ? "on" : "off"}
+          data-revealed={revealed ? "true" : "false"}
+        >
+          <HeroReactiveGrid ambient={ambient && revealed} reduced={reduced} />
           <span className="cq-hero-grain" />
         </div>
 
@@ -187,7 +144,12 @@ export default function HeroImage() {
           transition={{ duration: 0.95, ease: EASE_OUT_EXPO, delay: BEAT.scene }}
           className="w-full"
         >
-          <QuestBotScene reduced={reduced} ambient={ambient} onIntroDone={reveal} />
+          <QuestBotScene
+            reduced={reduced}
+            ambient={ambient}
+            onIntroDone={reveal}
+            onReplayStart={restartIntro}
+          />
         </motion.div>
       </motion.div>
 
