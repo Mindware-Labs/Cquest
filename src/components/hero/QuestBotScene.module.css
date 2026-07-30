@@ -122,22 +122,46 @@
   transition-duration: 90ms;
 }
 
-/* `top` is a percentage of the rendered SVG height, so it has to be restated
-   whenever the viewBox height changes or the bubble drifts relative to the
-   mascot. 9.8% of 432 units == the 9% of 470 units it sat at before the box
-   was trimmed: the bubble holds its exact position in the scene's own
-   coordinate space, and simply scales with everything else. */
+/* Placed against the mascot's own geometry, in viewBox user units (the box
+   is 1200 × 432 starting at x = -40, so a percentage of the stage maps
+   straight onto it). Both percentages have to be restated if the viewBox
+   changes — they are not decorative round numbers:
+
+     antenna stem   x 615 → 635   (up to 640 at full pointer lean)
+     antenna tip    x 618 → 632,  y 127 → 141
+     head           x 485 → 635,  y 138 → 288
+
+   At the old `left: 55%` the tail's corner landed at x 620–635 / y 134–148,
+   which is the antenna tip almost exactly — the two collided.
+
+   57.5% puts the tail at x 650. The stem's hard limit is 639.5 (635 plus the
+   full 4.5 of pointer lean; the gaze spring is critically damped, ζ ≈ 1.0, so
+   it never overshoots past that), which leaves ~10 units of air. That is the
+   floor for this arrangement: at 57% the gap is 4 units and reads as touching
+   at a glance — the same bug, just smaller. Getting the bubble closer than
+   this means lifting it clear above the tip (top ≈ 4.5%) so the tail passes
+   over the antenna instead of beside it, which is a different composition,
+   not a nudge. `top: 8%` aims the tail's diagonal down at the tip rather than
+   through it: attached to the mascot by direction, never by contact.
+
+   Mobile (below) is unaffected: there the bubble is centred over the head at
+   left 50%, so its tail hangs above x ≈ 560, nowhere near the antenna. */
 .say {
   position: absolute;
-  left: 55%;
-  top: 9.8%;
+  left: 57.5%;
+  top: 8%;
   width: min(36%, 330px);
   opacity: 0;
   transform: translateY(8px) scale(0.94);
   transform-origin: 0% 100%;
 }
 
+/* The bubble is a link to the quote form, so it needs the affordances of one:
+   a lift on hover, a definite press, and a focus ring. The transform lives
+   here rather than on `.say` because `.say` is already driven by the `pop`
+   keyframes — two transforms on one element and the last one wins. */
 .sayBox {
+  display: block;
   position: relative;
   padding: 13px 16px 14px;
   border: 1.5px solid rgba(99, 182, 214, 0.5);
@@ -145,6 +169,30 @@
   backdrop-filter: blur(6px);
   border-radius: 15px 15px 15px 3px;
   box-shadow: 0 20px 54px -22px rgba(48, 128, 162, 0.9);
+  text-decoration: none;
+  transition:
+    transform 260ms var(--ease-out),
+    border-color 200ms ease,
+    box-shadow 260ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sayBox:hover {
+    transform: translateY(-2px);
+    border-color: rgba(127, 233, 228, 0.8);
+    box-shadow: 0 28px 62px -22px rgba(48, 128, 162, 1);
+  }
+}
+
+.sayBox:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 3px;
+}
+
+/* Asymmetric press — quick down, the slower curve above carries it back. */
+.sayBox:active {
+  transform: translateY(0);
+  transition-duration: 90ms;
 }
 
 .sayBox::after {

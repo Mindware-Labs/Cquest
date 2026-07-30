@@ -33,6 +33,7 @@ export const dictionary: Dictionary = {
     replayLabel: "Replay the animation",
     navLinks: { services: "Services", successStories: "Success stories", about: "About", contact: "Contact" },
     typedLine: "give me your quest",
+    sayCtaLabel: "Give me your quest — open the quote form",
     onlineLabel: "cq · online",
     locationLabel: "Santo Domingo",
   },

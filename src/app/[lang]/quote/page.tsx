@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import QuoteExperience from "./QuoteExperience";
+import RecaptchaBadge from "./RecaptchaBadge";
 import { resolveService } from "./data";
 import type { Locale } from "@/i18n/config";
 import { localeAlternates } from "@/i18n/alternates";
@@ -46,10 +47,16 @@ export default async function QuotePage({
           extra request. `render=` loads v3 in "invisible" mode: no widget, no
           checkbox, execute() is called per-submit from QuoteWizard. */}
       {recaptchaSiteKey && (
-        <Script
-          src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
-          strategy="afterInteractive"
-        />
+        <>
+          <Script
+            src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
+            strategy="afterInteractive"
+          />
+          {/* Keeps the floating badge scoped to this page — the script itself
+              cannot be unloaded on navigation, so the badge is revealed only
+              while this is mounted. */}
+          <RecaptchaBadge />
+        </>
       )}
       <QuoteExperience initialService={initialService} initialStep={initialStep} />
     </>

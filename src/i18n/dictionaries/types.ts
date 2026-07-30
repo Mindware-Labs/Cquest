@@ -36,6 +36,13 @@ export interface Dictionary {
     replayLabel: string;
     navLinks: { services: string; successStories: string; about: string; contact: string };
     typedLine: string;
+    /**
+     * Accessible name for the mascot's speech bubble, which links to the
+     * quote form. Must open with the same words as `typedLine` — the bubble's
+     * visible text is that line, and WCAG 2.5.3 (Label in Name) requires the
+     * accessible name to contain the visible label.
+     */
+    sayCtaLabel: string;
     onlineLabel: string;
     locationLabel: string;
   };

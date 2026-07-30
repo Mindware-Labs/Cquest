@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { INTRO_TAIL_MS, SCENE, sceneAt } from "./animation";
 import styles from "./QuestBotScene.module.css";
 
@@ -47,6 +48,11 @@ export default function QuestBotScene({
   /* True once the mascot has finished assembling. Only then does it start
      tracking the pointer — a gaze that fights the roll-in reads as a glitch. */
   const [settled, setSettled] = useState(false);
+  /* True once the speech bubble has popped, which is when its link becomes
+     real. Tracked separately from `settled` because the bubble arrives at
+     2.85s and the assembly only finishes at 3.4s — half a second in which an
+     invisible link would already be tabbable. */
+  const [sayReady, setSayReady] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   /* Held in a ref so a new callback identity from the parent can't restart
@@ -78,6 +84,7 @@ export default function QuestBotScene({
   const replay = useCallback(() => {
     startedRef.current = true;
     setSettled(false);
+    setSayReady(false);
     setTyped("");
     setRunId((id) => id + 1);
   }, []);
@@ -101,13 +108,20 @@ export default function QuestBotScene({
     return () => io.disconnect();
   }, [replay]);
 
-  /* Hand the mascot over to the pointer once the assembly has resolved.
-     Under reduced motion there is no assembly and no gaze, so nothing to
-     wait for. */
+  /* Arm the bubble's link when the bubble appears, and hand the mascot over
+     to the pointer once the assembly has resolved. Under reduced motion the
+     scene is already assembled and the bubble already visible, so the link is
+     live immediately and there is no gaze to wait for. */
   useEffect(() => {
-    if (runId === 0 || reduced) return;
-    const id = window.setTimeout(() => setSettled(true), sceneAt(SCENE.settled));
-    return () => window.clearTimeout(id);
+    if (runId === 0) return;
+    const timers: number[] = [];
+    if (reduced) {
+      timers.push(window.setTimeout(() => setSayReady(true), 0));
+    } else {
+      timers.push(window.setTimeout(() => setSayReady(true), sceneAt(SCENE.say)));
+      timers.push(window.setTimeout(() => setSettled(true), sceneAt(SCENE.settled)));
+    }
+    return () => timers.forEach((t) => window.clearTimeout(t));
   }, [runId, reduced]);
 
   useEffect(() => {
@@ -359,14 +373,28 @@ export default function QuestBotScene({
           </g>
         </svg>
 
+        {/* The bubble is the mascot's ask, so it doubles as the route to the
+            form that answers it. A real link, not a click handler: it has to
+            survive middle-click, "open in new tab" and keyboard traversal.
+            `inert` until the bubble has actually popped — before that it is a
+            fully-transparent link lying across the mascot, which is exactly
+            the sort of thing a keyboard user tabs into and cannot see. */}
         <div className={styles.say}>
-          <div className={styles.sayBox}>
-            <div className={styles.sayEyebrow}>{dict.hero.onlineLabel}</div>
-            <div className={styles.sayLine}>
+          <LocalizedLink
+            href="/quote"
+            aria-label={dict.hero.sayCtaLabel}
+            className={styles.sayBox}
+            inert={!sayReady}
+          >
+            {/* aria-hidden: the accessible name comes from the label above.
+                Mid-typing this line is a fragment ("dame tu mi"), which is
+                worse than useless read aloud. */}
+            <div aria-hidden className={styles.sayEyebrow}>{dict.hero.onlineLabel}</div>
+            <div aria-hidden className={styles.sayLine}>
               {shown}
               <span className={styles.caret} />
             </div>
-          </div>
+          </LocalizedLink>
         </div>
       </div>
 

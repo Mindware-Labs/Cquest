@@ -124,6 +124,33 @@ html.lenis body {
   }
 }
 
+/* ── reCAPTCHA badge ─────────────────────────────────────
+   The v3 script appends its floating badge to <body> and never removes it,
+   and `next/script` does not unload scripts on unmount — so navigating away
+   from the quote form used to leave the badge pinned over every page after
+   it, hero included. Hidden by default; the quote page opts back in by
+   setting `data-recaptcha` on <html> for as long as it is mounted (see
+   app/[lang]/quote/RecaptchaBadge.tsx).
+
+   `visibility` rather than `display` so the badge keeps its layout box and
+   Google's own positioning maths stays valid, and it is transitioned along
+   with opacity so the flip to hidden waits for the fade instead of snapping
+   out from under it. */
+.grecaptcha-badge {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 200ms var(--ease-out),
+    visibility 200ms var(--ease-out);
+}
+
+html[data-recaptcha="on"] .grecaptcha-badge {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ── Selection ───────────────────────────────────────── */
 
 ::selection {
