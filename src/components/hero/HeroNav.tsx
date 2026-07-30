@@ -5,9 +5,16 @@ import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import QuestLogoMark from "./QuestLogoMark";
-import { EASE_OUT, getHeroNavLinks } from "./animation";
+import { EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
 
-export default function HeroNav({ reduced }: { reduced: boolean }) {
+export default function HeroNav({
+  reduced,
+  revealed,
+}: {
+  reduced: boolean;
+  /** False during act one, while the mascot has the stage to itself. */
+  revealed: boolean;
+}) {
   const { dict, lang } = useI18n();
   const heroNavLinks = getHeroNavLinks(dict, lang);
   const [open, setOpen] = useState(false);
@@ -15,8 +22,12 @@ export default function HeroNav({ reduced }: { reduced: boolean }) {
   return (
     <motion.div
       initial={reduced ? false : { opacity: 0, y: -14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: EASE_OUT }}
+      animate={revealed ? { opacity: 1, y: 0 } : { opacity: 0, y: -14 }}
+      transition={{ duration: 0.7, ease: EASE_OUT, delay: revealed ? REVEAL.nav : 0 }}
+      /* Hidden means hidden: while it's invisible the chrome must also be
+         untabbable and unclickable, or there's an invisible menu button
+         sitting over the mascot waiting to be hit. */
+      inert={!revealed}
       className="relative z-20"
     >
       <div className="grid w-full grid-cols-2 items-center px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5 md:grid-cols-3 lg:px-8 xl:px-10">

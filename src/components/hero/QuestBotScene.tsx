@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SCENE, sceneAt } from "./animation";
+import { INTRO_TAIL_MS, SCENE, sceneAt } from "./animation";
 import styles from "./QuestBotScene.module.css";
 
 /* Human typing rhythm. A fixed 58ms metronome reads as a machine printing a
@@ -28,10 +28,17 @@ function cx(...classes: Array<string | false | undefined>) {
 export default function QuestBotScene({
   reduced,
   ambient,
+  onIntroDone,
 }: {
   reduced: boolean;
   /** False when the hero is off-screen or the tab is hidden — parks the loops. */
   ambient: boolean;
+  /**
+   * Fired once, a beat after the mascot lands its last keystroke — the real
+   * end of the intro. The keystroke delays are jittered, so the duration
+   * cannot be predicted from the score; the scene has to report it.
+   */
+  onIntroDone?: () => void;
 }) {
   const { dict } = useI18n();
   const line = dict.hero.typedLine;
@@ -42,6 +49,12 @@ export default function QuestBotScene({
   const [settled, setSettled] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
+  /* Held in a ref so a new callback identity from the parent can't restart
+     the typing effect — and so replaying the mascot never re-fires it. */
+  const introDoneRef = useRef(onIntroDone);
+  useEffect(() => {
+    introDoneRef.current = onIntroDone;
+  }, [onIntroDone]);
 
   /* ── Pointer gaze ──────────────────────────────────────────────────────
      Normalised -1..1 across the stage, run through a soft, slightly
@@ -162,14 +175,24 @@ export default function QuestBotScene({
   }, [settled, reduced, pointerX, pointerY]);
 
   useEffect(() => {
-    if (runId === 0 || reduced) return;
+    if (runId === 0) return;
 
     const timers: number[] = [];
+
+    /* Reduced motion has no intro to wait out — release the page at once. */
+    if (reduced) {
+      timers.push(window.setTimeout(() => introDoneRef.current?.(), 0));
+      return () => timers.forEach((t) => window.clearTimeout(t));
+    }
+
     const type = (i: number) => {
       setTyped(line.slice(0, i));
       if (i < line.length) {
         timers.push(window.setTimeout(() => type(i + 1), keystrokeDelay(line[i - 1] ?? "")));
+        return;
       }
+      /* Last keystroke has landed. This is the end of act one. */
+      timers.push(window.setTimeout(() => introDoneRef.current?.(), INTRO_TAIL_MS));
     };
     /* type(0) writes the empty string first, so the line clears on the exact
        frame typing begins rather than eagerly during this render. */

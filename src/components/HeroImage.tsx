@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import HeroActions from "@/components/hero/HeroActions";
 import HeroHeadline from "@/components/hero/HeroHeadline";
@@ -9,7 +9,14 @@ import HeroScrollCue from "@/components/hero/HeroScrollCue";
 import QuestBotScene from "@/components/hero/QuestBotScene";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
-import { BEAT, EASE_OUT_EXPO, rise, ruleVariants } from "@/components/hero/animation";
+import {
+  BEAT,
+  EASE_OUT_EXPO,
+  INTRO_SAFETY_MS,
+  REVEAL,
+  rise,
+  ruleVariants,
+} from "@/components/hero/animation";
 
 export default function HeroImage() {
   const { dict } = useI18n();
@@ -17,6 +24,9 @@ export default function HeroImage() {
   const tabVisible = useTabVisibility();
   const sectionRef = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(true);
+  /* Act one / act two. False means the mascot has the hero to itself. */
+  const [revealed, setRevealed] = useState(false);
+  const reveal = useCallback(() => setRevealed(true), []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -57,6 +67,34 @@ export default function HeroImage() {
     return () => io.disconnect();
   }, []);
 
+  /* ── Escape hatches out of act one ────────────────────────────────────
+     The intro holds the nav, the headline and the CTA at opacity 0 for about
+     five seconds. Two things must never be true of that hold:
+
+     1. It must not be able to get stuck. QuestBotScene reports the real end
+        of its typing, but if that report never arrives — the scene never
+        intersects, a backgrounded tab drops the timers — the page still has
+        to arrive. INTRO_SAFETY_MS is the backstop.
+     2. It must not trap anyone. If the reader scrolls, taps or presses a key
+        they have stopped watching the animation, and holding the chrome back
+        from someone actively reaching for it is just a broken page. Any of
+        those cuts straight to act two. */
+  useEffect(() => {
+    if (revealed || reduced) return;
+
+    const cap = window.setTimeout(reveal, INTRO_SAFETY_MS);
+    window.addEventListener("scroll", reveal, { passive: true });
+    window.addEventListener("pointerdown", reveal);
+    window.addEventListener("keydown", reveal);
+
+    return () => {
+      window.clearTimeout(cap);
+      window.removeEventListener("scroll", reveal);
+      window.removeEventListener("pointerdown", reveal);
+      window.removeEventListener("keydown", reveal);
+    };
+  }, [revealed, reduced, reveal]);
+
   const ambient = onScreen && tabVisible && !reduced;
 
   return (
@@ -85,7 +123,7 @@ export default function HeroImage() {
         <div className="cq-hero-vignette" />
       </motion.div>
 
-      <HeroNav reduced={reduced} />
+      <HeroNav reduced={reduced} revealed={revealed} />
 
       <motion.div
         style={{ y: sceneY, scale: sceneScale, opacity: sceneOpacity }}
@@ -97,14 +135,19 @@ export default function HeroImage() {
           transition={{ duration: 0.95, ease: EASE_OUT_EXPO, delay: BEAT.scene }}
           className="w-full"
         >
-          <QuestBotScene reduced={reduced} ambient={ambient} />
+          <QuestBotScene reduced={reduced} ambient={ambient} onIntroDone={reveal} />
         </motion.div>
       </motion.div>
 
       <motion.div
         style={{ y: copyY, opacity: copyOpacity }}
         initial={reduced ? false : "hidden"}
-        animate="visible"
+        animate={revealed ? "visible" : "hidden"}
+        /* Deliberately NOT inert as a block. `inert` pulls a subtree out of
+           the accessibility tree, and the h1 is the page's only heading — a
+           screen reader landing here during act one must still find it. Text
+           that is merely invisible costs nothing; it's the focusable CTA
+           inside that needs neutralising, so the guard sits on that alone. */
         className="relative z-10 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:px-6 lg:px-8 xl:px-10"
       >
         {/* The headline spans the full measure, and the row beneath it is
@@ -114,7 +157,12 @@ export default function HeroImage() {
             weight of the type. */}
         <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
 
-        <HeroHeadline text={dict.hero.headline} reduced={reduced} className="mt-6" />
+        <HeroHeadline
+          text={dict.hero.headline}
+          reduced={reduced}
+          revealed={revealed}
+          className="mt-6"
+        />
 
         {/* Negative on purpose. The headline's own line box already carries
             ~28px below its last baseline — one full line of the lead — so zero
@@ -128,20 +176,27 @@ export default function HeroImage() {
             frame, not how far the lead sits up. */}
         <div className="-mt-2 grid items-end gap-x-12 gap-y-6 sm:grid-cols-[minmax(0,1fr)_auto]">
           <motion.p
-            variants={rise(BEAT.lead)}
+            variants={rise(REVEAL.lead)}
             style={{ textWrap: "balance" }}
             className="max-w-[42ch] text-pretty text-[1.0625rem] font-light leading-relaxed text-white/85"
           >
             {dict.hero.lead}
           </motion.p>
 
-          <motion.div variants={rise(BEAT.cta, 14)}>
+          {/* An invisible link lying across the mascot is a trap for keyboard
+              and pointer alike — inert until it's actually on screen. */}
+          <motion.div variants={rise(REVEAL.cta, 14)} inert={!revealed}>
             <HeroActions />
           </motion.div>
         </div>
       </motion.div>
 
-      <HeroScrollCue reduced={reduced} ambient={ambient} opacity={cueOpacity} />
+      <HeroScrollCue
+        reduced={reduced}
+        ambient={ambient}
+        revealed={revealed}
+        opacity={cueOpacity}
+      />
     </section>
   );
 }

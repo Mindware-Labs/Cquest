@@ -20,10 +20,13 @@ import { wordVariants } from "./animation";
 export default function HeroHeadline({
   text,
   reduced,
+  revealed,
   className = "",
 }: {
   text: string;
   reduced: boolean;
+  /** False during act one, while the mascot has the stage to itself. */
+  revealed: boolean;
   className?: string;
 }) {
   const words = text.split(" ");
@@ -32,7 +35,7 @@ export default function HeroHeadline({
     <motion.h1
       aria-label={text}
       initial={reduced ? false : "hidden"}
-      animate="visible"
+      animate={revealed ? "visible" : "hidden"}
       className={`cq-hero-h1 text-white ${className}`}
     >
       {words.map((word, i) => (

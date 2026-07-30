@@ -10,39 +10,48 @@ export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 /**
- * ── The hero's master score ──────────────────────────────────────────────
+ * ── Act one: the mascot alone ────────────────────────────────────────────
  *
- * Seconds from the moment the hero mounts. Everything that moves in the hero
- * reads its delay from this table — the Framer-driven copy *and* the mascot's
- * CSS timeline, which receives `scene` as the `--qb-t0` custom property and
- * offsets every one of its own keyframe delays by it.
+ * Seconds from the moment the hero mounts. `scene` reaches the mascot's CSS
+ * timeline as the `--qb-t0` custom property, which offsets every one of its
+ * keyframe delays — so the JS clock and the CSS clock are the same clock.
+ * Before this existed the copy's stagger started on mount while the mascot's
+ * keyframes started when the IntersectionObserver fired, and the two tracks
+ * only lined up by accident.
  *
- * That's the whole point: before, the copy's stagger started on mount while
- * the mascot's keyframes started when the IntersectionObserver fired, so the
- * two tracks only lined up by accident. One table, one clock.
- *
- * Reading the score: the mascot rolls in first and owns the eye. The headline
- * clears its mask *during* that roll (≈0.6s), so the message is legible long
- * before the mascot finishes assembling itself at ≈3s — the assembly is a
- * background delight, never a gate on comprehension.
+ * Nothing else in the hero moves during act one. The stage is the mascot's.
  */
 export const BEAT = {
-  /** Nav fades down immediately — chrome should never feel late. */
-  nav: 0,
   /** Mascot begins its roll; also the CSS scene's `--qb-t0`. */
   scene: 0.14,
+} as const;
+
+/**
+ * ── Act two: the page arrives ────────────────────────────────────────────
+ *
+ * Offsets from the moment the mascot finishes typing its line — not from
+ * mount. The trigger is the real end of the typing effect (the keystroke
+ * delays are jittered, so its duration isn't knowable in advance), handed up
+ * from QuestBotScene, which is why these are relative rather than absolute.
+ *
+ * The cascade is tighter than a normal entrance: by this point the reader has
+ * been watching for four seconds and the page needs to resolve, not unfurl.
+ */
+export const REVEAL = {
+  /** Chrome first — it frames everything that follows. */
+  nav: 0,
   /** Accent hairline draws left→right, opening the copy block. */
-  rule: 0.46,
+  rule: 0.1,
   /** First headline word clears its mask. */
-  headline: 0.58,
-  /** Per-word offset. 90ms reads as one wave, not seven events. */
-  headlineStep: 0.09,
+  headline: 0.18,
+  /** Per-word offset. 70ms reads as one wave, not seven events. */
+  headlineStep: 0.07,
   /** Supporting lead. */
-  lead: 1.16,
+  lead: 0.5,
   /** Primary CTA — last, so it's the final thing the eye lands on. */
-  cta: 1.28,
+  cta: 0.6,
   /** Scroll cue, once the composition has resolved. */
-  cue: 1.62,
+  cue: 0.78,
 } as const;
 
 /**
@@ -59,6 +68,21 @@ export const SCENE = {
   /** Everything has assembled; safe to hand the mascot to the pointer. */
   settled: 3.4,
 } as const;
+
+/**
+ * Beat of silence after the last keystroke before act two begins. Without it
+ * the page starts arriving on the same frame the line lands, and the two read
+ * as one event instead of a statement and its answer.
+ */
+export const INTRO_TAIL_MS = 420;
+
+/**
+ * Hard ceiling on act one. If the mascot's timeline never reports back — the
+ * scene never intersects, a timer is dropped by a backgrounded tab, an error
+ * in the typing effect — the rest of the page must still arrive. Nothing the
+ * user needs may depend on an animation succeeding.
+ */
+export const INTRO_SAFETY_MS = 7000;
 
 /** Absolute ms offset for a scene beat, including the shared `t0`. */
 export function sceneAt(beat: number): number {
@@ -97,7 +121,7 @@ export const wordVariants: Variants = {
     transition: {
       duration: 1.15,
       ease: EASE_OUT_EXPO,
-      delay: BEAT.headline + i * BEAT.headlineStep,
+      delay: REVEAL.headline + i * REVEAL.headlineStep,
     },
   }),
 };
@@ -121,6 +145,6 @@ export const ruleVariants: Variants = {
   visible: {
     scaleX: 1,
     opacity: 1,
-    transition: { duration: 1, ease: EASE_OUT_EXPO, delay: BEAT.rule },
+    transition: { duration: 1, ease: EASE_OUT_EXPO, delay: REVEAL.rule },
   },
 };
