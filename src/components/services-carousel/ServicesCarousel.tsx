@@ -27,7 +27,21 @@ const SWIPE_THRESHOLD = 9000;
 const swipePower = (offset: number, velocity: number) =>
   Math.abs(offset) * velocity;
 
-/* Each slide owns one viewport-height of scrolling inside the pinned track. */
+/* ── Band length ─────────────────────────────────────────────────────────
+   How much scrolling each page owns, in dvh. The track is one viewport (the
+   pinned stage itself) plus one band per page, so the scroll budget works
+   out to exactly BAND_DVH per turn.
+
+   45 rather than the 100 a naive pin would give: at a full viewport per page
+   the section takes three screen-heights of scrolling to cross and every
+   turn feels like it has to be dragged out of the page. Under ~30 the turns
+   start firing faster than the 0.6s page animation can finish, so gestures
+   stack up. Tune here — the progress maths below is in fractions of the
+   budget, so it follows automatically. */
+const BAND_DVH = 45;
+const TRACK_DVH = 100 + SERVICES.length * BAND_DVH;
+
+/* One page's share of the scroll budget, as a fraction of progress. */
 const BAND = 1 / SERVICES.length;
 /* Dead band around each boundary. Without it, a scroll parked exactly on a
    threshold (or Lenis easing back and forth by a pixel) strobes between two
@@ -89,10 +103,10 @@ export default function ServicesCarousel() {
   const sectionRef = useRef<HTMLElement>(null);
 
   /* ── The pin ─────────────────────────────────────────────────────────
-     The section is SERVICES.length × 100dvh tall and its stage is
-     `position: sticky; top: 0`, so reaching the section parks the stage on
-     screen and the remaining height becomes the scroll budget for turning
-     pages. Progress runs 0 → 1 across exactly that budget.
+     The section is TRACK_DVH tall and its stage is `position: sticky;
+     top: 0`, so reaching the section parks the stage on screen and the
+     height beyond that one pinned viewport becomes the scroll budget for
+     turning pages. Progress runs 0 → 1 across exactly that budget.
 
      This replaces a wheel listener that used to preventDefault its way
      through the section. That approach could not hold: Lenis runs its own
@@ -176,7 +190,7 @@ export default function ServicesCarousel() {
         {
           "--svc": service.color,
           "--svc-glow": service.glow,
-          height: `${SERVICES.length * 100}dvh`,
+          height: `${TRACK_DVH}dvh`,
         } as CSSProperties
       }
       className="cq-carousel-track relative w-full"
