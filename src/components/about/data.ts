@@ -15,7 +15,7 @@ export const ABOUT_METRICS: ReadonlyArray<{
 }> = [
   { id: "agents", value: 200, suffix: "+", label: { en: "Call center operators", es: "Operadores de call center" } },
   { id: "developers", value: 10, suffix: "", label: { en: "Specialized developers", es: "Programadores especializados" } },
-  { id: "clients", value: 40, suffix: "+", label: { en: "Active clients", es: "Clientes activos" } },
+  { id: "clients", value: 10, suffix: "+", label: { en: "Active clients", es: "Clientes activos" } },
   { id: "years", value: 8, suffix: "+", label: { en: "Years of experience", es: "Años de experiencia" } },
 ];
 
@@ -57,7 +57,7 @@ export const ABOUT_VALUES: ReadonlyArray<{
     title: { en: "People first", es: "Las personas primero" },
     description: {
       en: "Every account is run by trained, supervised people — not a script read at volume.",
-      es: "Cada cuenta la maneja gente capacitada y supervisada — no un guion leído en volumen.",
+      es: "Cada cuenta la maneja gente capacitada y supervisada, no un guion leído en volumen.",
     },
   },
   {
@@ -75,7 +75,7 @@ export const ABOUT_VALUES: ReadonlyArray<{
     title: { en: "Straight answers", es: "Respuestas directas" },
     description: {
       en: "Clients see the real numbers behind their operation — good weeks and hard ones — with no spin in between.",
-      es: "Los clientes ven los números reales detrás de su operación — semanas buenas y difíciles — sin adornos de por medio.",
+      es: "Los clientes ven los números reales detrás de su operación, semanas buenas y difíciles, sin adornos de por medio.",
     },
   },
   {
@@ -84,7 +84,7 @@ export const ABOUT_VALUES: ReadonlyArray<{
     title: { en: "Always improving", es: "Mejora constante" },
     description: {
       en: "Coaching and process reviews don't stop at launch — every operation is expected to get better every quarter.",
-      es: "El coaching y las revisiones de proceso no terminan en el lanzamiento — cada operación debe mejorar cada trimestre.",
+      es: "El coaching y las revisiones de proceso no terminan en el lanzamiento, cada operación debe mejorar cada trimestre.",
     },
   },
 ];

@@ -9,6 +9,14 @@
   margin-inline: auto;
 }
 
+.beamAmbient {
+  position: absolute;
+  inset: -12%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 10%, transparent), transparent 72%);
+}
+
 .node,
 .hub {
   position: absolute;
@@ -23,16 +31,21 @@
   gap: 0.5rem;
   max-width: min(10.5rem, 34%);
   padding: 0.5rem 0.85rem;
-  border: 1px solid var(--ab-rule);
+  border: 1px solid color-mix(in srgb, var(--ab-rule) 70%, transparent);
   border-radius: 999px;
+  opacity: 0.82;
   transition:
+    opacity 320ms var(--ease-out),
     border-color 320ms var(--ease-out),
-    box-shadow 420ms var(--ease-out);
+    box-shadow 420ms var(--ease-out),
+    scale 320ms var(--ease-out);
 }
 
 .node:hover {
+  opacity: 1;
   border-color: color-mix(in srgb, var(--ab-celeste) 55%, var(--ab-rule));
   box-shadow: 0 0.75rem 2rem -1rem color-mix(in srgb, var(--ab-petroleo) 60%, transparent);
+  scale: 1.05;
 }
 
 .posTop {
@@ -94,10 +107,13 @@
   width: clamp(6.5rem, 14vw, 8.5rem);
   aspect-ratio: 1;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 40%, var(--ab-rule));
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 50%, var(--ab-rule));
   background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 18%, var(--ab-raised)), var(--ab-raised));
-  box-shadow: 0 1.25rem 2.75rem -1.75rem color-mix(in srgb, var(--ab-petroleo) 70%, transparent);
+    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 26%, var(--ab-raised)), var(--ab-raised) 75%);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--ab-celeste) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ab-celeste) 22%, transparent) inset,
+    0 1.75rem 3.5rem -1.5rem color-mix(in srgb, var(--ab-petroleo) 80%, transparent);
 }
 
 .hubText {
@@ -115,19 +131,20 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 65%, transparent);
   opacity: 0;
   pointer-events: none;
 }
 
 :global([data-ambient-active="true"]) .hubPulse {
-  animation: hub-pulse 3.6s var(--ease-out-soft) infinite;
+  animation: hub-pulse 4s var(--ease-out-soft) infinite;
+  animation-delay: var(--pulse-delay, 0s);
 }
 
 @keyframes hub-pulse {
-  0% { transform: scale(1); opacity: 0.55; }
-  70% { transform: scale(1.22); opacity: 0; }
-  100% { transform: scale(1.22); opacity: 0; }
+  0%, 92% { transform: scale(1); opacity: 0; }
+  94% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.28); opacity: 0; }
 }
 
 .beamCaption {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import { useI18n } from "@/i18n/I18nProvider";
 import AnimatedBeam from "./AnimatedBeam";
@@ -54,11 +54,14 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
   const telecomRef = useRef<HTMLDivElement>(null);
   const tourismRef = useRef<HTMLDivElement>(null);
 
-  const beam = { containerRef, toRef: hubRef, duration: 4, reduced, curvature: 0 };
+  const duration = 4;
+  const beam = { containerRef, toRef: hubRef, duration, reduced, curvature: 0 };
+  const delays = [0, 0.7, 1.3, 2.1, 2.8];
 
   return (
     <figure className={styles.beamFigure}>
       <div ref={containerRef} className={styles.beamStage}>
+        <span aria-hidden className={styles.beamAmbient} />
         <SectorNode nodeRef={healthRef} icon={health.icon} label={health.label[lang]} {...RING[0]} />
         <SectorNode nodeRef={bankingRef} icon={banking.icon} label={banking.label[lang]} {...RING[1]} />
         <SectorNode nodeRef={retailRef} icon={retail.icon} label={retail.label[lang]} {...RING[2]} />
@@ -66,15 +69,26 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
         <SectorNode nodeRef={tourismRef} icon={tourism.icon} label={tourism.label[lang]} {...RING[4]} />
 
         <div ref={hubRef} className={styles.hub}>
-          <span className={styles.hubPulse} aria-hidden />
+          {/* One flash ring per incoming beam, timed to arrive right as that
+              beam's travelling gradient reaches the hub (delay + duration),
+              so the hub reads as reacting to each connection rather than
+              pulsing on its own independent clock. */}
+          {!reduced && delays.map((delay) => (
+            <span
+              key={delay}
+              className={styles.hubPulse}
+              aria-hidden
+              style={{ "--pulse-delay": `${delay + duration}s` } as CSSProperties}
+            />
+          ))}
           <span className={styles.hubText}>{t.hub}</span>
         </div>
 
-        <AnimatedBeam {...beam} fromRef={healthRef} delay={0} />
-        <AnimatedBeam {...beam} fromRef={bankingRef} delay={0.7} />
-        <AnimatedBeam {...beam} fromRef={retailRef} delay={1.3} />
-        <AnimatedBeam {...beam} fromRef={telecomRef} delay={2.1} />
-        <AnimatedBeam {...beam} fromRef={tourismRef} delay={2.8} />
+        <AnimatedBeam {...beam} fromRef={healthRef} delay={delays[0]} />
+        <AnimatedBeam {...beam} fromRef={bankingRef} delay={delays[1]} />
+        <AnimatedBeam {...beam} fromRef={retailRef} delay={delays[2]} />
+        <AnimatedBeam {...beam} fromRef={telecomRef} delay={delays[3]} />
+        <AnimatedBeam {...beam} fromRef={tourismRef} delay={delays[4]} />
       </div>
       <figcaption className={styles.beamCaption}>{t.caption}</figcaption>
     </figure>

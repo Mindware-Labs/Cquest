@@ -117,10 +117,10 @@ export default function AnimatedBeam({
     >
       {/* Resting path: the connection is always legible, lit or not — which
           is also the entire visual under reduced motion. */}
-      <path d={path} stroke="var(--ab-rule)" strokeWidth={2} strokeLinecap="round" />
+      <path d={path} stroke="var(--ab-rule)" strokeWidth={1.5} strokeLinecap="round" />
       {!reduced && (
         <>
-          <path d={path} stroke={`url(#${id})`} strokeWidth={2} strokeLinecap="round" />
+          <path d={path} stroke={`url(#${id})`} strokeWidth={1.5} strokeLinecap="round" className={styles.beamGlow} />
           <defs>
             <motion.linearGradient
               id={id}
