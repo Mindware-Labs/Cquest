@@ -144,8 +144,7 @@
 
 .detailGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2rem;
+  grid-template-columns: 1fr;
   margin-top: 1.25rem;
   padding-block: 1.25rem;
   border-block: 1px solid var(--cc-hairline);
@@ -188,20 +187,6 @@
   height: 0.4rem;
   border-radius: 50%;
   background: var(--cc-sky);
-}
-
-/* Same "benefit callout" idiom as ClientDialog's .dialogProvides — tinted
-   well, sky hairline, square-cut corner. It was the page's one 0.75rem
-   radius, floating unbordered next to a bulleted list. */
-.clientBenefit {
-  padding: 1rem 1.15rem;
-  border: 1px solid color-mix(in srgb, var(--cc-sky) 22%, transparent);
-  border-radius: var(--cc-radius);
-  background: color-mix(in srgb, var(--cc-sky) 8%, white);
-}
-
-.clientBenefit p {
-  min-height: calc(0.95rem * 1.6 * 4);
 }
 
 .channelRow {
@@ -250,7 +235,6 @@
   .capabilityLayout { grid-template-columns: 1fr; }
   .capabilityIndex { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .capabilityTab:nth-child(odd) { border-right: 1px solid var(--cc-rule); }
-  .detailGrid { gap: 2rem; }
 }
 
 /* ── Mobile accordion — below `md` this replaces the tab+panel layout
@@ -347,11 +331,10 @@
 }
 
 .accordionPanelInner .capabilityDescription { min-height: 0; margin-top: 0; }
-.accordionPanelInner .detailGrid { grid-template-columns: 1fr; gap: 1.5rem; padding-block: 1.25rem; }
+.accordionPanelInner .detailGrid { padding-block: 1.25rem; }
 /* No height reservations in the accordion — each panel opens in place against
    an animated height, so there's no sibling panel to stay in step with and
    reserved space would just render as dead air. */
 .accordionPanelInner .detailGrid ul { min-height: 0; }
-.accordionPanelInner .clientBenefit p { min-height: 0; }
 .accordionPanelInner .channelRow { align-items: flex-start; flex-direction: column; }
 .accordionPanelInner .channelRow ul { justify-content: flex-start; gap: 0.9rem 1.35rem; }

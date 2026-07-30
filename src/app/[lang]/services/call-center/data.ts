@@ -247,8 +247,8 @@ export const CLIENT_LOGOS = [
     },
     source: "https://altice.com.do/personal/nosotros/institucional/nosotros/grupo-altice",
     provides: {
-      en: "We run Altice's customer service and manage the nationwide distribution and sale of Altice SIM chips. Every chip sold is logged and time-stamped, feeding the KPI metrics and sales follow-up the account runs on.",
-      es: "Gestionamos el servicio al cliente de Altice y administramos la distribución y venta a nivel nacional de chips SIM de Altice. Cada chip vendido queda registrado con fecha y hora, alimentando las métricas de KPI y el seguimiento de ventas sobre los que opera la cuenta.",
+      en: "We run Altice's customer service and manage the nationwide distribution and sale of Altice SIM chips, along with sales of Altice's home services and mobile plans. Every sale is logged and time-stamped, feeding the KPI metrics and sales follow-up the account runs on.",
+      es: "Gestionamos el servicio al cliente de Altice y administramos la distribución y venta a nivel nacional de chips SIM de Altice, junto con la venta de servicios de hogar y planes móviles de Altice. Cada venta queda registrada con fecha y hora, alimentando las métricas de KPI y el seguimiento de ventas sobre los que opera la cuenta.",
     },
   },
   {
@@ -256,8 +256,8 @@ export const CLIENT_LOGOS = [
     src: "/brands/pasoRapido.png",
     size: "padded",
     about: {
-      en: "It is the first public trust created by the Dominican State, through Fiduciaria Reservas, S.A., under Trust Agreement number one (01), signed on October 18, 2013. Represented by the Ministry of Public Works and Communications (MOPC), ratified by resolution number 156-13 issued by the National Congress on 11/25/2013 and published in Official Gazette 10735.",
-      es: "Es el primer fideicomiso público creado por el Estado dominicano, a través de Fiduciaria Reservas, S.A., bajo el Contrato de Fideicomiso número uno (01), firmado el 18 de octubre de 2013. Representado por el Ministerio de Obras Públicas y Comunicaciones (MOPC), ratificado mediante la resolución número 156-13 emitida por el Congreso Nacional el 25/11/2013 y publicada en la Gaceta Oficial 10735.",
+      en: "Paso Rápido is the Dominican Republic's electronic toll system — the first public trust created by the Dominican State, established in 2013 through Fiduciaria Reservas, S.A. and represented by the Ministry of Public Works and Communications (MOPC), with its creation ratified by the National Congress.",
+      es: "Paso Rápido es el sistema de peajes electrónicos de República Dominicana — el primer fideicomiso público creado por el Estado dominicano, constituido en 2013 a través de Fiduciaria Reservas, S.A. y representado por el Ministerio de Obras Públicas y Comunicaciones (MOPC), con su creación ratificada por el Congreso Nacional.",
     },
     source: "https://rdvial.gob.do/quienes-somos/",
     provides: {

@@ -31,6 +31,11 @@
   z-index: 1;
 }
 
+.pillarsParticles {
+  position: absolute;
+  inset: 0;
+}
+
 .pillarGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -62,18 +67,6 @@
   border-color: color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 45%, var(--ab-rule));
   box-shadow: 0 1.5rem 3rem -1.75rem color-mix(in srgb, var(--pillar-accent, var(--ab-petroleo)) 55%, transparent);
   translate: 0 -4px;
-}
-
-.pillarIndex {
-  position: absolute;
-  top: -0.9rem;
-  right: -0.4rem;
-  font-family: var(--font-heading), sans-serif;
-  font-size: 5.5rem;
-  font-weight: 700;
-  line-height: 1;
-  color: color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 14%, transparent);
-  pointer-events: none;
 }
 
 .pillarIcon {
@@ -111,6 +104,7 @@
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.7;
+  text-align: justify;
   text-wrap: pretty;
 }
 

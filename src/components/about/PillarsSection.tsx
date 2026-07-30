@@ -5,6 +5,7 @@ import { useRef } from "react";
 import SectionIntro from "@/components/services/SectionIntro";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceIconName } from "@/components/services/data";
+import { Particles } from "@/components/ui/particles";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import container from "@/components/services/Container.module.css";
 import { focusRiseVariants, groupVariants, statCardVariants, statLineVariants, VIEWPORT } from "@/components/services/motion";
@@ -18,49 +19,49 @@ const ACCENTS = ["var(--ab-petroleo)", "var(--ab-celeste)", "var(--ab-verde)"] a
 const COPY = {
   en: {
     heading: "What we stand for",
-    description: "Three sentences that decide how every account gets run, before a single agent picks up a call.",
+    description: "",
     cards: [
       {
         id: "mission",
-        icon: "trend" as ServiceIconName,
+        icon: "flag-mountain" as ServiceIconName,
         title: "Mission",
-        body: "Help Dominican businesses grow by running the operations behind them — with trained people, real technology and support that doesn't disappear after the sale.",
+        body: "Help businesses grow by running the operations behind them, with trained people, real technology and support that doesn't disappear after the sale.",
       },
       {
         id: "vision",
-        icon: "brain" as ServiceIconName,
+        icon: "eye" as ServiceIconName,
         title: "Vision",
-        body: "To be the operations partner Dominican and US companies default to — turning every client's vision into results they can measure, not just promises.",
+        body: "To be the operations partner companies default to, turning every client's vision into results they can measure, not just promises.",
       },
       {
         id: "values",
-        icon: "shield" as ServiceIconName,
+        icon: "diamond" as ServiceIconName,
         title: "Values",
-        body: "Four commitments carried into every account, detailed below.",
+        body: "The principles that shape how our teams are trained, how performance is tracked, and how we communicate, detailed above.",
       },
     ],
   },
   es: {
     heading: "En qué creemos",
-    description: "Tres frases que definen cómo se gestiona cada cuenta, antes de que un agente atienda la primera llamada.",
+    description: "",
     cards: [
       {
         id: "mission",
-        icon: "trend" as ServiceIconName,
+        icon: "flag-mountain" as ServiceIconName,
         title: "Misión",
-        body: "Ayudar a que las empresas dominicanas crezcan gestionando la operación detrás de ellas — con gente capacitada, tecnología real y soporte que no desaparece después de la venta.",
+        body: "Ayudar a que las empresas crezcan gestionando la operación detrás de ellas, con gente capacitada, tecnología real y soporte que no desaparece después de la venta.",
       },
       {
         id: "vision",
-        icon: "brain" as ServiceIconName,
+        icon: "eye" as ServiceIconName,
         title: "Visión",
-        body: "Ser el aliado operativo al que recurren por defecto las empresas dominicanas y estadounidenses — convirtiendo la visión de cada cliente en resultados medibles, no solo promesas.",
+        body: "Ser el aliado operativo al que recurren por defecto las empresas, convirtiendo la visión de cada cliente en resultados medibles, no solo promesas.",
       },
       {
         id: "values",
-        icon: "shield" as ServiceIconName,
+        icon: "diamond" as ServiceIconName,
         title: "Valores",
-        body: "Cuatro compromisos que llevamos a cada cuenta, detallados más abajo.",
+        body: "Los principios que definen cómo formamos a nuestros equipos, cómo medimos el desempeño y cómo nos comunicamos, detallados arriba.",
       },
     ],
   },
@@ -121,6 +122,7 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
       {!reduced && (
         <span aria-hidden className={styles.pillarsAura}>
           <span ref={auraRef} className={styles.pillarsAuraLight} />
+          <Particles className={styles.pillarsParticles} quantity={150} staticity={30} ease={50} size={1.3} color="#74c3d5" />
         </span>
       )}
       <div className={container.container}>
@@ -136,7 +138,6 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
           {t.cards.map((card, index) => (
             <motion.div key={card.id} variants={statCardVariants}>
               <SpotlightCard className={styles.pillarCard} reduced={reduced} glowColor={ACCENTS[index]}>
-                <span aria-hidden className={styles.pillarIndex}>{String(index + 1).padStart(2, "0")}</span>
                 <motion.span className={styles.pillarIcon} variants={focusRiseVariants}>
                   <ServiceIcon name={card.icon} />
                 </motion.span>

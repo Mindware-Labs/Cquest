@@ -18,7 +18,6 @@ const COPY = {
     tablistLabel: "Call Center capabilities",
     selectedCapability: "Selected capability",
     whatItIncludes: "What it includes",
-    clientBenefit: "Client benefit",
     channels: "Channels / touchpoints",
   },
   es: {
@@ -27,7 +26,6 @@ const COPY = {
     tablistLabel: "Capacidades de Call Center",
     selectedCapability: "Capacidad seleccionada",
     whatItIncludes: "Qué incluye",
-    clientBenefit: "Beneficio para el cliente",
     channels: "Canales / puntos de contacto",
   },
 };
@@ -149,10 +147,6 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
                   <h4>{t.whatItIncludes}</h4>
                   <ul>{activeDetail.includes[lang].map((item) => (<li key={item}>{item}</li>))}</ul>
                 </div>
-                <div className={styles.clientBenefit}>
-                  <h4>{t.clientBenefit}</h4>
-                  <p>{activeDetail.benefit[lang]}</p>
-                </div>
               </div>,
               <div key="channels" className={styles.channelRow}>
                 <span>{t.channels}</span>
@@ -232,10 +226,6 @@ function MobileCapabilities({ reduced }: { reduced: boolean }) {
                       <div>
                         <h4>{t.whatItIncludes}</h4>
                         <ul>{detail.includes[lang].map((line) => (<li key={line}>{line}</li>))}</ul>
-                      </div>
-                      <div className={styles.clientBenefit}>
-                        <h4>{t.clientBenefit}</h4>
-                        <p>{detail.benefit[lang]}</p>
                       </div>
                     </div>
                     <div className={styles.channelRow}>

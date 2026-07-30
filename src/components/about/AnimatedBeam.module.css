@@ -11,3 +11,7 @@
      design, and clipping it would sever the beam mid-arc. */
   overflow: visible;
 }
+
+.beamGlow {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--ab-celeste) 65%, transparent));
+}

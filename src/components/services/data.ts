@@ -22,7 +22,10 @@ export type ServiceIconName =
   | "code"
   | "phone"
   | "mail"
-  | "share";
+  | "share"
+  | "flag-mountain"
+  | "eye"
+  | "diamond";
 
 export type Service = {
   id: ServiceId;
