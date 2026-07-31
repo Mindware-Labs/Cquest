@@ -12,9 +12,27 @@ import { I18nProvider } from "@/i18n/I18nProvider";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
+/* The VARIABLE cut, not a list of static weights — and this is the single
+   highest-leverage typographic decision in the project.
+
+   This used to load only 400 and 500. The stylesheets ask for 600 in 63
+   places, 700 in 69, plus 800, 350 and 300 — so every uppercase micro-label,
+   every section heading and the hero's own emphasis word were being rendered
+   with SYNTHETIC bold: the browser mechanically smearing the 500 master
+   because it had no real cut to reach for. Faux bold is at its ugliest
+   exactly where this design uses it most, on 11-12px tracked caps. The
+   sub-400 weights fared no better — browsers do not synthesise lighter, so
+   `font-weight: 300` on the metric figures simply rendered as 400 and the
+   light-display look never happened at all.
+
+   Josefin Sans ships a variable font with a wght axis of 100–700, so one
+   file covers the entire range the design already asks for — usually less
+   over the wire than the two static cuts it replaces, never more.
+
+   The axis stops at 700: `font-weight: 800` has no cut above it to reach and
+   clamps, which is why the three heroes that asked for 800 now ask for 700. */
 const josefin = Josefin_Sans({
   subsets: ["latin"],
-  weight: ["400", "500"],
   variable: "--font-josefin",
   display: "swap",
 });

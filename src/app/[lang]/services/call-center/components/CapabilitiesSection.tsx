@@ -8,27 +8,38 @@ import ServiceIcon from "@/components/services/ServiceIcon";
 import container from "@/components/services/Container.module.css";
 import { EASE_OUT, focusRiseVariants, groupVariants, VIEWPORT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { CALL_CENTER, CAPABILITY_DETAIL, CAPABILITY_META, CHANNEL_ICON } from "../data";
 import styles from "./CapabilitiesSection.module.css";
 
+// The description promises exactly what the panel now shows. It used to end
+// on "...and the benefit it creates for the client", which stopped being true
+// the moment the client-benefit block was taken out of these cards.
 const COPY = {
   en: {
     title: <>Capabilities built around<br />the conversation</>,
-    description: "A clear structure for presenting what each service includes, how it works, and the benefit it creates for the client.",
-    tablistLabel: "Call Center capabilities",
-    selectedCapability: "Selected capability",
+    description: "Six capabilities, each opened to show what it covers and the channels it runs on.",
+    tablistLabel: "Call Center capabilities",
     whatItIncludes: "What it includes",
     channels: "Channels / touchpoints",
+    quoteCta: "Get a Call Center quote",
   },
   es: {
     title: <>Capacidades construidas<br />alrededor de la conversación</>,
-    description: "Una estructura clara para presentar qué incluye cada servicio, cómo funciona y el beneficio que crea para el cliente.",
-    tablistLabel: "Capacidades de Call Center",
-    selectedCapability: "Capacidad seleccionada",
+    description: "Seis capacidades, cada una abierta para mostrar qué cubre y por cuáles canales opera.",
+    tablistLabel: "Capacidades de Call Center",
     whatItIncludes: "Qué incluye",
     channels: "Canales / puntos de contacto",
+    quoteCta: "Cotizar Call Center",
   },
 };
+
+/* Step 2 of the quote wizard, with Call Center already chosen — the same
+   `?servicio=` contract the navbar builds its CTA from. There is no
+   per-capability parameter; the wizard resolves services, not capabilities. */
+const QUOTE_HREF = "/quote?servicio=call-center";
+
+const pad = (value: number) => String(value).padStart(2, "0");
 
 // Two independent renderings share the same data, same as DesktopNav /
 // MobileNav: a tab strip + shared detail panel above `md` (mouse-driven,
@@ -132,14 +143,17 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
 
       <motion.div id="capability-panel" role="tabpanel" tabIndex={0} aria-labelledby={activeTabId} className={styles.capabilityPanel} variants={focusRiseVariants}>
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={active.id} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
+          <motion.div key={active.id} className={styles.panelSheet} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
             {/* The panel slides in as one sheet, but its blocks land on a
-                cascade — heading first, then description, spec, channels —
+                cascade — heading first, then description, spec, closing row —
                 so a tab switch reads as content settling, not swapping. */}
             {[
               <div key="heading" className={styles.capabilityHeading}>
                 <span className={styles.capabilityIcon}><ServiceIcon name={activeMeta.icon} /></span>
-                <div><p>{t.selectedCapability}</p><h3>{active.title[lang]}</h3></div>
+                <h3>{active.title[lang]}</h3>
+                <span aria-hidden className={styles.capabilityCounter}>
+                  {pad(activeIndex + 1)} / {pad(CALL_CENTER.details.length)}
+                </span>
               </div>,
               <p key="description" className={styles.capabilityDescription}>{active.description[lang]}</p>,
               <div key="detail" className={styles.detailGrid}>
@@ -148,18 +162,25 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
                   <ul>{activeDetail.includes[lang].map((item) => (<li key={item}>{item}</li>))}</ul>
                 </div>
               </div>,
-              <div key="channels" className={styles.channelRow}>
-                <span>{t.channels}</span>
-                <ul>{activeMeta.channels.map((channel) => (
-                  <li key={channel.id}>
-                    <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel.id] ?? "messages"} /></span>
-                    {channel.label[lang]}
-                  </li>
-                ))}</ul>
+              <div key="foot" className={styles.panelFoot}>
+                <div className={styles.channelRow}>
+                  <span>{t.channels}</span>
+                  <ul>{activeMeta.channels.map((channel) => (
+                    <li key={channel.id}>
+                      <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel.id] ?? "messages"} /></span>
+                      {channel.label[lang]}
+                    </li>
+                  ))}</ul>
+                </div>
+                <LocalizedLink href={QUOTE_HREF} className={styles.panelCta}>
+                  {t.quoteCta}
+                  <Arrow className={styles.panelCtaArrow} />
+                </LocalizedLink>
               </div>,
             ].map((block, order) => (
               <motion.div
                 key={block.key}
+                className={styles.panelBlock}
                 initial={reduced ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: EASE_OUT, delay: reduced ? 0 : 0.05 + order * 0.06 }}
@@ -228,14 +249,20 @@ function MobileCapabilities({ reduced }: { reduced: boolean }) {
                         <ul>{detail.includes[lang].map((line) => (<li key={line}>{line}</li>))}</ul>
                       </div>
                     </div>
-                    <div className={styles.channelRow}>
-                      <span>{t.channels}</span>
-                      <ul>{meta.channels.map((channel) => (
-                        <li key={channel.id}>
-                          <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel.id] ?? "messages"} /></span>
-                          {channel.label[lang]}
-                        </li>
-                      ))}</ul>
+                    <div className={styles.panelFoot}>
+                      <div className={styles.channelRow}>
+                        <span>{t.channels}</span>
+                        <ul>{meta.channels.map((channel) => (
+                          <li key={channel.id}>
+                            <span className={styles.channelIcon}><ServiceIcon name={CHANNEL_ICON[channel.id] ?? "messages"} /></span>
+                            {channel.label[lang]}
+                          </li>
+                        ))}</ul>
+                      </div>
+                      <LocalizedLink href={QUOTE_HREF} className={styles.panelCta}>
+                        {t.quoteCta}
+                        <Arrow className={styles.panelCtaArrow} />
+                      </LocalizedLink>
                     </div>
                   </div>
                 </motion.div>

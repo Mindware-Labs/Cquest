@@ -37,7 +37,9 @@
 }
 
 .heroHeadlineStrong {
-  font-weight: 800;
+  /* 700 is the top of Josefin Sans' wght axis; 800 had nothing to resolve
+     to and clamped here anyway. */
+  font-weight: 700;
 }
 
 /* Curtain masks — each headline line rides up from behind its own clipped

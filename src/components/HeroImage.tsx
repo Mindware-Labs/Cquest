@@ -65,11 +65,22 @@ export default function HeroImage() {
     reduced ? [1, 1] : [1, 0],
   );
 
-  /* Decorative loops only run while someone can actually see them. */
+  /* Decorative loops only run while someone can actually see them.
+
+     The hero is 100svh + the curtain overlap, so a plain observer keeps it
+     "on screen" until its very last pixel clears the top of the window —
+     which is well after the services sheet has slid up and covered it. The
+     -25% top margin retires it once its bottom edge passes the upper
+     quarter of the viewport: by then the mascot, which sits centred in the
+     section, has been off screen for a quarter of a viewport, and what
+     remains below it is a strip of dark field with the sheet already over
+     most of it. Parking there is what keeps the descent into the services
+     section from having to composite two full stages at once. */
   useEffect(() => {
     const node = sectionRef.current;
     if (!node || !("IntersectionObserver" in window)) return;
     const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), {
+      rootMargin: "-25% 0px 0px 0px",
       threshold: 0,
     });
     io.observe(node);
@@ -115,7 +126,7 @@ export default function HeroImage() {
       <motion.div
         aria-hidden
         style={{ y: fieldY, scale: fieldScale }}
-        className="pointer-events-none absolute inset-x-0 -inset-y-8"
+        className="cq-hero-plane pointer-events-none absolute inset-x-0 -inset-y-8"
       >
         {/* A precise operational surface: the grid deforms locally under the
             pointer while the field and vignette preserve content hierarchy. */}
@@ -137,7 +148,7 @@ export default function HeroImage() {
 
       <motion.div
         style={{ y: sceneY, opacity: sceneOpacity }}
-        className="relative z-10 flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10"
+        className="cq-hero-plane relative z-10 flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10"
       >
         <motion.div
           initial={reduced ? false : { opacity: 0, scale: 0.985 }}
@@ -163,7 +174,7 @@ export default function HeroImage() {
            screen reader landing here during act one must still find it. Text
            that is merely invisible costs nothing; it's the focusable CTA
            inside that needs neutralising, so the guard sits on that alone. */
-        className="relative z-10 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:px-6 lg:px-8 xl:px-10"
+        className="cq-hero-plane relative z-10 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:px-6 lg:px-8 xl:px-10"
       >
         {/* The headline spans the full measure, and the row beneath it is
             anchored at both ends — lead on the left, CTA on the right. Hanging

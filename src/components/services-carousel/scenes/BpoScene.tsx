@@ -1,5 +1,7 @@
 "use client";
 
+import type { CSSProperties } from "react";
+
 /* BPO's throughput field: a marching lattice frames the reading column while
    data streams run in safe bands at the very top and bottom — volume made
    visible, never across the text. */
@@ -25,18 +27,22 @@ export default function BpoScene() {
         style={{ animationDelay: "-9s", animationDuration: "13s" }}
       />
       <span
-        className="cq-v2-orb left-[-10rem] bottom-[-10rem] h-[30rem] w-[30rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc) 26%, transparent)",
-          animation: "cq-float-c 23s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        }}
+        className="cq-v2-orb left-[-12rem] bottom-[-12rem] h-[34rem] w-[34rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)",
+            animation: "cq-float-c 23s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+          } as CSSProperties
+        }
       />
       <span
-        className="cq-v2-orb right-[-8rem] top-[-9rem] h-[26rem] w-[26rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc-glow) 18%, transparent)",
-          animation: "cq-float-a 26s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
-        }}
+        className="cq-v2-orb right-[-10rem] top-[-11rem] h-[30rem] w-[30rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc-glow) 18%, transparent)",
+            animation: "cq-float-a 26s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
+          } as CSSProperties
+        }
       />
     </>
   );

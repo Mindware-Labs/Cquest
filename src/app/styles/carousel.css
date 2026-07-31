@@ -46,12 +46,27 @@
 }
 
 /* Soft colour mass that drifts on the existing cq-float keyframes; colour
-   comes from the slide's --svc/--svc-glow so it re-tints per service. */
+   comes from the slide's --svc/--svc-glow (set per orb as --orb) so it
+   re-tints per service.
+
+   The softness is a radial gradient, NOT `filter: blur(72px)`. Same picture,
+   two very different costs: a blur is a post-process the browser has to
+   re-run over a ~480px square every time anything about that element's
+   rasterisation changes — and during a page turn the parent article is
+   animating x, opacity AND scale, which invalidates it on every single
+   frame, twice over (outgoing page + incoming page). A gradient is painted
+   once and then only ever transformed. `closest-side` keeps the falloff tied
+   to the element box, so the six orbs keep the sizes they were tuned at. */
 .cq-v2-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(72px) saturate(1.05);
-  will-change: transform;
+  background: radial-gradient(
+    closest-side,
+    var(--orb, transparent) 0%,
+    color-mix(in srgb, var(--orb, transparent) 62%, transparent) 42%,
+    color-mix(in srgb, var(--orb, transparent) 18%, transparent) 70%,
+    transparent 100%
+  );
 }
 
 /* 1 · CALL CENTER — a quiet map of live calls. One 14s master clock:
@@ -79,7 +94,6 @@
   border: 1.5px solid color-mix(in srgb, var(--svc) 38%, transparent);
   opacity: 0;
   animation: cq-v2-pulse 7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  will-change: transform, opacity;
 }
 
 @keyframes cq-v2-pulse {
@@ -102,7 +116,6 @@
   border-radius: 9999px;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--svc) 22%, transparent), transparent 72%);
   animation: cq-v2-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  will-change: transform, opacity;
 }
 
 @keyframes cq-v2-breathe {
@@ -123,15 +136,27 @@
   translate: -50% -50%;
 }
 
-/* The mask clears the reading column: routes and streaks fade out toward
-   the origin, so every call visibly MATERIALIZES leaving the glow and
-   lands in the margins — nothing draws at full strength under the text. */
+/* Routes and streaks fade out toward the origin, so every call visibly
+   MATERIALIZES leaving the glow and lands in the margins — nothing draws at
+   full strength under the text.
+
+   That fade used to be a CSS `mask-image` on this <svg>. It was the single
+   most expensive thing on the page. `stroke-dashoffset` is not a compositor
+   property, so the twelve comet paths repaint the SVG on EVERY frame; a mask
+   on the same element means the browser then re-applies a full-surface alpha
+   multiply over the whole ~960px square, sixty times a second, for as long
+   as the slide is on screen. That is roughly two million pixels of masking
+   per frame to fade twelve hairlines.
+
+   The fade is now carried by the strokes themselves — a userSpaceOnUse
+   radial gradient centred on the hub (CallCenterScene.tsx), whose stops sit
+   at exactly the radii the mask used: transparent to 54% of the half-box,
+   opaque from 76%. Identical picture, painted per-path as part of the stroke
+   instead of as a post-process over the entire stage. */
 .cq-v2-net svg {
   display: block;
   width: 100%;
   height: 100%;
-  mask-image: radial-gradient(circle closest-side, transparent 54%, #000 76%);
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 54%, #000 76%);
 }
 
 /* Meridians: two dashed graticules crawling almost imperceptibly. The
@@ -139,13 +164,12 @@
    pattern drifting around the ring, a map quietly alive. */
 .cq-v2-graticule {
   fill: none;
-  stroke: color-mix(in srgb, var(--svc) 30%, transparent);
+  stroke: url(#cqNetGraticule);
   stroke-width: 0.14;
   stroke-linecap: round;
   transform-origin: 50% 50%;
   transform-box: view-box;
   animation: cq-v2-spin 150s linear infinite;
-  will-change: transform;
 }
 
 @keyframes cq-v2-spin {
@@ -158,7 +182,7 @@
    on smaller stages instead of thickening relatively. */
 .cq-v2-route {
   fill: none;
-  stroke: color-mix(in srgb, var(--svc) 45%, transparent);
+  stroke: url(#cqNetRoute);
   stroke-width: 0.12;
   opacity: 0.35;
 }
@@ -170,7 +194,7 @@
    tail off the far end — absorbed into the landing point. */
 .cq-v2-comet {
   fill: none;
-  stroke: var(--svc);
+  stroke: url(#cqNetComet);
   stroke-width: 0.26;
   stroke-linecap: round;
   stroke-dasharray: 0.32 1.68;
@@ -183,7 +207,7 @@
 /* Soft light underlay beneath the streak — the glow rides the same clock;
    its stroke colour carries the alpha, so both share one keyframe set. */
 .cq-v2-comet-glow {
-  stroke: color-mix(in srgb, var(--svc-glow) 45%, transparent);
+  stroke: url(#cqNetCometGlow);
   stroke-width: 0.8;
 }
 
@@ -218,7 +242,6 @@
   opacity: 0;
   animation: cq-v2-ping-dot 14s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   animation-delay: var(--cd, 0s);
-  will-change: transform, opacity;
 }
 
 .cq-v2-ping::before {
@@ -230,7 +253,6 @@
   opacity: 0;
   animation: cq-v2-ping-halo 14s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   animation-delay: var(--cd, 0s);
-  will-change: transform, opacity;
 }
 
 @keyframes cq-v2-ping-dot {
@@ -268,7 +290,6 @@
   background-position: center;
   background-size: 2.6rem 2.6rem;
   animation: cq-v2-march 20s linear infinite;
-  will-change: transform;
 }
 
 @keyframes cq-v2-march {
@@ -289,7 +310,6 @@
     transparent,
     color-mix(in srgb, var(--svc) 62%, transparent));
   animation: cq-v2-flow 12s linear infinite;
-  will-change: transform;
 }
 
 .cq-v2-stream::after {
@@ -331,7 +351,6 @@
   opacity: 0;
   animation: cq-v2-stack-rise 9s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   animation-delay: var(--sd, 0s);
-  will-change: transform, opacity;
 }
 
 .cq-v2-stack-card::before,
@@ -398,7 +417,6 @@
     transparent);
   transform: translateX(-24rem);
   animation: cq-v2-scan 13s linear infinite;
-  will-change: transform;
 }
 
 @keyframes cq-v2-scan {
@@ -420,7 +438,6 @@
   opacity: 0;
   animation: cq-v2-node-flare 13s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   animation-delay: var(--nd, 0s);
-  will-change: transform, opacity;
 }
 
 @keyframes cq-v2-node-flare {
@@ -442,7 +459,6 @@
   padding: 0.55rem 0.65rem 0.65rem;
   animation: cq-v2-panel-bob 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: var(--pb, 0s);
-  will-change: transform;
   pointer-events: none;
 }
 
@@ -467,7 +483,6 @@
   transform-origin: bottom;
   animation: cq-v2-bar-breathe 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: var(--bd, 0s);
-  will-change: transform;
 }
 
 @keyframes cq-v2-bar-breathe {

@@ -38,6 +38,38 @@ export default function CallCenterScene() {
           calls in flight, and their landing points. */}
       <div className="cq-v2-net">
         <svg viewBox="0 0 100 100" aria-hidden>
+          {/* ── The origin fade ────────────────────────────────────────
+              What used to be a CSS mask on this <svg>. The comets animate
+              stroke-dashoffset, which repaints the whole SVG every frame,
+              and a mask on the same element made the browser re-multiply
+              alpha across the entire ~960px stage on each of those frames.
+              Carried in the strokes instead: one radial ramp per paint,
+              centred on the hub, going transparent at 54% of the half-box
+              and fully opaque by 76% — the exact radii the mask used, so
+              routes and streaks still materialize out of the glow and only
+              reach full strength out in the margins.
+
+              gradientUnits="userSpaceOnUse" pins the ramp to the viewBox
+              (r=50 is half the 0–100 box), so it is the geometry that
+              decides the fade, not each path's own bounding box. */}
+          <defs>
+            <radialGradient id="cqNetGraticule" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
+              <stop offset="0.54" stopColor="color-mix(in srgb, var(--svc) 30%, transparent)" stopOpacity="0" />
+              <stop offset="0.76" stopColor="color-mix(in srgb, var(--svc) 30%, transparent)" stopOpacity="1" />
+            </radialGradient>
+            <radialGradient id="cqNetRoute" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
+              <stop offset="0.54" stopColor="color-mix(in srgb, var(--svc) 45%, transparent)" stopOpacity="0" />
+              <stop offset="0.76" stopColor="color-mix(in srgb, var(--svc) 45%, transparent)" stopOpacity="1" />
+            </radialGradient>
+            <radialGradient id="cqNetComet" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
+              <stop offset="0.54" stopColor="var(--svc)" stopOpacity="0" />
+              <stop offset="0.76" stopColor="var(--svc)" stopOpacity="1" />
+            </radialGradient>
+            <radialGradient id="cqNetCometGlow" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
+              <stop offset="0.54" stopColor="color-mix(in srgb, var(--svc-glow) 45%, transparent)" stopOpacity="0" />
+              <stop offset="0.76" stopColor="color-mix(in srgb, var(--svc-glow) 45%, transparent)" stopOpacity="1" />
+            </radialGradient>
+          </defs>
           <circle className="cq-v2-graticule" cx="50" cy="50" r="36" strokeDasharray="2 4.5" />
           <circle
             className="cq-v2-graticule"
@@ -66,18 +98,22 @@ export default function CallCenterScene() {
         ))}
       </div>
       <span
-        className="cq-v2-orb left-[-9rem] top-[-8rem] h-[30rem] w-[30rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc) 30%, transparent)",
-          animation: "cq-float-a 21s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        }}
+        className="cq-v2-orb left-[-11rem] top-[-10rem] h-[34rem] w-[34rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc) 30%, transparent)",
+            animation: "cq-float-a 21s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+          } as CSSProperties
+        }
       />
       <span
-        className="cq-v2-orb bottom-[-11rem] right-[-8rem] h-[28rem] w-[28rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc-glow) 26%, transparent)",
-          animation: "cq-float-b 25s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        }}
+        className="cq-v2-orb bottom-[-13rem] right-[-10rem] h-[32rem] w-[32rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc-glow) 26%, transparent)",
+            animation: "cq-float-b 25s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+          } as CSSProperties
+        }
       />
     </div>
   );

@@ -94,9 +94,13 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             <LocalizedLink href="/quote?servicio=call-center" className={styles.primaryCta}>{dict.hero.primaryCta} <Arrow /></LocalizedLink>
             <a href="#capabilities" className={styles.secondaryCta}>{t.exploreCapabilities} <Arrow direction="down" /></a>
           </motion.div>
-          <motion.div className={styles.heroSignal} aria-label={t.pageHighlights} variants={focusRiseVariants}>
-            {t.signals.map((signal) => <span key={signal}>{signal}</span>)}
-          </motion.div>
+          {/* A real list. This was a <div> carrying an aria-label, and a
+              label on a generic element is simply dropped — assistive tech
+              never announced "Page highlights" at all, and the three words
+              arrived as loose text with no relationship to each other. */}
+          <motion.ul className={styles.heroSignal} aria-label={t.pageHighlights} variants={focusRiseVariants}>
+            {t.signals.map((signal) => <li key={signal}>{signal}</li>)}
+          </motion.ul>
         </motion.div>
         <HeroMedia mediaY={mediaY} mediaScale={mediaScale} alt={t.alt} />
       </div>

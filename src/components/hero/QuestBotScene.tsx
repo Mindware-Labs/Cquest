@@ -137,7 +137,11 @@ export default function QuestBotScene({
   }, [runId, reduced]);
 
   useEffect(() => {
-    if (!settled || reduced) return;
+    /* `ambient` gates this as well as the CSS loops. The gaze used to keep a
+       window-level pointermove listener — and the two springs behind it —
+       alive for the life of the page once the mascot had settled, tracking a
+       cursor across sections the mascot could no longer see. */
+    if (!settled || reduced || !ambient) return;
     const node = stageRef.current;
     if (!node) return;
     /* Touch devices have no hovering pointer to track, and a stray tap would
@@ -198,7 +202,7 @@ export default function QuestBotScene({
       document.removeEventListener("pointerleave", onLeave);
       onLeave();
     };
-  }, [settled, reduced, pointerX, pointerY]);
+  }, [settled, reduced, ambient, pointerX, pointerY]);
 
   useEffect(() => {
     if (runId === 0) return;

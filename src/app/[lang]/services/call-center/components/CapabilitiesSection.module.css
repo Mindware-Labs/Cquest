@@ -78,15 +78,50 @@
   letter-spacing: 0.08em;
 }
 
+/* The panel is roughly as tall as the six-tab index beside it, and that
+   height is a floor rather than a fit so a tab switch never makes the card —
+   or the section below it — jump. What changed when the client-benefit block
+   came out is where the slack goes: the card is a flex column now and the
+   closing row is pushed to its baseline, so the leftover height reads as the
+   composition holding its shape instead of as a hole under the bullets. */
 .capabilityPanel {
+  display: flex;
+  flex-direction: column;
   padding: clamp(1.5rem, 2.2vw, 2rem);
   min-height: 27rem;
-  border: 1px solid var(--cc-hairline);
   border-radius: var(--cc-radius-card);
   background: white;
-  box-shadow: 0 24px 44px -30px rgba(10, 17, 22, 0.28), 0 2px 6px -3px rgba(10, 17, 22, 0.12);
+  /* Elevation declared once. This carried a 1px border AND a wide soft
+     shadow — the ghost-card pair, and the one combination that reads as
+     generic no matter how well the rest of the card is made. The shadow
+     stays, because a white sheet on a surface 1% away from white has nothing
+     else to separate it, and it is the same idiom the services carousel's
+     lifted sheet already uses. Three layers of one system, not two systems:
+     contact, ambient, ground. */
+  box-shadow:
+    0 1px 0 rgba(10, 17, 22, 0.05),
+    0 2px 8px -4px rgba(10, 17, 22, 0.14),
+    0 26px 48px -32px rgba(10, 17, 22, 0.3);
 }
 
+/* The column has to live on the sheet, not on .capabilityPanel: this is the
+   element AnimatePresence swaps on a tab switch, so it is the one that
+   actually holds the blocks. */
+.panelSheet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.panelBlock:last-child {
+  margin-top: auto;
+}
+
+/* Icon, title, position. No eyebrow above the title any more: "SELECTED
+   CAPABILITY" was a label restating what the highlighted tab and the title
+   underneath it already said, and a kicker over a heading is the one habit
+   that reads as template regardless of how good the heading is. The title
+   carries itself, and it gained the room the label was using. */
 .capabilityHeading {
   display: flex;
   align-items: center;
@@ -117,20 +152,27 @@
   text-transform: uppercase;
 }
 
-.capabilityHeading p {
-  color: var(--cc-petroleum);
+/* A folio, not a kicker: pushed to the far edge of the header row and set at
+   caption weight, the way a page number sits on a spread. It says which of
+   the six is open without competing with the title for the entrance. Hidden
+   from assistive tech — the tab list already conveys position, and "zero one
+   slash zero six" read aloud is noise. */
+.capabilityCounter {
+  margin-left: auto;
+  align-self: flex-start;
+  color: var(--text-tertiary);
   font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
 }
 
 .capabilityHeading h3 {
-  margin-top: 0.2rem;
-  font-size: clamp(1.55rem, 2.1vw, 1.9rem);
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.08;
+  text-wrap: balance;
 }
 
 .capabilityDescription {
@@ -142,12 +184,15 @@
   line-height: 1.6;
 }
 
+/* Only a top rule now. The lower hairline belongs to .panelFoot, which is
+   pinned to the card's baseline — if this block kept its own bottom border
+   that line would slide up and down with the bullet count on every switch. */
 .detailGrid {
   display: grid;
   grid-template-columns: 1fr;
   margin-top: 1.25rem;
-  padding-block: 1.25rem;
-  border-block: 1px solid var(--cc-hairline);
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cc-hairline);
 }
 
 .detailGrid h4 {
@@ -162,16 +207,11 @@
   line-height: 1.6;
 }
 
-/* The height reservation that keeps the panel from reflowing on a tab switch
-   belongs to the list, not to each bullet. Per-item it inflated every
-   one-line bullet to two lines of box, so lists whose items happen to be
-   short (Onboarding, Surveys) rendered with visibly looser spacing than the
-   two-line ones — same stability, uneven rhythm. Three items × two lines,
-   plus the two gaps between them. */
-.detailGrid ul {
-  min-height: calc(0.95rem * 1.6 * 6 + 1rem);
-}
-
+/* No height reservation on the list any more. It existed to stop the panel
+   reflowing on a tab switch; the flex column above does that job now by
+   pinning the closing row instead, and it does it without padding lists whose
+   bullets happen to be short (Onboarding, Surveys) out to the height of the
+   longest one — which is what made their spacing read looser than the rest. */
 .detailGrid li {
   position: relative;
   padding-left: 1.1rem;
@@ -189,12 +229,56 @@
   background: var(--cc-sky);
 }
 
+/* The card's baseline: where it operates on the left, what to do about it on
+   the right. Both sit on one rule, so the bottom of the card is a single
+   closing statement rather than a strip with an afterthought under it. */
+.panelFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  /* Its own floor, not just whatever the flex column's auto margin leaves
+     over: on the longest capabilities that slack collapses to nothing and the
+     rule would otherwise land against the last bullet. */
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cc-hairline);
+}
+
+/* The section closes on a full CTA band of its own, and this card is not the
+   place for a second button competing with it — but it IS the deepest a
+   visitor gets into one capability, so the way out of it should be an action
+   rather than a dead end. A quiet link, at the weight of a caption. */
+.panelCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  color: var(--cc-petroleum);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 240ms var(--ease-out);
+}
+
+.panelCta:hover {
+  color: var(--cc-ink);
+}
+
+.panelCtaArrow {
+  transition: transform 240ms var(--ease-out);
+}
+
+.panelCta:hover .panelCtaArrow {
+  transform: translateX(0.2rem);
+}
+
 .channelRow {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.65rem;
-  margin-top: 1.1rem;
 }
 
 .channelRow > span { color: var(--muted); }
@@ -331,10 +415,13 @@
 }
 
 .accordionPanelInner .capabilityDescription { min-height: 0; margin-top: 0; }
-.accordionPanelInner .detailGrid { padding-block: 1.25rem; }
-/* No height reservations in the accordion — each panel opens in place against
-   an animated height, so there's no sibling panel to stay in step with and
-   reserved space would just render as dead air. */
-.accordionPanelInner .detailGrid ul { min-height: 0; }
-.accordionPanelInner .channelRow { align-items: flex-start; flex-direction: column; }
 .accordionPanelInner .channelRow ul { justify-content: flex-start; gap: 0.9rem 1.35rem; }
+
+/* The closing row stacks here. There is no card baseline to sit on — the
+   panel is exactly as tall as its own content — so the quote link reads as
+   the next step after the channels rather than as their right-hand column. */
+.accordionPanelInner .panelFoot {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}

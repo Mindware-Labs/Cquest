@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 
 /* Mirror of the scan beam's CSS geometry (globals.css .cq-v2-scan): one
    pass per SCAN_PERIOD, starting at -24rem, travelling to 100vw + 8rem,
@@ -78,18 +78,22 @@ export default function SystemsScene() {
       <span className="cq-v2-node" data-x="84" data-y="18" />
       <span className="cq-v2-node" data-x="90" data-y="66" />
       <span
-        className="cq-v2-orb left-[-9rem] top-[30%] h-[28rem] w-[28rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc) 26%, transparent)",
-          animation: "cq-float-b 24s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        }}
+        className="cq-v2-orb left-[-11rem] top-[26%] h-[32rem] w-[32rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)",
+            animation: "cq-float-b 24s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+          } as CSSProperties
+        }
       />
       <span
-        className="cq-v2-orb right-[-10rem] bottom-[-9rem] h-[30rem] w-[30rem]"
-        style={{
-          backgroundColor: "color-mix(in srgb, var(--svc-glow) 22%, transparent)",
-          animation: "cq-float-c 27s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
-        }}
+        className="cq-v2-orb right-[-12rem] bottom-[-11rem] h-[34rem] w-[34rem]"
+        style={
+          {
+            "--orb": "color-mix(in srgb, var(--svc-glow) 22%, transparent)",
+            animation: "cq-float-c 27s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
+          } as CSSProperties
+        }
       />
     </div>
   );

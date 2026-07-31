@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   AnimatePresence,
   motion,
@@ -75,18 +75,26 @@ const pageVariants: Variants = {
    stage hands each line its cue (kicker → headline → lead → description →
    tags → CTA) while the page itself is still settling, so the slide reads
    as layers of one gesture. No `exit` keys — on the way out the children
-   ride the page's own fade untouched. */
+   ride the page's own fade untouched.
+
+   Transform + opacity ONLY, deliberately. This cascade used to animate
+   `filter: blur(8px) → blur(0px)` on all six lines at once. A filter is not
+   a compositor property: every frame of that 0.7s re-rasterises each line at
+   a new blur radius, on the main thread, while the page itself is mid-turn
+   and the backdrop is re-lighting — six simultaneous non-composited
+   animations is what made the turn stutter. The travel is a touch longer and
+   deeper to carry the same weight the blur was carrying, and now the whole
+   cascade runs on the compositor. */
 const stageVariants: Variants = {
   enter: {},
   center: { transition: { delayChildren: 0.14, staggerChildren: 0.07 } },
 };
 const stageItemVariants: Variants = {
-  enter: { opacity: 0, y: 26, filter: "blur(8px)" },
+  enter: { opacity: 0, y: 34 },
   center: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.7, ease: EASE_OUT },
+    transition: { duration: 0.78, ease: EASE_OUT },
   },
 };
 
@@ -101,6 +109,45 @@ export default function ServicesCarousel() {
   const tabVisible = useTabVisibility();
   const service = SERVICES[index];
   const sectionRef = useRef<HTMLElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(false);
+
+  /* ── Battery/FPS etiquette, part two ──────────────────────────────────
+     Tab visibility was only ever half the story. A slide's backdrop is
+     twenty-odd independently animating layers — orbs, rings, comets, pings,
+     the marching lattice, the scan beam and its nodes — and every one of
+     them kept running while the reader was still in the hero above,
+     competing for the same compositor and the same main thread as the
+     hero's own canvas and mascot. That is a large slice of frame budget
+     spent on something nobody can see, and it is why the hero felt heavy.
+
+     The SHEET is the target, not the track. The track is 2.35 viewports
+     tall and begins immediately under the hero, so it is technically in
+     view almost from the top of the page — observing it would answer
+     "yes" exactly when the answer needs to be "no".
+
+     Even on the sheet, a plain observer flips on at the first pixel of
+     scroll: the sheet's top edge sits exactly on the fold. That is the
+     worst possible moment, because it means the entire descent out of the
+     hero is paid for twice — the mascot, the reactive grid and three
+     parallax planes above, twenty animated layers below. The -55% bottom
+     margin holds the field asleep until the sheet has climbed past the
+     lower half of the viewport, which still leaves it most of a viewport
+     of scrolling to warm up before it pins. The loops all run on negative
+     delays, so they resume mid-phase and the start is never visible. */
+  useEffect(() => {
+    const node = sheetRef.current;
+    if (!node || !("IntersectionObserver" in window)) {
+      setOnScreen(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setOnScreen(entry.isIntersecting),
+      { rootMargin: "0px 0px -55% 0px", threshold: 0 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
 
   /* ── The pin ─────────────────────────────────────────────────────────
      The section is TRACK_DVH tall and its stage is `position: sticky;
@@ -205,9 +252,10 @@ export default function ServicesCarousel() {
           .cq-carousel-sheet carries the rounded shoulders, rim light and
           ambient field (styles/carousel.css). */}
       <div
+        ref={sheetRef}
         /* Stays on the sheet, not the track: styles/carousel.css hangs every
            `cq-v2-*` pause rule off `.cq-carousel-sheet[data-ambient-active]`. */
-        data-ambient-active={tabVisible && !reduced}
+        data-ambient-active={tabVisible && onScreen && !reduced}
         className="cq-carousel-sheet sticky top-0 isolate h-dvh w-full overflow-hidden text-foreground"
       >
         {/* Pages overlap absolutely inside the clipped stage, so the outgoing

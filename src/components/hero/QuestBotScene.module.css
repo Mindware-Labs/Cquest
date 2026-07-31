@@ -77,9 +77,8 @@
   justify-content: center;
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.07);
   color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(6px);
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
@@ -183,8 +182,16 @@
   position: relative;
   padding: 13px 16px 14px;
   border: 1.5px solid var(--say-edge);
-  background: rgba(6, 29, 42, 0.8);
-  backdrop-filter: blur(6px);
+  /* Opaque enough to read as a plate on its own — no `backdrop-filter`.
+     A backdrop blur is the single most expensive thing a small element can
+     ask for: the compositor has to copy back everything painted beneath it
+     and blur that copy again on every frame in which either the element or
+     the backdrop moves. This bubble sits inside the hero's parallax plane,
+     which translates AND fades on every scroll frame, over the reactive grid
+     canvas, which repaints on every pointer frame — so it was re-blurring
+     essentially always, to soften a grid already hidden behind 80% ink. The
+     extra 8% of opacity buys back the same read for nothing. */
+  background: rgba(6, 29, 42, 0.88);
   border-radius: 15px 15px 15px 3px;
   box-shadow: 0 20px 54px -22px rgba(48, 128, 162, 0.9);
   text-decoration: none;

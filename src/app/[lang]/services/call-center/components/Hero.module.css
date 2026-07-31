@@ -50,7 +50,9 @@
 }
 
 .heroHeadlineStrong {
-  font-weight: 800;
+  /* 700 is the top of Josefin Sans' wght axis; 800 had nothing to resolve
+     to and clamped here anyway. */
+  font-weight: 700;
 }
 
 /* Each headline word is a clip window; the word rides up from behind its
@@ -115,6 +117,21 @@
   transform: scale(0.97);
 }
 
+/* The site-wide focus ring is petroleo, which lands at ~2.7:1 against the sky
+   face of the primary CTA — under WCAG 2.2's 3:1 floor for a focus indicator,
+   and on the page's most important control. Each CTA now rings in whichever
+   of the two brand tones its own surface can carry: ink on sky (9.6:1), sky
+   on charcoal (8.2:1). */
+.primaryCta:focus-visible {
+  outline: 2px solid var(--cc-ink);
+  outline-offset: 2px;
+}
+
+.secondaryCta:focus-visible {
+  outline: 2px solid var(--cc-sky);
+  outline-offset: 2px;
+}
+
 .primaryCta {
   background: var(--cc-sky);
   color: var(--cc-ink);
@@ -146,7 +163,7 @@
   margin-top: clamp(2rem, 6vh, 3.5rem);
 }
 
-.heroSignal span {
+.heroSignal li {
   display: flex;
   align-items: center;
   color: color-mix(in srgb, var(--cc-stone) 70%, transparent);
@@ -156,7 +173,7 @@
   text-transform: uppercase;
 }
 
-.heroSignal span:not(:last-child)::after {
+.heroSignal li:not(:last-child)::after {
   content: "";
   width: 2.75rem;
   height: 1px;
@@ -221,6 +238,6 @@
   .heroActions { flex-direction: column; align-items: stretch; }
   .primaryCta,
   .secondaryCta { width: 100%; }
-  .heroSignal span:not(:last-child)::after { width: 1rem; margin-inline: 0.5rem; }
+  .heroSignal li:not(:last-child)::after { width: 1rem; margin-inline: 0.5rem; }
   .heroMedia { min-height: 20rem; }
 }
