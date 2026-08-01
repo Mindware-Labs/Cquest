@@ -13,6 +13,7 @@ import {
   detailsSchema,
   fieldErrors,
   getService,
+  isRevealed,
   resolveQuestionnaire,
   type Answers,
   type QuoteSubmission,
@@ -161,9 +162,25 @@ export default function QuoteWizard({
     [],
   );
 
-  const setDetail = useCallback((id: string, value: string | string[]) => {
-    setDetails((previous) => ({ ...previous, [id]: value }));
-  }, []);
+  const setDetail = useCallback(
+    (id: string, value: string | string[]) => {
+      setDetails((previous) => {
+        const next = { ...previous, [id]: value };
+        /* Answers to conditional questions are dropped the moment their
+           condition stops holding. Untick "Other" and whatever was typed into
+           "which one?" goes with it — otherwise it survives invisibly in
+           state and rides along to the sales inbox as an answer to a question
+           the prospect withdrew. */
+        for (const question of questionnaire?.questions ?? []) {
+          if (question.revealedBy && !isRevealed(question, next)) {
+            delete next[question.id];
+          }
+        }
+        return next;
+      });
+    },
+    [questionnaire],
+  );
 
   const setContactField = useCallback(
     (id: string, value: string | string[]) => {
@@ -388,6 +405,7 @@ export default function QuoteWizard({
                         onChange={setDetail}
                         showErrors={showErrors}
                         errors={detailErrors}
+                        reduced={reduced}
                       />
                     )}
                     {step === 2 && (

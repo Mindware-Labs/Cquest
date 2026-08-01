@@ -21,12 +21,21 @@ export type Choice = {
   icon?: ServiceIconName;
 };
 
+/* A follow-up question's condition. Kept in the questionnaire rather than in
+   the wizard so a conditional field stays content, like everything else here:
+   the marketing team can hang a "which one?" off any choice without a code
+   change. `value` matches a single-select answer outright, or membership for
+   a multi-select — which is what makes it work for "Other" in either. */
+export type RevealCondition = { question: string; value: string };
+
 export type Question = {
   id: string;
   kind: FieldKind;
   copy: Record<Locale, { label: string; help?: string; placeholder?: string }>;
   required?: boolean;
   choices?: readonly Choice[];
+  /** Rendered, validated and reported only while this condition holds. */
+  revealedBy?: RevealCondition;
 };
 
 export type Questionnaire = {
@@ -48,6 +57,7 @@ export type ResolvedQuestion = {
   placeholder?: string;
   required?: boolean;
   choices?: readonly ResolvedChoice[];
+  revealedBy?: RevealCondition;
 };
 
 export type ResolvedQuestionnaire = {
@@ -71,6 +81,7 @@ export function resolveQuestion(question: Question, lang: Locale): ResolvedQuest
     placeholder,
     required: question.required,
     choices: question.choices?.map((choice) => resolveChoice(choice, lang)),
+    revealedBy: question.revealedBy,
   };
 }
 
@@ -85,6 +96,21 @@ export function resolveQuestionnaire(questionnaire: Questionnaire, lang: Locale)
 /* ── Wizard answer shape ────────────────────────────────── */
 
 export type Answers = Record<string, string | string[]>;
+
+/* The single place that decides whether a conditional question is in play.
+   Shared by the renderer, the validator, the wizard's answer housekeeping and
+   the sales email — four things that must never disagree about whether a
+   field exists, or the prospect gets blocked by a question they cannot see. */
+export function isRevealed(
+  question: { revealedBy?: RevealCondition },
+  answers: Answers,
+): boolean {
+  if (!question.revealedBy) return true;
+  const gate = answers[question.revealedBy.question];
+  return Array.isArray(gate)
+    ? gate.includes(question.revealedBy.value)
+    : gate === question.revealedBy.value;
+}
 
 export type QuoteSubmission = {
   service: ServiceId;

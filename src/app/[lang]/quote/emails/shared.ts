@@ -2,6 +2,7 @@ import {
   CONTACT_FIELDS,
   CONTACT_METHODS,
   QUESTIONNAIRES,
+  isRevealed,
   resolveChoice,
   resolveQuestion,
   type Answers,
@@ -73,10 +74,15 @@ export function contactRows(submission: QuoteSubmission): Row[] {
 }
 
 export function detailRows(submission: QuoteSubmission): Row[] {
-  return QUESTIONNAIRES[submission.service].questions.map((question) => ({
-    label: resolveQuestion(question, EMAIL_LANG).label,
-    value: answerText(question, submission.details[question.id]),
-  }));
+  return QUESTIONNAIRES[submission.service].questions
+    // A conditional question the prospect never saw has no answer to report,
+    // and a row reading "Which other language? —" would read to sales as a
+    // question that was asked and ducked.
+    .filter((question) => isRevealed(question, submission.details))
+    .map((question) => ({
+      label: resolveQuestion(question, EMAIL_LANG).label,
+      value: answerText(question, submission.details[question.id]),
+    }));
 }
 
 export function sectionLabel(text: string, accent: string): string {

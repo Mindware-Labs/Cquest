@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Locale } from "@/i18n/config";
-import type { Questionnaire } from "./types";
+import { isRevealed, type Answers, type Questionnaire } from "./types";
 
 // A single answer counts as "given" if it's a non-empty string or a
 // multi-select with at least one choice. Shared by the wizard's step-gating
@@ -63,6 +63,18 @@ export function detailsSchema(questionnaire: Questionnaire, lang: Locale) {
   const shape: Record<string, z.ZodTypeAny> = {};
 
   for (const question of questionnaire.questions) {
+    /* A conditional question is never required at the shape level, whatever
+       the questionnaire says — its requirement depends on an answer the shape
+       cannot see. The refinement below re-imposes it once the condition is
+       actually met. Getting this backwards would gate "Continue" on a field
+       that is not on screen, which is an unfixable dead end for the
+       prospect. */
+    if (question.revealedBy) {
+      shape[question.id] =
+        question.kind === "multi" ? z.array(z.string()).optional() : z.string().optional();
+      continue;
+    }
+
     if (question.kind === "multi") {
       shape[question.id] = question.required
         ? z.preprocess((value) => value ?? [], z.array(z.string()).min(1, t.selectAtLeastOne))
@@ -79,7 +91,14 @@ export function detailsSchema(questionnaire: Questionnaire, lang: Locale) {
     }
   }
 
-  return z.object(shape);
+  return z.object(shape).superRefine((answers, ctx) => {
+    for (const question of questionnaire.questions) {
+      if (!question.revealedBy || !question.required) continue;
+      if (!isRevealed(question, answers as Answers)) continue;
+      if (isAnswered((answers as Answers)[question.id])) continue;
+      ctx.addIssue({ code: "custom", message: t.required, path: [question.id] });
+    }
+  });
 }
 
 // Map a Zod failure to a { questionId: message } lookup the wizard can hand to

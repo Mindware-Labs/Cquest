@@ -7,3 +7,43 @@
   flex-direction: column;
   gap: clamp(0.9rem, 2.2vw, 1.3rem);
 }
+
+/* ── Conditional follow-up ──────────────────────────────────
+   The "which one?" that opens under a chip row when a choice asks for it.
+
+   A contained surface, not a quoted aside. The left rule this replaced read
+   as a blockquote — a bar of colour beside body text is the web's most
+   established "this is a citation" signal, which is the wrong sentence for a
+   field that is asking the reader for something.
+
+   So it becomes a recess in the card instead: `--surface-sunken` rather than
+   the card's own white, a hairline in the service tint, the system's 2px
+   corner, and a soft inner shadow along the top edge — the light a niche
+   catches, not the light a raised chip catches. Sunken is the load-bearing
+   choice, not decoration. The card and the input are BOTH pure white here, so
+   a panel that faded to white would have swallowed the very field it exists
+   to present, leaving it to read on its hairline alone. Recessed, the white
+   field sits up out of the panel and the panel sits down into the card —
+   three surfaces, unambiguous at a glance.
+
+   The wrapper is what animates open — hence the `overflow: hidden` — and the
+   panel carries generous horizontal padding so the input's 3px focus ring has
+   room to draw inside the clip instead of being shaved off at the edges. Its
+   top margin lives inside that clip too, so it grows with the reveal rather
+   than appearing whole on the first frame. */
+.reveal {
+  overflow: hidden;
+}
+
+.revealPanel {
+  margin-top: 0.65rem;
+  padding: 0.85rem 0.9rem 0.9rem;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--svc) 22%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--svc) 10%, var(--surface-sunken)),
+    var(--surface-sunken) 82%
+  );
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
+}

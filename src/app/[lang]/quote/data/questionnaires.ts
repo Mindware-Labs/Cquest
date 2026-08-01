@@ -25,7 +25,29 @@ const VOLUME: readonly Choice[] = [
 const LANGUAGES: readonly Choice[] = [
   { value: "spanish", copy: { en: { label: "Spanish" }, es: { label: "Español" } } },
   { value: "english", copy: { en: { label: "English" }, es: { label: "Inglés" } } },
+  { value: "other", copy: { en: { label: "Other" }, es: { label: "Otro" } } },
 ];
+
+/* The follow-up to "Other". Required, but only while "Other" is actually
+   ticked — an unticked follow-up must never hold the Continue button shut.
+   Shared by both questionnaires that ask about languages, exactly like the
+   LANGUAGES list it hangs off. */
+const LANGUAGES_OTHER: Question = {
+  id: "languagesOther",
+  kind: "text",
+  required: true,
+  revealedBy: { question: "languages", value: "other" },
+  copy: {
+    en: {
+      label: "Which other language?",
+      placeholder: "Portuguese, French, Italian…",
+    },
+    es: {
+      label: "¿Cuál otro idioma?",
+      placeholder: "Portugués, francés, italiano…",
+    },
+  },
+};
 
 const HOURS: readonly Choice[] = [
   { value: "business", copy: { en: { label: "Business hours" }, es: { label: "Horario comercial" } } },
@@ -97,6 +119,7 @@ export const QUESTIONNAIRES: Record<ServiceId, Questionnaire> = {
         choices: LANGUAGES,
         copy: { en: { label: "Languages to support" }, es: { label: "Idiomas a atender" } },
       },
+      LANGUAGES_OTHER,
       {
         id: "hours",
         kind: "single",
@@ -145,6 +168,7 @@ export const QUESTIONNAIRES: Record<ServiceId, Questionnaire> = {
         choices: LANGUAGES,
         copy: { en: { label: "Languages to support" }, es: { label: "Idiomas a atender" } },
       },
+      LANGUAGES_OTHER,
       {
         id: "hours",
         kind: "single",
