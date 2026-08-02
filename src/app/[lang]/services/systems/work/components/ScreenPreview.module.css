@@ -332,7 +332,12 @@
 .repSlaValue { justify-self: end; font-size: 0.58rem; font-weight: 700; color: rgba(255, 255, 255, 0.75); }
 
 @media (max-width: 30rem) {
+  /* The lead track narrowed to 1.2rem while `.ccDirection` stayed at its
+     declared 1.4rem, so the tile overflowed its own column by 0.2rem and
+     nudged the label out of alignment down the whole list. Both move
+     together now. */
   .ccRow { grid-template-columns: 1.2rem minmax(0, 1fr) auto; }
+  .ccDirection { width: 1.2rem; height: 1.2rem; }
   .ccBarTrack { display: none; }
 }
 

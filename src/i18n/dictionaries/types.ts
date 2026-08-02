@@ -34,7 +34,7 @@ export interface Dictionary {
     primaryCta: string;
     /** Accessible name for the mascot's replay control. */
     replayLabel: string;
-    navLinks: { services: string; successStories: string; about: string; contact: string };
+    navLinks: { services: string; about: string; contact: string };
     typedLine: string;
     /**
      * Accessible name for the mascot's speech bubble, which links to the

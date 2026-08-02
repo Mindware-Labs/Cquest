@@ -82,6 +82,42 @@ export const statLineVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT } },
 };
 
+/* Drop-in: a card falls into place rather than fading up. The transition is a
+   SPRING, not the shared quint — gravity is the whole point, and a fixed
+   duration cannot produce the short overshoot on landing that makes a solid
+   object read as having weight. `damping: 17` against `stiffness: 190` is that
+   overshoot: about 3px past the mark and back, which registers as a settle
+   rather than as a bounce.
+
+   Opacity is pulled out into its own short tween. Left on the spring it would
+   still be resolving while the card is already sitting still, so the card
+   would appear to fade in AFTER it landed. It has to be solid on the way down.
+
+   The 1.5° tilt is what keeps three identical rectangles from falling like one
+   sheet: each lands square, but they are not perfectly parallel in flight. */
+export const dropGroupVariants: Variants = {
+  hidden: {},
+  // Wider than groupVariants' 0.1 — the fall is a longer gesture than a fade,
+  // and at 0.1 the second card leaves before the first has landed.
+  visible: { transition: { staggerChildren: 0.14, delayChildren: 0.08 } },
+};
+export const dropCardVariants: Variants = {
+  hidden: { opacity: 0, y: -64, rotate: -1.5, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotate: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 190,
+      damping: 17,
+      mass: 0.9,
+      opacity: { duration: 0.25, ease: EASE_OUT },
+    },
+  },
+};
+
 // Cinematic photo reveal, split across two layers of one gesture: the crop
 // wipes open from its bottom edge while the image inside settles from a
 // slight overscale. Both live on inner wrappers so the frame element keeps

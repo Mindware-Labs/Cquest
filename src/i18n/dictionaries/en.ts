@@ -31,7 +31,7 @@ export const dictionary: Dictionary = {
     lead: "One partner across your three growth priorities.",
     primaryCta: "Give us a quest",
     replayLabel: "Replay the animation",
-    navLinks: { services: "Services", successStories: "Success stories", about: "About", contact: "Contact" },
+    navLinks: { services: "Services", about: "About", contact: "Contact" },
     typedLine: "give me your quest",
     sayCtaLabel: "Give me your quest — open the quote form",
     onlineLabel: "cq · online",

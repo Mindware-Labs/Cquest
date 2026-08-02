@@ -138,7 +138,11 @@
 
 .valueRow {
   display: grid;
-  grid-template-columns: 3.5rem 3rem 1fr;
+  /* The icon track is `auto`, not a hard 3rem: `.valueIcon` is 2.75rem, so a
+     fixed track left 4px of slack and any bump to the well would have
+     overflowed it — which is exactly what went wrong in the mobile rule at the
+     bottom of this file. Sized to its content, the track cannot be wrong. */
+  grid-template-columns: 3.5rem auto minmax(0, 1fr);
   align-items: center;
   gap: 1.5rem;
   padding: clamp(1.5rem, 3vw, 2rem) 0.5rem;
@@ -198,19 +202,56 @@
   color: rgba(255, 255, 255, 0.62);
   font-size: 0.92rem;
   line-height: 1.7;
+  /* Matches the section descriptions and the story prose — no orphan on the
+     last line, which is most visible exactly where the measure is narrowest. */
+  text-wrap: pretty;
 }
 
 @media (max-width: 64rem) {
   .valuesHeading { grid-template-columns: 1fr; gap: 1.5rem; }
 }
 
+/* Stacked: the number and its icon share the first row, the copy takes the
+   whole second one.
+
+   The second track has to be `1fr`, not a fixed width. It was `2.5rem 2.5rem`,
+   and since `copy copy` only spans the declared tracks, the paragraph was
+   being laid out in 5rem + one gap — about 104px — regardless of how wide the
+   phone was. That is what made the block look unformatted: the copy was
+   wrapping every two or three words in a narrow ribbon down the left edge
+   while the rest of the row sat empty. The 2.75rem icon in a 2.5rem track was
+   overflowing its column on top of it. */
 @media (max-width: 42rem) {
   .valueRow {
-    grid-template-columns: 2.5rem 2.5rem;
-    grid-template-areas: "index icon" "copy copy";
-    row-gap: 0.75rem;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "index icon"
+      "copy copy";
+    align-items: center;
+    column-gap: 0.9rem;
+    row-gap: 1rem;
   }
-  .valueIndex { grid-area: index; }
-  .valueIcon { grid-area: icon; justify-self: end; }
-  .valueCopy { grid-area: copy; }
+
+  .valueIndex {
+    grid-area: index;
+  }
+
+  /* Left, beside the number, not pushed to the far edge: the two read as one
+     marker for the row that follows. `justify-self: start` is what stops it
+     stretching across the new 1fr track. */
+  .valueIcon {
+    grid-area: icon;
+    justify-self: start;
+  }
+
+  .valueCopy {
+    grid-area: copy;
+  }
+
+  .valueCopy p {
+    /* The 52ch cap is there to stop a long measure on desktop; on a phone the
+       viewport is already the tighter constraint and the cap only gets in the
+       way of `text-wrap: pretty`. */
+    max-width: none;
+  }
 }

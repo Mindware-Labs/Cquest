@@ -101,7 +101,6 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
         icon: SERVICE_ICON[service.id],
       })),
     },
-    { label: dict.hero.navLinks.successStories, href: "#success-stories" },
     { label: dict.hero.navLinks.about, href: "#about" },
     { label: dict.hero.navLinks.contact, href: "/quote" },
   ];

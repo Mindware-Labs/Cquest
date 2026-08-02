@@ -8,7 +8,7 @@ export default function QuestLogoMark({ className }: { className?: string }) {
         </g>
         <rect x="152.5" y="-223.5" width="54" height="235" fill="#3080a2" />
       </svg>
-      <span className="text-xs font-bold uppercase tracking-[0.24em] text-white">Quest</span>
+      <span className="text-xs font-bold uppercase tracking-[0.24em] text-white">Center Quest</span>
     </span>
   );
 }

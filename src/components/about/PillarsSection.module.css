@@ -43,6 +43,20 @@
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
 }
 
+/* The drop wrapper. `height: 100%` is what keeps the card's own `height: 100%`
+   meaningful — a percentage resolves against the wrapper, not against the grid
+   track, so without this the three cards stop matching heights.
+
+   `will-change: transform` is deliberate and narrow: this element is animated
+   by a spring, which settles over a variable number of frames rather than a
+   fixed duration, so promoting it once up front is cheaper than letting the
+   compositor re-decide mid-flight. It is on the wrapper, which paints nothing,
+   rather than on the card, which paints a border and a shadow. */
+.pillarDrop {
+  height: 100%;
+  will-change: transform;
+}
+
 .pillarCard {
   display: flex;
   flex-direction: column;

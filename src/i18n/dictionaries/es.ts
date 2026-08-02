@@ -31,7 +31,7 @@ export const dictionary: Dictionary = {
     lead: "Un solo aliado para tus tres prioridades de crecimiento.",
     primaryCta: "Cuéntanos tu misión",
     replayLabel: "Repetir la animación",
-    navLinks: { services: "Servicios", successStories: "Casos de éxito", about: "Nosotros", contact: "Contacto" },
+    navLinks: { services: "Servicios", about: "Nosotros", contact: "Contacto" },
     typedLine: "¿cuál es tu misión?",
     sayCtaLabel: "¿Cuál es tu misión? — abrir el formulario de cotización",
     onlineLabel: "cq · online",

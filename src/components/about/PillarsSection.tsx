@@ -8,9 +8,9 @@ import type { ServiceIconName } from "@/components/services/data";
 import { Particles } from "@/components/ui/particles";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import container from "@/components/services/Container.module.css";
-import { focusRiseVariants, groupVariants, statCardVariants, statLineVariants, VIEWPORT } from "@/components/services/motion";
+import { dropCardVariants, dropGroupVariants, VIEWPORT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
-import { CQ_EASE_SNAP, gsap } from "@/lib/gsap";
+import { gsap } from "@/lib/gsap";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./PillarsSection.module.css";
 
@@ -37,7 +37,12 @@ const COPY = {
         id: "values",
         icon: "diamond" as ServiceIconName,
         title: "Values",
-        body: "The principles that shape how our teams are trained, how performance is tracked, and how we communicate, detailed above.",
+        /* This card used to read "…detailed above", which made it a pointer to
+           the commitments section rather than a card with content of its own —
+           the one piece of copy in About that carried no information. It states
+           where the principles are applied instead, which is the thing the
+           numbered commitments above do NOT say. */
+        body: "The principles we don't negotiate: who we hire, how we train them, and what we accept as done right. They're applied when we recruit, not framed on a wall.",
       },
     ],
   },
@@ -61,7 +66,7 @@ const COPY = {
         id: "values",
         icon: "diamond" as ServiceIconName,
         title: "Valores",
-        body: "Los principios que definen cómo formamos a nuestros equipos, cómo medimos el desempeño y cómo nos comunicamos, detallados arriba.",
+        body: "Los principios que no se negocian: a quién contratamos, cómo lo formamos y qué damos por bien hecho. Se aplican en la selección de personal, no en una pared.",
       },
     ],
   },
@@ -71,29 +76,19 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
   const sectionRef = useRef<HTMLElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
 
-  useIsomorphicLayoutEffect(() => {
-    if (reduced || !gridRef.current) return;
-    const ctx = gsap.context(() => {
-      const icons = gsap.utils.toArray<HTMLElement>(`.${styles.pillarIcon}`, gridRef.current);
-      gsap.fromTo(
-        icons,
-        { rotate: -60, scale: 0.4, autoAlpha: 0 },
-        {
-          rotate: 0,
-          scale: 1,
-          autoAlpha: 1,
-          duration: 0.6,
-          ease: CQ_EASE_SNAP,
-          stagger: 0.12,
-          scrollTrigger: { trigger: gridRef.current, start: "top 82%", once: true },
-        },
-      );
-    }, gridRef);
-    return () => ctx.revert();
-  }, [reduced]);
+  /* The icons used to arrive on a GSAP timeline of their own — rotate −60°,
+     scale 0.4, `back.out(1.7)` — on top of the `focusRiseVariants` that
+     motion/react was already running on the same nodes. Two libraries owning
+     opacity and transform on one element, which is the exact failure this
+     codebase warns about elsewhere, and GSAP's inline transform also outranked
+     the `scale: 1.08` the stylesheet applies to the icon on card hover.
+
+     Both are gone. The card is what falls now, and a solid object's contents
+     do not animate independently of it while it is in the air — the icon and
+     the copy ride the card down, which is what makes it read as one thing
+     landing rather than a container arriving with its parts assembling inside. */
 
   useIsomorphicLayoutEffect(() => {
     if (reduced || !sectionRef.current) return;
@@ -127,22 +122,25 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
       )}
       <div className={container.container}>
         <SectionIntro title={t.heading} description={t.description} reduced={reduced} rule={false} />
+        {/* The drop lives on this wrapper, not on `.pillarCard`: the card owns a
+            CSS hover lift (`translate: 0 -4px`), and an inline transform left
+            behind by the reveal would outrank it. Same anchor/card split the
+            quote card and the diagram nodes use. */}
         <motion.div
-          ref={gridRef}
           className={styles.pillarGrid}
           initial={reduced ? false : "hidden"}
           whileInView={reduced ? undefined : "visible"}
           viewport={VIEWPORT}
-          variants={groupVariants}
+          variants={dropGroupVariants}
         >
           {t.cards.map((card, index) => (
-            <motion.div key={card.id} variants={statCardVariants}>
+            <motion.div key={card.id} className={styles.pillarDrop} variants={dropCardVariants}>
               <SpotlightCard className={styles.pillarCard} reduced={reduced} glowColor={ACCENTS[index]}>
-                <motion.span className={styles.pillarIcon} variants={focusRiseVariants}>
+                <span className={styles.pillarIcon}>
                   <ServiceIcon name={card.icon} />
-                </motion.span>
-                <motion.h3 variants={statLineVariants}>{card.title}</motion.h3>
-                <motion.p variants={statLineVariants}>{card.body}</motion.p>
+                </span>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
               </SpotlightCard>
             </motion.div>
           ))}

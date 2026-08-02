@@ -211,8 +211,41 @@
   .slaHeading { position: static; }
 }
 
+/* The three-column ledger only works while the value track has room to be a
+   value. These are not figures — `dd` carries phrases ("Dentro del SLA",
+   "Hasta 24/7") at display size with `white-space: nowrap`, so on a phone that
+   column claims ~170px of a ~330px content box and leaves the label and the
+   status line fighting over what is left. The status strings are the longest
+   copy in the row ("La dotación de personal se ajusta a tu curva de demanda"),
+   so they were the ones wrapping into a narrow ribbon.
+
+   Stacked, each part gets the full measure: the number and its label read as
+   the row's title, the value lands underneath at full size, and the status
+   note runs the width of the row. `nowrap` is dropped with the columns — it
+   existed to stop a figure breaking mid-number, and there is no longer a
+   narrow track to protect it from. */
 @media (max-width: 42rem) {
-  .slaList dd { font-size: 1.5rem; }
+  .slaList > div {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "index label"
+      "value value"
+      "status status";
+    align-items: start;
+    row-gap: 0.55rem;
+  }
+
+  .slaList dd {
+    font-size: 1.5rem;
+    text-align: left;
+    white-space: normal;
+  }
+
+  /* The 0.5rem was separation from the label in the two-row desktop cell;
+     `row-gap` owns that spacing now, and keeping both double-counted it. */
+  .slaStatus {
+    margin-top: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
