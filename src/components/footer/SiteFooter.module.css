@@ -100,7 +100,6 @@
   z-index: 1;
 }
 
-/* ── The close ─────────────────────────────────────────── */
 .close {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.5fr);
@@ -177,7 +176,6 @@
   margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
 }
 
-/* ── Directory ─────────────────────────────────────────── */
 .directory {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -289,7 +287,6 @@
   color: var(--svc);
 }
 
-/* ── Contact ───────────────────────────────────────────── */
 .contactList {
   display: flex;
   flex-direction: column;
@@ -323,7 +320,6 @@
   color: var(--ft-dim);
 }
 
-/* ── Closing row ───────────────────────────────────────── */
 .base {
   display: flex;
   flex-wrap: wrap;
@@ -347,7 +343,6 @@
   text-wrap: balance;
 }
 
-/* ── Links ─────────────────────────────────────────────── */
 /* Every text link is a 2.75rem target with its padding INSIDE the row, so a
    dense footer still clears the mobile minimum — the usual failure mode down
    here. On a precise pointer that floor is just dead vertical space, so it
@@ -382,7 +377,6 @@
   outline-offset: 3px;
 }
 
-/* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 64rem) {
   .close {
     grid-template-columns: minmax(0, 1fr);

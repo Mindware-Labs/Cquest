@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Josefin_Sans } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import RouteTransition from "@/components/RouteTransition";
@@ -46,6 +47,8 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
 // kept in sync across all three so canonical/hreflang/JSON-LD/metadataBase
 // all resolve against the same domain.
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 // Organization schema — still only fields we actually have. Phone, email and
 // address are now real (see components/footer/data.ts, the single source both
@@ -161,6 +164,7 @@ export default async function RootLayout({
           </RouteTransition>
         </I18nProvider>
       </body>
+      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }

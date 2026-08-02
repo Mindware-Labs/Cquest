@@ -58,7 +58,6 @@
 
 .pvScreen > * { position: relative; }
 
-/* 1 · CRM — case list */
 .crmToolbar { display: flex; align-items: center; gap: 0.5rem; }
 
 .crmSearch {
@@ -153,7 +152,6 @@
   border: 1px solid color-mix(in srgb, var(--t) 30%, transparent);
 }
 
-/* 2 · Dashboard — KPIs + bar chart */
 .dashHead { display: flex; align-items: center; }
 
 .dashLive {
@@ -224,7 +222,6 @@
   box-shadow: 0 0 12px -2px color-mix(in srgb, var(--pv-green) 55%, transparent);
 }
 
-/* 3 · Automation — node graph */
 .autoStage { position: relative; flex: 1; margin-top: 0.3rem; min-height: 6rem; }
 
 .autoSvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -271,7 +268,6 @@
 
 .autoNode svg { width: 0.85rem; height: 0.85rem; flex: none; color: var(--n); }
 
-/* 4 · AI — agent console */
 .aiMsg { display: flex; gap: 0.45rem; max-width: 84%; }
 .aiMsg + .aiMsg { margin-top: 0.5rem; }
 .aiMsg[data-role="user"] { align-self: flex-end; flex-direction: row-reverse; }

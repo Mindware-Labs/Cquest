@@ -93,7 +93,6 @@ export function resolveQuestionnaire(questionnaire: Questionnaire, lang: Locale)
   };
 }
 
-/* ── Wizard answer shape ────────────────────────────────── */
 
 export type Answers = Record<string, string | string[]>;
 

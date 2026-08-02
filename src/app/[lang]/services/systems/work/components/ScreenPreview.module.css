@@ -88,7 +88,6 @@
 
 .icoSky { color: var(--wp-sky); }
 
-/* 1 · Contact Center */
 .ccTabs { display: flex; gap: clamp(0.9rem, 2vw, 1.4rem); }
 
 .ccTabs span {
@@ -290,7 +289,6 @@
 .followBar { flex: 1; height: 0.26rem; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
 .followTime { flex: none; font-size: 0.56rem; color: rgba(255, 255, 255, 0.42); }
 
-/* 4 · Per-site reporting */
 .repHead { display: flex; align-items: center; gap: 0.6rem; }
 .repLabel { font-size: 0.62rem; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
 .repExports { margin-left: auto; display: flex; gap: 0.4rem; }

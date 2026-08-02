@@ -137,14 +137,12 @@
   line-height: 1.4;
 }
 
-/* ── Divider ── */
 .divider {
   height: 1px;
   width: 100%;
   background: var(--rule);
 }
 
-/* ── Section scaffolding ── */
 .section {
   display: flex;
   flex-direction: column;
@@ -196,7 +194,6 @@
 
 .prose strong { color: var(--foreground); font-weight: 600; }
 
-/* ── Challenge / solution split ── */
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -599,7 +596,6 @@
   background: var(--accent);
 }
 
-/* ── Gallery ── */
 .gallery {
   width: 100%;
   display: grid;
@@ -642,7 +638,6 @@
   line-height: 1.7;
 }
 
-/* ── CTA actions ── */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -681,7 +676,6 @@
 .primary svg { width: 1rem; height: 1rem; transition: transform 240ms var(--ease-out); }
 .primary:hover svg { transform: translateX(0.2rem); }
 
-/* ── Responsive ── */
 @media (max-width: 64rem) {
   .manages { grid-template-columns: repeat(3, 1fr); }
   /* How it works collapses to numeral · (title over description). */

@@ -47,7 +47,6 @@ export const CONTACT_METHODS: readonly Choice[] = [
   { value: "whatsapp", icon: "messages", copy: { en: { label: "WhatsApp" }, es: { label: "WhatsApp" } } },
 ];
 
-/* ── Step metadata ──────────────────────────────────────── */
 
 export const STEPS = [
   { id: "service", copy: { en: { label: "Service" }, es: { label: "Servicio" } } },

@@ -33,14 +33,12 @@
   transition: background 0.4s var(--ease-out);
 }
 
-/* ── Step body ─────────────────────────────────────────── */
 
 .body {
   position: relative;
   min-height: clamp(11rem, 22vh, 14rem);
 }
 
-/* ── Footer ────────────────────────────────────────────── */
 
 .footer {
   display: flex;

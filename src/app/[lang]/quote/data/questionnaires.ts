@@ -12,7 +12,6 @@ function choicesFromDetails(id: ServiceId): Choice[] {
   }));
 }
 
-/* ── Shared answer sets ─────────────────────────────────── */
 
 const VOLUME: readonly Choice[] = [
   { value: "under-500", copy: { en: { label: "Under 500 / month" }, es: { label: "Menos de 500 / mes" } } },
