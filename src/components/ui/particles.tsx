@@ -1,39 +1,8 @@
 "use client"
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  type ComponentPropsWithoutRef,
-} from "react"
+import React, { useEffect, useRef, type ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
-
-interface MousePosition {
-  x: number
-  y: number
-}
-
-function MousePosition(): MousePosition {
-  const [mousePosition, setMousePosition] = useState<MousePosition>({
-    x: 0,
-    y: 0,
-  })
-
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      setMousePosition({ x: event.clientX, y: event.clientY })
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove)
-    }
-  }, [])
-
-  return mousePosition
-}
 
 interface ParticlesProps extends ComponentPropsWithoutRef<"div"> {
   className?: string
@@ -93,7 +62,7 @@ export const Particles: React.FC<ParticlesProps> = ({
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const context = useRef<CanvasRenderingContext2D | null>(null)
   const circles = useRef<Circle[]>([])
-  const mousePosition = MousePosition()
+  const mousePosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 })
   const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1
@@ -103,12 +72,53 @@ export const Particles: React.FC<ParticlesProps> = ({
   const onMouseMoveRef = useRef<() => void>(() => {})
   const animateRef = useRef<() => void>(() => {})
 
+  /* ── Frame budget ─────────────────────────────────────────────────────
+     The loop used to be unconditional: a hundred-odd particles re-drawn
+     every frame for the whole life of the page, including while the field
+     was scrolled far out of view or the tab was in the background. It now
+     parks unless the canvas is actually on screen AND the tab is visible,
+     and never starts at all under reduced motion. Parking only cancels the
+     rAF — the circles keep their positions on the ref, so resuming picks up
+     exactly where it left off with no visible jump. */
   useEffect(() => {
     if (canvasRef.current) {
       context.current = canvasRef.current.getContext("2d")
     }
     initCanvasRef.current()
-    animateRef.current()
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    let onScreen = false
+    let tabVisible = document.visibilityState === "visible"
+
+    const loop = () => {
+      animateRef.current()
+      rafID.current = window.requestAnimationFrame(loop)
+    }
+
+    const park = () => {
+      if (rafID.current != null) {
+        window.cancelAnimationFrame(rafID.current)
+        rafID.current = null
+      }
+    }
+
+    const sync = () => {
+      if (reducedMotion.matches) {
+        park()
+        return
+      }
+      if (onScreen && tabVisible) {
+        if (rafID.current == null) rafID.current = window.requestAnimationFrame(loop)
+      } else {
+        park()
+      }
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      mousePosition.current.x = event.clientX
+      mousePosition.current.y = event.clientY
+      onMouseMoveRef.current()
+    }
 
     const handleResize = () => {
       if (resizeTimeout.current) {
@@ -119,22 +129,54 @@ export const Particles: React.FC<ParticlesProps> = ({
       }, 200)
     }
 
+    // Toggling the preference re-inits, because `initCanvas` is what decides
+    // between the animated field's alpha-0 first frame and the settled one.
+    const handlePreferenceChange = () => {
+      initCanvasRef.current()
+      sync()
+    }
+
+    const handleVisibilityChange = () => {
+      tabVisible = document.visibilityState === "visible"
+      sync()
+    }
+
+    const observer =
+      typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            ([entry]) => {
+              onScreen = entry.isIntersecting
+              sync()
+            },
+            { threshold: 0 },
+          )
+        : null
+
+    if (observer && canvasContainerRef.current) {
+      observer.observe(canvasContainerRef.current)
+    } else {
+      // No observer support: fall back to the old always-on behaviour.
+      onScreen = true
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("resize", handleResize)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    reducedMotion.addEventListener("change", handlePreferenceChange)
+    sync()
 
     return () => {
-      if (rafID.current != null) {
-        window.cancelAnimationFrame(rafID.current)
-      }
+      park()
       if (resizeTimeout.current) {
         clearTimeout(resizeTimeout.current)
       }
+      observer?.disconnect()
+      window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("resize", handleResize)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      reducedMotion.removeEventListener("change", handlePreferenceChange)
     }
   }, [color])
-
-  useEffect(() => {
-    onMouseMoveRef.current()
-  }, [mousePosition.x, mousePosition.y])
 
   useEffect(() => {
     initCanvasRef.current()
@@ -143,14 +185,25 @@ export const Particles: React.FC<ParticlesProps> = ({
   const initCanvas = () => {
     resizeCanvas()
     drawParticles()
+    /* Every particle starts at alpha 0 and is faded up by the loop, so under
+       reduced motion — where the loop never runs — the layer would simply
+       stay blank. Paint the field's settled state instead: one frame, every
+       particle already at its target alpha. */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      clearContext()
+      circles.current.forEach((circle: Circle) => {
+        circle.alpha = circle.targetAlpha
+        drawCircle(circle, true)
+      })
+    }
   }
 
   const onMouseMove = () => {
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect()
       const { w, h } = canvasSize.current
-      const x = mousePosition.x - rect.left - w / 2
-      const y = mousePosition.y - rect.top - h / 2
+      const x = mousePosition.current.x - rect.left - w / 2
+      const y = mousePosition.current.y - rect.top - h / 2
       const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2
       if (inside) {
         mouse.current.x = x
@@ -301,7 +354,6 @@ export const Particles: React.FC<ParticlesProps> = ({
         drawCircle(newCircle)
       }
     })
-    rafID.current = window.requestAnimationFrame(animateRef.current)
   }
 
   initCanvasRef.current = initCanvas

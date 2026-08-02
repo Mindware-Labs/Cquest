@@ -98,22 +98,12 @@ export default function CallCenterScene() {
         ))}
       </div>
       <span
-        className="cq-v2-orb left-[-11rem] top-[-10rem] h-[34rem] w-[34rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc) 30%, transparent)",
-            animation: "cq-float-a 21s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--cc-a left-[-11rem] top-[-10rem] h-[34rem] w-[34rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc) 30%, transparent)" } as CSSProperties}
       />
       <span
-        className="cq-v2-orb bottom-[-13rem] right-[-10rem] h-[32rem] w-[32rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc-glow) 26%, transparent)",
-            animation: "cq-float-b 25s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--cc-b bottom-[-13rem] right-[-10rem] h-[32rem] w-[32rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc-glow) 26%, transparent)" } as CSSProperties}
       />
     </div>
   );

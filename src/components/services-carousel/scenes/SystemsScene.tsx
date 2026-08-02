@@ -28,7 +28,13 @@ export default function SystemsScene() {
 
     const sync = () => {
       const box = layer.getBoundingClientRect();
+      /* Nothing to solve against yet — the ResizeObserver below re-runs the
+         sync as soon as the layer has real dimensions, so a zero-width mount
+         heals itself instead of leaving all six nodes stacked at 0,0 with
+         --nd: 0s (they would then flare in unison). */
       if (box.width === 0 || box.height === 0) return;
+      /* Read once per sync, above the loop: this is a computed-style read
+         and the node loop must stay a pure measure-then-write pass. */
       const rem =
         Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
       const cell = GRID_CELL_REM * rem;
@@ -57,9 +63,38 @@ export default function SystemsScene() {
       });
     };
 
-    sync();
-    window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
+    /* sync() forces layout (a rect, a computed style and window.innerWidth)
+       and then writes six nodes, so it must run at most once per frame and
+       never inside a commit. Same rAF-coalescing shape as useSectionSpy:
+       events only ever queue a frame, the frame does the work.
+
+       The initial run is deferred for the same reason — called inline it
+       lands in the mount commit, which here is the middle of the
+       AnimatePresence page turn, and forces a synchronous layout flush on
+       exactly the frame that can least afford one. */
+    let frame = 0;
+    const queue = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        sync();
+      });
+    };
+
+    queue();
+    window.addEventListener("resize", queue, { passive: true });
+    /* A zero-width mount (the slide can be laid out before the stage has
+       settled) leaves nothing to solve against; the observer re-solves the
+       moment the layer has real dimensions, and covers container-driven
+       resizes the window event never sees. */
+    const observer = new ResizeObserver(queue);
+    observer.observe(layer);
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("resize", queue);
+      observer.disconnect();
+    };
   }, []);
 
   return (
@@ -78,22 +113,12 @@ export default function SystemsScene() {
       <span className="cq-v2-node" data-x="84" data-y="18" />
       <span className="cq-v2-node" data-x="90" data-y="66" />
       <span
-        className="cq-v2-orb left-[-11rem] top-[26%] h-[32rem] w-[32rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)",
-            animation: "cq-float-b 24s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--sys-a left-[-11rem] top-[26%] h-[32rem] w-[32rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)" } as CSSProperties}
       />
       <span
-        className="cq-v2-orb right-[-12rem] bottom-[-11rem] h-[34rem] w-[34rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc-glow) 22%, transparent)",
-            animation: "cq-float-c 27s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--sys-b right-[-12rem] bottom-[-11rem] h-[34rem] w-[34rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc-glow) 22%, transparent)" } as CSSProperties}
       />
     </div>
   );

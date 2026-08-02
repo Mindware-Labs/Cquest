@@ -27,22 +27,12 @@ export default function BpoScene() {
         style={{ animationDelay: "-9s", animationDuration: "13s" }}
       />
       <span
-        className="cq-v2-orb left-[-12rem] bottom-[-12rem] h-[34rem] w-[34rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)",
-            animation: "cq-float-c 23s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--bpo-a left-[-12rem] bottom-[-12rem] h-[34rem] w-[34rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc) 26%, transparent)" } as CSSProperties}
       />
       <span
-        className="cq-v2-orb right-[-10rem] top-[-11rem] h-[30rem] w-[30rem]"
-        style={
-          {
-            "--orb": "color-mix(in srgb, var(--svc-glow) 18%, transparent)",
-            animation: "cq-float-a 26s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse",
-          } as CSSProperties
-        }
+        className="cq-v2-orb cq-v2-orb--bpo-b right-[-10rem] top-[-11rem] h-[30rem] w-[30rem]"
+        style={{ "--orb": "color-mix(in srgb, var(--svc-glow) 18%, transparent)" } as CSSProperties}
       />
     </>
   );

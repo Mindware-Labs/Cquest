@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import container from "@/components/services/Container.module.css";
 import { focusRiseVariants, groupVariants, ruleYVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -16,14 +16,14 @@ const COPY = {
   es: { heading: "El equipo detrás de la operación." },
 };
 
+/* The suffix is folded into the hook's formatter rather than sitting beside
+   the number as its own node: the count-up writes the element's text
+   directly now, so number and suffix have to be produced together. Same
+   rendered string either way. */
 function MetricValue({ value, suffix, reduced }: { value: number; suffix: string; reduced: boolean }) {
-  const { ref, value: animated } = useCountUp<HTMLDataElement>(value, { reduced });
-  return (
-    <dd ref={ref}>
-      {animated}
-      {suffix}
-    </dd>
-  );
+  const format = useCallback((n: number) => `${n}${suffix}`, [suffix]);
+  const { ref, initial } = useCountUp<HTMLElement>(value, { reduced, format });
+  return <dd ref={ref}>{initial}</dd>;
 }
 
 export default function MetricsSection({ reduced }: { reduced: boolean }) {

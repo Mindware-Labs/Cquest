@@ -20,9 +20,20 @@ const COPY = {
 // Icon follows the cursor a few pixels inside its circle — a restrained
 // magnetic-pull micro-interaction, quickTo'd for a spring feel without
 // re-triggering a full tween on every pointermove.
+//
+// Measuring follows `useMagnetic`: the circle's box is read once on arrival
+// and reused, and the quickTo calls are collapsed into one rAF. Reading it
+// per move event forced a synchronous layout on every one of the hundred-odd
+// events a trackpad emits a second — and the icon is transformed by that very
+// tween, so the read was flushing work the tween had just queued. quickTo
+// renders on the GSAP ticker regardless, so one call per frame is identical.
 function MagneticIcon({ children, reduced }: { children: React.ReactNode; reduced: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const moveRef = useRef<{ x: gsap.QuickToFunc; y: gsap.QuickToFunc } | null>(null);
+  const rect = useRef<DOMRect | null>(null);
+  const frame = useRef(0);
+  const pointer = useRef({ x: 0, y: 0 });
+  const hovering = useRef(false);
 
   useEffect(() => {
     if (reduced || !ref.current) return;
@@ -32,21 +43,61 @@ function MagneticIcon({ children, reduced }: { children: React.ReactNode; reduce
     };
   }, [reduced]);
 
+  /* Only meaningful while the pointer is inside — the icon moves under a
+     stationary cursor when the page scrolls, so the cached box goes stale. */
+  useEffect(() => {
+    const invalidate = () => {
+      if (hovering.current) rect.current = null;
+    };
+    window.addEventListener("scroll", invalidate, { passive: true });
+    window.addEventListener("resize", invalidate, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", invalidate);
+      window.removeEventListener("resize", invalidate);
+      if (frame.current) cancelAnimationFrame(frame.current);
+    };
+  }, []);
+
+  function apply() {
+    frame.current = 0;
+    const node = ref.current;
+    if (!node || !hovering.current || !moveRef.current) return;
+    if (!rect.current) rect.current = node.getBoundingClientRect();
+    const box = rect.current;
+    moveRef.current.x((pointer.current.x - box.left - box.width / 2) * 0.35);
+    moveRef.current.y((pointer.current.y - box.top - box.height / 2) * 0.35);
+  }
+
+  function handlePointerEnter() {
+    if (reduced || !ref.current) return;
+    hovering.current = true;
+    rect.current = ref.current.getBoundingClientRect();
+  }
+
   function handlePointerMove(event: PointerEvent<HTMLSpanElement>) {
     if (reduced || !ref.current || !moveRef.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    moveRef.current.x((event.clientX - rect.left - rect.width / 2) * 0.35);
-    moveRef.current.y((event.clientY - rect.top - rect.height / 2) * 0.35);
+    if (!hovering.current) handlePointerEnter();
+    pointer.current.x = event.clientX;
+    pointer.current.y = event.clientY;
+    if (!frame.current) frame.current = requestAnimationFrame(apply);
   }
 
   function handlePointerLeave() {
+    hovering.current = false;
+    rect.current = null;
     if (reduced || !moveRef.current) return;
     moveRef.current.x(0);
     moveRef.current.y(0);
   }
 
   return (
-    <span ref={ref} onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave} className={styles.magneticIcon}>
+    <span
+      ref={ref}
+      onPointerEnter={handlePointerEnter}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className={styles.magneticIcon}
+    >
       {children}
     </span>
   );
