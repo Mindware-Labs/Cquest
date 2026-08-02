@@ -1,5 +1,12 @@
+/* The bottom padding is the panel's reserved slot. The panel opens BELOW the
+   stage (see `.detailAnchor`), and it is absolutely positioned, so nothing in
+   flow would make room for it — without this reserve it would land on whatever
+   follows the section. Reserving it here instead of letting the panel push
+   layout is also what keeps opening a sector free of reflow: the space exists
+   whether or not anything is in it. */
 .beamFigure {
   margin: clamp(1.75rem, 3.5vw, 2.5rem) 0 0;
+  padding-bottom: 10.5rem;
 }
 
 /* The ring radii are percentages of the stage's OWN box, so the same five
@@ -140,10 +147,13 @@
 }
 
 /* ── Detail panel ─────────────────────────────────────────
-   Opens over the core while a sector is held. The hub reads as the constant
-   and the panel as the transient answer to "what does this one involve?", so
-   covering the core for as long as the question is open is the right trade —
-   the lit spoke keeps the panel visually tied to the node that opened it.
+   Opens in the reserved band BELOW the stage, not over the core. It used to be
+   centred on the hub, which meant every answer arrived by covering the one
+   element that never changes — the Center Quest core — and by slicing the two
+   side nodes, which is why the ring had to be dimmed to 0.16 to make the
+   overlap look intentional. Outside the ring nothing is obstructed: the core
+   stays lit, all five labels stay readable, and the lit spoke is still what
+   ties the panel to the node that opened it.
 
    `visibility` rather than `display` so it can transition, and so the panel
    leaves the accessibility tree when closed: the button's `aria-expanded`
@@ -155,9 +165,11 @@
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  width: min(21.5rem, 74%);
+  top: calc(100% + 1rem);
+  translate: -50% 0;
+  /* Wider than the on-hub version could be — there is no ring to clear out
+     here, so the focus line sets in two lines instead of four. */
+  width: min(30rem, 100%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -220,25 +232,11 @@
   color: var(--ab-petroleo);
 }
 
-/* While the panel is open the hub steps back rather than competing with it.
-   Applied to the ANCHOR, not the hub: GSAP leaves an inline `opacity` on the
-   hub itself once the entry lands, and an inline declaration outranks
-   anything written here. The anchor is the element GSAP never touches, which
-   is exactly why it is the one that can still be styled. */
-.beamStage[data-detail] .hubAnchor {
-  opacity: 0.45;
-  transition: opacity 200ms var(--ease-out);
-}
-
-/* The panel is wider than the gap between the two side nodes, so it will
-   cross them — there is no width that both fits the copy and clears the ring.
-   Dropping the unselected nodes this far is what decides how that reads: at
-   0.42 a label sliced by the panel's edge looks like a rendering fault, at
-   0.16 the same overlap reads as everything else stepping back. Same pixels,
-   different intent. */
-.beamStage[data-detail] .nodeAnchor[data-state="muted"] {
-  opacity: 0.16;
-}
+/* The hub used to drop to 0.45 while the panel was open, and the unselected
+   nodes to 0.16. Both existed to make an overlap read as intentional. With the
+   panel outside the ring there is no overlap to excuse: the core stays at full
+   strength — it is the thing the whole figure is about — and `muted`'s own
+   0.42 is enough to say which sector is being asked about. */
 
 .nodeIcon {
   display: grid;
@@ -382,6 +380,12 @@
    160px and therefore what lets the ring exist at all at this width. Over
    60% of this site's traffic sees this version. */
 @media (max-width: 48rem) {
+  /* A narrower panel wraps the focus line further, so the reserved band has to
+     grow with it. */
+  .beamFigure {
+    padding-bottom: 13rem;
+  }
+
   .beamStage {
     /* Portrait stage: width is the scarce axis on a phone, so the ring buys
        its separation vertically. The three numbers below are constrained,
@@ -455,10 +459,12 @@
     bottom: 20%;
   }
 
-  /* Wider share of a narrower stage — at 343px, 74% would leave the focus
-     line breaking every three or four words. */
+  /* The stage is only 24rem wide here, but the panel is not confined to it —
+     it sits below, so it can use the column's full width. `100vw` is the guard
+     against a stage narrower than its container: the panel is centred on the
+     stage, and half of any excess would hang off the viewport edge. */
   .detailAnchor {
-    width: min(21.5rem, 90%);
+    width: min(30rem, 100vw - 2.5rem);
   }
 
   .detail {

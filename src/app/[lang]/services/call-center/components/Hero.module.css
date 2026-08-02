@@ -56,12 +56,17 @@
 }
 
 /* Each headline word is a clip window; the word rides up from behind its
-   own bottom edge (a curtain lift, not a fade). The padding-bottom carries
-   the descenders inside the clip box, and the negative margin between lines
-   gives that padding back so the tight leading is preserved. */
+   own bottom edge (a curtain lift, not a fade). Both paddings carry glyphs
+   inside the clip box — descenders below, and Josefin Sans' tall ascenders
+   above, which `line-height: 0.98` pushes clear out of the line box and
+   `overflow: hidden` would otherwise cut. The matching negative margins give
+   that space back so the tight leading is preserved; they are exact because
+   `.heroHeadline` is a flex container, where sibling margins do not collapse. */
 .heroLineMask {
   display: block;
   overflow: hidden;
+  padding-top: 0.2em;
+  margin-top: -0.2em;
   padding-bottom: 0.12em;
 }
 

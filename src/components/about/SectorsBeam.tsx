@@ -305,9 +305,14 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
         const panel = stage.querySelector<HTMLElement>("[data-panel]");
         if (!panel) return;
 
-        // Origin on the panel's own box, aimed at the node that opened it.
+        /* Origin on the panel's own box, aimed at the node that opened it.
+           The panel sits below the whole stage now, so every node is above it
+           — the vertical component is pinned to the top edge and only the
+           horizontal one still tracks the ring. Feeding it `sin` here, as the
+           on-hub version did, would strike the iris from below for the two
+           lower sectors: the wrong side entirely. */
         const originX = 50 + RING[index].cos * 52;
-        const originY = 50 + RING[index].sin * 52;
+        const originY = 0;
         const parts = gsap.utils.toArray<HTMLElement>(":scope > *", panel);
 
         gsap.killTweensOf([panel, ...parts]);
@@ -404,7 +409,6 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
       <div
         ref={containerRef}
         className={styles.beamStage}
-        data-detail={activeIndex === null ? undefined : ""}
         onMouseLeave={() => setActiveIndex(null)}
         onKeyDown={(event) => {
           if (event.key === "Escape") setActiveIndex(null);

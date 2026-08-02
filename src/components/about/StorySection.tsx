@@ -129,19 +129,35 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
             and reads better opening straight on the type. `accentColor` is
             dropped with it, since the rule was the only thing it fed. */}
         <SectionIntro title={t.heading} reduced={reduced} rule={false} />
+        {/* Two columns: all the prose on the left — paragraphs, then the quote
+            reading as the conclusion drawn from them — and the diagram alone on
+            the right, spanning both. The quote used to be a third column beside
+            the body, which made it a sibling of the paragraphs rather than
+            their payoff, and left the diagram stranded on a full-width row of
+            its own below. */}
         <div ref={gridRef} className={styles.storyGrid}>
-          <div className={styles.storyBody}>
-            {t.body.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
+          <div className={styles.storyColumn}>
+            <div className={styles.storyBody}>
+              {t.body.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+            {/* Shell / card, the same split the diagram's nodes use and for the
+                same reason: GSAP's entry tween owns `transform` on the card and
+                writes `translate: none; scale: none` alongside it, which would
+                outrank any hover lift declared on that element. The shell is
+                the element GSAP never touches, so it is the one that can still
+                be styled — and the card inside stays entirely the timeline's. */}
+            <div className={styles.quoteShell}>
+              <div className={styles.quoteCard}>
+                <span aria-hidden className={styles.quoteMark}>&ldquo;</span>
+                <p className={styles.quoteText}>{t.quote}</p>
+              </div>
+            </div>
           </div>
-          <div className={styles.quoteCard}>
-            <span aria-hidden className={styles.quoteMark}>&ldquo;</span>
-            <p className={styles.quoteText}>{t.quote}</p>
+          <div className={styles.storyBeam}>
+            <SectorsBeam reduced={reduced} />
           </div>
-        </div>
-        <div className={styles.storyBeam}>
-          <SectorsBeam reduced={reduced} />
         </div>
       </div>
     </section>

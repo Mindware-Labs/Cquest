@@ -63,10 +63,21 @@
   font-weight: 700;
 }
 
-/* Curtain masks — headline lines lift from behind their own clip edge. */
+/* Curtain masks — headline lines lift from behind their own clip edge.
+
+   Both paddings are clearance for the clip box, not spacing. `line-height:
+   0.98` makes the line box SHORTER than the em, so Josefin Sans' tall
+   ascenders (the f in "Software", the d in "diseñado") stick out of the top of
+   it and the b/y/ñ descenders out of the bottom — and `overflow: hidden` cuts
+   whatever sticks out. The padding pushes the clip edges off the glyphs; the
+   matching negative margins give the space straight back so the tight leading
+   is unchanged. This is exact rather than approximate because `.heroHeadline`
+   is a flex container, where sibling margins do not collapse. */
 .heroLineMask {
   display: block;
   overflow: hidden;
+  padding-top: 0.2em;
+  margin-top: -0.2em;
   padding-bottom: 0.12em;
 }
 

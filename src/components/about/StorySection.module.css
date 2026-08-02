@@ -40,12 +40,25 @@
   z-index: 1;
 }
 
+/* Prose column left, diagram right. The right track is given the larger share
+   because the diagram is the one element here with a hard minimum: it is a
+   ring on a 16:10 stage, and squeezing that track is what turns the spokes
+   into stubs. The prose reflows to whatever is left, which it can. */
 .storyGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(15rem, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: clamp(2rem, 5vw, 4rem);
   margin-top: clamp(2rem, 4vw, 3rem);
-  align-items: start;
+  align-items: center;
+}
+
+/* The left column's own stack: paragraphs, then the quote. The gap is larger
+   than the one between paragraphs so the quote reads as a separate object
+   closing the argument rather than as a fourth paragraph in a box. */
+.storyColumn {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 3.5vw, 2.75rem);
 }
 
 .storyBody {
@@ -61,10 +74,47 @@
   text-wrap: pretty;
 }
 
+/* The hover lift, on the wrapper rather than the card (see the JSX). It floats
+   rather than zooms: 6px of travel carries the movement and the scale is only
+   1.015 — enough that the edges visibly grow, far short of the card lurching
+   toward the reader. The shadow is what sells the height; it lives here and
+   not on the card because the card's own `box-shadow` is driven by
+   `--entry-shadow`, which the entry timeline leaves as an inline value that no
+   stylesheet rule can beat. */
+.quoteShell {
+  transition:
+    translate 320ms var(--ease-out),
+    scale 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out);
+}
+
+.quoteShell:hover {
+  translate: 0 -6px;
+  scale: 1.015;
+  box-shadow: 0 1.6rem 3rem -1.1rem color-mix(in srgb, var(--ab-petroleo) 45%, transparent);
+}
+
+/* A quote is not interactive, so there is no focus state to match — but a
+   visitor who asked for less motion still gets the shadow, which carries the
+   same "this is a distinct object" reading without anything moving. */
+@media (prefers-reduced-motion: reduce) {
+  .quoteShell {
+    transition: box-shadow 320ms var(--ease-out);
+  }
+
+  .quoteShell:hover {
+    translate: none;
+    scale: none;
+  }
+}
+
 .quoteCard {
   position: relative;
   overflow: hidden;
-  padding: 2.25rem 1.85rem 2rem;
+  /* Padded up from the narrow-column version: it now has the full width of the
+     prose column, and the old 1.85rem inline padding on a box that wide left
+     the quote floating in it. */
+  padding: clamp(2.5rem, 4vw, 3.25rem) clamp(1.85rem, 3vw, 2.75rem) clamp(2.25rem, 3.5vw, 3rem);
   border: 1px solid var(--ab-rule);
   border-top: 3px solid var(--ab-celeste);
   background: var(--ab-raised);
@@ -100,19 +150,23 @@
   text-wrap: balance;
 }
 
-/* The gap is sized for the particle field, not for the diagram. The ring is
-   drawn on a box taller than the stage — it has to be, or it cannot be a
-   circle — so it reaches roughly 12px above the stage's own top edge. This
-   margin is what that overflow lands in. Tightening it back to the diagram's
-   own bounds would put capsules in the second paragraph.
-
-   The room comes out of the section's own slack: there was dead space below
-   the diagram already, and moving it down uses that instead of adding
-   height. */
+/* The particle ring is drawn on a box taller than the stage — it has to be, or
+   it cannot be a circle — so it overflows roughly 12px past the stage's top
+   and bottom edges. In the two-column layout that overflow lands in the
+   section's own vertical padding and in the column gap beside the prose, so no
+   margin is needed to hold it off any text. */
 .storyBeam {
-  margin-top: clamp(3.5rem, 6vw, 5.5rem);
+  min-width: 0;
 }
 
 @media (max-width: 64rem) {
-  .storyGrid { grid-template-columns: 1fr; }
+  .storyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stacked, the diagram no longer has a gutter to overflow into — the quote
+     card is directly above it. This is the clearance the field needs. */
+  .storyBeam {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+  }
 }

@@ -43,11 +43,17 @@
 }
 
 /* Curtain masks — each headline line rides up from behind its own clipped
-   bottom edge; padding carries the descenders, the negative margin gives
-   the space back so the tight leading holds. */
+   bottom edge. The paddings carry the glyphs that fall outside the line box
+   into the clip box: descenders below, and Josefin Sans' tall ascenders above,
+   which `line-height: 0.98` pushes past the top edge where `overflow: hidden`
+   would cut them. The negative margins give the space back so the tight
+   leading holds — exactly, since `.heroHeadline` is a flex container and
+   sibling margins there do not collapse. */
 .heroLineMask {
   display: block;
   overflow: hidden;
+  padding-top: 0.2em;
+  margin-top: -0.2em;
   padding-bottom: 0.12em;
 }
 
