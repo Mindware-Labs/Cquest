@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 
@@ -120,23 +120,48 @@ function AntigravityInner({
      look drawn in and released instead of teleported. */
   const engaged = useRef(false);
   const pull = useRef(0);
+  const pointerNdc = useRef({ x: 0, y: 0 });
+  const gl = useThree((state) => state.gl);
 
+  /* The pointer is read straight from DOM events and normalised against the
+     CANVAS's own box, rather than taken from `state.pointer`.
+
+     React Three Fiber's value is derived from its event system, which here is
+     working against three things at once: the canvas takes no pointer events,
+     the listeners live on a different element (`eventSource`), and — since
+     the field was squared off to fit a circle — that element is not even the
+     same size as the canvas. The number that arrives is not the one this
+     simulation needs. Computing it from the canvas rect removes every one of
+     those variables; the magnet then answers the pointer wherever it actually
+     is, and R3F's own event plumbing is left out of it entirely.
+
+     `getBoundingClientRect` per pointermove is a layout read, and normally
+     worth caching — but the rect moves with scroll, the browser coalesces
+     pointermove to one per frame, and this same frame is already writing 300
+     instanced matrices. It is not the expensive thing here. */
   useEffect(() => {
     const el = eventSource?.current;
-    if (!el) return;
-    const enter = () => {
+    const canvas = gl?.domElement;
+    if (!el || !canvas) return;
+
+    const move = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      pointerNdc.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointerNdc.current.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
       engaged.current = true;
     };
     const leave = () => {
       engaged.current = false;
     };
-    el.addEventListener("pointerenter", enter);
+
+    el.addEventListener("pointermove", move, { passive: true });
     el.addEventListener("pointerleave", leave);
     return () => {
-      el.removeEventListener("pointerenter", enter);
+      el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerleave", leave);
     };
-  }, [eventSource]);
+  }, [eventSource, gl]);
 
   /* Upstream seeds these in a `useMemo`, which runs during render — and
      `Math.random()` during render is exactly what React's purity rule
@@ -176,7 +201,8 @@ function AntigravityInner({
     const mesh = meshRef.current;
     if (!mesh) return;
 
-    const { viewport: v, pointer: m } = state;
+    const { viewport: v } = state;
+    const m = pointerNdc.current;
 
     const width = Math.round(v.width) || 100;
     const height = Math.round(v.height) || 100;
@@ -222,8 +248,8 @@ function AntigravityInner({
 
     // Where the pointer actually is, in world units, regardless of what the
     // formation is centred on.
-    const pointerX = (m.x * v.width) / 2;
-    const pointerY = (m.y * v.height) / 2;
+    const pointerX = (pointerNdc.current.x * v.width) / 2;
+    const pointerY = (pointerNdc.current.y * v.height) / 2;
     pull.current += ((engaged.current ? 1 : 0) - pull.current) * 0.07;
     const pullActive = pull.current > 0.002;
 

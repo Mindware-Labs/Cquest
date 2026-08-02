@@ -430,10 +430,11 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
             on screen as an ellipse. The size then comes from the field box
             (see `.field` in the stylesheet), since the camera is fixed and
             the canvas always shows ~31.5 world units of height. At the
-            squared-off desktop box that is ~19.3px per unit, so 12 draws a
-            circle of about 232px — clear of the top and bottom nodes, and
-            passing behind the wide side labels. The phone box is shorter, so
-            the same job needs a larger number there.
+            desktop box that is ~18.4px per unit, so 11 draws a circle of
+            about 202px: still outside the top and bottom nodes, passing
+            behind the wide side labels, and reaching only ~12px past the
+            stage — which is what keeps it out of the paragraph above. The
+            phone box is shorter, so the same job needs a larger number.
 
             Half the count on a phone — 300 instanced capsules is a different
             proposition on a mid-range Android than on a laptop GPU. */}
@@ -445,15 +446,21 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
             followPointer={false}
             count={fieldCompact ? 140 : 300}
             magnetRadius={60}
-            ringRadius={fieldCompact ? 14.7 : 12}
-            ringRadiusY={fieldCompact ? 14.7 : 12}
-            // Over half answer the pointer now, with a wider reach and a
-            // tighter orbit: the first pass was accurate but too polite to
-            // notice. The rest still hold the circle.
-            pullShare={0.55}
+            ringRadius={fieldCompact ? 14.7 : 11}
+            ringRadiusY={fieldCompact ? 14.7 : 11}
+            /* Reach is what makes this read, and the first two attempts got
+               it wrong. A `pullRadius` close to the ring's own radius only
+               ever claims particles that were already beside the pointer, so
+               local density barely moved — measurable, but not visible. At 24
+               world units the reach covers most of the field, so magnetic
+               particles cross the circle to get there and the arc they leave
+               visibly thins. `pullOrbit` is the size of the knot they gather
+               into; too tight and they stack into a blob instead of orbiting.
+               Half stay behind, which is what keeps a circle to come back to. */
+            pullShare={0.45}
             pullStrength={0.95}
-            pullRadius={15}
-            pullOrbit={2.5}
+            pullRadius={45}
+            pullOrbit={5}
             waveSpeed={0.4}
             waveAmplitude={1}
             particleSize={1.2}

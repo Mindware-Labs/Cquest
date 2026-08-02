@@ -26,16 +26,18 @@
    shows ~31.5 world units of HEIGHT and gets its width from its own aspect
    ratio — which means the vertical axis is what caps how large a circle can
    be drawn without its top and bottom being cut off. The stage is 16:10, so a
-   field confined to it can only ever show an ellipse. Squaring the box off
-   (−30% top and bottom brings 380px up to 608px, level with the width) is
-   what lets a true circle fit. It overflows the stage into the section, which
-   is the point: the ring is meant to enclose the diagram, not sit inside it. */
+   field confined to it can only ever show an ellipse. Extending the box past
+   it (−26% top and bottom takes 380px to ~578px) is what lets a true circle
+   fit. It overflows the stage into the section, which is the point: the ring
+   is meant to enclose the diagram, not sit inside it — and `.storyBeam`'s
+   top margin was opened up to give that overflow somewhere to land instead of
+   arriving in the paragraph above. */
 .field {
   position: absolute;
   left: 0;
   right: 0;
-  top: -30%;
-  bottom: -30%;
+  top: -26%;
+  bottom: -26%;
   z-index: 0;
 }
 

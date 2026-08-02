@@ -100,8 +100,17 @@
   text-wrap: balance;
 }
 
+/* The gap is sized for the particle field, not for the diagram. The ring is
+   drawn on a box taller than the stage — it has to be, or it cannot be a
+   circle — so it reaches roughly 12px above the stage's own top edge. This
+   margin is what that overflow lands in. Tightening it back to the diagram's
+   own bounds would put capsules in the second paragraph.
+
+   The room comes out of the section's own slack: there was dead space below
+   the diagram already, and moving it down uses that instead of adding
+   height. */
 .storyBeam {
-  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(3.5rem, 6vw, 5.5rem);
 }
 
 @media (max-width: 64rem) {
