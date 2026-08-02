@@ -42,7 +42,6 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
-  const beamRef = useRef<HTMLDivElement>(null);
 
   useIsomorphicLayoutEffect(() => {
     if (reduced || !gridRef.current) return;
@@ -66,31 +65,32 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
         { ...REVEAL_TO, clipPath: CURTAIN.open, duration: REVEAL_DURATION, stagger: 0.12 },
       ).fromTo(
         quoteCard,
-        { autoAlpha: 0, scale: 1.03, clipPath: CURTAIN.fromTop },
-        { autoAlpha: 1, scale: 1, clipPath: CURTAIN.open, duration: 0.85 },
+        // Enters slightly detached from the paragraphs beside it: a short
+        // horizontal travel and a shadow it sheds on landing, so it reads as
+        // a separate object settling in rather than a third column of the
+        // same block fading up.
+        { autoAlpha: 0, x: 26, scale: 1.03, clipPath: CURTAIN.fromTop, "--entry-shadow": 0.3 },
+        {
+          autoAlpha: 1,
+          x: 0,
+          scale: 1,
+          clipPath: CURTAIN.open,
+          "--entry-shadow": 0,
+          duration: 0.85,
+        },
         "-=0.55",
       );
 
-      /* The diagram gets its own trigger rather than a slot in the timeline
-         above: it sits a full block lower, so chaining it would fire the
-         reveal while it is still off-screen.
+      /* The diagram used to get a reveal of its own here — y + opacity +
+         blur, on its own ScrollTrigger. It owns its entry now: SectorsBeam
+         runs a GSAP timeline that boots the core, draws each connection and
+         lands each sector with the pulse that arrives on it.
 
-         Deliberately y + opacity + blur only — no scale, no clip. The beams
-         measure their endpoints with getBoundingClientRect and only
-         re-measure when the ResizeObserver fires, which transforms do not
-         trigger; a uniform translate moves container and endpoints together
-         so the relative geometry survives, whereas a scale would leave the
-         paths measured against a box that no longer exists. */
-      gsap.fromTo(
-        beamRef.current,
-        REVEAL_FROM,
-        {
-          ...REVEAL_TO,
-          duration: REVEAL_DURATION,
-          ease: CQ_EASE,
-          scrollTrigger: { trigger: beamRef.current, start: REVEAL_START, once: true },
-        },
-      );
+         Removing this was not tidying. Two triggers were animating the same
+         subtree, and this one blurred the entire diagram — the largest
+         surface in the section — for 0.9s across exactly the frames in which
+         the spokes are drawing themselves. A 10px blur is a full-surface
+         repaint per frame, and it was being paid on top of the draw. */
     }, sectionRef);
 
     return () => ctx.revert();
@@ -140,7 +140,7 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
             <p className={styles.quoteText}>{t.quote}</p>
           </div>
         </div>
-        <div ref={beamRef} className={styles.storyBeam}>
+        <div className={styles.storyBeam}>
           <SectorsBeam reduced={reduced} />
         </div>
       </div>

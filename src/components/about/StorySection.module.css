@@ -68,6 +68,13 @@
   border: 1px solid var(--ab-rule);
   border-top: 3px solid var(--ab-celeste);
   background: var(--ab-raised);
+  /* Carries a shadow only while it is arriving: the reveal timeline tweens
+     `--entry-shadow` from a soft lift back to 0, so the card reads as
+     settling onto the page and then belonging to it. At rest the alpha is 0,
+     which is the same picture as no shadow at all — and in a browser without
+     relative colour syntax the whole declaration is simply dropped, which
+     lands on that identical resting state rather than on a broken one. */
+  box-shadow: 0 1.4rem 2.6rem -1rem rgb(from var(--ab-petroleo) r g b / var(--entry-shadow, 0));
 }
 
 .quoteMark {

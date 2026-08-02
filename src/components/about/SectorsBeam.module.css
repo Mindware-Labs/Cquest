@@ -2,11 +2,41 @@
   margin: clamp(1.75rem, 3.5vw, 2.5rem) 0 0;
 }
 
+/* The ring radii are percentages of the stage's OWN box, so the same five
+   direction cosines produce a proportionally correct ring at any aspect
+   ratio. Changing the breakpoint's ring is therefore two numbers, not a
+   second layout. */
 .beamStage {
+  --ring-rx: 33%;
+  --ring-ry: 39%;
+
   position: relative;
   aspect-ratio: 16 / 10;
   max-width: 38rem;
   margin-inline: auto;
+}
+
+/* Sits between the ambient wash and the spoke layer. `z-index: 0` with the
+   svg also at 0 is deliberate — both are in the same stacking level, so DOM
+   order decides, and the field is written first so the connections always
+   draw over it. Pointer events are off at the Canvas itself; the field still
+   follows the pointer because it listens on the stage instead.
+
+   Taller than the stage on purpose. The camera is fixed, so the canvas always
+   shows ~31.5 world units of HEIGHT and gets its width from its own aspect
+   ratio — which means the vertical axis is what caps how large a circle can
+   be drawn without its top and bottom being cut off. The stage is 16:10, so a
+   field confined to it can only ever show an ellipse. Squaring the box off
+   (−30% top and bottom brings 380px up to 608px, level with the width) is
+   what lets a true circle fit. It overflows the stage into the section, which
+   is the point: the ring is meant to enclose the diagram, not sit inside it. */
+.field {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30%;
+  bottom: -30%;
+  z-index: 0;
 }
 
 .beamAmbient {
@@ -17,135 +47,317 @@
   background: radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 10%, transparent), transparent 72%);
 }
 
-.node,
-.hub {
+/* ── Sector nodes ─────────────────────────────────────────
+   Two elements, and the split is not cosmetic. The ANCHOR owns position and
+   the hover transform; the CARD owns paint and is the only thing GSAP's
+   entry timeline touches. Keeping the centring `translate` on an element
+   GSAP never animates is what makes the geometry stable: GSAP folds an
+   element's `translate` into its own transform, resolving `-50%` against the
+   box as measured at that instant, and any later reflow leaves that offset
+   stale. It also outranks anything this stylesheet writes to `translate` on
+   the same element, which silently killed the hover lift.
+
+   Elevation is declared once, as a hairline. There is no resting shadow to
+   go with it — the lift on hover is the only shadow in the figure, which is
+   what makes it read as a lift. */
+.nodeAnchor {
   position: absolute;
   z-index: 1;
-  background: var(--ab-raised);
+  left: calc(50% + var(--ring-rx) * var(--cos));
+  top: calc(50% + var(--ring-ry) * var(--sin));
   translate: -50% -50%;
+  /* Wide enough that the longest label ("Telecomunicaciones", the 18-character
+     token that sets the floor) sets on one line and "Banca y Finanzas" breaks
+     at its space — i.e. wide enough that the hyphenation safety net further
+     down never has to engage at this breakpoint. Mid-word hyphens are legible
+     but they read cheap, and here there is room not to need them. Bounded at
+     33% so the ring still clears: at the 608px stage the two lower nodes stay
+     ~39px apart and the side pair stops at the stage edge.
+
+     `max-content` rather than the shrink-to-fit default, because an absolutely
+     positioned box offset with `left` alone gets an available width of only
+     "containing block − left". The right-hand nodes start at 81% of the stage,
+     so they were being handed ~113px while their mirrors on the left had ~495px
+     — the same label wrapped to three lines on one side of the ring and one on
+     the other. Sizing to content instead makes the pair symmetric, and the
+     max-width is what actually bounds it. */
+  width: max-content;
+  max-width: min(12.5rem, 33%);
+  /* Under 300ms and reversible mid-flight — a pointer crossing the ring
+     should feel like it is brushing the diagram, not triggering it. */
+  transition:
+    opacity 200ms var(--ease-out),
+    scale 220ms var(--ease-out),
+    translate 220ms var(--ease-out);
 }
 
 .node {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  max-width: min(10.5rem, 34%);
-  padding: 0.5rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--ab-rule) 70%, transparent);
-  border-radius: 999px;
-  opacity: 0.82;
+  gap: 0.55rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 0.8rem 0.5rem 0.55rem;
+  border: 1px solid var(--ab-rule);
+  border-radius: 0.85rem;
+  background: var(--ab-raised);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
   transition:
-    opacity 320ms var(--ease-out),
-    border-color 320ms var(--ease-out),
-    box-shadow 420ms var(--ease-out),
-    scale 320ms var(--ease-out);
+    border-color 200ms var(--ease-out),
+    box-shadow 260ms var(--ease-out);
 }
 
-.node:hover {
-  opacity: 1;
-  border-color: color-mix(in srgb, var(--ab-celeste) 55%, var(--ab-rule));
-  box-shadow: 0 0.75rem 2rem -1rem color-mix(in srgb, var(--ab-petroleo) 60%, transparent);
+.node:focus-visible {
+  outline: 2px solid var(--ab-petroleo);
+  outline-offset: 3px;
+}
+
+.nodeAnchor[data-state="active"] {
   scale: 1.05;
+  /* The 3px lift rides on top of the centring offset. */
+  translate: -50% calc(-50% - 3px);
 }
 
-.posTop {
+.nodeAnchor[data-state="active"] .node {
+  border-color: color-mix(in srgb, var(--ab-petroleo) 45%, transparent);
+  box-shadow: 0 0.6rem 1.4rem -0.7rem color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
+}
+
+.nodeAnchor[data-state="muted"] {
+  opacity: 0.42;
+}
+
+/* The open node has to sit above the panel's neighbours — and above the panel
+   itself, so the thing you are pointing at is never the thing that gets
+   covered. */
+.nodeAnchor[data-state="active"] {
+  z-index: 3;
+}
+
+/* ── Detail panel ─────────────────────────────────────────
+   Opens over the core while a sector is held. The hub reads as the constant
+   and the panel as the transient answer to "what does this one involve?", so
+   covering the core for as long as the question is open is the right trade —
+   the lit spoke keeps the panel visually tied to the node that opened it.
+
+   `visibility` rather than `display` so it can transition, and so the panel
+   leaves the accessibility tree when closed: the button's `aria-expanded`
+   says shut, and the tree has to agree. */
+/* Anchor / panel, for the same reason the nodes are split: the anchor holds
+   the centring `translate` and the open-close fade, the panel is GSAP's to
+   animate. Putting both on one element would hand GSAP the -50% to absorb. */
+.detailAnchor {
+  position: absolute;
+  z-index: 2;
   left: 50%;
-  top: 7%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(21.5rem, 74%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Only the close is a transition. The open is a GSAP iris struck from the
+     node's side, and a CSS fade underneath it would just blunt the edge. */
+  transition:
+    opacity 170ms var(--ease-out),
+    visibility 0s linear 170ms;
 }
 
-.posRight {
-  left: 88%;
-  top: 37%;
+.detailAnchor[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 170ms var(--ease-out),
+    visibility 0s;
 }
 
-.posBottomRight {
-  left: 76%;
-  top: 89%;
+.detail {
+  padding: 1.15rem 1.3rem 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 45%, var(--ab-rule));
+  border-radius: 1rem;
+  background: var(--ab-raised);
+  box-shadow: 0 1.2rem 2.8rem -0.9rem color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
 }
 
-.posBottomLeft {
-  left: 24%;
-  top: 89%;
+.detailTitle {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  color: var(--foreground);
 }
 
-.posLeft {
-  left: 12%;
-  top: 37%;
+.detailFocus {
+  margin: 0 0 0.9rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.detailServices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detailServices li {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ab-celeste) 20%, transparent);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+  color: var(--ab-petroleo);
+}
+
+/* While the panel is open the hub steps back rather than competing with it.
+   Applied to the ANCHOR, not the hub: GSAP leaves an inline `opacity` on the
+   hub itself once the entry lands, and an inline declaration outranks
+   anything written here. The anchor is the element GSAP never touches, which
+   is exactly why it is the one that can still be styled. */
+.beamStage[data-detail] .hubAnchor {
+  opacity: 0.45;
+  transition: opacity 200ms var(--ease-out);
+}
+
+/* The panel is wider than the gap between the two side nodes, so it will
+   cross them — there is no width that both fits the copy and clears the ring.
+   Dropping the unselected nodes this far is what decides how that reads: at
+   0.42 a label sliced by the panel's edge looks like a rendering fault, at
+   0.16 the same overlap reads as everything else stepping back. Same pixels,
+   different intent. */
+.beamStage[data-detail] .nodeAnchor[data-state="muted"] {
+  opacity: 0.16;
 }
 
 .nodeIcon {
   display: grid;
   place-items: center;
   flex: none;
-  width: 1.7rem;
-  height: 1.7rem;
-  border-radius: 999px;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.6rem;
   color: var(--ab-petroleo);
-  background: color-mix(in srgb, var(--ab-celeste) 16%, transparent);
+  background: color-mix(in srgb, var(--ab-celeste) 22%, transparent);
+  transition:
+    background-color 200ms var(--ease-out),
+    rotate 240ms var(--ease-out);
+}
+
+/* A 5° tilt — small enough to register as the icon acknowledging the pointer
+   rather than as a spin. Any more and five of these around a ring turn into
+   a fidget. */
+.nodeAnchor[data-state="active"] .nodeIcon {
+  background: color-mix(in srgb, var(--ab-celeste) 42%, transparent);
+  rotate: -5deg;
 }
 
 .nodeIcon svg {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .nodeLabel {
   font-family: var(--font-heading), sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.008em;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
   color: var(--foreground);
   text-wrap: balance;
+  /* "Telecomunicaciones" / "Telecommunications" is a single 18-character
+     token — with no break opportunity it sets the minimum width of every
+     node, and at the mobile ring that width is the difference between spokes
+     that read and spokes that are stubs. Hyphenation gives the word a legal
+     break; <html lang> is already set per locale, which is what selects the
+     right dictionary. It only engages when the box is too narrow, so the
+     desktop labels still set on one line. `overflow-wrap` is the fallback for
+     a browser without a dictionary for the active locale: an ugly break beats
+     a label running out of its own node. */
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* ── Hub ──────────────────────────────────────────────────
+   One elevation, again: the shadow. The 1px border and the two stacked
+   zero-offset halos that used to sit on top of it were three edges doing one
+   edge's job — the "ghost card" look. The shadow keeps a real offset and a
+   soft blur so the hub sits above the ring rather than glowing behind it. */
+.hubAnchor {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
 }
 
 .hub {
-  left: 50%;
-  top: 50%;
+  position: relative;
   display: grid;
   place-items: center;
   width: clamp(6.5rem, 14vw, 8.5rem);
   aspect-ratio: 1;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 50%, var(--ab-rule));
   background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 26%, var(--ab-raised)), var(--ab-raised) 75%);
-  box-shadow:
-    0 0 0 6px color-mix(in srgb, var(--ab-celeste) 8%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--ab-celeste) 22%, transparent) inset,
-    0 1.75rem 3.5rem -1.5rem color-mix(in srgb, var(--ab-petroleo) 80%, transparent);
+    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 30%, var(--ab-raised)), var(--ab-raised) 78%);
+  box-shadow: 0 1.1rem 2.4rem -1rem color-mix(in srgb, var(--ab-petroleo) 62%, transparent);
+}
+
+/* The core's halo, and the only thing in the figure that keeps moving after
+   the build lands. It is a separate element rather than a shadow on `.hub`
+   because the idle animates it: `opacity` and `scale` on an isolated layer
+   composite, whereas breathing a box-shadow would repaint the hub every
+   frame — which is precisely the kind of cost this section was just cleaned
+   of. Sized past the hub so the falloff never clips against its edge. */
+.hubGlow {
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--ab-celeste) 34%, transparent),
+    transparent 70%
+  );
 }
 
 .hubText {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
   text-align: center;
   text-wrap: balance;
   color: var(--foreground);
   padding-inline: 0.5rem;
 }
 
-.hubPulse {
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 65%, transparent);
-  opacity: 0;
-  pointer-events: none;
-}
+/* The entry choreography used to live here as `data-phase` transitions. It is
+   a GSAP timeline in SectorsBeam.tsx now, because the sequence outgrew what
+   CSS can express: a pulse has to ride each line while it draws, and the
+   sector has to land as the pulse arrives. That is per-element timing on a
+   shared clock, which is a timeline's job.
 
-:global([data-ambient-active="true"]) .hubPulse {
-  animation: hub-pulse 4s var(--ease-out-soft) infinite;
-  animation-delay: var(--pulse-delay, 0s);
-}
+   What did not change is the contract: everything in this stylesheet
+   describes the RESTING state, the timeline only ever animates away from it
+   and back, and the resting state is what the server renders. A visitor whose
+   JS never runs — or who asked for reduced motion — gets the finished
+   diagram, not an empty stage waiting to be filled.
 
-@keyframes hub-pulse {
-  0%, 92% { transform: scale(1); opacity: 0; }
-  94% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(1.28); opacity: 0; }
-}
+   The anchors above are why that contract holds under animation: centring
+   lives on an element GSAP never touches, so `transform` on the card inside
+   is entirely GSAP's, and neither has to know about the other. */
 
 .beamCaption {
   position: absolute;
@@ -159,40 +371,103 @@
   border: 0;
 }
 
+/* ── Mobile ───────────────────────────────────────────────
+   This used to become a flex-wrap chip cloud with the hub parked underneath,
+   which threw away the only thing the graphic says: that the five sectors
+   converge. The convergence survives here instead — same ring, same spokes,
+   same measured geometry — on a portrait stage with tighter radii and nodes
+   stacked icon-over-label, which is what lets a node be 92px wide instead of
+   160px and therefore what lets the ring exist at all at this width. Over
+   60% of this site's traffic sees this version. */
 @media (max-width: 48rem) {
   .beamStage {
-    aspect-ratio: auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.4rem clamp(0.4rem, 2vw, 0.6rem);
-    padding: clamp(1rem, 3vw, 1.5rem) 0;
+    /* Portrait stage: width is the scarce axis on a phone, so the ring buys
+       its separation vertically. The three numbers below are constrained,
+       not chosen by eye — with a 92px node and a 76px hub on a ~343px stage
+       (a 390px viewport):
+
+         • rx 32% puts the two side nodes 104px out, clearing the hub's 38px
+           radius by ~20px horizontally, while their outer edge still lands
+           21px inside the stage;
+         • the two lower nodes sit 2 × 0.588 × rx = 129px apart, a 37px gap
+           between 92px boxes — the pair that collided at any wider node;
+         • ry 40% of a 3/5 stage is 229px, which is what gives the spokes
+           real length (149px vertical, 114px lower, 28px on the sides)
+           instead of the stubs a squarer stage produced.
+
+       It holds at 360px too, the narrowest phone width worth designing for:
+       every gap stays positive and the shortest spoke is still ~18px. */
+    --ring-rx: 32%;
+    --ring-ry: 40%;
+
+    aspect-ratio: 3 / 5;
+    max-width: 24rem;
   }
 
-  .node,
-  .hub {
-    position: relative;
-    left: auto;
-    top: auto;
-    translate: none;
+  .nodeAnchor {
+    max-width: min(5.75rem, 34%);
   }
 
   .node {
-    flex: 1 1 calc(50% - 0.6rem);
-    max-width: none;
-    min-width: 0;
-    flex-direction: row;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 1rem;
-    text-align: left;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem 0.4rem;
+    border-radius: 0.75rem;
+    text-align: center;
+  }
+
+  .nodeIcon {
+    width: 1.65rem;
+    height: 1.65rem;
+    border-radius: 0.5rem;
+  }
+
+  .nodeIcon svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .nodeLabel {
+    font-size: 0.7rem;
+    line-height: 1.2;
   }
 
   .hub {
-    flex: 0 0 100%;
-    max-width: clamp(7.5rem, 34vw, 9rem);
-    margin-top: clamp(1.5rem, 7vw, 2.25rem);
-    margin-inline: auto;
+    width: clamp(4rem, 21vw, 4.75rem);
+  }
+
+  .hubText {
+    font-size: 0.72rem;
+    padding-inline: 0.25rem;
+  }
+
+  /* Inverted here: the phone stage is PORTRAIT (3/5), so the scarce axis is
+     width, and a box tall enough to match it would put the circle's sides off
+     the screen. Pulling the field in vertically to roughly the stage's own
+     width is what keeps the circle whole. It cannot also enclose the top and
+     bottom nodes at this aspect — no circle centred on the hub can, on a
+     stage nearly twice as tall as it is wide — so here it rings the core and
+     passes behind the side cards. */
+  .field {
+    top: 20%;
+    bottom: 20%;
+  }
+
+  /* Wider share of a narrower stage — at 343px, 74% would leave the focus
+     line breaking every three or four words. */
+  .detailAnchor {
+    width: min(21.5rem, 90%);
+  }
+
+  .detail {
+    padding: 1rem 1.05rem;
+  }
+
+  .detailTitle {
+    font-size: 0.98rem;
+  }
+
+  .detailFocus {
+    font-size: 0.83rem;
   }
 }
