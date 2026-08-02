@@ -46,59 +46,75 @@ export default function SiteFooter() {
   /* The footer's one orchestrated beat, and the hero's gesture verbatim: the
      rule draws along its length, then the statement's words lift from behind
      their own clip edges, then the directory sharpens out of blur behind it.
-     Three cues on one trigger, not three independent reveals — a page's last
+     Three cues on one timeline, not three independent reveals — a page's last
      block should land, not perform.
 
      All GSAP `fromTo`, and no `whileInView` variants, on purpose: fromTo
      writes the from-state in JS before paint (hence the layout effect), so a
      run where the script never executes ships a fully visible footer rather
      than a blank one. Variants would have serialised opacity: 0 into the
-     HTML and depended on hydration to undo it. */
+     HTML and depended on hydration to undo it.
+
+     Played from an IntersectionObserver rather than a ScrollTrigger, and
+     that distinction is the whole bug fix. This footer lives in the locale
+     layout, outside <main>, so it mounts once and survives every client-side
+     route change. A ScrollTrigger caches its start as a pixel offset at
+     creation time, and nothing here refreshed it on navigation: land on a
+     page without scrolling to the bottom, move to a shorter one, and the
+     cached start now sits past that page's maximum scroll. It can never be
+     reached, the tween never fires, and the from-state stays written — a
+     footer showing its logo, its button and its base row over an empty
+     middle. An observer caches nothing; the browser evaluates it against
+     live layout, so it stays correct across route changes, late-loading
+     content and any page height. */
   useIsomorphicLayoutEffect(() => {
-    if (reduced || !statementRef.current) return;
+    const footer = footerRef.current;
+    if (reduced || !footer || !statementRef.current) return;
+
+    let observer: IntersectionObserver | undefined;
 
     const ctx = gsap.context(() => {
-      const scrollTrigger = { trigger: footerRef.current, start: "top 88%", once: true };
+      const reveal = gsap.timeline({ paused: true });
 
-      gsap.fromTo(
-        ruleRef.current,
-        { scaleX: 0 },
-        { scaleX: 1, duration: 0.7, ease: CQ_EASE, scrollTrigger },
-      );
+      reveal
+        .fromTo(ruleRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: CQ_EASE }, 0)
+        .fromTo(
+          statementRef.current!.querySelectorAll(`.${styles.word} > span`),
+          { yPercent: 118 },
+          { yPercent: 0, duration: 1.05, ease: CQ_EASE, stagger: 0.055 },
+          0.12,
+        )
+        /* The services motion language's `softRiseVariants`, in GSAP: opacity
+           plus a focus-pull out of blur, no y-rise. The two blocks own CSS
+           hover transitions on their rows, and presence — never a flat fade —
+           is how everything else on this site arrives. */
+        .fromTo(
+          footer.querySelectorAll(`.${styles.block}`),
+          { autoAlpha: 0, filter: "blur(10px)" },
+          { autoAlpha: 1, filter: "blur(0px)", duration: 0.85, ease: CQ_EASE, stagger: 0.12 },
+          0.26,
+        );
 
-      gsap.fromTo(
-        statementRef.current!.querySelectorAll(`.${styles.word} > span`),
-        { yPercent: 118 },
-        {
-          yPercent: 0,
-          duration: 1.05,
-          ease: CQ_EASE,
-          stagger: 0.055,
-          delay: 0.12,
-          scrollTrigger,
+      // -12% on the bottom edge is the old `start: "top 88%"` expressed as a
+      // shrunken root: the reveal begins when the footer's top crosses 88% of
+      // the viewport. The observer fires its first callback on observe(), so a
+      // page that loads already scrolled to the bottom reveals immediately
+      // instead of waiting for a scroll event that never comes.
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer?.disconnect();
+          reveal.play();
         },
+        { rootMargin: "0px 0px -12% 0px" },
       );
-
-      /* The services/services motion language's `softRiseVariants`, in GSAP:
-         opacity plus a focus-pull out of blur, no y-rise. The two blocks own
-         CSS hover transitions on their rows, and presence — never a flat
-         fade — is how everything else on this site arrives. */
-      gsap.fromTo(
-        footerRef.current!.querySelectorAll(`.${styles.block}`),
-        { autoAlpha: 0, filter: "blur(10px)" },
-        {
-          autoAlpha: 1,
-          filter: "blur(0px)",
-          duration: 0.85,
-          ease: CQ_EASE,
-          stagger: 0.12,
-          delay: 0.26,
-          scrollTrigger,
-        },
-      );
+      observer.observe(footer);
     }, footerRef);
 
-    return () => ctx.revert();
+    return () => {
+      observer?.disconnect();
+      ctx.revert();
+    };
   }, [reduced]);
 
   const year = new Date().getFullYear();
