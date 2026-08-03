@@ -117,46 +117,8 @@ export const ABOUT_SECTORS: ReadonlyArray<{
   },
 ];
 
-export const ABOUT_VALUES: ReadonlyArray<{
-  id: string;
-  icon: ServiceIconName;
-  title: Record<Locale, string>;
-  description: Record<Locale, string>;
-}> = [
-  {
-    id: "people",
-    icon: "userplus",
-    title: { en: "People first", es: "Las personas primero" },
-    description: {
-      en: "Every account is run by trained, supervised people — not a script read at volume.",
-      es: "Cada cuenta la maneja gente capacitada y supervisada, no un guion leído en volumen.",
-    },
-  },
-  {
-    id: "rigor",
-    icon: "gauge",
-    title: { en: "Measurable rigor", es: "Rigor medible" },
-    description: {
-      en: "SLAs, QA scorecards and reporting are built into the operation from day one, not added after something breaks.",
-      es: "Los SLAs, scorecards de calidad y reportes se construyen en la operación desde el primer día, no se agregan cuando algo falla.",
-    },
-  },
-  {
-    id: "transparency",
-    icon: "shield",
-    title: { en: "Straight answers", es: "Respuestas directas" },
-    description: {
-      en: "Clients see the real numbers behind their operation — good weeks and hard ones — with no spin in between.",
-      es: "Los clientes ven los números reales detrás de su operación, semanas buenas y difíciles, sin adornos de por medio.",
-    },
-  },
-  {
-    id: "improvement",
-    icon: "trend",
-    title: { en: "Always improving", es: "Mejora constante" },
-    description: {
-      en: "Coaching and process reviews don't stop at launch — every operation is expected to get better every quarter.",
-      es: "El coaching y las revisiones de proceso no terminan en el lanzamiento, cada operación debe mejorar cada trimestre.",
-    },
-  },
-];
+/* NOTE — general clients wall (home #clients): currently an UpcomingSection
+   placeholder by client request. When it gets built, derive its roster as the
+   union of the two per-service CLIENT_LOGOS lists (call-center wins the
+   dedupe for Rig Hut / Paso Rápido — its `provides` write-ups cover both
+   sides of those engagements). See git history for a working implementation. */

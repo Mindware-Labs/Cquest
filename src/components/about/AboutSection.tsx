@@ -5,7 +5,7 @@ import { useTabVisibility } from "@/hooks/useTabVisibility";
 import MetricsSection from "./MetricsSection";
 import PillarsSection from "./PillarsSection";
 import StorySection from "./StorySection";
-import ValuesSection from "./ValuesSection";
+import UpcomingSection from "./UpcomingSection";
 import styles from "./AboutSection.module.css";
 
 // "Nosotros" as a home-page section — same architecture as ServicesCarousel's
@@ -26,8 +26,32 @@ export default function AboutSection() {
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
       <MetricsSection reduced={reduced} />
       <StorySection reduced={reduced} />
-      <ValuesSection reduced={reduced} />
+      {/* Reserved seats, not shipped designs: both marked "in development" on
+          purpose (see UpcomingSection). The clients wall will hold the general
+          roster across all three business lines; partnerships closes the
+          section once its content exists. */}
+      <UpcomingSection
+        id="clients"
+        reduced={reduced}
+        title={{
+          en: "Clients who trust Center Quest",
+          es: "Clientes que confían en Center Quest",
+        }}
+        note={{
+          en: "The general client roster — one wall across call center, BPO and systems development — will live here. This section is in development.",
+          es: "Aquí vivirá la cartera general de clientes — un solo muro a través de call center, BPO y desarrollo de sistemas. Esta sección está en desarrollo.",
+        }}
+      />
       <PillarsSection reduced={reduced} />
+      <UpcomingSection
+        id="partnerships"
+        reduced={reduced}
+        title={{ en: "Partnerships", es: "Partnerships" }}
+        note={{
+          en: "Strategic partnerships and alliances will be presented here. This section will be developed later.",
+          es: "Aquí se presentarán las alianzas y partnerships estratégicos. Esta sección se desarrollará posteriormente.",
+        }}
+      />
     </section>
   );
 }

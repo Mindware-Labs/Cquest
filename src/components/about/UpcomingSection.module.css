@@ -1,0 +1,80 @@
+/* ── Upcoming section placeholder ─────────────────────────────────────────
+   Deliberately quiet: a heading that claims the section's place in the page,
+   and a dashed panel that says out loud it isn't built yet. Dashed, because
+   a solid card would read as a design that shipped — the same reasoning as
+   the team page's empty portrait frames. */
+
+.upcomingSection {
+  position: relative;
+  scroll-margin-top: 5rem;
+  padding-block: clamp(3rem, 5vw, 4.5rem);
+}
+
+.heading {
+  padding-bottom: clamp(1rem, 2vw, 1.5rem);
+  border-bottom: 1px solid var(--ab-rule);
+}
+
+.headingCopy {
+  display: flex;
+  flex-direction: column;
+}
+
+.rule {
+  width: 2.5rem;
+  height: 2px;
+  margin-bottom: 1.1rem;
+  background: var(--ab-celeste);
+  transform-origin: left center;
+}
+
+.heading h2 {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  padding: clamp(2.25rem, 5vw, 3.5rem) 1.5rem;
+  border: 1px dashed color-mix(in srgb, var(--ab-petroleo) 30%, transparent);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ab-petroleo);
+}
+
+/* A steady marker, not a pulsing one — "in development" is a fact about the
+   page, not an alert. */
+.tag::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--ab-celeste);
+}
+
+.placeholder p {
+  max-width: 52ch;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-tertiary);
+  text-wrap: pretty;
+}

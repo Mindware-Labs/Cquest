@@ -1,31 +1,64 @@
 /* ── Org chart ───────────────────────────────────────────────────────────
-   A top-down chart on a light surface: root, a stem, a bus, a drop into each
-   department, and the selected department's roster below.
+   A top-down chart drawn like a fine technical document: root, stem, bus,
+   a drop into each department, and the selected department's roster below.
 
-   Every connector is a hairline pseudo-element or span positioned off ONE
-   variable — `--cols`, set from the data by OrgChart.tsx. The bus is inset by
-   exactly half a column at each end so it terminates on the outer two drops
-   instead of running past them, which is the detail that separates a drawn
-   chart from a box with a line over it.
+   Every connector is positioned off TWO variables — `--cols` (set from the
+   data by OrgChart.tsx) and `--gap` (the real grid gap). A column is
+   (100% − (n−1)·gap)/n, precomputed as `--col`, so the bus can be inset by
+   exactly half a column at each end and terminate ON the outer two drops.
+   Because the gap is a real grid gap (not padding inside the cells), the
+   outer cards sit flush with the container — and therefore flush with the
+   panel below them. Both edges of the composition line up to the pixel.
 
-   That inset is only exact because `.deptRow` carries NO grid gap: with a
-   gap, a column is (100% − (n−1)·gap)/n and the arithmetic stops closing.
-   The breathing room between nodes is padding inside each cell instead, so a
-   column stays exactly 100%/n and every centre lands where the maths says. */
+   Junctions get dots. A hairline crossing a hairline reads as an accident;
+   a dot at the meeting point reads as a drawn diagram. */
 
 .chartSection {
+  /* Declared on the SECTION, not on `.chart`: `.panelSlot` is a sibling of
+     `.chart`, and a custom property declared on a sibling never reaches it —
+     its `margin-top: var(--panel-gap)` silently resolved to nothing and the
+     panel sat flush against the cards, with the live stem crossing into it. */
+  --rule: color-mix(in srgb, var(--brand-petroleo) 28%, transparent);
+  --rule-live: var(--brand-petroleo);
+  --panel-gap: clamp(1.5rem, 3vw, 2.25rem);
   position: relative;
-  padding-block: clamp(4rem, 8vw, 7rem);
+  padding-block: clamp(3.5rem, 6.5vw, 5.5rem);
   background: var(--background);
   scroll-margin-top: 6rem;
 }
 
+/* ── Section eyebrow — the symmetric axis, announced ──── */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.eyebrowRule {
+  width: clamp(1.75rem, 4vw, 3rem);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--brand-petroleo) 55%, transparent)
+  );
+}
+
+.eyebrowRuleEnd {
+  transform: scaleX(-1);
+}
+
 .chart {
-  --rule: color-mix(in srgb, var(--brand-petroleo) 26%, transparent);
-  --rule-live: var(--brand-petroleo);
-  /* Shared by the open department's stem and the panel's offset, so the stem
-     lands exactly on the panel's top edge rather than near it. */
-  --panel-gap: clamp(1.75rem, 3.5vw, 2.75rem);
+  --gap: clamp(0.65rem, 1.2vw, 1rem);
+  --col: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  --drop: clamp(1.25rem, 2.5vw, 1.75rem);
   position: relative;
 }
 
@@ -36,44 +69,58 @@
 }
 
 .rootNode {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  padding: 1.05rem 2.25rem;
+  padding: 0.95rem 2.25rem 0.85rem;
   border-radius: 2px;
-  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 34%, transparent);
   background: var(--surface-raised);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 14px 30px -22px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
+    0 16px 32px -24px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
+}
+
+/* Inner hairline frame — the double rule of an official document. */
+.rootNode::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 12%, transparent);
+  border-radius: 1px;
+  pointer-events: none;
 }
 
 .rootName {
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--foreground);
 }
 
 .rootMeta {
-  font-size: 0.68rem;
+  margin-top: 0.4rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-tertiary);
 }
 
 .rootMeta strong {
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--brand-petroleo);
 }
 
 /* ── Spine: stem + bus ────────────────────────────────── */
 .spine {
   position: relative;
-  height: clamp(2rem, 4vw, 3rem);
+  height: clamp(1.5rem, 3vw, 2.25rem);
 }
 
 .stem {
@@ -86,11 +133,24 @@
   transform-origin: top center;
 }
 
+/* The centre junction, where the stem meets the bus. */
+.stem::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-petroleo) 70%, transparent);
+  transform: translate(-50%, 50%) scale(1);
+}
+
 .bus {
   position: absolute;
   bottom: 0;
-  left: calc(100% / var(--cols) / 2);
-  right: calc(100% / var(--cols) / 2);
+  left: calc(var(--col) / 2);
+  right: calc(var(--col) / 2);
   height: 1px;
   background: var(--rule);
   transform-origin: center;
@@ -100,6 +160,7 @@
 .deptRow {
   display: grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: var(--gap);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -107,8 +168,7 @@
 
 .deptCell {
   position: relative;
-  padding-top: clamp(1.5rem, 3vw, 2.25rem);
-  padding-inline: 0.4rem;
+  padding-top: var(--drop);
 }
 
 /* The drop from the bus into this department's node. */
@@ -118,9 +178,22 @@
   top: 0;
   left: 50%;
   width: 1px;
-  height: clamp(1.5rem, 3vw, 2.25rem);
+  height: var(--drop);
   background: var(--rule);
   transform-origin: top center;
+}
+
+/* The junction where this drop leaves the bus. */
+.deptCell::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-petroleo) 55%, transparent);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .deptNode {
@@ -130,8 +203,8 @@
   height: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 0.55rem;
-  padding: 1.15rem 0.9rem 1.05rem;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem 0.9rem;
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--surface-raised);
@@ -141,14 +214,32 @@
   transition:
     border-color 300ms var(--ease-out),
     box-shadow 380ms var(--ease-out),
-    transform 300ms var(--ease-out),
     background-color 300ms var(--ease-out);
 }
 
+/* The selection accent: a rule drawn along the card's top edge, growing from
+   the centre outward — the same language as the bus, and the same 2px rule
+   the panel below opens with. The selected card and the panel read as two
+   ends of one object, joined by the live stem. */
+.deptNode::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  background: var(--rule-live);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 340ms var(--ease-out);
+}
+
+/* No lift on hover: these nodes are attached to connectors, and a card that
+   floats away from its own line breaks the drawing. The response is light
+   instead — border and shadow deepen. */
 .deptNode:hover {
   border-color: color-mix(in srgb, var(--brand-petroleo) 45%, transparent);
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px -20px color-mix(in srgb, var(--brand-petroleo) 65%, transparent);
+  box-shadow: 0 14px 28px -20px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
 }
 
 .deptNode:focus-visible {
@@ -157,30 +248,33 @@
 }
 
 .deptNode[data-active="true"] {
-  border-color: var(--rule-live);
-  background: color-mix(in srgb, var(--brand-celeste) 8%, var(--surface-raised));
-  box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--brand-petroleo) 75%, transparent);
+  border-color: color-mix(in srgb, var(--brand-petroleo) 55%, transparent);
+  background: color-mix(in srgb, var(--brand-celeste) 7%, var(--surface-raised));
+  box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--brand-petroleo) 70%, transparent);
 }
 
+.deptNode[data-active="true"]::after {
+  transform: scaleX(1);
+}
+
+/* Bare pictogram, no chip behind it — the stroke does the work alone, so it
+   can afford to be larger. The SVG ships at a fixed h-5 w-5; overridden here
+   rather than at the callsite so every other user of ServiceIcon keeps its
+   size. */
 .deptIcon {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--brand-celeste) 16%, transparent);
   color: var(--brand-petroleo);
-  transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out);
 }
 
-.deptNode[data-active="true"] .deptIcon {
-  background: var(--brand-petroleo);
-  color: white;
+.deptIcon svg {
+  width: 1.9rem;
+  height: 1.9rem;
 }
 
 .deptLabel {
   font-family: var(--font-heading), sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -193,17 +287,19 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
   color: var(--text-tertiary);
 }
 
 /* The open branch, carried down into the roster. Scales from its top edge so
-   it reads as the chart extending rather than a rule fading in. */
+   it reads as the chart extending rather than a rule fading in. Height runs
+   1px past the gap to land ON the panel's border, not beside it. */
 .deptStem {
   position: absolute;
   top: 100%;
   left: 50%;
   width: 1px;
-  height: var(--panel-gap);
+  height: calc(var(--panel-gap) + 1px);
   background: var(--rule-live);
   transform: scaleY(0);
   transform-origin: top center;
@@ -218,10 +314,15 @@
    Pseudo-elements are unreachable from a variant tree, so the reveal is a
    plain CSS transition keyed off `data-drawn`, which OrgChart flips on the
    section's first viewport entry. The order is the order a hand would draw
-   it: down from the root, out along the bus, then down into each department
-   in turn (`--i` is the cell's index, set from the data). */
+   it: down from the root, a dot, out along the bus from the centre, then a
+   dot and a drop into each department in turn (`--i` is the cell's index,
+   set from the data). */
 .chart[data-drawn="false"] .stem {
   transform: scaleY(0);
+}
+
+.chart[data-drawn="false"] .stem::after {
+  transform: translate(-50%, 50%) scale(0);
 }
 
 .chart[data-drawn="false"] .bus {
@@ -232,16 +333,28 @@
   transform: scaleY(0);
 }
 
+.chart[data-drawn="false"] .deptCell::after {
+  transform: translate(-50%, -50%) scale(0);
+}
+
 .stem {
   transition: transform 460ms var(--ease-out) 80ms;
 }
 
+.stem::after {
+  transition: transform 300ms var(--ease-spring) 500ms;
+}
+
 .bus {
-  transition: transform 620ms var(--ease-out) 420ms;
+  transition: transform 620ms var(--ease-out) 540ms;
+}
+
+.deptCell::after {
+  transition: transform 280ms var(--ease-spring) calc(1020ms + var(--i, 0) * 70ms);
 }
 
 .deptCell::before {
-  transition: transform 380ms var(--ease-out) calc(920ms + var(--i, 0) * 60ms);
+  transition: transform 380ms var(--ease-out) calc(1080ms + var(--i, 0) * 70ms);
 }
 
 /* ── Roster panel ─────────────────────────────────────── */
@@ -254,7 +367,7 @@
   border: 1px solid var(--border);
   border-top: 2px solid var(--brand-petroleo);
   background: var(--surface-raised);
-  padding: clamp(1.5rem, 3vw, 2.25rem);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
   box-shadow: 0 22px 44px -34px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
 }
 
@@ -262,21 +375,21 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding-bottom: 1.25rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 
 .panelLetter {
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex-shrink: 0;
   border-radius: 2px;
   background: var(--brand-petroleo);
   color: white;
   font-family: var(--font-heading), sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
   line-height: 1;
 }
@@ -289,7 +402,7 @@
 
 .panelHeadCopy h3 {
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-size: clamp(1.1rem, 1.8vw, 1.3rem);
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--foreground);
@@ -297,35 +410,124 @@
 
 .panelHeadCopy p {
   max-width: 62ch;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   color: var(--text-tertiary);
   text-wrap: pretty;
 }
 
+/* The header's counterweight: the department's headcount, right-aligned so
+   the header carries equal visual weight at both ends. */
+.panelCount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  margin-left: auto;
+  padding-left: 1rem;
+  flex-shrink: 0;
+}
+
+.panelCount strong {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.3rem, 2vw, 1.55rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--brand-petroleo);
+}
+
+.panelCount span {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ── Roster — centred flex, not a grid ────────────────────────────────────
+   Headcounts are uneven (6/4/5/3/4/3), so a left-anchored grid ends every
+   short row ragged-right. Wrapping flex with centred justification puts the
+   remainder of each row in the middle instead: 6 people become 4 + 2 centred,
+   5 become 4 + 1 centred. The composition stays symmetric for every count
+   the data can throw at it. Items in a row stretch to the tallest card in
+   that row, so uneven bios never leave a ragged bottom either. */
 .roster {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  --roster-gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--roster-gap);
+  margin-top: 1.25rem;
   list-style: none;
   padding: 0;
 }
 
 .person {
+  position: relative;
+  flex: 0 1 calc((100% - 3 * var(--roster-gap)) / 4);
+  min-width: 13rem;
   display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  padding: 0.95rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.35rem 1.15rem 1.25rem;
   border-radius: 2px;
   border: 1px solid var(--border);
-  background: var(--background);
-  transition: border-color 280ms var(--ease-out), background-color 280ms var(--ease-out);
+  /* Raised, with the faintest fall of light from the top edge — flat cream
+     read as untreated stock next to the panel's white. */
+  background: linear-gradient(
+    180deg,
+    var(--surface-raised) 0%,
+    color-mix(in srgb, var(--background) 45%, var(--surface-raised)) 100%
+  );
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent);
+  transition:
+    border-color 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out),
+    transform 280ms var(--ease-out);
 }
 
+/* Registration ticks in two opposing corners — the drafting-table mark of the
+   same technical document the chart above is drawn as. Quiet at rest, they
+   answer the hover. */
+.person::before,
+.person::after {
+  content: "";
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 0 solid color-mix(in srgb, var(--brand-petroleo) 26%, transparent);
+  pointer-events: none;
+  transition: border-color 280ms var(--ease-out);
+}
+
+.person::before {
+  top: 5px;
+  left: 5px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.person::after {
+  bottom: 5px;
+  right: 5px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+/* People aren't wired into the diagram, so they may lift. */
 .person:hover {
-  border-color: color-mix(in srgb, var(--brand-petroleo) 38%, transparent);
-  background: var(--surface-raised);
+  border-color: color-mix(in srgb, var(--brand-petroleo) 40%, transparent);
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent),
+    0 18px 32px -24px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
+}
+
+.person:hover::before,
+.person:hover::after {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 55%, transparent);
 }
 
 /* The empty frame a photograph will fill. Deliberately flat and quiet — a
@@ -335,11 +537,23 @@
   place-items: center;
   width: 3rem;
   height: 3rem;
-  flex-shrink: 0;
   overflow: hidden;
   border-radius: 9999px;
   border: 1px dashed color-mix(in srgb, var(--brand-petroleo) 30%, transparent);
-  background: color-mix(in srgb, var(--brand-celeste) 12%, transparent);
+  /* Lit from above, like the portrait it stands in for. */
+  background: radial-gradient(
+    120% 120% at 50% 28%,
+    color-mix(in srgb, var(--brand-celeste) 22%, transparent),
+    color-mix(in srgb, var(--brand-celeste) 8%, transparent)
+  );
+  /* A detached halo ring — the lens the photograph will drop into. */
+  outline: 1px solid color-mix(in srgb, var(--brand-celeste) 45%, transparent);
+  outline-offset: 4px;
+  transition: outline-color 280ms var(--ease-out);
+}
+
+.person:hover .avatar {
+  outline-color: color-mix(in srgb, var(--brand-petroleo) 42%, transparent);
 }
 
 .avatarArt {
@@ -348,21 +562,17 @@
   fill: color-mix(in srgb, var(--brand-petroleo) 34%, transparent);
 }
 
-.personBody {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
 .personName {
+  margin-top: 0.85rem;
   font-family: var(--font-heading), sans-serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--foreground);
 }
 
 .personRole {
+  margin-top: 0.2rem;
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -371,15 +581,31 @@
 }
 
 .personBio {
-  margin-top: 0.35rem;
-  font-size: 0.82rem;
+  display: block;
+  font-size: 0.8rem;
   line-height: 1.55;
   color: var(--text-tertiary);
   text-wrap: pretty;
 }
 
+/* A short centred rule between the identity and the bio — quieter than a
+   full-width divider, and it keeps the card's vertical axis explicit. */
+.personBio::before {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 1px;
+  margin: 0.6rem auto 0.55rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--brand-petroleo) 32%, transparent),
+    transparent
+  );
+}
+
 .hint {
-  padding: clamp(2rem, 5vw, 3.25rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   border: 1px dashed var(--border);
   border-radius: 2px;
   text-align: center;
@@ -387,26 +613,33 @@
   color: var(--text-tertiary);
 }
 
-/* The disclaimer. Sized and placed to be READ, not to be technically present:
-   this page will be shown to people who have no reason to assume the names on
-   it are invented. */
+/* The disclaimer. Centred on the same axis as everything above it, marked by
+   a short verde rule — sized and placed to be READ, not to be technically
+   present: this page will be shown to people who have no reason to assume
+   the names on it are invented. */
 .notice {
-  display: flex;
-  gap: 0.75rem;
-  max-width: 74ch;
-  margin: clamp(1.75rem, 3vw, 2.5rem) auto 0;
-  padding-left: 0.9rem;
-  border-left: 2px solid var(--brand-verde);
+  max-width: 64ch;
+  margin: clamp(1.5rem, 3vw, 2.25rem) auto 0;
+  text-align: center;
   font-size: 0.8rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text-tertiary);
   text-wrap: pretty;
+}
+
+.notice::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin: 0 auto 0.85rem;
+  background: var(--brand-verde);
 }
 
 /* ── Narrow: the chart turns on its side ─────────────────────────────────
    Six columns cannot survive a phone, and a horizontally scrolling org chart
    is a chart nobody reads. Below this width the same hierarchy is drawn as a
-   rail down the left with a connector into each department — the top-down
+   rail down the left with a branch into each department — the top-down
    arithmetic above is switched off entirely rather than squeezed. */
 @media (max-width: 64rem) {
   .spine {
@@ -421,10 +654,22 @@
     left: 1.4rem;
   }
 
+  /* The stem and the rail are collinear here — a junction dot on a straight
+     line marks nothing. */
+  .stem::after {
+    display: none;
+  }
+
+  /* The root goes full width so the rail at 1.4rem leaves from under it
+     rather than from beside a centred box. */
+  .rootNode {
+    width: 100%;
+  }
+
   .deptRow {
     position: relative;
     grid-template-columns: 1fr;
-    row-gap: 0.6rem;
+    gap: 0.6rem;
     padding-left: 2.9rem;
   }
 
@@ -447,7 +692,6 @@
 
   .deptCell {
     padding-top: 0;
-    padding-inline: 0;
   }
 
   /* Was the vertical drop; becomes the horizontal branch off the rail. */
@@ -464,6 +708,13 @@
     transform: scaleX(0);
   }
 
+  /* The junction dot moves onto the rail, where this branch leaves it. */
+  .deptCell::after {
+    top: 50%;
+    left: -1.5rem;
+    transition-delay: calc(720ms + var(--i, 0) * 60ms);
+  }
+
   .deptNode {
     flex-direction: row;
     align-items: center;
@@ -472,37 +723,68 @@
     text-align: left;
   }
 
-  .deptNode:hover {
-    transform: none;
+  /* The selection accent becomes a bar down the card's left edge — the edge
+     the rail arrives at. */
+  .deptNode::after {
+    top: -1px;
+    bottom: -1px;
+    left: -1px;
+    right: auto;
+    width: 2px;
+    height: auto;
+    transform: scaleY(0);
+  }
+
+  .deptNode[data-active="true"]::after {
+    transform: scaleY(1);
   }
 
   .deptLabel {
     flex: 1;
   }
 
+  /* A stem from a mid-list card would cross the cards below it; the panel's
+     top rule and the left accent carry the connection instead. */
   .deptStem {
-    left: 1.4rem;
+    display: none;
+  }
+
+  .person {
+    flex-basis: calc((100% - var(--roster-gap)) / 2);
+    min-width: 0;
   }
 }
 
 @media (max-width: 42rem) {
   .panelHead {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
   }
 
-  .roster {
-    grid-template-columns: 1fr;
+  .panelHeadCopy {
+    flex-basis: 100%;
+    order: 2;
+  }
+
+  .panelCount {
+    align-items: flex-start;
+    padding-left: 0;
+  }
+
+  .person {
+    flex-basis: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stem,
+  .stem::after,
   .bus,
   .deptCell::before,
+  .deptCell::after,
   .deptRow::before,
-  .deptStem {
+  .deptStem,
+  .deptNode::after {
     transition-duration: 0.01ms;
   }
 }

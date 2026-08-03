@@ -11,6 +11,7 @@ import styles from "./OrgChart.module.css";
 
 const COPY = {
   en: {
+    eyebrow: "Org chart",
     root: "Center Quest",
     rootMeta: "people across the operation",
     chartLabel: "Organisation chart by department",
@@ -22,6 +23,7 @@ const COPY = {
     avatarAlt: "Placeholder portrait",
   },
   es: {
+    eyebrow: "Organigrama",
     root: "Center Quest",
     rootMeta: "personas en toda la operación",
     chartLabel: "Organigrama por departamentos",
@@ -61,11 +63,9 @@ function PersonCard({ member, index }: { member: Department["members"][number]; 
       <span className={styles.avatar}>
         <Silhouette />
       </span>
-      <span className={styles.personBody}>
-        <span className={styles.personName}>{member.name[lang]}</span>
-        <span className={styles.personRole}>{member.role[lang]}</span>
-        <span className={styles.personBio}>{member.bio[lang]}</span>
-      </span>
+      <span className={styles.personName}>{member.name[lang]}</span>
+      <span className={styles.personRole}>{member.role[lang]}</span>
+      <span className={styles.personBio}>{member.bio[lang]}</span>
     </motion.li>
   );
 }
@@ -88,6 +88,20 @@ export default function OrgChart({ reduced }: { reduced: boolean }) {
   return (
     <section id="chart" className={styles.chartSection}>
       <div className={container.container}>
+        {/* The section's own axis, announced before the tree draws under it.
+            An h2 — the panel's department name is the h3 below it. */}
+        <motion.h2
+          className={styles.eyebrow}
+          initial={reduced ? false : { opacity: 0, y: 12 }}
+          whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-120px" }}
+          transition={{ duration: 0.55, ease: EASE_OUT }}
+        >
+          <span className={styles.eyebrowRule} aria-hidden />
+          {t.eyebrow}
+          <span className={`${styles.eyebrowRule} ${styles.eyebrowRuleEnd}`} aria-hidden />
+        </motion.h2>
+
         <motion.div
           className={styles.chart}
           style={{ "--cols": DEPARTMENTS.length } as CSSProperties}
@@ -149,7 +163,7 @@ export default function OrgChart({ reduced }: { reduced: boolean }) {
                     initial={reduced ? false : { opacity: 0, y: 16 }}
                     whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-120px" }}
-                    transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.35 + index * 0.07 }}
+                    transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.5 + index * 0.06 }}
                   >
                     <span className={styles.deptIcon}>
                       <ServiceIcon name={department.icon} />
@@ -193,6 +207,12 @@ export default function OrgChart({ reduced }: { reduced: boolean }) {
                   <span className={styles.panelHeadCopy}>
                     <h3>{active.label[lang]}</h3>
                     <p>{active.summary[lang]}</p>
+                  </span>
+                  {/* The header's right-hand counterweight — the same figure
+                      the closed card shows, restated where the roster begins. */}
+                  <span className={styles.panelCount}>
+                    <strong>{active.members.length}</strong>
+                    <span>{t.peopleLabel}</span>
                   </span>
                 </header>
                 <ul className={styles.roster}>
