@@ -27,6 +27,20 @@ const COPY = {
 // events a trackpad emits a second — and the icon is transformed by that very
 // tween, so the read was flushing work the tween had just queued. quickTo
 // renders on the GSAP ticker regardless, so one call per frame is identical.
+// Each card sits in its real 2x2 grid cell from the start, then GSAP pulls
+// it toward the center of the deck with xPercent/yPercent — relative to the
+// card's own size, so the fan holds up at any breakpoint — plus a tilt and
+// a slight downscale, so the four overlap like a shuffled hand of cards.
+// Scrubbed (not a one-shot reveal): the fan only unwinds as far as the user
+// has actually scrolled the section past, and reverses just as readily on
+// scroll-up.
+const CARD_FAN: ReadonlyArray<{ xPercent: number; yPercent: number; rotate: number; scale: number }> = [
+  { xPercent: 46, yPercent: 40, rotate: -9, scale: 0.95 },
+  { xPercent: -42, yPercent: 46, rotate: 6, scale: 0.94 },
+  { xPercent: 40, yPercent: -38, rotate: -5, scale: 0.96 },
+  { xPercent: -44, yPercent: -42, rotate: 8, scale: 0.97 },
+];
+
 function MagneticIcon({ children, reduced }: { children: React.ReactNode; reduced: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const moveRef = useRef<{ x: gsap.QuickToFunc; y: gsap.QuickToFunc } | null>(null);
@@ -108,6 +122,8 @@ export default function ValuesSection({ reduced }: { reduced: boolean }) {
   const t = COPY[lang];
   const sectionRef = useRef<HTMLElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
+  const cardRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   /* The blobs keep their own slow CSS drift (and its tab-visibility pause);
      this parallaxes the layer they live in, so scrolling adds depth without
@@ -132,6 +148,39 @@ export default function ValuesSection({ reduced }: { reduced: boolean }) {
         },
       );
     }, sectionRef);
+    return () => ctx.revert();
+  }, [reduced]);
+
+  /* The fan-to-grid unwind: each card starts pulled toward the deck's center
+     (see CARD_FAN) and eases back to its resting transform as the list
+     itself scrolls through the middle of the viewport — tied to scroll
+     position via scrub, not a discrete on/off reveal, so it tracks the
+     scrollbar directly in both directions. */
+  useIsomorphicLayoutEffect(() => {
+    if (reduced || !listRef.current) return;
+    const ctx = gsap.context(() => {
+      cardRefs.current.forEach((el, index) => {
+        if (!el) return;
+        const fan = CARD_FAN[index % CARD_FAN.length];
+        gsap.fromTo(
+          el,
+          { xPercent: fan.xPercent, yPercent: fan.yPercent, rotate: fan.rotate, scale: fan.scale },
+          {
+            xPercent: 0,
+            yPercent: 0,
+            rotate: 0,
+            scale: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: listRef.current,
+              start: "top 85%",
+              end: "top 30%",
+              scrub: SCRUB,
+            },
+          },
+        );
+      });
+    }, listRef);
     return () => ctx.revert();
   }, [reduced]);
 
@@ -162,18 +211,18 @@ export default function ValuesSection({ reduced }: { reduced: boolean }) {
           <motion.p variants={focusRiseVariants}>{t.description}</motion.p>
         </motion.div>
 
-        <motion.ol
-          className={styles.valueList}
-          initial={reduced ? false : "hidden"}
-          whileInView={reduced ? undefined : "visible"}
-          viewport={VIEWPORT}
-          variants={groupVariants}
-        >
+        <ol ref={listRef} className={styles.valueList}>
           {ABOUT_VALUES.map((value, index) => (
-            <motion.li key={value.id} variants={focusRiseVariants}>
-              <SpotlightCard className={styles.valueRow} reduced={reduced} glowColor="var(--ab-verde)">
+            <li
+              key={value.id}
+              ref={(el) => {
+                cardRefs.current[index] = el;
+              }}
+              style={{ zIndex: index + 1 }}
+            >
+              <SpotlightCard className={styles.valueCard} reduced={reduced} glowColor={index % 2 === 0 ? "var(--ab-verde)" : "var(--ab-celeste)"}>
                 <span className={styles.valueIndex} aria-hidden>{String(index + 1).padStart(2, "0")}</span>
-                <span className={styles.valueIcon}>
+                <span className={styles.valueIcon} data-accent={index % 2 === 0 ? "verde" : "celeste"}>
                   <MagneticIcon reduced={reduced}>
                     <ServiceIcon name={value.icon} />
                   </MagneticIcon>
@@ -183,9 +232,9 @@ export default function ValuesSection({ reduced }: { reduced: boolean }) {
                   <p>{value.description[lang]}</p>
                 </span>
               </SpotlightCard>
-            </motion.li>
+            </li>
           ))}
-        </motion.ol>
+        </ol>
       </div>
     </section>
   );

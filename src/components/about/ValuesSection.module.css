@@ -125,48 +125,60 @@
 }
 
 /* ── Value list ───────────────────────────────────────────
-   A numbered manifesto, not a card grid — each commitment reads as one row
-   of a sequence (built in this order into every operation), full-width so
-   the description has room to breathe. */
+   A grid of cards, thrown on scroll like a scattered stack of testimonials
+   and springing flat into place — each commitment reads as its own object
+   rather than a row in a list. perspective on the parent lets the cards'
+   rotate/scale settle read as slightly dimensional instead of flat 2D spin. */
 .valueList {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  margin-top: clamp(1.5rem, 3vw, 2.5rem);
-}
-
-.valueRow {
   display: grid;
-  /* The icon track is `auto`, not a hard 3rem: `.valueIcon` is 2.75rem, so a
-     fixed track left 4px of slack and any bump to the well would have
-     overflowed it — which is exactly what went wrong in the mobile rule at the
-     bottom of this file. Sized to its content, the track cannot be wrong. */
-  grid-template-columns: 3.5rem auto minmax(0, 1fr);
-  align-items: center;
-  gap: 1.5rem;
-  padding: clamp(1.5rem, 3vw, 2rem) 0.5rem;
-  border-top: 1px solid var(--ab-rule-invert);
-  transition: background 260ms var(--ease-out);
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  perspective: 1200px;
 }
 
-.valueList li:last-child .valueRow {
-  border-bottom: 1px solid var(--ab-rule-invert);
+.valueList > li {
+  transform-style: preserve-3d;
 }
 
-.valueRow:hover {
-  background: rgba(255, 255, 255, 0.03);
+.valueCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 1.1rem;
+  row-gap: 0.9rem;
+  height: 100%;
+  padding: clamp(1.5rem, 2.6vw, 2rem);
+  border-radius: 1.25rem;
+  border: 1px solid var(--ab-rule-invert);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 1.5rem 3rem -1.75rem rgba(0, 0, 0, 0.65);
+  transition: transform 300ms var(--ease-out), background 300ms var(--ease-out), border-color 300ms var(--ease-out);
+}
+
+.valueCard:hover {
+  transform: translateY(-4px);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .valueIndex {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
   font-family: var(--font-heading), sans-serif;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.28);
 }
 
 .valueIcon {
+  grid-row: 1;
+  grid-column: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,6 +189,11 @@
   color: var(--ab-verde);
 }
 
+.valueIcon[data-accent="celeste"] {
+  background: color-mix(in srgb, var(--ab-celeste) 20%, transparent);
+  color: var(--ab-celeste);
+}
+
 .magneticIcon {
   display: inline-flex;
   align-items: center;
@@ -185,6 +202,8 @@
 }
 
 .valueCopy {
+  grid-row: 2;
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -198,7 +217,6 @@
 }
 
 .valueCopy p {
-  max-width: 52ch;
   color: rgba(255, 255, 255, 0.62);
   font-size: 0.92rem;
   line-height: 1.7;
@@ -211,47 +229,8 @@
   .valuesHeading { grid-template-columns: 1fr; gap: 1.5rem; }
 }
 
-/* Stacked: the number and its icon share the first row, the copy takes the
-   whole second one.
-
-   The second track has to be `1fr`, not a fixed width. It was `2.5rem 2.5rem`,
-   and since `copy copy` only spans the declared tracks, the paragraph was
-   being laid out in 5rem + one gap — about 104px — regardless of how wide the
-   phone was. That is what made the block look unformatted: the copy was
-   wrapping every two or three words in a narrow ribbon down the left edge
-   while the rest of the row sat empty. The 2.75rem icon in a 2.5rem track was
-   overflowing its column on top of it. */
 @media (max-width: 42rem) {
-  .valueRow {
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-      "index icon"
-      "copy copy";
-    align-items: center;
-    column-gap: 0.9rem;
-    row-gap: 1rem;
-  }
-
-  .valueIndex {
-    grid-area: index;
-  }
-
-  /* Left, beside the number, not pushed to the far edge: the two read as one
-     marker for the row that follows. `justify-self: start` is what stops it
-     stretching across the new 1fr track. */
-  .valueIcon {
-    grid-area: icon;
-    justify-self: start;
-  }
-
-  .valueCopy {
-    grid-area: copy;
-  }
-
-  .valueCopy p {
-    /* The 52ch cap is there to stop a long measure on desktop; on a phone the
-       viewport is already the tighter constraint and the cap only gets in the
-       way of `text-wrap: pretty`. */
-    max-width: none;
+  .valueList {
+    grid-template-columns: 1fr;
   }
 }
