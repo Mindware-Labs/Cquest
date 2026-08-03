@@ -1,0 +1,82 @@
+/* ── Team figure — the /team org chart in miniature ──────────────────────
+   Sits on the Metrics band's dark surface, so every value here is keyed to
+   white and celeste rather than to the light-surface tokens the /team page's
+   own chart uses. */
+
+.figure {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.rule {
+  stroke: color-mix(in srgb, var(--ab-celeste) 42%, transparent);
+}
+
+/* The root reads as the whole company: solid celeste, and the one filled
+   shape in the figure — everything below it is an empty frame. */
+.rootDisc {
+  fill: color-mix(in srgb, var(--ab-celeste) 22%, transparent);
+  stroke: var(--ab-celeste);
+  stroke-width: 1.25;
+}
+
+.rootFigure {
+  fill: color-mix(in srgb, var(--ab-celeste) 92%, white);
+}
+
+/* A person: a dashed frame waiting for a photograph, with the silhouette
+   inside it held well back so the figure reads as empty rather than as a
+   drawing of someone in particular. */
+.nodeDisc {
+  fill: rgba(255, 255, 255, 0.045);
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.nodeFigure {
+  fill: rgba(255, 255, 255, 0.3);
+}
+
+/* Ambient: one ring expanding off each person in turn, ~7s apart. Transform
+   and opacity only, and it holds its breath with the rest of the section —
+   AboutSection sets `data-ambient-active` on the wrapper. */
+.pulse {
+  fill: none;
+  stroke: var(--ab-celeste);
+  stroke-width: 1;
+  opacity: 0;
+  animation: cq-team-pulse 7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes cq-team-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  60% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+/* Hung off the DATA ATTRIBUTE, not off AboutSection's class: that class is
+   CSS-Modules-hashed and unreachable from this file, whereas the attribute it
+   sets is literal. */
+:global([data-ambient-active="false"]) .pulse {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}

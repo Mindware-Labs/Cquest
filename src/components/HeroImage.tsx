@@ -121,6 +121,13 @@ export default function HeroImage() {
     <section
       ref={sectionRef}
       id="hero"
+      /* Read by styles/site.css to hand the three parallax planes' layers
+         back once the hero has left. `will-change: transform` on a
+         full-viewport element is a standing reservation of GPU memory, and
+         three of them were being held for the whole page — including across
+         the descent into the services sheet, which is the one moment on this
+         page that needs every byte of it. */
+      data-onscreen={onScreen ? "true" : "false"}
       className="cq-hero relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
       <motion.div

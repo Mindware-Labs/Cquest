@@ -48,6 +48,62 @@ const BAND = 1 / SERVICES.length;
    pages, and each strobe restarts a 0.6s page turn. */
 const HYSTERESIS = BAND * 0.12;
 
+/* ── The handoff into the pin ────────────────────────────────────────────
+   A sticky pin is a velocity STEP. Right up to the pin the whole sheet is
+   travelling at exactly scroll speed; one frame later it is nailed to the
+   top of the viewport at zero. Nothing decelerates — the page simply stops
+   dead, and then keeps not moving for the ~45dvh of the first band, because
+   until the next boundary the only thing left animating is a 28px dot. Both
+   halves of that read as a fault rather than as a design: the stop reads as
+   the page snagging, and the dead stretch after it reads as the page having
+   frozen.
+
+   The fix is not to make the pin softer — a sticky pin is exact by nature
+   and that exactness is what makes the section feel engineered. It is to
+   make sure the pin is never the only thing carrying motion at that moment:
+
+   1 · The copy arrives with WEIGHT. It rides in low inside the sheet and is
+       still travelling the last STAGE_TAIL_PX when the pin engages, so the
+       gesture continues past the stop and eases out on its own terms. The
+       eye reads a settle, not a snag.
+   2 · The field behind it keeps travelling for the whole band, so scrolling
+       inside the pin always moves something and the stretch between two page
+       turns stops reading as frozen.
+   3 · At the far end the copy lifts INTO the release, so the un-pin is an
+       acceleration that has already started rather than another step.
+
+   Everything here is a single transform on a single element per layer —
+   compositor-only, and cheap enough to run alongside the page turns. */
+
+/* How far below its resting place the copy sits when the sheet first
+   appears, and how much of that travel is deliberately left UNSPENT at the
+   moment the pin engages (resolved over STAGE_TAIL_BAND of pinned progress —
+   roughly 5dvh of scrolling, which at these amplitudes reads as a settle
+   rather than a crawl). */
+const STAGE_LEAD_PX = 84;
+const STAGE_TAIL_PX = 26;
+const STAGE_TAIL_BAND = 0.035;
+
+/* The mirror image at the other end: the copy starts lifting away over the
+   last stretch of the pin, so the sheet is already in motion when it lets go.
+   Eased IN, so peak velocity lands exactly on the release. */
+const STAGE_RELEASE_PX = 30;
+const STAGE_RELEASE_BAND = 0.07;
+
+/* The field is the far layer: it enters from a shorter distance than the copy
+   (near things travel more), then keeps drifting across the whole band — this
+   is what carries the pin's long middle stretch. Both excursions stay well
+   inside the 3rem of bleed the wrapper carries on each edge, so translating
+   it can never uncover a seam. */
+const FIELD_LEAD_PX = 26;
+const FIELD_DRIFT_PX = 38;
+
+const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
+/* ease-out-quint — the polynomial twin of --ease-out / EASE_OUT above. Used
+   instead of the bezier because these run per scroll frame and a closed form
+   costs nothing. */
+const easeOutQuint = (t: number) => 1 - (1 - t) ** 5;
+
 /* Book-page turn: the leaving page falls away (fade + settle to 0.95) while
    the incoming one drifts in from the travel direction and lands at rest.
    `custom` carries the direction so both sides of the turn agree. */
@@ -111,6 +167,9 @@ export default function ServicesCarousel() {
   const sectionRef = useRef<HTMLElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [onScreen, setOnScreen] = useState(false);
+  /* Separate, later gate for the one layer that is genuinely expensive —
+     see the observer below. */
+  const [sceneReady, setSceneReady] = useState(false);
 
   /* ── Battery/FPS etiquette, part two ──────────────────────────────────
      Tab visibility was only ever half the story. A slide's backdrop is
@@ -134,7 +193,14 @@ export default function ServicesCarousel() {
      margin holds the field asleep until the sheet has climbed past the
      lower half of the viewport, which still leaves it most of a viewport
      of scrolling to warm up before it pins. The loops all run on negative
-     delays, so they resume mid-phase and the start is never visible. */
+     delays, so they resume mid-phase and the start is never visible.
+
+     This threshold governs the CHEAP layers only — orbs, bloom, rings,
+     lattice, beam: transform and opacity on a handful of elements, which
+     the descent can afford. It deliberately stays early, because these are
+     also the layers whose paused state is VISIBLE (a frozen emission ring
+     is a static circle sitting on a sheet the reader can already see), so
+     withholding them longer would trade a frame cost for an artefact. */
   useEffect(() => {
     const node = sheetRef.current;
     if (!node || !("IntersectionObserver" in window)) {
@@ -144,6 +210,38 @@ export default function ServicesCarousel() {
     const io = new IntersectionObserver(
       ([entry]) => setOnScreen(entry.isIntersecting),
       { rootMargin: "0px 0px -55% 0px", threshold: 0 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  /* ── …and the one layer that is not cheap ─────────────────────────────
+     CallCenterScene's connection map is the only thing on this surface that
+     costs main-thread time: `stroke-dashoffset` is not a compositor
+     property, so its twelve comet paths repaint a ~960px stage on every
+     frame they run. It is also, being slide one, the scene that would be
+     doing that for the whole descent out of the hero — which is precisely
+     where the section felt heavy.
+
+     -78% is chosen against the hero's own observer rather than by feel. The
+     hero retires its ambience at `-25%` top margin, i.e. once roughly 75dvh
+     have been scrolled; this arms the map at 100 − 22 = 78dvh. The two
+     windows no longer overlap AT ALL: for the entire descent exactly one of
+     the two stages is doing main-thread work. It still lands a fifth of a
+     viewport before the pin, so the cost is paid during a calm stretch
+     rather than on the braking frames.
+
+     A mount gate, not a pause. See CallCenterScene for why pausing this
+     particular subtree is worse than not having it. */
+  useEffect(() => {
+    const node = sheetRef.current;
+    if (!node || !("IntersectionObserver" in window)) {
+      setSceneReady(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setSceneReady(entry.isIntersecting),
+      { rootMargin: "0px 0px -78% 0px", threshold: 0 },
     );
     io.observe(node);
     return () => io.disconnect();
@@ -170,21 +268,38 @@ export default function ServicesCarousel() {
     offset: ["start start", "end end"],
   });
 
+  /* The APPROACH, which the pinned progress above cannot see: 0 when the
+     track's top edge is still a full viewport away, 1 at the exact frame the
+     pin engages. `scrollYProgress` is pinned to 0 across all of it, so
+     everything that has to happen on the way in reads from here instead. */
+  const { scrollYProgress: approach } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "start start"],
+  });
+
+  /* Mirrors `index` for the scroll handler. The handler runs on EVERY scroll
+     frame across 235dvh, and on all but three of those frames the answer is
+     "same page as last frame" — reading the index from a ref lets it return
+     before touching React at all. Going through setPage's updater to discover
+     that meant invoking a state updater sixty times a second for the length
+     of the section, on the main thread, next to the page turns. */
+  const indexRef = useRef(0);
+
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
-    setPage((previous) => {
-      const current = previous[0];
-      let next = current;
-      /* Walk toward the band the scroll is actually in, rather than
-         snapping straight to floor(progress × N) — a fast flick that skips
-         a band still resolves in one step, but the direction stays honest. */
-      while (next < SERVICES.length - 1 && progress >= (next + 1) * BAND + HYSTERESIS) {
-        next += 1;
-      }
-      while (next > 0 && progress < next * BAND - HYSTERESIS) {
-        next -= 1;
-      }
-      return next === current ? previous : [next, next > current ? 1 : -1];
-    });
+    const current = indexRef.current;
+    let next = current;
+    /* Walk toward the band the scroll is actually in, rather than
+       snapping straight to floor(progress × N) — a fast flick that skips
+       a band still resolves in one step, but the direction stays honest. */
+    while (next < SERVICES.length - 1 && progress >= (next + 1) * BAND + HYSTERESIS) {
+      next += 1;
+    }
+    while (next > 0 && progress < next * BAND - HYSTERESIS) {
+      next -= 1;
+    }
+    if (next === current) return;
+    indexRef.current = next;
+    setPage([next, next > current ? 1 : -1]);
   });
 
   /* How far through the current page's band the reader is, 0 → 1. Feeds the
@@ -197,6 +312,36 @@ export default function ServicesCarousel() {
     [0, 1],
     { clamp: true },
   );
+
+  /* ── 1 · The copy's weight ────────────────────────────────────────────
+     Rides in low, and is deliberately still short of its mark by
+     STAGE_TAIL_PX at the frame the pin engages — that remainder is spent
+     against the pinned progress, so the arrival visibly continues THROUGH
+     the stop instead of being cut off by it. At the far end it lifts back
+     out, eased in, so the release is met with motion already under way. */
+  const stageY = useTransform([approach, scrollYProgress], (values: number[]) => {
+    const [entering = 0, pinned = 0] = values;
+    if (entering < 1) {
+      return STAGE_LEAD_PX - (STAGE_LEAD_PX - STAGE_TAIL_PX) * easeOutQuint(entering);
+    }
+    const settling = STAGE_TAIL_PX * (1 - easeOutQuint(clamp01(pinned / STAGE_TAIL_BAND)));
+    const leaving = clamp01((pinned - (1 - STAGE_RELEASE_BAND)) / STAGE_RELEASE_BAND);
+    return settling - STAGE_RELEASE_PX * leaving * leaving;
+  });
+
+  /* ── 2 · The field's long travel ──────────────────────────────────────
+     Enters from a shorter distance than the copy (it is the far layer), then
+     keeps drifting for the ENTIRE band. This is the piece that answers the
+     "it froze" reading of the pin: between two page turns there are ~45dvh
+     where nothing used to move but a dot, and now the whole field is still
+     visibly under way. Reads off `bandFill` rather than the raw progress so
+     it resets on the same frame the page turns — the reset is spent behind
+     the crossfade instead of on screen. */
+  const fieldY = useTransform([approach, bandFill], (values: number[]) => {
+    const [entering = 0, filled = 0] = values;
+    if (entering < 1) return FIELD_LEAD_PX * (1 - easeOutQuint(entering));
+    return -FIELD_DRIFT_PX * filled;
+  });
 
   /* Direct navigation moves the *scroll*, never the index — scroll position
      is the single source of truth, so setting the index behind its back
@@ -280,12 +425,33 @@ export default function ServicesCarousel() {
             className="absolute inset-0 flex cursor-grab touch-pan-y items-center justify-center active:cursor-grabbing"
           >
             {/* The whole living scene travels WITH its page, so a turn
-                re-lights and re-themes the field as part of the same gesture. */}
-            <SlideBackdrop service={service} />
+                re-lights and re-themes the field as part of the same gesture.
 
+                The 3rem of bleed above and below is what makes the field
+                drift-able: the wrapper is taller than the stage it fills, so
+                translating it can never uncover a seam at either edge. Only
+                the vertical axis is grown — SystemsScene solves its beam sync
+                against `window.innerWidth`, so the horizontal box has to stay
+                exactly the stage's. A pure translate leaves that measurement
+                untouched; a scale would not, which is why the bleed is layout
+                rather than transform. */}
             <motion.div
+              aria-hidden
+              style={reduced ? undefined : { y: fieldY }}
+              className="pointer-events-none absolute inset-x-0 -inset-y-12"
+            >
+              <SlideBackdrop service={service} active={sceneReady} />
+            </motion.div>
+
+            {/* Carries BOTH the settle and the cascade. `stageVariants`
+                declares no properties of its own — only the stagger timing it
+                hands its children — so the scroll-bound `y` and the variant
+                tree can share one element without ever contending for the
+                transform channel. */}
+            <motion.div
+              style={reduced ? undefined : { y: stageY }}
               variants={reduced ? undefined : stageVariants}
-              className="relative mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
+              className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
             >
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}

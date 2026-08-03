@@ -12,15 +12,28 @@ export type NavLink = {
   children?: readonly NavLink[];
 };
 
-// Every service detail page opens on a dark, full-bleed hero (photo or ink
-// gradient) with the navbar floating transparently on top of it — so its nav
-// text needs the light/"inverse" treatment until the page scrolls past the
-// hero. All three currently share that shape; a page rendered here without
-// a dark hero shouldn't be added to this list.
+// Routes whose quote CTA deep-links into the wizard with that service already
+// chosen (`/quote?servicio=<last path segment>`). ONLY service pages belong
+// here — the segment is read as a service id.
 export const SERVICE_DETAIL_PAGES = [
   "/services/call-center",
   "/services/operations",
   "/services/systems",
+] as const;
+
+// Routes that open on a dark, full-bleed hero with the navbar floating
+// transparently on top of it, so its text needs the light/"inverse" treatment
+// until the page scrolls past that hero.
+//
+// Split from SERVICE_DETAIL_PAGES above, which it used to be the same list as.
+// The two only looked identical because every dark-hero page happened to be a
+// service page: /team is the first that isn't, and adding it to the old shared
+// constant would have deep-linked its quote CTA to `?servicio=team` — a
+// service that does not exist. Adding a dark-hero page here is now free of
+// that side effect.
+export const DARK_HERO_PAGES = [
+  ...SERVICE_DETAIL_PAGES,
+  "/team",
 ] as const;
 
 export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
@@ -37,6 +50,7 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
       })),
     },
     { label: dict.nav.sectors, href: "/#sectors" },
+    { label: dict.nav.team, href: "/team" },
     { label: dict.nav.contact, href: "/quote" },
   ];
 }

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+import { DARK_HERO_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
 // The same width utility every service page's sections use. Imported rather
 // than re-expressed in Tailwind so the bar's logo and CTA land on exactly the
 // page grid's outer edges — approximating it is what left the nav's contents
@@ -58,7 +58,10 @@ export default function Navbar() {
   }, [pathname]);
 
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
-  const inverse = serviceDetailPage && !scrolled && !open;
+  // Every service page has a dark hero, but not every dark hero is a service
+  // page — see the two lists in navigation/data.ts. `inverse` follows the
+  // hero; the quote deep-link below follows the service.
+  const inverse = (DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open;
   const navLinks = getServiceNavLinks(dict)[pathname] ?? getNavLinks(dict, lang);
   // The quote CTA opens the dedicated /quote form — on a service page it
   // deep-links with that service preselected (Step 2). Left un-prefixed here;

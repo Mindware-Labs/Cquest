@@ -1,9 +1,47 @@
+/* ── A full-viewport chapter break ───────────────────────────────────────
+   This band is where the page changes register: the services sheet above it
+   is a near-white surface, and everything below it is the story. Sized to a
+   full viewport it stops reading as "another section with a dark background"
+   and starts reading as the same kind of held moment the hero and the pinned
+   carousel are — one screen, one statement.
+
+   `svh`, not `dvh` or `vh`. `vh` overflows on mobile whenever the browser
+   chrome is showing, and `dvh` reflows the whole section every time that
+   chrome hides or reappears mid-scroll — which on a section carrying a
+   scrubbed glow means re-solving its ScrollTrigger on the way past. `svh` is
+   the smallest viewport, so it is the only one of the three that is stable
+   AND never taller than what is actually on screen.
+
+   `min-height`, not `height`: a landscape phone, a very large type scale or
+   a future team grid slotting into the void below must be able to push it
+   past a viewport rather than be clipped by it. */
 .metricsSection {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
   scroll-margin-top: 5rem;
   padding-block: clamp(5rem, 9vw, 8rem);
-  background: var(--ab-deep);
+  /* A single directional wash off the top-left, the same 118° gesture the
+     hero's own field opens with — so the band reads as the hero's material
+     seen again rather than as a third lighting idea. */
+  background:
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--ab-celeste) 9%, transparent),
+      transparent 46%
+    ),
+    var(--ab-deep);
   color: white;
+}
+
+/* Everything below is decoration and absolutely positioned, which paints it
+   ABOVE in-flow content — the old sweeping glow washed straight over the
+   heading for exactly this reason. The content gets its own stacking slot. */
+.inner {
+  position: relative;
+  z-index: 1;
 }
 
 .metricsSection::before {
@@ -16,15 +54,84 @@
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
 }
 
-.metricsGlow {
+/* ── The backdrop ────────────────────────────────────────────────────────
+   This replaces a 44rem celeste disc that swept across the band on scroll.
+   The problem with it was not its size or its colour — it was that a radial
+   gradient has no edge anywhere. On a near-white surface that reads as light;
+   on ink at 16% it has nothing to define itself against, so the eye files it
+   as a smudge on the background rather than as anything anyone chose. It also
+   painted over the heading, being an absolutely positioned sibling of it.
+
+   What replaces it is structure. Every layer here has a defined edge or a
+   defined behaviour, which is the whole difference between a backdrop that
+   reads as designed and one that reads as dirt on the lens:
+
+     • a hairline field, framed to the margins so it never runs under type
+     • a vignette, which the eye reads as LIGHTING rather than as a shape
+     • grain, the same tile the hero and the carousel already sit on
+
+   All three are static paints. The scrubbed sweep is gone with the disc, and
+   the only motion left is a few percent of drift on the field — structured
+   travel instead of a blob crossing the room. */
+
+.field {
   position: absolute;
-  top: -20%;
-  left: 0;
-  width: 32rem;
-  height: 140%;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 16%, transparent), transparent 70%);
+  /* Clears the whole reading column and frames the edges — the same
+     construction (and very nearly the same ellipse) as the carousel's
+     marching lattice. The mask lives on this element and the motion on the
+     child, so the cleared area stays put while the grid drifts through it. */
+  mask-image: radial-gradient(ellipse 84% 68% at 50% 46%, transparent 32%, #000 68%, transparent 96%);
+  -webkit-mask-image: radial-gradient(ellipse 84% 68% at 50% 46%, transparent 32%, #000 68%, transparent 96%);
+}
+
+.fieldGrid {
+  position: absolute;
+  /* Bleed for the drift below — the grid must never run out of itself at
+     either edge of the frame. */
+  inset: -12% 0;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.05) 1px, transparent 1px);
+  background-position: center;
+  background-size: 3.4rem 3.4rem;
   will-change: transform;
+}
+
+/* Corner falloff. Static, one paint, and the single cheapest thing that makes
+   a flat rectangle of colour read as a lit stage. */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      112% 84% at 50% 42%,
+      transparent 42%,
+      color-mix(in srgb, var(--ink) 62%, transparent) 100%
+    );
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Lede: statement left, team figure right ─────────────────────────────
+   The band used to be a heading over a ledger — four numbers doing all the
+   work of saying "we have a team". The figure carries that now, so the
+   numbers can go back to being evidence rather than the whole argument.
+
+   Asymmetric on purpose: the figure is given the slightly larger share
+   because it is the wider object and the one the link is about. */
+.lede {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
 }
 
 .metricsHeading {
@@ -34,6 +141,7 @@
 .metricsHeadingCopy {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 
 .metricsRule {
@@ -42,6 +150,66 @@
   margin-bottom: 1rem;
   background: var(--ab-celeste);
   transform-origin: top center;
+}
+
+.eyebrow {
+  margin-bottom: 0.85rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ab-celeste);
+}
+
+.lead {
+  max-width: 46ch;
+  margin-top: 1.35rem;
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.68);
+  text-wrap: pretty;
+}
+
+.cta {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.85rem;
+  padding: 0.85rem 1.35rem;
+  border-radius: 2px;
+  background: var(--ab-celeste);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+  transition:
+    background-color 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+.cta:hover {
+  background: white;
+  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+}
+
+.cta:active {
+  transform: scale(0.97);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--ab-celeste);
+  outline-offset: 3px;
+}
+
+.figure {
+  /* Held back from the container's outer edge so the figure's outermost
+     avatars do not sit flush against the section's own margin. */
+  padding-inline: clamp(0rem, 2vw, 1.5rem);
 }
 
 .metricsHeading h2 {
@@ -55,10 +223,17 @@
   color: white;
 }
 
+/* The gap now scales with the viewport, not just with the type. At the old
+   flat 4rem the heading and the ledger stayed a compact cluster adrift in a
+   screen-tall box, which reads as a short section that was padded out rather
+   than as a composition. Growing it with `vh` lets the pair span most of the
+   frame — the void between them is the part the sweeping glow lights, and it
+   is also where the team portraits will eventually sit. Floored at 3.5rem so
+   a landscape phone never collapses the two into each other. */
 .metricList {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 4rem;
+  margin-top: clamp(3.5rem, 13vh, 9rem);
   border-block: 1px solid var(--ab-rule-invert);
 }
 
@@ -96,6 +271,11 @@
 }
 
 @media (max-width: 64rem) {
+  /* Stacked: statement, then the figure beneath it. The figure keeps its full
+     width here — it is the one element that reads BETTER wide, and squeezing
+     it into a half-column was what made the two-up layout stop working. */
+  .lede { grid-template-columns: 1fr; gap: clamp(2.25rem, 6vw, 3.25rem); }
+  .figure { padding-inline: 0; }
   .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metricList > div:nth-child(3) { border-left: 0; }
   .metricList > div:nth-child(n + 3) { border-top: 1px solid var(--ab-rule-invert); }
@@ -103,6 +283,7 @@
 
 @media (max-width: 42rem) {
   .metricsHeading h2 { font-size: clamp(2.2rem, 11vw, 3.2rem); }
+  .cta { width: 100%; justify-content: center; }
   .metricList { grid-template-columns: 1fr; }
   .metricList > div { min-height: 8rem; }
   .metricList > div + div { border-top: 1px solid var(--ab-rule-invert); border-left: 0; }

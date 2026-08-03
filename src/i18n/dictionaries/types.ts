@@ -10,6 +10,7 @@ export interface Dictionary {
     aboutUs: string;
     services: string;
     sectors: string;
+    team: string;
     contact: string;
     home: string;
     overview: string;

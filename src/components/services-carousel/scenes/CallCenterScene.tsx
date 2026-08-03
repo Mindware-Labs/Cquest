@@ -25,7 +25,26 @@ const CALL_ROUTES = [
   { d: "M50 50 Q 66 74 72 88", x: 72, y: 88, delay: "-11.8s" },
 ] as const;
 
-export default function CallCenterScene() {
+/* ── Why the map is withheld until `active` ──────────────────────────────
+   This is the one layer in the section that is NOT free. `stroke-dashoffset`
+   is not a compositor property, so the twelve comet paths repaint the whole
+   ~960px stage on the main thread every frame they run — and this scene is
+   slide ONE, so it is the scene that would be doing that for the entire
+   descent out of the hero, competing with the mascot, the reactive grid and
+   three parallax planes for the same frame budget. That descent is exactly
+   where the section felt heavy.
+
+   Withheld, not paused. `animation-play-state: paused` still leaves the
+   subtree mounted and, because every comet runs on a negative delay, freezes
+   two of them mid-flight as visible static streaks on a sheet the reader can
+   already see. Not rendering it costs nothing and shows nothing; when it
+   mounts the negative delays put it straight into mid-cycle, so the map
+   arrives already in traffic and the start is never visible.
+
+   The bloom and rings stay unconditional — they are scale/opacity on two
+   elements, they carry the field's identity while the map is away, and
+   removing them would make the sheet visibly ignite at the threshold. */
+export default function CallCenterScene({ active }: { active: boolean }) {
   return (
     <div className="absolute inset-0">
       {/* The exchange's heart: a bloom breathing on the half clock (7s),
@@ -36,6 +55,7 @@ export default function CallCenterScene() {
       <span className="cq-v2-ring" style={{ animationDelay: "-3.5s" }} />
       {/* The map: crawling meridians, the standing route network, the
           calls in flight, and their landing points. */}
+      {active && (
       <div className="cq-v2-net">
         <svg viewBox="0 0 100 100" aria-hidden>
           {/* ── The origin fade ────────────────────────────────────────
@@ -97,6 +117,7 @@ export default function CallCenterScene() {
           />
         ))}
       </div>
+      )}
       <span
         className="cq-v2-orb cq-v2-orb--cc-a left-[-11rem] top-[-10rem] h-[34rem] w-[34rem]"
         style={{ "--orb": "color-mix(in srgb, var(--svc) 30%, transparent)" } as CSSProperties}

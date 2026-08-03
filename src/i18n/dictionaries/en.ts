@@ -9,6 +9,7 @@ export const dictionary: Dictionary = {
     aboutUs: "About us",
     services: "Services",
     sectors: "Sectors",
+    team: "Team",
     contact: "Contact",
     home: "Home",
     overview: "Overview",

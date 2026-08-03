@@ -62,6 +62,18 @@
   will-change: transform;
 }
 
+/* …and handed straight back the moment the hero leaves. A promotion hint is
+   a standing reservation, not a one-off cost: left on, these three
+   full-viewport layers stay resident for the entire page. They are at their
+   least affordable exactly where they are least useful — the descent into
+   the services sheet, where the parallax has already run out of range
+   (scrollYProgress is clamped, so the transforms have stopped changing) and
+   the sheet below needs the budget for its own field. HeroImage sets the
+   flag off the same observer that retires the ambience. */
+.cq-hero[data-onscreen="false"] .cq-hero-plane {
+  will-change: auto;
+}
+
 .cq-hero-ambience {
   position: absolute;
   inset: 0;

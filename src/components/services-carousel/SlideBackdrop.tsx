@@ -8,8 +8,20 @@ import SystemsScene from "./scenes/SystemsScene";
 /* Each slide's living scene, themed to its business line and painted in its
    service colour (all layers read --svc/--svc-glow from the section).
    Rendered INSIDE the motion.article so the whole scene crossfades and
-   travels with the page turn. Layer classes live in globals.css. */
-export default function SlideBackdrop({ service }: { service: Service }) {
+   travels with the page turn. Layer classes live in globals.css.
+
+   `active` is the sheet's near-pin flag (ServicesCarousel's `onScreen`). It
+   is forwarded rather than consumed here because only ONE layer in the whole
+   section is expensive enough to be worth withholding — see CallCenterScene.
+   Everything else on this surface is transform/opacity and can afford to be
+   alive for the entire approach. */
+export default function SlideBackdrop({
+  service,
+  active,
+}: {
+  service: Service;
+  active: boolean;
+}) {
   return (
     <div aria-hidden className="cq-v2-layer">
       {/* Base ambient tint shared by every scene. */}
@@ -23,7 +35,7 @@ export default function SlideBackdrop({ service }: { service: Service }) {
         }}
       />
 
-      {service.id === "call-center" && <CallCenterScene />}
+      {service.id === "call-center" && <CallCenterScene active={active} />}
       {service.id === "bpo" && <BpoScene />}
       {service.id === "systems" && <SystemsScene />}
     </div>
