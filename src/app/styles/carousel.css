@@ -31,14 +31,25 @@
 }
 
 /* Promote the surfaces involved in the sticky handoff while the sheet is
-   approaching or visible. The observer enables this well before the pin, so
-   the browser never has to allocate these layers on the braking frame. */
-.cq-carousel-sheet[data-ambient-active="true"] {
+   approaching or visible.
+
+   `data-promote`, NOT `data-ambient-active`. The two used to be one flag, and
+   that flag is the ambient-animation gate, which deliberately holds off until
+   the sheet has climbed past the lower half of the viewport — so the browser
+   was allocating a full-viewport composited surface (three radial gradients
+   and a 44px shadow) plus the slide's two scroll layers halfway down the
+   descent, on the frames where the hero's parallax and the sheet's own
+   arrival are already both in flight. Allocating a layer is a synchronous
+   rasterisation: putting one there is a guaranteed hitch, and it is what made
+   the handoff read as a snag. `data-promote` fires on the first tenth of a
+   viewport of scroll instead, so by the time any of this matters the layers
+   have existed for the best part of a second. */
+.cq-carousel-sheet[data-promote="true"] {
   will-change: transform;
   backface-visibility: hidden;
 }
 
-.cq-carousel-sheet[data-ambient-active="true"] .cq-carousel-scroll-layer {
+.cq-carousel-sheet[data-promote="true"] .cq-carousel-scroll-layer {
   will-change: transform;
 }
 

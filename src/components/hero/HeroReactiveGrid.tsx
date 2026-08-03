@@ -54,6 +54,27 @@ export default function HeroReactiveGrid({
   reduced: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  /* ── Why the gates are refs and the engine below mounts once ────────────
+     `ambient` flips false partway down the descent into the services sheet,
+     and it used to be an effect dependency. Every flip therefore tore the
+     whole engine down and built a new one: a fresh ResizeObserver, a resize
+     pass that could not short-circuit (its `width`/`height` cache lives in
+     the closure and came back zeroed), a canvas resize — which blanks the
+     bitmap — two rebuilt gradients and a full redraw of ~60 subdivided
+     grid lines, all synchronously, on a scroll frame, at the exact moment
+     the hero's parallax and the services sheet's arrival are both in
+     flight. The engine is now mounted once and simply reads these. */
+  const ambientRef = useRef(ambient);
+  const reducedRef = useRef(reduced);
+  /* Published by the engine so the gate effect below can let the dome settle
+     out without touching anything else. */
+  const relaxRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    ambientRef.current = ambient;
+    reducedRef.current = reduced;
+    relaxRef.current?.();
+  }, [ambient, reduced]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -303,13 +324,27 @@ export default function HeroReactiveGrid({
         Math.abs(current.vy) > 0.08 ||
         Math.abs(current.vl) > 0.002;
 
-      frame = moving && ambient && !reduced ? requestAnimationFrame(animate) : 0;
+      /* Deliberately not gated on `ambient`: once the dome is in motion it
+         has to be allowed to finish settling, or leaving the hero would
+         freeze a half-raised dome into the bitmap for the reader to find
+         when they scroll back. Nothing STARTS the loop while the hero is
+         away — the pointer handlers are gated instead — so a park still
+         costs at most the few cheap frames it takes to relax to flat. */
+      frame = moving && !reducedRef.current ? requestAnimationFrame(animate) : 0;
     };
 
     const requestDraw = () => {
       if (frame) return;
       lastTime = performance.now();
       frame = requestAnimationFrame(animate);
+    };
+
+    /* The hero has left (or reduced motion came on): let the surface relax
+       flat rather than holding whatever the pointer last carved into it. */
+    relaxRef.current = () => {
+      if (ambientRef.current || target.lift === 0) return;
+      target.lift = 0;
+      requestDraw();
     };
 
     const resize = () => {
@@ -382,13 +417,19 @@ export default function HeroReactiveGrid({
       requestDraw();
     };
 
+    /* The gate now lives in the handler rather than in the listener's
+       lifetime. Same net effect — nothing wakes the surface while the hero
+       is off screen, on a touch device or under reduced motion — for none of
+       the cost of rebuilding the engine every time the gate moves. */
     const onPointerMove = (event: PointerEvent) => {
+      if (!ambientRef.current || reducedRef.current) return;
       clientX = event.clientX;
       clientY = event.clientY;
       if (!pointerFrame) pointerFrame = requestAnimationFrame(updatePointer);
     };
 
     const onPointerLeave = () => {
+      if (target.lift === 0) return;
       target.lift = 0;
       requestDraw();
     };
@@ -401,10 +442,10 @@ export default function HeroReactiveGrid({
     resizeObserver.observe(canvas);
     resize();
 
-    const finePointer =
-      ambient &&
-      !reduced &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    /* Read once, at mount: whether the device has a hovering pointer is not
+       something that changes underneath us, and it is the only part of the
+       old gate that had to be answered before the listeners were attached. */
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
     if (finePointer) {
       window.addEventListener("pointermove", onPointerMove, { passive: true });
@@ -414,6 +455,7 @@ export default function HeroReactiveGrid({
     }
 
     return () => {
+      relaxRef.current = null;
       if (frame) cancelAnimationFrame(frame);
       if (pointerFrame) cancelAnimationFrame(pointerFrame);
       resizeObserver.disconnect();
@@ -422,7 +464,8 @@ export default function HeroReactiveGrid({
       window.removeEventListener("resize", invalidateRect);
       document.removeEventListener("pointerleave", onPointerLeave);
     };
-  }, [ambient, reduced]);
+    /* Mount-only, on purpose — the gates come in through the refs above. */
+  }, []);
 
   return <canvas ref={canvasRef} className={styles.canvas} aria-hidden />;
 }

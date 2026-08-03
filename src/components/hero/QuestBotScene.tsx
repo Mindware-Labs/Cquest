@@ -56,6 +56,8 @@ export default function QuestBotScene({
      2.85s and the assembly only finishes at 3.4s — half a second in which an
      invisible link would already be tabbable. */
   const [sayReady, setSayReady] = useState(false);
+  /* Whether the mascot itself is still in frame — see the observer below. */
+  const [inFrame, setInFrame] = useState(true);
   const stageRef = useRef<HTMLDivElement>(null);
   const typedLineRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
@@ -100,8 +102,21 @@ export default function QuestBotScene({
     beginRun();
   }, [beginRun, onReplayStart, replayReady]);
 
-  /* One observer does both jobs: kick off the first run when the mascot comes
-     into view, and keep reporting so we know when to park the idle loops. */
+  /* One observer does both jobs: kick off the first run when the mascot is a
+     quarter of the way into view, and report the moment it leaves the frame
+     entirely so the idle loops can park.
+
+     That second job used to be the hero's, via the `ambient` prop, and the
+     hero's own threshold is necessarily a compromise for the whole section —
+     it retires a quarter-viewport past the fold, which is roughly 15vh of
+     scrolling AFTER the mascot itself has cleared the top of the window. The
+     loops it gates are the one genuinely main-thread thing in the hero:
+     `coreScan`, `idle`, `lensPulse` and `haloBreathe` are transform/opacity
+     animations on SVG groups, which the compositor cannot take, so every one
+     of those frames re-paints the whole mascot — and they were being spent
+     mid-descent, on the exact frames the services sheet is arriving. The
+     mascot's own box is the honest threshold, and it costs one observer we
+     were already paying for. */
   useEffect(() => {
     const node = stageRef.current;
     if (!node || !("IntersectionObserver" in window)) {
@@ -111,13 +126,20 @@ export default function QuestBotScene({
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !startedRef.current) beginRun();
+        setInFrame(entry.isIntersecting);
+        /* `isIntersecting` now answers the 0 threshold, so the start beat has
+           to read the ratio itself. A hair under 0.25: the callback reports
+           the ratio at the crossing, which lands a fraction either side. */
+        if (entry.intersectionRatio >= 0.24 && !startedRef.current) beginRun();
       },
-      { threshold: 0.25 },
+      { threshold: [0, 0.25] },
     );
     io.observe(node);
     return () => io.disconnect();
   }, [beginRun]);
+
+  /* The mascot is alive only when the hero says so AND it is on screen. */
+  const alive = ambient && inFrame;
 
   /* Arm the bubble's link when the bubble appears, and hand the mascot over
      to the pointer once the assembly has resolved. Under reduced motion the
@@ -141,7 +163,7 @@ export default function QuestBotScene({
        window-level pointermove listener — and the two springs behind it —
        alive for the life of the page once the mascot had settled, tracking a
        cursor across sections the mascot could no longer see. */
-    if (!settled || reduced || !ambient) return;
+    if (!settled || reduced || !alive) return;
     const node = stageRef.current;
     if (!node) return;
     /* Touch devices have no hovering pointer to track, and a stray tap would
@@ -202,7 +224,7 @@ export default function QuestBotScene({
       document.removeEventListener("pointerleave", onLeave);
       onLeave();
     };
-  }, [settled, reduced, ambient, pointerX, pointerY]);
+  }, [settled, reduced, alive, pointerX, pointerY]);
 
   useEffect(() => {
     if (runId === 0) return;
@@ -253,7 +275,7 @@ export default function QuestBotScene({
       <div
         key={runId}
         className={cx(styles.robot, runId > 0 && styles.run)}
-        data-ambient={ambient ? "on" : "off"}
+        data-ambient={alive ? "on" : "off"}
       >
         {/* viewBox height trimmed from 470 to 432. The lowest thing the scene
             ever draws is the ground flash at its widest — absolute y ≈ 410 —

@@ -11,6 +11,11 @@
   transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste));
   pointer-events: none;
+  /* Spring-driven from JS, so its scaleX keeps changing for a beat after the
+     scroll itself has stopped — and a JS-written transform, unlike a CSS
+     animation, promotes nothing on its own. Without the hint the browser
+     re-rasterises this gradient every frame of every scroll on every page. */
+  will-change: transform;
 }
 
 /* Commercial CTA geometry: compact, almost-square corners and tracked caps,
@@ -62,15 +67,27 @@
   will-change: transform;
 }
 
-/* …and handed straight back the moment the hero leaves. A promotion hint is
-   a standing reservation, not a one-off cost: left on, these three
-   full-viewport layers stay resident for the entire page. They are at their
-   least affordable exactly where they are least useful — the descent into
-   the services sheet, where the parallax has already run out of range
-   (scrollYProgress is clamped, so the transforms have stopped changing) and
-   the sheet below needs the budget for its own field. HeroImage sets the
-   flag off the same observer that retires the ambience. */
-.cq-hero[data-onscreen="false"] .cq-hero-plane {
+/* …and handed back once the hero has actually stopped moving. A promotion
+   hint is a standing reservation, not a one-off cost: left on, these three
+   full-viewport layers stay resident for the entire page.
+
+   `data-parallax`, NOT `data-onscreen`. The two used to be the same flag,
+   and the release therefore landed a fifth of a viewport BEFORE the parallax
+   finished — de-promoting three full-viewport planes while Motion was still
+   writing a new transform to each of them every frame. That turned the last
+   stretch of the descent, the one frame budget on this page that is already
+   spoken for, into a full re-paint of two gradient stacks, a masked canvas, a
+   vignette and a grain tile per frame. HeroImage now drives this off its own
+   observer, which trails the end of the parallax by a quarter viewport in
+   both directions. */
+.cq-hero[data-parallax="false"] .cq-hero-plane {
+  will-change: auto;
+}
+
+/* The headline's per-word masks are the same kind of standing reservation —
+   one layer per word, hinted for an animation that runs exactly once, during
+   the intro, and is never replayed. Released on the same flag. */
+.cq-hero[data-parallax="false"] .cq-word > span {
   will-change: auto;
 }
 

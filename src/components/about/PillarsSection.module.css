@@ -23,7 +23,11 @@
     radial-gradient(closest-side at 18% 50%, color-mix(in srgb, var(--ab-petroleo) 10%, transparent), transparent 70%),
     radial-gradient(closest-side at 50% 50%, color-mix(in srgb, var(--ab-celeste) 12%, transparent), transparent 70%),
     radial-gradient(closest-side at 82% 50%, color-mix(in srgb, var(--ab-verde) 10%, transparent), transparent 70%);
-  will-change: transform;
+  /* `opacity`, not `transform` — pillarsAuraDrift below animates opacity and
+     nothing else, so hinting transform reserved a standing layer for a
+     property that never changes on this element, for the life of the page,
+     for a 62rem × 26rem triple gradient. */
+  will-change: opacity;
   animation: pillarsAuraDrift 18s ease-in-out infinite;
 }
 

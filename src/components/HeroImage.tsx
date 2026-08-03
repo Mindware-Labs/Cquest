@@ -30,6 +30,8 @@ export default function HeroImage() {
   const tabVisible = useTabVisibility();
   const sectionRef = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(true);
+  /* Separate, LATER gate — see the observers below. */
+  const [parallaxLive, setParallaxLive] = useState(true);
   /* Act one / act two. False means the mascot has the hero to itself. */
   const [revealed, setRevealed] = useState(false);
   const reveal = useCallback(() => setRevealed(true), []);
@@ -65,26 +67,49 @@ export default function HeroImage() {
     reduced ? [1, 1] : [1, 0],
   );
 
-  /* Decorative loops only run while someone can actually see them.
+  /* ── Two gates, deliberately, because they answer two different questions
+        and their right answers land at very different scroll positions.
 
-     The hero is 100svh + the curtain overlap, so a plain observer keeps it
-     "on screen" until its very last pixel clears the top of the window —
-     which is well after the services sheet has slid up and covered it. The
-     -25% top margin retires it once its bottom edge passes the upper
-     quarter of the viewport: by then the mascot, which sits centred in the
-     section, has been off screen for a quarter of a viewport, and what
-     remains below it is a strip of dark field with the sheet already over
-     most of it. Parking there is what keeps the descent into the services
-     section from having to composite two full stages at once. */
+     `onScreen` — "can anyone still see the decorative loops?" The hero is
+     100svh + the curtain overlap, so a plain observer keeps it on screen
+     until its very last pixel clears the top of the window, which is well
+     after the services sheet has slid up and covered it. The -25% top margin
+     retires it once its bottom edge passes the upper quarter of the
+     viewport: by then the mascot, which sits centred in the section, has been
+     off screen for a quarter of a viewport, and what remains below it is a
+     strip of dark field with the sheet already over most of it.
+
+     `parallaxLive` — "are the three planes still MOVING?" This used to be the
+     same flag, and that was the single biggest cost on the descent. The
+     parallax runs to `end start`, i.e. it is still writing new transforms
+     until the hero's bottom edge reaches the top of the window — roughly the
+     last fifth of the descent AFTER the -25% margin has already fired. Taking
+     `will-change: transform` off three full-viewport planes while Motion is
+     still setting a new transform on them every frame is the worst possible
+     trade: the browser drops the composited layers and goes back to
+     re-painting two gradient stacks, a masked canvas, a vignette and a grain
+     tile, sixty times a second, for exactly the stretch where the sheet below
+     also needs the budget. The +25% top margin holds the promotion until the
+     hero is a quarter-viewport clear of the fold — past the end of the
+     parallax in both directions, so it also re-promotes BEFORE the transforms
+     start moving again on the way back up. */
   useEffect(() => {
     const node = sectionRef.current;
     if (!node || !("IntersectionObserver" in window)) return;
-    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), {
-      rootMargin: "-25% 0px 0px 0px",
-      threshold: 0,
-    });
-    io.observe(node);
-    return () => io.disconnect();
+    const ambientIo = new IntersectionObserver(
+      ([entry]) => setOnScreen(entry.isIntersecting),
+      { rootMargin: "-25% 0px 0px 0px", threshold: 0 },
+    );
+    const parallaxIo = new IntersectionObserver(
+      ([entry]) => setParallaxLive(entry.isIntersecting),
+      { rootMargin: "25% 0px 0px 0px", threshold: 0 },
+    );
+    ambientIo.observe(node);
+    parallaxIo.observe(node);
+    return () => {
+      ambientIo.disconnect();
+      parallaxIo.disconnect();
+    };
   }, []);
 
   /* ── Escape hatches out of act one ────────────────────────────────────
@@ -124,10 +149,11 @@ export default function HeroImage() {
       /* Read by styles/site.css to hand the three parallax planes' layers
          back once the hero has left. `will-change: transform` on a
          full-viewport element is a standing reservation of GPU memory, and
-         three of them were being held for the whole page — including across
-         the descent into the services sheet, which is the one moment on this
-         page that needs every byte of it. */
+         three of them were being held for the whole page. `data-parallax`
+         and not `data-onscreen`: the release has to wait for the transforms
+         to stop, not for the loops to park. See the observers above. */
       data-onscreen={onScreen ? "true" : "false"}
+      data-parallax={parallaxLive ? "true" : "false"}
       className="cq-hero relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
       <motion.div

@@ -167,6 +167,8 @@ export default function ServicesCarousel() {
   const sectionRef = useRef<HTMLElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [onScreen, setOnScreen] = useState(false);
+  /* Earlier, cheaper gate: layer promotion only — see the observer below. */
+  const [approaching, setApproaching] = useState(false);
   /* Separate, later gate for the one layer that is genuinely expensive —
      see the observer below. */
   const [sceneReady, setSceneReady] = useState(false);
@@ -205,14 +207,38 @@ export default function ServicesCarousel() {
     const node = sheetRef.current;
     if (!node || !("IntersectionObserver" in window)) {
       setOnScreen(true);
+      setApproaching(true);
       return;
     }
-    const io = new IntersectionObserver(
+    const ambientIo = new IntersectionObserver(
       ([entry]) => setOnScreen(entry.isIntersecting),
       { rootMargin: "0px 0px -55% 0px", threshold: 0 },
     );
-    io.observe(node);
-    return () => io.disconnect();
+    /* ── …and a much earlier gate for the compositor ──────────────────────
+       Promotion is not the same question as animation, and hanging both off
+       the -55% threshold above meant the browser was allocating the sheet's
+       composited layers — a full-viewport surface with three radial
+       gradients and a 44px shadow, plus the two scroll layers inside the
+       slide — halfway down the descent, on the exact frames where the hero's
+       parallax and the sheet's own arrival are both mid-flight. Layer
+       allocation is a synchronous rasterisation; landing it there is a
+       guaranteed hitch, and it read as the handoff snagging.
+
+       -8% is "the reader has begun to scroll": a full 90% of a viewport of
+       lead before the sheet's top edge reaches the fold, spent at a moment
+       when nothing else is competing. The memory is 25MB of texture that the
+       next second of scrolling was always going to need, and it is handed
+       straight back when the section leaves at the far end. */
+    const promoteIo = new IntersectionObserver(
+      ([entry]) => setApproaching(entry.isIntersecting),
+      { rootMargin: "0px 0px -8% 0px", threshold: 0 },
+    );
+    ambientIo.observe(node);
+    promoteIo.observe(node);
+    return () => {
+      ambientIo.disconnect();
+      promoteIo.disconnect();
+    };
   }, []);
 
   /* ── …and the one layer that is not cheap ─────────────────────────────
@@ -383,6 +409,9 @@ export default function ServicesCarousel() {
         /* Stays on the sheet, not the track: styles/carousel.css hangs every
            `cq-v2-*` pause rule off `.cq-carousel-sheet[data-ambient-active]`. */
         data-ambient-active={tabVisible && onScreen && !reduced}
+        /* …and every `will-change` off this one, which turns on nearly a
+           viewport earlier. See the two observers above. */
+        data-promote={approaching && !reduced}
         className="cq-carousel-sheet sticky top-0 isolate h-dvh w-full overflow-hidden text-foreground"
       >
         {/* Pages overlap absolutely inside the clipped stage, so the outgoing
