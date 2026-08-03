@@ -198,7 +198,7 @@
 }
 
 .cta:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .cta:focus-visible {
@@ -210,6 +210,7 @@
   /* Held back from the container's outer edge so the figure's outermost
      avatars do not sit flush against the section's own margin. */
   padding-inline: clamp(0rem, 2vw, 1.5rem);
+  filter: drop-shadow(0 1.4rem 2.6rem rgba(2, 16, 22, 0.24));
 }
 
 .metricsHeading h2 {

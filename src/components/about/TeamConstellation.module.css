@@ -1,8 +1,4 @@
-/* ── Team figure — the /team org chart in miniature ──────────────────────
-   Sits on the Metrics band's dark surface, so every value here is keyed to
-   white and celeste rather than to the light-surface tokens the /team page's
-   own chart uses. */
-
+/* Team figure — the /team org chart distilled into one coordinated system. */
 .figure {
   display: block;
   width: 100%;
@@ -10,73 +6,140 @@
   overflow: visible;
 }
 
-.rule {
-  stroke: color-mix(in srgb, var(--ab-celeste) 42%, transparent);
+.stageGlow {
+  fill: url("#cqTeamStageGlow");
 }
 
-/* The root reads as the whole company: solid celeste, and the one filled
-   shape in the figure — everything below it is an empty frame. */
+.rule {
+  stroke: color-mix(in srgb, var(--ab-celeste) 34%, transparent);
+}
+
+.junctions {
+  fill: color-mix(in srgb, var(--ab-celeste) 58%, transparent);
+}
+
+/* The standing route stays restrained; this short highlight is the one
+   signature gesture. Dash offset and opacity avoid SVG layout work. */
+.signal line {
+  stroke: color-mix(in srgb, var(--ab-celeste) 92%, white);
+  stroke-width: 1.5;
+  stroke-dasharray: 0.18 0.82;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation: cq-team-signal 6.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.signal .signalStem { animation-delay: 0.28s; }
+.signal .signalBus { animation-delay: 0.66s; }
+
+@keyframes cq-team-signal {
+  0%, 3% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  6% { opacity: 0.95; }
+  17% {
+    stroke-dashoffset: 0;
+    opacity: 0.95;
+  }
+  23%, 100% {
+    stroke-dashoffset: -0.18;
+    opacity: 0;
+  }
+}
+
+/* The root reads as the company: the only fully branded portrait and the
+   origin of every route. Concentric rings give it hierarchy without glow. */
 .rootDisc {
-  fill: color-mix(in srgb, var(--ab-celeste) 22%, transparent);
-  stroke: var(--ab-celeste);
-  stroke-width: 1.25;
+  fill: url("#cqTeamRootFill");
+  stroke: color-mix(in srgb, var(--ab-celeste) 92%, white);
+  stroke-width: 1.4;
+}
+
+.rootRim {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.11);
+  stroke-width: 0.75;
+}
+
+.rootHalo {
+  fill: color-mix(in srgb, var(--ab-celeste) 5%, transparent);
+  stroke: color-mix(in srgb, var(--ab-celeste) 16%, transparent);
+  stroke-width: 0.75;
 }
 
 .rootFigure {
-  fill: color-mix(in srgb, var(--ab-celeste) 92%, white);
+  fill: color-mix(in srgb, var(--ab-celeste) 88%, white);
 }
 
-/* A person: a dashed frame waiting for a photograph, with the silhouette
-   inside it held well back so the figure reads as empty rather than as a
-   drawing of someone in particular. */
-.nodeDisc {
-  fill: rgba(255, 255, 255, 0.045);
-  stroke: rgba(255, 255, 255, 0.28);
+.rootPulse {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ab-celeste) 78%, white);
   stroke-width: 1;
-  stroke-dasharray: 3 4;
+  opacity: 0;
+  animation: cq-team-root-pulse 6.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes cq-team-root-pulse {
+  0%, 2% { transform: scale(0.92); opacity: 0; }
+  7% { opacity: 0.62; }
+  18% { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* Each person remains an honest empty portrait frame until real photography
+   is available. A quiet solid shell plus a dotted inner rim looks deliberate
+   at both desktop and mobile scale. */
+.nodeDisc {
+  fill: url("#cqTeamNodeFill");
+  stroke: rgba(255, 255, 255, 0.31);
+  stroke-width: 0.9;
+}
+
+.nodeRim {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.11);
+  stroke-width: 0.7;
+  stroke-dasharray: 1.5 3.5;
+}
+
+.nodeHalo {
+  fill: color-mix(in srgb, var(--ab-celeste) 2.5%, transparent);
+  stroke: color-mix(in srgb, var(--ab-celeste) 9%, transparent);
+  stroke-width: 0.75;
 }
 
 .nodeFigure {
-  fill: rgba(255, 255, 255, 0.3);
+  fill: rgba(255, 255, 255, 0.36);
 }
 
-/* Ambient: one ring expanding off each person in turn, ~7s apart. Transform
-   and opacity only, and it holds its breath with the rest of the section —
-   AboutSection sets `data-ambient-active` on the wrapper. */
+/* A tight reception bloom answers the travelling signal. It never grows far
+   enough to overlap the neighbouring portraits. */
 .pulse {
   fill: none;
-  stroke: var(--ab-celeste);
+  stroke: color-mix(in srgb, var(--ab-celeste) 86%, white);
   stroke-width: 1;
   opacity: 0;
-  animation: cq-team-pulse 7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: cq-team-pulse 6.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
 @keyframes cq-team-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.55;
-  }
-  60% {
-    opacity: 0.12;
-  }
-  100% {
-    transform: scale(1.75);
-    opacity: 0;
-  }
+  0%, 2% { transform: scale(0.94); opacity: 0; }
+  6% { opacity: 0.7; }
+  18% { transform: scale(1.32); opacity: 0; }
+  100% { transform: scale(1.32); opacity: 0; }
 }
 
-/* Hung off the DATA ATTRIBUTE, not off AboutSection's class: that class is
-   CSS-Modules-hashed and unreachable from this file, whereas the attribute it
-   sets is literal. */
-:global([data-ambient-active="false"]) .pulse {
+:global([data-ambient-active="false"]) .pulse,
+:global([data-ambient-active="false"]) .rootPulse,
+:global([data-ambient-active="false"]) .signal line {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pulse {
+  .pulse,
+  .rootPulse,
+  .signal line {
     animation: none;
   }
 }

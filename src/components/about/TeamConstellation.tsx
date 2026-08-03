@@ -82,7 +82,22 @@ export default function TeamConstellation({ reduced }: { reduced: boolean }) {
         <clipPath id="cqTeamAvatarClip">
           <circle cx="32" cy="32" r="32" />
         </clipPath>
+        <radialGradient id="cqTeamStageGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="var(--ab-celeste)" stopOpacity="0.13" />
+          <stop offset="58%" stopColor="var(--ab-celeste)" stopOpacity="0.035" />
+          <stop offset="100%" stopColor="var(--ab-celeste)" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="cqTeamRootFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="var(--ab-celeste)" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="var(--ab-celeste)" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id="cqTeamNodeFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="0.085" />
+          <stop offset="100%" stopColor="white" stopOpacity="0.025" />
+        </linearGradient>
       </defs>
+
+      <ellipse cx="210" cy="112" rx="205" ry="108" className={styles.stageGlow} />
 
       {/* ── Connectors ─────────────────────────────────────────────────
           Drawn in the order a hand would: down from the root, out along the
@@ -108,6 +123,35 @@ export default function TeamConstellation({ reduced }: { reduced: boolean }) {
         ))}
       </g>
 
+      {!reduced && (
+        <g className={styles.signal} strokeLinecap="round">
+          <line x1={210} y1={R_ROOT + 40} x2={210} y2={BUS_Y} className={styles.signalStem} pathLength={1} />
+          <line
+            x1={NODE_X[0]}
+            y1={BUS_Y}
+            x2={NODE_X[NODE_X.length - 1]}
+            y2={BUS_Y}
+            className={styles.signalBus}
+            pathLength={1}
+          />
+          {NODE_X.map((x, index) => (
+            <line
+              key={`signal-${x}`}
+              x1={x}
+              y1={BUS_Y}
+              x2={x}
+              y2={NODE_Y - R_NODE}
+              pathLength={1}
+              style={{ animationDelay: `${1.02 + index * 0.1}s` }}
+            />
+          ))}
+        </g>
+      )}
+
+      <g className={styles.junctions}>
+        {NODE_X.map((x) => <circle key={`junction-${x}`} cx={x} cy={BUS_Y} r="1.6" />)}
+      </g>
+
       {/* ── The root ───────────────────────────────────────────────── */}
       <motion.g
         variants={{
@@ -116,10 +160,21 @@ export default function TeamConstellation({ reduced }: { reduced: boolean }) {
         }}
         style={{ transformOrigin: `210px 40px` }}
       >
+        <circle cx={210} cy={40} r={R_ROOT + 9} className={styles.rootHalo} />
         <circle cx={210} cy={40} r={R_ROOT} className={styles.rootDisc} />
+        <circle cx={210} cy={40} r={R_ROOT - 3.5} className={styles.rootRim} />
         <g className={styles.rootFigure}>
           <Avatar cx={210} cy={40} r={R_ROOT} />
         </g>
+        {!reduced && (
+          <circle
+            cx={210}
+            cy={40}
+            r={R_ROOT + 3}
+            className={styles.rootPulse}
+            style={{ transformOrigin: "210px 40px" }}
+          />
+        )}
       </motion.g>
 
       {/* ── The people ─────────────────────────────────────────────────
@@ -138,7 +193,9 @@ export default function TeamConstellation({ reduced }: { reduced: boolean }) {
           }}
           style={{ transformOrigin: `${x}px ${NODE_Y}px` }}
         >
+          <circle cx={x} cy={NODE_Y} r={R_NODE + 6} className={styles.nodeHalo} />
           <circle cx={x} cy={NODE_Y} r={R_NODE} className={styles.nodeDisc} />
+          <circle cx={x} cy={NODE_Y} r={R_NODE - 3.5} className={styles.nodeRim} />
           <g className={styles.nodeFigure}>
             <Avatar cx={x} cy={NODE_Y} r={R_NODE} />
           </g>
@@ -146,9 +203,9 @@ export default function TeamConstellation({ reduced }: { reduced: boolean }) {
             <circle
               cx={x}
               cy={NODE_Y}
-              r={R_NODE}
+              r={R_NODE + 1}
               className={styles.pulse}
-              style={{ animationDelay: `${index * 1.4}s`, transformOrigin: `${x}px ${NODE_Y}px` }}
+              style={{ animationDelay: `${1.34 + index * 0.1}s`, transformOrigin: `${x}px ${NODE_Y}px` }}
             />
           )}
         </motion.g>

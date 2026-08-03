@@ -1,35 +1,39 @@
 /* ── Team hero ───────────────────────────────────────────────────────────
-   The same dark register the home page's team band opens on, so arriving here
-   from that section reads as walking through a door rather than landing on a
-   different site. Ink base, one celeste bloom, a hairline field — the hero's
-   own material, seen a third time.
+   Rebuilt away from the systems hero, which it had been a near-copy of:
+   centred composition, blueprint hairline grid, a radial celeste bloom at the
+   top, a signals row with dashes between the items. Four borrowed signatures
+   is not a family resemblance, it is the same page twice.
 
-   Carries `data-hero-boundary` (see the element in Hero.tsx): the Navbar
-   watches for that attribute to know when to hand its light chrome back. */
+   None of them survive here. The composition is asymmetric, the background
+   carries no grid, the bloom is gone, and the signals row is gone with it.
+   What the page is about supplies the idea instead: a wall of portraits. */
+
 .hero {
   position: relative;
   padding-top: 7.5rem;
   padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
-  background:
-    radial-gradient(circle at 50% 8%, color-mix(in srgb, var(--brand-celeste) 15%, transparent), transparent 32rem),
-    linear-gradient(180deg, #071116 0%, #0a171e 62%, #081116 100%);
+  /* Ink, and nothing on top of it. Every gradient this hero used to stack —
+     the bloom especially — was doing the systems page's job. */
+  background: linear-gradient(180deg, #071116 0%, #0a171e 62%, #081116 100%);
   color: white;
   overflow: clip;
 }
 
-/* Hairline field, masked so it frames the copy instead of running under it. */
-.hero::before {
-  content: "";
+.vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(116, 195, 213, 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(116, 195, 213, 0.05) 1px, transparent 1px);
-  background-position: center top;
-  background-size: 3.4rem 3.4rem;
-  mask-image: radial-gradient(ellipse 88% 78% at 50% 26%, #000 28%, transparent 76%);
-  -webkit-mask-image: radial-gradient(ellipse 88% 78% at 50% 26%, #000 28%, transparent 76%);
+  background: radial-gradient(
+    114% 82% at 62% 44%,
+    transparent 38%,
+    color-mix(in srgb, var(--ink) 72%, transparent) 100%
+  );
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .hero::after {
@@ -41,16 +45,34 @@
   opacity: 0.4;
 }
 
-.heroCopy {
+/* ── Composition ─────────────────────────────────────────────────────────
+   Statement left, wall right. Asymmetric on purpose — the systems hero is
+   centred, and a centred axis is the single loudest thing two heroes can
+   share. The wall takes the larger share because it is the object with the
+   scale in it. */
+.grid {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
   align-items: center;
-  text-align: center;
-  padding-top: clamp(1.5rem, 4vh, 3rem);
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  padding-top: clamp(1rem, 3vh, 2.5rem);
 }
 
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* A rule running INTO the eyebrow rather than a bare label above the
+   headline — the other half of moving off a centred axis. */
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -58,13 +80,19 @@
   color: var(--brand-celeste);
 }
 
+.eyebrowRule {
+  width: clamp(1.75rem, 4vw, 3rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brand-celeste));
+}
+
 .headline {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 1.1rem;
+  align-items: flex-start;
+  margin-top: 1.25rem;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2.5rem, 5.4vw, 4.6rem);
+  font-size: clamp(2.4rem, 4.6vw, 3.9rem);
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 0.98;
@@ -79,7 +107,7 @@
    than the em, so Josefin Sans' ascenders and descenders stick out of it and
    `overflow: hidden` would shave them. The padding pushes the clip edge off
    the glyphs and the negative margin gives the space straight back, leaving
-   the tight leading unchanged. Same construction as the systems hero. */
+   the tight leading unchanged. */
 .lineMask {
   display: block;
   overflow: hidden;
@@ -98,7 +126,7 @@
 }
 
 .lead {
-  max-width: 56ch;
+  max-width: 46ch;
   margin-top: 1.35rem;
   font-size: clamp(0.95rem, 1.1vw, 1.05rem);
   line-height: 1.8;
@@ -109,7 +137,6 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 0.75rem;
   margin-top: 1.85rem;
 }
@@ -169,29 +196,120 @@
   outline-offset: 3px;
 }
 
-.signal {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: clamp(1.75rem, 4vh, 2.75rem);
+/* ── The wall ────────────────────────────────────────────────────────────
+   Three columns of portrait frames, deliberately taller than the box that
+   holds them so they run off the top and bottom edges.
+
+   The overflow is the point. A finite block of empty frames reads as empty
+   frames — as something missing. A wall that leaves the frame in both
+   directions reads as SCALE: the eye takes it for a fragment of something
+   larger, and the emptiness stops being an absence and becomes the size of
+   the organisation. */
+.wall {
+  position: relative;
+  height: clamp(21rem, 46vh, 30rem);
+  overflow: hidden;
 }
 
-.signal span {
+.wallInner {
+  position: absolute;
+  /* Bleed for the drift below — the columns must never run out of tiles
+     inside the masked band. */
+  inset: -16% 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  /* On the inner element, not on `.wall`: the caption is a sibling and must
+     not be faded along with the tiles. */
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+
+.wallColumn {
   display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  will-change: transform;
+  animation: cq-wall-drift 26s ease-in-out infinite alternate;
+}
+
+/* Offset like brickwork so the three columns never line up into rows, and
+   drifting at three different rates in two directions so they never beat
+   together — the same rule the carousel's six orbs follow. */
+.wallColumn[data-column="1"] {
+  margin-top: 8%;
+  animation-duration: 33s;
+  animation-direction: alternate-reverse;
+}
+
+.wallColumn[data-column="2"] {
+  margin-top: -5%;
+  animation-duration: 29s;
+}
+
+@keyframes cq-wall-drift {
+  from {
+    transform: translateY(-2.5%);
+  }
+  to {
+    transform: translateY(2.5%);
+  }
+}
+
+.wallInner[data-still="true"] .wallColumn {
+  animation: none;
+}
+
+/* One frame. Dashed, because a solid border would read as a card that failed
+   to load rather than as a place held open on purpose. */
+.tile {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  aspect-ratio: 3 / 4;
+  border-radius: 2px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+
+.tileArt {
+  width: 44%;
+  height: auto;
+  fill: rgba(255, 255, 255, 0.17);
+}
+
+/* Says out loud what the wall is. Without it the frames are ambiguous — a
+   stylistic choice or missing assets, and the reader has no way to tell. */
+.wallCaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: inline-flex;
   align-items: center;
-  font-size: 0.7rem;
+  gap: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
+  color: rgba(255, 255, 255, 0.38);
 }
 
-.signal span:not(:last-child)::after {
+.wallCaption::before {
   content: "";
-  width: 2.5rem;
+  width: 1.5rem;
   height: 1px;
-  margin-inline: 1.1rem;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+@media (max-width: 64rem) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: clamp(2.25rem, 6vw, 3rem);
+  }
+
+  .wall {
+    height: clamp(13rem, 32vh, 17rem);
+  }
 }
 
 @media (max-width: 42rem) {
@@ -213,9 +331,10 @@
   .secondaryCta {
     width: 100%;
   }
+}
 
-  .signal span:not(:last-child)::after {
-    width: 1rem;
-    margin-inline: 0.5rem;
+@media (prefers-reduced-motion: reduce) {
+  .wallColumn {
+    animation: none;
   }
 }
