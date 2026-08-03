@@ -1,0 +1,84 @@
+/* ── 404 scene ────────────────────────────────────────────
+   Reprises the hero's "lit stage" logic (field + vignette + grain) but in
+   the light register every non-hero page runs on, since Navbar renders
+   un-inverted here — see Navbar.tsx's `inverse` gate. */
+.scene {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    72% 60% at 50% 38%,
+    color-mix(in srgb, var(--brand-celeste) 10%, transparent),
+    transparent 70%
+  );
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* The oversized "404" ghosting the whole composition — editorial texture,
+   not a second copy of the eyebrow. Clipped to the section so it can never
+   force horizontal scroll on narrow viewports. */
+.ghostNumeral {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -52%);
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 600;
+  font-size: clamp(9rem, 32vw, 22rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--brand-petroleo);
+  opacity: 0.05;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(6.5rem, 14vw, 9rem) 1.5rem clamp(4rem, 8vw, 6rem);
+  text-align: center;
+}
+
+.rule {
+  height: 1px;
+  width: clamp(3rem, 8vw, 4.5rem);
+  transform-origin: center;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--brand-celeste),
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghostNumeral {
+    opacity: 0.045;
+  }
+}
