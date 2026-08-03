@@ -25,21 +25,19 @@ const CALL_ROUTES = [
   { d: "M50 50 Q 66 74 72 88", x: 72, y: 88, delay: "-11.8s" },
 ] as const;
 
-/* ── Why the map is withheld until `active` ──────────────────────────────
+/* ── Why the map is paused until `active` ────────────────────────────────
    This is the one layer in the section that is NOT free. `stroke-dashoffset`
-   is not a compositor property, so the twelve comet paths repaint the whole
-   ~960px stage on the main thread every frame they run — and this scene is
+   is not a compositor property, so the comet paths repaint the whole ~960px
+   stage on the main thread every frame they run — and this scene is
    slide ONE, so it is the scene that would be doing that for the entire
    descent out of the hero, competing with the mascot, the reactive grid and
    three parallax planes for the same frame budget. That descent is exactly
    where the section felt heavy.
 
-   Withheld, not paused. `animation-play-state: paused` still leaves the
-   subtree mounted and, because every comet runs on a negative delay, freezes
-   two of them mid-flight as visible static streaks on a sheet the reader can
-   already see. Not rendering it costs nothing and shows nothing; when it
-   mounts the negative delays put it straight into mid-cycle, so the map
-   arrives already in traffic and the start is never visible.
+   The subtree stays mounted so its construction never lands on a scroll
+   frame. While inactive the map is transparent and all its clocks are
+   paused, so negative delays cannot expose a frozen streak. It fades in only
+   once the sticky settle is complete.
 
    The bloom and rings stay unconditional — they are scale/opacity on two
    elements, they carry the field's identity while the map is away, and
@@ -55,8 +53,7 @@ export default function CallCenterScene({ active }: { active: boolean }) {
       <span className="cq-v2-ring" style={{ animationDelay: "-3.5s" }} />
       {/* The map: crawling meridians, the standing route network, the
           calls in flight, and their landing points. */}
-      {active && (
-      <div className="cq-v2-net">
+      <div className="cq-v2-net" data-running={active ? "true" : "false"}>
         <svg viewBox="0 0 100 100" aria-hidden>
           {/* ── The origin fade ────────────────────────────────────────
               What used to be a CSS mask on this <svg>. The comets animate
@@ -85,10 +82,6 @@ export default function CallCenterScene({ active }: { active: boolean }) {
               <stop offset="0.54" stopColor="var(--svc)" stopOpacity="0" />
               <stop offset="0.76" stopColor="var(--svc)" stopOpacity="1" />
             </radialGradient>
-            <radialGradient id="cqNetCometGlow" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
-              <stop offset="0.54" stopColor="color-mix(in srgb, var(--svc-glow) 45%, transparent)" stopOpacity="0" />
-              <stop offset="0.76" stopColor="color-mix(in srgb, var(--svc-glow) 45%, transparent)" stopOpacity="1" />
-            </radialGradient>
           </defs>
           <circle className="cq-v2-graticule" cx="50" cy="50" r="36" strokeDasharray="2 4.5" />
           <circle
@@ -102,7 +95,6 @@ export default function CallCenterScene({ active }: { active: boolean }) {
           {CALL_ROUTES.map((route) => (
             <g key={route.d} style={{ "--cd": route.delay } as CSSProperties}>
               <path className="cq-v2-route" d={route.d} pathLength={1} />
-              <path className="cq-v2-comet cq-v2-comet-glow" d={route.d} pathLength={1} />
               <path className="cq-v2-comet" d={route.d} pathLength={1} />
             </g>
           ))}
@@ -117,7 +109,6 @@ export default function CallCenterScene({ active }: { active: boolean }) {
           />
         ))}
       </div>
-      )}
       <span
         className="cq-v2-orb cq-v2-orb--cc-a left-[-11rem] top-[-10rem] h-[34rem] w-[34rem]"
         style={{ "--orb": "color-mix(in srgb, var(--svc) 30%, transparent)" } as CSSProperties}

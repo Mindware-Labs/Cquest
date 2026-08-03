@@ -30,6 +30,18 @@
     #fafdff;
 }
 
+/* Promote the surfaces involved in the sticky handoff while the sheet is
+   approaching or visible. The observer enables this well before the pin, so
+   the browser never has to allocate these layers on the braking frame. */
+.cq-carousel-sheet[data-ambient-active="true"] {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.cq-carousel-sheet[data-ambient-active="true"] .cq-carousel-scroll-layer {
+  will-change: transform;
+}
+
 /* ── V2 carousel — per-service living backdrops ──────────
    Each slide carries its own ambient scene, THEMED to its business line and
    painted in its service colour, so a page turn re-lights the whole field
@@ -166,6 +178,19 @@
   width: min(60rem, 110vw);
   aspect-ratio: 1;
   translate: -50% -50%;
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out);
+}
+
+.cq-v2-net[data-running="true"] {
+  opacity: 1;
+}
+
+.cq-v2-net[data-running="false"] .cq-v2-graticule,
+.cq-v2-net[data-running="false"] .cq-v2-comet,
+.cq-v2-net[data-running="false"] .cq-v2-ping,
+.cq-v2-net[data-running="false"] .cq-v2-ping::before {
+  animation-play-state: paused;
 }
 
 /* Routes and streaks fade out toward the origin, so every call visibly
@@ -234,13 +259,6 @@
   opacity: 0;
   animation: cq-v2-comet 14s linear infinite;
   animation-delay: var(--cd, 0s);
-}
-
-/* Soft light underlay beneath the streak — the glow rides the same clock;
-   its stroke colour carries the alpha, so both share one keyframe set. */
-.cq-v2-comet-glow {
-  stroke: url(#cqNetCometGlow);
-  stroke-width: 0.8;
 }
 
 @keyframes cq-v2-comet {

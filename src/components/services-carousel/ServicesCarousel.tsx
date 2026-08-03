@@ -217,36 +217,10 @@ export default function ServicesCarousel() {
 
   /* ── …and the one layer that is not cheap ─────────────────────────────
      CallCenterScene's connection map is the only thing on this surface that
-     costs main-thread time: `stroke-dashoffset` is not a compositor
-     property, so its twelve comet paths repaint a ~960px stage on every
-     frame they run. It is also, being slide one, the scene that would be
-     doing that for the whole descent out of the hero — which is precisely
-     where the section felt heavy.
-
-     -78% is chosen against the hero's own observer rather than by feel. The
-     hero retires its ambience at `-25%` top margin, i.e. once roughly 75dvh
-     have been scrolled; this arms the map at 100 − 22 = 78dvh. The two
-     windows no longer overlap AT ALL: for the entire descent exactly one of
-     the two stages is doing main-thread work. It still lands a fifth of a
-     viewport before the pin, so the cost is paid during a calm stretch
-     rather than on the braking frames.
-
-     A mount gate, not a pause. See CallCenterScene for why pausing this
-     particular subtree is worse than not having it. */
-  useEffect(() => {
-    const node = sheetRef.current;
-    if (!node || !("IntersectionObserver" in window)) {
-      setSceneReady(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      ([entry]) => setSceneReady(entry.isIntersecting),
-      { rootMargin: "0px 0px -78% 0px", threshold: 0 },
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, []);
-
+     costs main-thread time: `stroke-dashoffset` repaints its SVG every frame.
+     The map now mounts with the slide but remains transparent and paused
+     throughout the approach. Its clock starts only after the sticky settle,
+     so neither SVG construction nor continuous paint shares the handoff. */
   /* ── The pin ─────────────────────────────────────────────────────────
      The section is TRACK_DVH tall and its stage is `position: sticky;
      top: 0`, so reaching the section parks the stage on screen and the
@@ -284,9 +258,17 @@ export default function ServicesCarousel() {
      that meant invoking a state updater sixty times a second for the length
      of the section, on the main thread, next to the page turns. */
   const indexRef = useRef(0);
+  const sceneReadyRef = useRef(false);
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const current = indexRef.current;
+    const shouldRunScene =
+      progress >= STAGE_TAIL_BAND && progress < BAND + HYSTERESIS;
+    if (shouldRunScene !== sceneReadyRef.current) {
+      sceneReadyRef.current = shouldRunScene;
+      setSceneReady(shouldRunScene);
+    }
+
     let next = current;
     /* Walk toward the band the scroll is actually in, rather than
        snapping straight to floor(progress × N) — a fast flick that skips
@@ -438,7 +420,7 @@ export default function ServicesCarousel() {
             <motion.div
               aria-hidden
               style={reduced ? undefined : { y: fieldY }}
-              className="pointer-events-none absolute inset-x-0 -inset-y-12"
+              className="cq-carousel-scroll-layer pointer-events-none absolute inset-x-0 -inset-y-12"
             >
               <SlideBackdrop service={service} active={sceneReady} />
             </motion.div>
@@ -451,7 +433,7 @@ export default function ServicesCarousel() {
             <motion.div
               style={reduced ? undefined : { y: stageY }}
               variants={reduced ? undefined : stageVariants}
-              className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
+              className="cq-carousel-scroll-layer relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
             >
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
