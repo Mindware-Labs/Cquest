@@ -129,7 +129,11 @@
    because it is the wider object and the one the link is about. */
 .lede {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  /* The figure's share is up from 1.08. At the old split it sat centred in
+     its column with air on all four sides, which reads as a picture placed
+     in a box; a diagram has to look like it was drawn onto the page, and
+     that means reaching its own margins. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
   align-items: center;
   gap: clamp(2.5rem, 5vw, 4.5rem);
 }
@@ -206,17 +210,26 @@
   outline-offset: 3px;
 }
 
+/* The figure now carries its own margin: the datum line runs wider than the
+   portrait row, so the drawing already holds itself off the column edges and
+   an outer inset only shrank it.
+
+   The drop-shadow is gone with it. A dark shadow over a dark field was worth
+   almost nothing to look at, and it was a filter sitting on an SVG with three
+   infinite animations inside — every frame of the travelling signal re-ran a
+   2.6rem blur over the whole figure. */
 .figure {
-  /* Held back from the container's outer edge so the figure's outermost
-     avatars do not sit flush against the section's own margin. */
-  padding-inline: clamp(0rem, 2vw, 1.5rem);
-  filter: drop-shadow(0 1.4rem 2.6rem rgba(2, 16, 22, 0.24));
+  padding-inline: 0;
 }
 
+/* Display type and figures share ONE size. That is the tension in this band:
+   the same 4.25rem at weight 600 on the left and weight 200 on the right,
+   with nothing but tracked micro-caps between them. A heading that outranks
+   its own evidence is a section arguing with itself. */
 .metricsHeading h2 {
-  max-width: 22ch;
+  max-width: 15ch;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2.5rem, 4.3vw, 4rem);
+  font-size: clamp(2.5rem, 4.4vw, 4.25rem);
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1.02;
@@ -224,13 +237,17 @@
   color: white;
 }
 
-/* The gap now scales with the viewport, not just with the type. At the old
-   flat 4rem the heading and the ledger stayed a compact cluster adrift in a
-   screen-tall box, which reads as a short section that was padded out rather
-   than as a composition. Growing it with `vh` lets the pair span most of the
-   frame — the void between them is the part the sweeping glow lights, and it
-   is also where the team portraits will eventually sit. Floored at 3.5rem so
-   a landscape phone never collapses the two into each other. */
+/* The gap scales with the viewport, not just with the type: at a flat 4rem
+   the heading and the ledger stayed a compact cluster adrift in a screen-tall
+   box, which reads as a section that was padded out rather than as a
+   composition. Floored at 3.5rem so a landscape phone never collapses the two
+   into each other.
+
+   What crosses that gap is the point. It used to be nothing — the band was a
+   picture, then a void, then a table, and the void read as unfinished because
+   structurally it was. The risers below spend about two thirds of it, so the
+   distance is now something the diagram travels rather than space the layout
+   is holding open. */
 .metricList {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -240,35 +257,106 @@
 
 .metricList > div {
   position: relative;
-  min-height: 10rem;
+  min-height: 11.5rem;
   padding: 1.85rem 1.5rem 1.5rem;
-  transition: background 320ms var(--ease-out), transform 320ms var(--ease-out);
+  transition: background 320ms var(--ease-out);
 }
 
 .metricList > div:hover {
   background: rgba(255, 255, 255, 0.03);
-  transform: translateY(-2px);
 }
 
 .metricList > div + div { border-left: 1px solid var(--ab-rule-invert); }
 
+/* ── Where the riser lands ───────────────────────────────────────────────
+   The junction, sitting on the ledger's top rule at exactly the mix
+   TeamConstellation paints its own bus junctions in (celeste 58%). The two
+   drawings have to agree to the value or the eye files them as two ideas
+   that merely look similar. */
+.metricList > div::before {
+  content: "";
+  position: absolute;
+  top: -1.5px;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ab-celeste) 58%, transparent);
+}
+
+/* ── The riser ───────────────────────────────────────────────────────────
+   Drawn top-down (`transform-origin: top`) so it arrives at the ledger the
+   way the chart's drops arrive at their portraits, and faded out at its far
+   end so it emerges from the field rather than starting at a hard edge —
+   there is nothing up there for it to start ON.
+
+   Sized against the viewport, like the void it crosses: it spends roughly
+   two thirds of the gap and leaves the last third open, so the drawing
+   reaches down without closing the distance. Closing it would make the band
+   a table with a picture on top; leaving it open is the tension. */
+.riser {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  /* Not translateX(-50%): the transform channel belongs to the draw. */
+  margin-left: -0.5px;
+  width: 1px;
+  height: clamp(2.5rem, 8vh, 5.5rem);
+  transform-origin: top center;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--ab-celeste) 40%, transparent)
+  );
+  transition: background 320ms var(--ease-out);
+}
+
+/* Hover answers in the drawing's own language: the column's line carries
+   current and its figure warms. This replaces a 2px lift — a card gesture on
+   something that is not a card and does not do anything when clicked. */
+.metricList > div:hover .riser {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--ab-celeste) 88%, white)
+  );
+}
+
+.metricList > div:hover dd {
+  color: color-mix(in srgb, var(--ab-celeste) 62%, white);
+}
+
+/* Tighter and tracked harder than the old 0.06em: these caps are the only
+   small type left in the band, and their job is to be the quiet register
+   against figures four times their size. Tinted from the surface's own hue
+   rather than sitting at white 65%, which on a teal ink reads as grey.
+
+   Position stays `static` on purpose. The riser is a child of this element
+   but has to resolve against the CELL, so that `bottom: 100%` lands it on
+   the ledger's top rule rather than on the label's own box. */
 .metricList dt {
   min-height: 2.5rem;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--ab-celeste) 26%, rgba(255, 255, 255, 0.82));
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .metricList dd {
-  margin-top: 1.5rem;
+  margin-top: 1.35rem;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(2.25rem, 3.2vw, 3rem);
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.5rem, 4.4vw, 4.25rem);
+  /* 200, not 300. Josefin ships a real 100–700 axis, so the hairline cut is
+     an actual master rather than a browser's guess — and at this size the
+     difference between a light figure and a thin one is the whole
+     difference between "large number" and "engraved". */
+  font-weight: 200;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
   color: var(--ab-celeste);
+  transition: color 320ms var(--ease-out);
 }
 
 @media (max-width: 64rem) {
@@ -276,16 +364,28 @@
      width here — it is the one element that reads BETTER wide, and squeezing
      it into a half-column was what made the two-up layout stop working. */
   .lede { grid-template-columns: 1fr; gap: clamp(2.25rem, 6vw, 3.25rem); }
-  .figure { padding-inline: 0; }
   .metricList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metricList > div:nth-child(3) { border-left: 0; }
   .metricList > div:nth-child(n + 3) { border-top: 1px solid var(--ab-rule-invert); }
+
+  /* The risers go with the four-across row that gave them their meaning.
+     Once the ledger wraps, half of them would hang off an interior rule in
+     the middle of the list, which is not the diagram continuing — it is the
+     same mark meaning something else. A stacked ledger sits directly under
+     the figure anyway, so the distance they were drawn to cross is gone. */
+  .riser,
+  .metricList > div::before {
+    display: none;
+  }
+
+  .metricList dd { font-size: clamp(2.5rem, 7vw, 3.5rem); }
 }
 
 @media (max-width: 42rem) {
   .metricsHeading h2 { font-size: clamp(2.2rem, 11vw, 3.2rem); }
   .cta { width: 100%; justify-content: center; }
   .metricList { grid-template-columns: 1fr; }
-  .metricList > div { min-height: 8rem; }
+  .metricList > div { min-height: 8.5rem; }
   .metricList > div + div { border-top: 1px solid var(--ab-rule-invert); border-left: 0; }
+  .metricList dd { font-size: clamp(2.4rem, 13vw, 3.25rem); }
 }

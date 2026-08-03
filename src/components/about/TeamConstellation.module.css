@@ -18,6 +18,42 @@
   fill: color-mix(in srgb, var(--ab-celeste) 58%, transparent);
 }
 
+/* ── Instrument marks ────────────────────────────────────────────────────
+   One contrast ladder, three rungs, and every mark on the plate sits on it:
+   graduation quietest, terminals loudest, datum between the two. Holding
+   them all well under the connectors' 34% is what keeps sixteen extra ticks
+   reading as precision instead of as clutter — at reading distance they are
+   a texture on the line, and only close up do they resolve into marks. */
+.tick {
+  stroke: color-mix(in srgb, var(--ab-celeste) 20%, transparent);
+  stroke-width: 0.8;
+}
+
+.tick .tickLong {
+  stroke: color-mix(in srgb, var(--ab-celeste) 36%, transparent);
+  stroke-width: 0.9;
+}
+
+.terminal {
+  stroke: color-mix(in srgb, var(--ab-celeste) 48%, transparent);
+  stroke-width: 1.1;
+}
+
+.bezel {
+  stroke: color-mix(in srgb, var(--ab-celeste) 26%, transparent);
+  stroke-width: 0.9;
+}
+
+.datum {
+  stroke: color-mix(in srgb, var(--ab-celeste) 26%, transparent);
+  stroke-width: 0.9;
+}
+
+.datumMark {
+  stroke: color-mix(in srgb, var(--ab-celeste) 44%, transparent);
+  stroke-width: 0.9;
+}
+
 /* The standing route stays restrained; this short highlight is the one
    signature gesture. Dash offset and opacity avoid SVG layout work. */
 .signal line {

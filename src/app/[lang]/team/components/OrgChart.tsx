@@ -88,155 +88,177 @@ export default function OrgChart({ reduced }: { reduced: boolean }) {
   return (
     <section id="chart" className={styles.chartSection}>
       <div className={container.container}>
-        {/* The section's own axis, announced before the tree draws under it.
-            An h2 — the panel's department name is the h3 below it. */}
-        <motion.h2
-          className={styles.eyebrow}
-          initial={reduced ? false : { opacity: 0, y: 12 }}
-          whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-120px" }}
-          transition={{ duration: 0.55, ease: EASE_OUT }}
-        >
-          <span className={styles.eyebrowRule} aria-hidden />
-          {t.eyebrow}
-          <span className={`${styles.eyebrowRule} ${styles.eyebrowRuleEnd}`} aria-hidden />
-        </motion.h2>
-
-        <motion.div
-          className={styles.chart}
-          style={{ "--cols": DEPARTMENTS.length } as CSSProperties}
-          data-drawn={drawn}
-          onViewportEnter={() => setDrawn(true)}
-          viewport={{ once: true, margin: "-120px" }}
-        >
-          {/* ── The root ──────────────────────────────────────────────── */}
-          <div className={styles.rootRow}>
-            <motion.div
-              className={styles.rootNode}
-              initial={reduced ? false : { opacity: 0, y: -14 }}
+        {/* ── The stage ──────────────────────────────────────────────────
+            Master left, detail right. The chart used to run horizontally
+            across the full width, which forced the roster underneath it and
+            put the people below the fold — you had to scroll to see what
+            clicking had done. An indented tree is tall and narrow instead, so
+            it fits in a column and hands the rest of the viewport to the
+            content the page exists for. */}
+        <div className={styles.stage}>
+          <div className={styles.index}>
+            {/* The section's own axis, announced before the tree draws under
+                it. An h2 — the panel's department name is the h3 beside it. */}
+            <motion.h2
+              className={styles.eyebrow}
+              initial={reduced ? false : { opacity: 0, y: 12 }}
               whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-120px" }}
-              transition={{ duration: 0.6, ease: EASE_OUT }}
+              transition={{ duration: 0.55, ease: EASE_OUT }}
             >
-              <span className={styles.rootName}>{t.root}</span>
-              <span className={styles.rootMeta}>
-                <strong>{TEAM_HEADCOUNT}</strong> {t.rootMeta}
-              </span>
-            </motion.div>
-          </div>
+              {t.eyebrow}
+              <span className={styles.eyebrowRule} aria-hidden />
+            </motion.h2>
 
-          {/* ── The spine ─────────────────────────────────────────────────
-              A stem down from the root, a bus across, and a drop into each
-              department. Inset by half a column on each side so the bus ends
-              exactly on the outer two drops rather than running past them —
-              `--cols` is the only thing that has to change if the number of
-              departments does, and it comes from the data. */}
-          <div className={styles.spine} aria-hidden>
-            <span className={styles.stem} />
-            <span className={styles.bus} />
-          </div>
-
-          {/* ── The departments ───────────────────────────────────────── */}
-          {/* A list of disclosures, NOT `role="tree"`. A tree role promises
-              arrow-key navigation between items, and promising an interaction
-              that isn't implemented leaves a screen-reader user pressing keys
-              that do nothing — worse than the plain list this actually is.
-              aria-expanded/aria-controls describe the real behaviour. */}
-          <ul className={styles.deptRow} aria-label={t.chartLabel}>
-            {DEPARTMENTS.map((department, index) => {
-              const isActive = department.id === activeId;
-              return (
-                <li
-                  key={department.id}
-                  className={styles.deptCell}
-                  /* Feeds the connector's transition-delay — the drops draw
-                     left to right instead of all at once. */
-                  style={{ "--i": index } as CSSProperties}
-                >
-                  <motion.button
-                    type="button"
-                    aria-expanded={isActive}
-                    aria-controls="org-panel"
-                    data-active={isActive}
-                    onClick={() => setActiveId(isActive ? null : department.id)}
-                    className={styles.deptNode}
-                    initial={reduced ? false : { opacity: 0, y: 16 }}
-                    whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-120px" }}
-                    transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.5 + index * 0.06 }}
-                  >
-                    <span className={styles.deptIcon}>
-                      <ServiceIcon name={department.icon} />
-                    </span>
-                    <span className={styles.deptLabel}>{department.label[lang]}</span>
-                    <span className={styles.deptCount}>
-                      {department.members.length} {t.peopleLabel}
-                    </span>
-                    {/* Drops into the panel below, and only while open — the
-                        chart says which branch you are looking at. */}
-                    <span aria-hidden className={styles.deptStem} />
-                  </motion.button>
-                </li>
-              );
-            })}
-          </ul>
-        </motion.div>
-
-        {/* ── The roster ──────────────────────────────────────────────────
-            Left in normal flow with its natural height rather than animated
-            open. This panel is the last thing in the section, so a height
-            change pushes nothing but the page's own end — and a measured
-            height animation here would buy a smoother open at the cost of
-            squashing every card inside it mid-transition. */}
-        <div id="org-panel" className={styles.panelSlot}>
-          <AnimatePresence mode="wait" initial={false}>
-            {active ? (
+            <motion.div
+              className={styles.chart}
+              data-drawn={drawn}
+              onViewportEnter={() => setDrawn(true)}
+              viewport={{ once: true, margin: "-120px" }}
+            >
+              {/* ── The root ──────────────────────────────────────────── */}
               <motion.div
-                key={active.id}
-                className={styles.panel}
-                initial={reduced ? false : { opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduced ? undefined : { opacity: 0, y: -8 }}
-                transition={{ duration: 0.34, ease: EASE_OUT }}
-                aria-live="polite"
+                className={styles.rootNode}
+                initial={reduced ? false : { opacity: 0, y: -14 }}
+                whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-120px" }}
+                transition={{ duration: 0.6, ease: EASE_OUT }}
               >
-                <header className={styles.panelHead}>
-                  <span className={styles.panelLetter} aria-hidden>
-                    {active.letter}
-                  </span>
-                  <span className={styles.panelHeadCopy}>
-                    <h3>{active.label[lang]}</h3>
-                    <p>{active.summary[lang]}</p>
-                  </span>
-                  {/* The header's right-hand counterweight — the same figure
-                      the closed card shows, restated where the roster begins. */}
-                  <span className={styles.panelCount}>
-                    <strong>{active.members.length}</strong>
-                    <span>{t.peopleLabel}</span>
-                  </span>
-                </header>
-                <ul className={styles.roster}>
-                  {active.members.map((member, index) => (
-                    <PersonCard key={member.id} member={member} index={index} />
-                  ))}
-                </ul>
+                <span className={styles.rootName}>{t.root}</span>
+                <span className={styles.rootMeta}>
+                  <strong>{TEAM_HEADCOUNT}</strong> {t.rootMeta}
+                </span>
               </motion.div>
-            ) : (
-              <motion.p
-                key="hint"
-                className={styles.hint}
-                initial={reduced ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={reduced ? undefined : { opacity: 0 }}
-                transition={{ duration: 0.24, ease: EASE_OUT }}
-              >
-                {t.openHint}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
 
-        <p className={styles.notice}>{t.placeholderNotice}</p>
+              {/* ── The spine ───────────────────────────────────────────
+                  One stem, from the root's underside down to the head of the
+                  rail the departments hang off. Collinear with that rail, so
+                  it needs no junction where the two meet. */}
+              <div className={styles.spine} aria-hidden>
+                <span className={styles.stem} />
+              </div>
+
+              {/* ── The departments ───────────────────────────────────── */}
+              {/* A list of disclosures, NOT `role="tree"`. A tree role
+                  promises arrow-key navigation between items, and promising
+                  an interaction that isn't implemented leaves a screen-reader
+                  user pressing keys that do nothing — worse than the plain
+                  list this actually is. aria-expanded/aria-controls describe
+                  the real behaviour. */}
+              <ul className={styles.deptRow} aria-label={t.chartLabel}>
+                {DEPARTMENTS.map((department, index) => {
+                  const isActive = department.id === activeId;
+                  return (
+                    <li
+                      key={department.id}
+                      className={styles.deptCell}
+                      /* The cell owns the state, not just the button: the rail
+                         branch and its junction are the cell's own pseudo-
+                         elements, and they are what marks the open department
+                         now that the side tab is gone. */
+                      data-active={isActive}
+                      /* Feeds the connector's transition-delay — the branches
+                         draw down the rail in turn, not all at once. */
+                      style={{ "--i": index } as CSSProperties}
+                    >
+                      <motion.button
+                        type="button"
+                        aria-expanded={isActive}
+                        aria-controls="org-panel"
+                        data-active={isActive}
+                        onClick={() => setActiveId(isActive ? null : department.id)}
+                        className={styles.deptNode}
+                        /* Blur and opacity only, deliberately. This card owns
+                           a CSS `transform` for the hover slide, and a Motion
+                           animation on x leaves an inline transform behind
+                           that would silently outrank it forever after. */
+                        initial={reduced ? false : { opacity: 0, filter: "blur(5px)" }}
+                        whileInView={reduced ? undefined : { opacity: 1, filter: "blur(0px)" }}
+                        viewport={{ once: true, margin: "-120px" }}
+                        transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.5 + index * 0.06 }}
+                      >
+                        <span className={styles.deptIcon}>
+                          <ServiceIcon name={department.icon} />
+                        </span>
+                        <span className={styles.deptLabel}>{department.label[lang]}</span>
+                        <span className={styles.deptCount}>
+                          <strong>{department.members.length}</strong>
+                          {t.peopleLabel}
+                        </span>
+                        {/* Crosses the gutter into the roster, and only while
+                            open — the chart says which branch you are looking
+                            at, and says it by being joined to it. */}
+                        <span aria-hidden className={styles.deptStem} />
+                      </motion.button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </motion.div>
+
+            <p className={styles.notice}>{t.placeholderNotice}</p>
+          </div>
+
+          {/* ── The roster ────────────────────────────────────────────────
+              Swaps in place on a focus-pull rather than a rise: it now sits
+              beside the chart rather than under it, and a vertical entrance
+              would imply the content arrived from a direction nothing is
+              coming from. Exit is deliberately half the entrance — with
+              `mode="wait"` the two run end to end, and a symmetric pair makes
+              picking a department feel like waiting for a door. */}
+          <div id="org-panel" className={styles.panelSlot}>
+            <AnimatePresence mode="wait" initial={false}>
+              {active ? (
+                <motion.div
+                  key={active.id}
+                  className={styles.panel}
+                  initial={reduced ? false : { opacity: 0, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  exit={
+                    reduced
+                      ? undefined
+                      : { opacity: 0, filter: "blur(4px)", transition: { duration: 0.18, ease: EASE_OUT } }
+                  }
+                  transition={{ duration: 0.36, ease: EASE_OUT }}
+                  aria-live="polite"
+                >
+                  <header className={styles.panelHead}>
+                    <span className={styles.panelLetter} aria-hidden>
+                      {active.letter}
+                    </span>
+                    <span className={styles.panelHeadCopy}>
+                      <h3>{active.label[lang]}</h3>
+                      <p>{active.summary[lang]}</p>
+                    </span>
+                    {/* The header's right-hand counterweight — the same figure
+                        the closed card shows, restated where the roster
+                        begins. */}
+                    <span className={styles.panelCount}>
+                      <strong>{active.members.length}</strong>
+                      <span>{t.peopleLabel}</span>
+                    </span>
+                  </header>
+                  <ul className={styles.roster}>
+                    {active.members.map((member, index) => (
+                      <PersonCard key={member.id} member={member} index={index} />
+                    ))}
+                  </ul>
+                </motion.div>
+              ) : (
+                <motion.p
+                  key="hint"
+                  className={styles.hint}
+                  initial={reduced ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduced ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.24, ease: EASE_OUT }}
+                >
+                  {t.openHint}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
     </section>
   );

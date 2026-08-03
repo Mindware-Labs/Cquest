@@ -134,7 +134,24 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
         >
           {ABOUT_METRICS.map((metric) => (
             <motion.div key={metric.id} variants={statCardVariants}>
-              <motion.dt variants={statLineVariants}>{metric.label[lang]}</motion.dt>
+              <motion.dt variants={statLineVariants}>
+                {/* ── The riser ────────────────────────────────────────
+                    The org chart above drops a hairline from its bus onto
+                    each portrait. This is the same drawing one tier down:
+                    every figure hangs from the same kind of line, landing on
+                    the same kind of junction. That is what turns the band's
+                    empty middle from padding into the distance the diagram
+                    travels — and what lets four numbers read as the last
+                    level of one schematic rather than as a stat strip
+                    parked underneath a picture.
+
+                    It lives inside the <dt> because a <div> grouping inside
+                    a <dl> may contain nothing but dt/dd; absolute
+                    positioning resolves it against the cell regardless, so
+                    the nesting costs the layout nothing. */}
+                <motion.span aria-hidden className={styles.riser} variants={ruleYVariants} />
+                {metric.label[lang]}
+              </motion.dt>
               <motion.div variants={statLineVariants}>
                 <MetricValue value={metric.value} suffix={metric.suffix} reduced={reduced} />
               </motion.div>

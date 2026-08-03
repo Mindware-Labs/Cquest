@@ -1,39 +1,68 @@
 /* ── Org chart ───────────────────────────────────────────────────────────
-   A top-down chart drawn like a fine technical document: root, stem, bus,
-   a drop into each department, and the selected department's roster below.
+   A directory drawn like a fine technical document, laid out as what it
+   actually is: master and detail, side by side.
 
-   Every connector is positioned off TWO variables — `--cols` (set from the
-   data by OrgChart.tsx) and `--gap` (the real grid gap). A column is
-   (100% − (n−1)·gap)/n, precomputed as `--col`, so the bus can be inset by
-   exactly half a column at each end and terminate ON the outer two drops.
-   Because the gap is a real grid gap (not padding inside the cells), the
-   outer cards sit flush with the container — and therefore flush with the
-   panel below them. Both edges of the composition line up to the pixel.
+   It used to be top-down — root, a bus across, six departments in a row, and
+   the selected department's roster stacked underneath. That composition is
+   handsome and it does not work, for one structural reason: a chart that is
+   WIDE is also short, so everything it opens has to go below it. The roster
+   began roughly 690px down the section, which put the people — the only
+   content on this page anyone came for — under the fold on every laptop. You
+   had to scroll to find out what clicking had done, which is the one thing an
+   interaction must never make you do.
+
+   Turning the chart on its side fixes it at the root rather than by
+   compressing anything: an indented tree is TALL and narrow, so it fits in a
+   column, and the space it gives back is exactly the space the roster needs.
+   Both halves now sit in one viewport, and the drawing gets better in the
+   process — the open department's branch leaves its card, crosses the gutter
+   and lands on the panel's live edge, so the chart and the roster are visibly
+   one object rather than two stacked ones.
 
    Junctions get dots. A hairline crossing a hairline reads as an accident;
    a dot at the meeting point reads as a drawn diagram. */
 
 .chartSection {
-  /* Declared on the SECTION, not on `.chart`: `.panelSlot` is a sibling of
-     `.chart`, and a custom property declared on a sibling never reaches it —
-     its `margin-top: var(--panel-gap)` silently resolved to nothing and the
-     panel sat flush against the cards, with the live stem crossing into it. */
   --rule: color-mix(in srgb, var(--brand-petroleo) 28%, transparent);
   --rule-live: var(--brand-petroleo);
-  --panel-gap: clamp(1.5rem, 3vw, 2.25rem);
+  /* The gutter is load-bearing, not spacing: the active branch is drawn
+     exactly this wide, so it terminates ON the panel's edge. */
+  --split-gap: clamp(1.75rem, 3.2vw, 3rem);
+  /* The rail's distance from the index column's left edge, and the length of
+     the branch from the rail into each card. Everything in the drawing is
+     positioned off these two. */
+  --rail-x: 1.4rem;
+  --branch: 1.5rem;
   position: relative;
-  padding-block: clamp(3.5rem, 6.5vw, 5.5rem);
+  padding-block: clamp(3rem, 5.5vw, 4.5rem);
   background: var(--background);
   scroll-margin-top: 6rem;
 }
 
-/* ── Section eyebrow — the symmetric axis, announced ──── */
+/* ── The stage ───────────────────────────────────────────
+   Index left, roster right. The index column is deliberately narrow: six
+   department rows and a root plate need about 21rem and no more, and every
+   rem beyond that is taken from the people. */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: var(--split-gap);
+}
+
+.index {
+  position: relative;
+  min-width: 0;
+}
+
+/* ── Section eyebrow ─────────────────────────────────────
+   Left-aligned on the index column's own axis rather than centred over the
+   whole width — a centred label above a composition weighted hard to the
+   left reads as belonging to neither half. */
 .eyebrow {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.9rem;
-  margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+  margin-bottom: clamp(1rem, 2vw, 1.4rem);
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -42,38 +71,31 @@
 }
 
 .eyebrowRule {
-  width: clamp(1.75rem, 4vw, 3rem);
+  flex: 1;
+  max-width: 6rem;
   height: 1px;
   background: linear-gradient(
     90deg,
-    transparent,
-    color-mix(in srgb, var(--brand-petroleo) 55%, transparent)
+    color-mix(in srgb, var(--brand-petroleo) 55%, transparent),
+    transparent
   );
 }
 
-.eyebrowRuleEnd {
-  transform: scaleX(-1);
-}
-
 .chart {
-  --gap: clamp(0.65rem, 1.2vw, 1rem);
-  --col: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
-  --drop: clamp(1.25rem, 2.5vw, 1.75rem);
   position: relative;
 }
 
-/* ── Root ─────────────────────────────────────────────── */
-.rootRow {
-  display: flex;
-  justify-content: center;
-}
-
+/* ── Root ─────────────────────────────────────────────────
+   Full width of its column, so the rail leaves from underneath it rather
+   than from beside a centred box — the first statement of the indent every
+   department below repeats. */
 .rootNode {
   position: relative;
   display: flex;
+  width: 100%;
   flex-direction: column;
   align-items: center;
-  padding: 0.95rem 2.25rem 0.85rem;
+  padding: 0.95rem 1.5rem 0.85rem;
   border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--brand-petroleo) 34%, transparent);
   background: var(--surface-raised);
@@ -104,10 +126,12 @@
   margin-top: 0.4rem;
   padding-top: 0.45rem;
   border-top: 1px solid var(--border);
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
   color: var(--text-tertiary);
 }
 
@@ -117,129 +141,174 @@
   color: var(--brand-petroleo);
 }
 
-/* ── Spine: stem + bus ────────────────────────────────── */
+/* ── Spine ───────────────────────────────────────────────
+   One stem, from the root's underside down to the head of the rail. No bus
+   and no junction dot: the stem and the rail are collinear here, and a dot
+   on a straight line marks nothing. */
 .spine {
   position: relative;
-  height: clamp(1.5rem, 3vw, 2.25rem);
+  height: clamp(1rem, 2vw, 1.5rem);
 }
 
 .stem {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 50%;
+  left: var(--rail-x);
   width: 1px;
   background: var(--rule);
   transform-origin: top center;
 }
 
-/* The centre junction, where the stem meets the bus. */
-.stem::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--brand-petroleo) 70%, transparent);
-  transform: translate(-50%, 50%) scale(1);
-}
-
-.bus {
-  position: absolute;
-  bottom: 0;
-  left: calc(var(--col) / 2);
-  right: calc(var(--col) / 2);
-  height: 1px;
-  background: var(--rule);
-  transform-origin: center;
-}
-
-/* ── Departments ──────────────────────────────────────── */
+/* ── Departments ──────────────────────────────────────────
+   A list of disclosures hanging off one rail. */
 .deptRow {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  gap: var(--gap);
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  padding-left: calc(var(--rail-x) + var(--branch));
   list-style: none;
   margin: 0;
-  padding: 0;
 }
 
+/* The rail. Tapered out at the foot rather than cut square: the last branch
+   leaves at the last card's mid-height, so a rail running to the bottom of
+   the list would overshoot it by half a card and read as a loose end. The
+   fade is deliberately soft so it stays right whatever the cards end up
+   measuring — a hard stop would need a number that only holds until someone
+   changes the padding. */
+.deptRow::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--rail-x);
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--rule) 0,
+    var(--rule) calc(100% - 2rem),
+    transparent calc(100% - 0.55rem)
+  );
+  transform-origin: top center;
+  transition: transform 520ms var(--ease-out) 300ms;
+}
+
+/* ── The track ───────────────────────────────────────────────────────────
+   Rail → branch → card → crossing stem → panel is ONE run of fixed length,
+   and `--nudge` is how far along it the card currently sits. Hovering slides
+   the card toward the panel: the branch behind it grows by exactly what the
+   crossing stem gives up, so nothing detaches and nothing overshoots. The
+   card is not a thing that floats when you point at it; it is a thing that
+   travels along its own line, in the direction it acts. */
 .deptCell {
+  --nudge: 0px;
   position: relative;
-  padding-top: var(--drop);
+  min-width: 0;
 }
 
-/* The drop from the bus into this department's node. */
+.deptCell:hover {
+  --nudge: 5px;
+}
+
+/* Separate rule, not a comma with the one above: a browser without `:has()`
+   drops the whole selector list, and the hover is the part that must not be
+   collateral damage. */
+.deptCell:has(.deptNode:focus-visible) {
+  --nudge: 5px;
+}
+
+/* The branch off the rail into this department's card. */
 .deptCell::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 1px;
-  height: var(--drop);
+  top: 50%;
+  left: calc(-1 * var(--branch));
+  width: calc(var(--branch) + var(--nudge));
+  height: 1px;
   background: var(--rule);
-  transform-origin: top center;
+  transform-origin: left center;
+  transition:
+    transform 340ms var(--ease-out) calc(760ms + var(--i, 0) * 60ms),
+    width 260ms var(--ease-out),
+    background-color 300ms var(--ease-out);
 }
 
-/* The junction where this drop leaves the bus. */
+/* The junction where that branch leaves the rail. */
 .deptCell::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 50%;
+  left: calc(-1 * var(--branch));
   width: 3.5px;
   height: 3.5px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--brand-petroleo) 55%, transparent);
   transform: translate(-50%, -50%) scale(1);
+  transition:
+    transform 280ms var(--ease-spring) calc(720ms + var(--i, 0) * 60ms),
+    background-color 300ms var(--ease-out);
+}
+
+/* ── The live branch ─────────────────────────────────────────────────────
+   This is what replaced the 2px tab down the card's left edge. A coloured
+   bar on the side of a card is a label stuck onto it; a connector at full
+   strength is the diagram saying which line is carrying. The whole run goes
+   live at once — junction, branch, card, crossing stem — so the open
+   department is joined to its people by one unbroken petroleo line and the
+   closed ones stay at hairline weight. */
+.deptCell[data-active="true"]::before {
+  background: var(--rule-live);
+}
+
+.deptCell[data-active="true"]::after {
+  background: var(--rule-live);
+  transform: translate(-50%, -50%) scale(1.35);
 }
 
 .deptNode {
   position: relative;
   display: flex;
   width: 100%;
-  height: 100%;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0.75rem 0.9rem;
+  gap: 0.85rem;
+  padding: 0.8rem 0.95rem;
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--surface-raised);
-  text-align: center;
+  text-align: left;
   cursor: pointer;
   box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent);
+  /* Slides along its branch — see `--nudge` on the cell. Nothing lifts: these
+     cards are wired into a drawing, and a card that floats off the page away
+     from its own connector breaks it. */
+  transform: translateX(var(--nudge));
   transition:
     border-color 300ms var(--ease-out),
     box-shadow 380ms var(--ease-out),
-    background-color 300ms var(--ease-out);
+    background-color 300ms var(--ease-out),
+    transform 260ms var(--ease-out);
 }
 
-/* The selection accent: a rule drawn along the card's top edge, growing from
-   the centre outward — the same language as the bus, and the same 2px rule
-   the panel below opens with. The selected card and the panel read as two
-   ends of one object, joined by the live stem. */
+/* The inner hairline frame — the double rule of an official document, and
+   the exact construction the root plate above already carries. It is what
+   the open department wears instead of a side tab: the same object as the
+   root, one level down, rather than a card with a label stuck on its edge.
+   Present but transparent at rest, so it fades rather than appearing. */
 .deptNode::after {
   content: "";
   position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  height: 2px;
-  background: var(--rule-live);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 340ms var(--ease-out);
+  inset: 3px;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  pointer-events: none;
+  transition: border-color 320ms var(--ease-out);
 }
 
-/* No lift on hover: these nodes are attached to connectors, and a card that
-   floats away from its own line breaks the drawing. The response is light
-   instead — border and shadow deepen. */
 .deptNode:hover {
   border-color: color-mix(in srgb, var(--brand-petroleo) 45%, transparent);
-  box-shadow: 0 14px 28px -20px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
+  box-shadow: 0 12px 24px -20px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
 }
 
 .deptNode:focus-visible {
@@ -250,87 +319,131 @@
 .deptNode[data-active="true"] {
   border-color: color-mix(in srgb, var(--brand-petroleo) 55%, transparent);
   background: color-mix(in srgb, var(--brand-celeste) 7%, var(--surface-raised));
-  box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--brand-petroleo) 70%, transparent);
+  box-shadow: 0 16px 30px -22px color-mix(in srgb, var(--brand-petroleo) 70%, transparent);
 }
 
 .deptNode[data-active="true"]::after {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+/* ── The crossing ────────────────────────────────────────────────────────
+   The open branch leaves its card, spans the gutter and terminates on the
+   panel's live edge. This is the single move that keeps the split from
+   reading as a sidebar next to a card: the department you picked is drawn
+   into the people it contains, and the connection redraws as you change
+   your mind.
+
+   Width carries a spare pixel because percentages on an absolutely
+   positioned element resolve against the PADDING box, and this card has a
+   1px border — without it the line stops a pixel short of the panel, which
+   at hairline weight is the difference between a joint and a near miss.
+
+   And it gives back exactly what the hover nudge takes: the card slides
+   toward the panel, so the run between them is shorter by the same amount
+   the branch behind it grew. The total length of the track never changes,
+   which is why the gesture reads as travel rather than as things stretching. */
+.deptStem {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: calc(var(--split-gap) + 1px - var(--nudge));
+  height: 1px;
+  background: var(--rule-live);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform 380ms var(--ease-out),
+    width 260ms var(--ease-out);
+}
+
+.deptNode[data-active="true"] .deptStem {
   transform: scaleX(1);
 }
 
-/* Bare pictogram, no chip behind it — the stroke does the work alone, so it
-   can afford to be larger. The SVG ships at a fixed h-5 w-5; overridden here
-   rather than at the callsite so every other user of ServiceIcon keeps its
-   size. */
+/* Bare pictogram, no chip behind it — the stroke does the work alone. The
+   SVG ships at a fixed h-5 w-5; overridden here rather than at the callsite
+   so every other user of ServiceIcon keeps its size. Held back until the
+   department is open, so the row that is live is the one carrying full-
+   strength colour. */
 .deptIcon {
   display: grid;
   place-items: center;
+  flex-shrink: 0;
+  color: color-mix(in srgb, var(--brand-petroleo) 62%, transparent);
+  transition: color 300ms var(--ease-out);
+}
+
+.deptNode:hover .deptIcon,
+.deptNode[data-active="true"] .deptIcon {
   color: var(--brand-petroleo);
 }
 
 .deptIcon svg {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .deptLabel {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-heading), sans-serif;
   font-size: 0.88rem;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--foreground);
-  text-wrap: balance;
 }
 
+/* The figure carries its own weight, the word stays a whisper. Split so the
+   count reads as a measurement rather than as a phrase — and so the number
+   can go live with the rest of the row without dragging the label with it. */
 .deptCount {
-  font-size: 0.62rem;
+  flex-shrink: 0;
+  font-size: 0.6rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-tertiary) 62%, transparent);
+  transition: color 300ms var(--ease-out);
+}
+
+.deptCount strong {
+  margin-right: 0.28em;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
   color: var(--text-tertiary);
+  transition: color 300ms var(--ease-out);
 }
 
-/* The open branch, carried down into the roster. Scales from its top edge so
-   it reads as the chart extending rather than a rule fading in. Height runs
-   1px past the gap to land ON the panel's border, not beside it. */
-.deptStem {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 1px;
-  height: calc(var(--panel-gap) + 1px);
-  background: var(--rule-live);
-  transform: scaleY(0);
-  transform-origin: top center;
-  transition: transform 320ms var(--ease-out);
+.deptNode:hover .deptCount strong,
+.deptNode[data-active="true"] .deptCount strong {
+  color: var(--brand-petroleo);
 }
 
-.deptNode[data-active="true"] .deptStem {
-  transform: scaleY(1);
+.deptNode:hover .deptCount,
+.deptNode[data-active="true"] .deptCount {
+  color: color-mix(in srgb, var(--brand-petroleo) 62%, transparent);
 }
 
 /* ── The connector draw ───────────────────────────────────────────────────
    Pseudo-elements are unreachable from a variant tree, so the reveal is a
    plain CSS transition keyed off `data-drawn`, which OrgChart flips on the
    section's first viewport entry. The order is the order a hand would draw
-   it: down from the root, a dot, out along the bus from the centre, then a
-   dot and a drop into each department in turn (`--i` is the cell's index,
-   set from the data). */
+   it: down from the root, down the rail, then a dot and a branch into each
+   department in turn (`--i` is the cell's index, set from the data). */
 .chart[data-drawn="false"] .stem {
   transform: scaleY(0);
 }
 
-.chart[data-drawn="false"] .stem::after {
-  transform: translate(-50%, 50%) scale(0);
-}
-
-.chart[data-drawn="false"] .bus {
-  transform: scaleX(0);
+.chart[data-drawn="false"] .deptRow::before {
+  transform: scaleY(0);
 }
 
 .chart[data-drawn="false"] .deptCell::before {
-  transform: scaleY(0);
+  transform: scaleX(0);
 }
 
 .chart[data-drawn="false"] .deptCell::after {
@@ -338,37 +451,41 @@
 }
 
 .stem {
-  transition: transform 460ms var(--ease-out) 80ms;
+  transition: transform 420ms var(--ease-out) 80ms;
 }
 
-.stem::after {
-  transition: transform 300ms var(--ease-spring) 500ms;
-}
+/* ── Roster panel ─────────────────────────────────────────
+   `height: 100%` so its left edge runs the full height of the stage: the
+   crossing branch has to be able to land on it wherever the open department
+   happens to sit in the list.
 
-.bus {
-  transition: transform 620ms var(--ease-out) 540ms;
-}
-
-.deptCell::after {
-  transition: transform 280ms var(--ease-spring) calc(1020ms + var(--i, 0) * 70ms);
-}
-
-.deptCell::before {
-  transition: transform 380ms var(--ease-out) calc(1080ms + var(--i, 0) * 70ms);
-}
-
-/* ── Roster panel ─────────────────────────────────────── */
+   That edge is a plain 1px rule like the other three. It used to be 2px in
+   petroleo, and that was a side tab — the most recognisable tell there is. A
+   hairline is enough to terminate on; what says the panel is live is the
+   branch arriving at it, not a stripe painted down its side. */
 .panelSlot {
-  margin-top: var(--panel-gap);
+  min-width: 0;
 }
 
 .panel {
+  position: relative;
+  height: 100%;
   border-radius: 2px;
   border: 1px solid var(--border);
-  border-top: 2px solid var(--brand-petroleo);
   background: var(--surface-raised);
-  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding: clamp(1.25rem, 2.2vw, 1.75rem);
   box-shadow: 0 22px 44px -34px color-mix(in srgb, var(--brand-petroleo) 60%, transparent);
+}
+
+/* The same double rule the root plate and the open department wear. Three
+   sizes of one object: the organisation, a department, its people. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid color-mix(in srgb, var(--brand-petroleo) 9%, transparent);
+  border-radius: 1px;
+  pointer-events: none;
 }
 
 .panelHead {
@@ -398,6 +515,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .panelHeadCopy h3 {
@@ -448,10 +566,14 @@
 /* ── Roster — centred flex, not a grid ────────────────────────────────────
    Headcounts are uneven (6/4/5/3/4/3), so a left-anchored grid ends every
    short row ragged-right. Wrapping flex with centred justification puts the
-   remainder of each row in the middle instead: 6 people become 4 + 2 centred,
-   5 become 4 + 1 centred. The composition stays symmetric for every count
-   the data can throw at it. Items in a row stretch to the tallest card in
-   that row, so uneven bios never leave a ragged bottom either. */
+   remainder of each row in the middle instead: 5 people become 3 + 2 centred,
+   4 become 3 + 1 centred. Items in a row stretch to the tallest card in that
+   row, so uneven bios never leave a ragged bottom either.
+
+   Three across, not four. In the split the panel owns roughly two thirds of
+   the container instead of all of it, and the largest department is six — so
+   three columns is the basis that resolves every count in this data to at
+   most two rows, which is what keeps the roster inside the fold. */
 .roster {
   --roster-gap: 0.75rem;
   display: flex;
@@ -465,13 +587,13 @@
 
 .person {
   position: relative;
-  flex: 0 1 calc((100% - 3 * var(--roster-gap)) / 4);
-  min-width: 13rem;
+  flex: 0 1 calc((100% - 2 * var(--roster-gap)) / 3);
+  min-width: 12rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 1.35rem 1.15rem 1.25rem;
+  padding: 1.25rem 1.05rem 1.15rem;
   border-radius: 2px;
   border: 1px solid var(--border);
   /* Raised, with the faintest fall of light from the top edge — flat cream
@@ -489,8 +611,8 @@
 }
 
 /* Registration ticks in two opposing corners — the drafting-table mark of the
-   same technical document the chart above is drawn as. Quiet at rest, they
-   answer the hover. */
+   same technical document the chart beside it is drawn as. Quiet at rest,
+   they answer the hover. */
 .person::before,
 .person::after {
   content: "";
@@ -563,9 +685,9 @@
 }
 
 .personName {
-  margin-top: 0.85rem;
+  margin-top: 0.8rem;
   font-family: var(--font-heading), sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--foreground);
@@ -573,7 +695,7 @@
 
 .personRole {
   margin-top: 0.2rem;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -582,7 +704,7 @@
 
 .personBio {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   line-height: 1.55;
   color: var(--text-tertiary);
   text-wrap: pretty;
@@ -595,7 +717,7 @@
   display: block;
   width: 2.75rem;
   height: 1px;
-  margin: 0.6rem auto 0.55rem;
+  margin: 0.55rem auto 0.5rem;
   background: linear-gradient(
     90deg,
     transparent,
@@ -605,6 +727,10 @@
 }
 
 .hint {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 12rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
   border: 1px dashed var(--border);
   border-radius: 2px;
@@ -613,16 +739,16 @@
   color: var(--text-tertiary);
 }
 
-/* The disclaimer. Centred on the same axis as everything above it, marked by
-   a short verde rule — sized and placed to be READ, not to be technically
-   present: this page will be shown to people who have no reason to assume
-   the names on it are invented. */
+/* The disclaimer. Now sitting in the index column, directly under the
+   lettered departments it disclaims and on the same indent — closer to the
+   invented data than a centred footnote under the whole section ever was.
+   This page will be shown to people who have no reason to assume the names
+   on it are invented. */
 .notice {
-  max-width: 64ch;
-  margin: clamp(1.5rem, 3vw, 2.25rem) auto 0;
-  text-align: center;
-  font-size: 0.8rem;
-  line-height: 1.65;
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  padding-left: calc(var(--rail-x) + var(--branch));
+  font-size: 0.78rem;
+  line-height: 1.6;
   color: var(--text-tertiary);
   text-wrap: pretty;
 }
@@ -632,126 +758,47 @@
   display: block;
   width: 2.5rem;
   height: 1px;
-  margin: 0 auto 0.85rem;
+  margin-bottom: 0.7rem;
   background: var(--brand-verde);
 }
 
-/* ── Narrow: the chart turns on its side ─────────────────────────────────
-   Six columns cannot survive a phone, and a horizontally scrolling org chart
-   is a chart nobody reads. Below this width the same hierarchy is drawn as a
-   rail down the left with a branch into each department — the top-down
-   arithmetic above is switched off entirely rather than squeezed. */
+/* ── Narrow: the two halves stack ────────────────────────────────────────
+   The chart is already a vertical tree, so nothing about the drawing has to
+   change here — only where the roster goes. The crossing branch retires with
+   the gutter it was drawn to span; the panel's live edge moves to its top,
+   which is now the side the chart arrives from. */
 @media (max-width: 64rem) {
-  .spine {
-    height: clamp(1.25rem, 3vw, 1.75rem);
-  }
-
-  .bus {
-    display: none;
-  }
-
-  .stem {
-    left: 1.4rem;
-  }
-
-  /* The stem and the rail are collinear here — a junction dot on a straight
-     line marks nothing. */
-  .stem::after {
-    display: none;
-  }
-
-  /* The root goes full width so the rail at 1.4rem leaves from under it
-     rather than from beside a centred box. */
-  .rootNode {
-    width: 100%;
-  }
-
-  .deptRow {
-    position: relative;
+  .stage {
     grid-template-columns: 1fr;
-    gap: 0.6rem;
-    padding-left: 2.9rem;
+    gap: clamp(1.25rem, 3vw, 1.75rem);
   }
 
-  /* The rail the whole list hangs off. */
-  .deptRow::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 1.4rem;
-    width: 1px;
-    background: var(--rule);
-    transform-origin: top center;
-    transition: transform 520ms var(--ease-out) 300ms;
-  }
-
-  .chart[data-drawn="false"] .deptRow::before {
-    transform: scaleY(0);
-  }
-
-  .deptCell {
-    padding-top: 0;
-  }
-
-  /* Was the vertical drop; becomes the horizontal branch off the rail. */
-  .deptCell::before {
-    top: 50%;
-    left: -1.5rem;
-    width: 1.5rem;
-    height: 1px;
-    transform-origin: left center;
-    transition: transform 340ms var(--ease-out) calc(760ms + var(--i, 0) * 60ms);
-  }
-
-  .chart[data-drawn="false"] .deptCell::before {
-    transform: scaleX(0);
-  }
-
-  /* The junction dot moves onto the rail, where this branch leaves it. */
-  .deptCell::after {
-    top: 50%;
-    left: -1.5rem;
-    transition-delay: calc(720ms + var(--i, 0) * 60ms);
-  }
-
-  .deptNode {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.85rem 1rem;
-    text-align: left;
-  }
-
-  /* The selection accent becomes a bar down the card's left edge — the edge
-     the rail arrives at. */
-  .deptNode::after {
-    top: -1px;
-    bottom: -1px;
-    left: -1px;
-    right: auto;
-    width: 2px;
-    height: auto;
-    transform: scaleY(0);
-  }
-
-  .deptNode[data-active="true"]::after {
-    transform: scaleY(1);
-  }
-
-  .deptLabel {
-    flex: 1;
-  }
-
-  /* A stem from a mid-list card would cross the cards below it; the panel's
-     top rule and the left accent carry the connection instead. */
+  /* The crossing branch retires with the gutter it was drawn to span. The
+     open department is still marked by its live rail branch, its junction
+     and its double rule — none of which depended on the split. */
   .deptStem {
     display: none;
   }
 
+  /* Nothing left to slide toward once the panel is underneath rather than
+     beside, and on touch there is no hover to slide on. Split for the same
+     reason as the base rules: `:has()` must not be able to take the plain
+     hover down with it. */
+  .deptCell:hover {
+    --nudge: 0px;
+  }
+
+  .deptCell:has(.deptNode:focus-visible) {
+    --nudge: 0px;
+  }
+
+  /* The notice stays where it is — between the departments and the roster
+     rather than at the foot of the section. Meeting "these names are
+     illustrative" BEFORE reading a screen of lorem people is the right order
+     to meet it in. */
+
   .person {
     flex-basis: calc((100% - var(--roster-gap)) / 2);
-    min-width: 0;
   }
 }
 
@@ -778,13 +825,22 @@
 
 @media (prefers-reduced-motion: reduce) {
   .stem,
-  .stem::after,
-  .bus,
+  .deptRow::before,
   .deptCell::before,
   .deptCell::after,
-  .deptRow::before,
   .deptStem,
-  .deptNode::after {
+  .deptNode {
     transition-duration: 0.01ms;
+  }
+
+  /* The slide goes entirely — the colour response carries the hover on its
+     own, and travel is the part someone asking for less motion is asking to
+     be spared. */
+  .deptCell:hover {
+    --nudge: 0px;
+  }
+
+  .deptCell:has(.deptNode:focus-visible) {
+    --nudge: 0px;
   }
 }
