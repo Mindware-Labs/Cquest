@@ -24,6 +24,16 @@
     radial-gradient(closest-side at 50% 50%, color-mix(in srgb, var(--ab-celeste) 12%, transparent), transparent 70%),
     radial-gradient(closest-side at 82% 50%, color-mix(in srgb, var(--ab-verde) 10%, transparent), transparent 70%);
   will-change: transform;
+  animation: pillarsAuraDrift 18s ease-in-out infinite;
+}
+
+#about[data-ambient-active="false"] .pillarsAuraLight {
+  animation-play-state: paused;
+}
+
+@keyframes pillarsAuraDrift {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 
 .pillarsSection > *:not(.pillarsAura) {
@@ -79,8 +89,8 @@
 
 .pillarCard:hover {
   border-color: color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 45%, var(--ab-rule));
-  box-shadow: 0 1.5rem 3rem -1.75rem color-mix(in srgb, var(--pillar-accent, var(--ab-petroleo)) 55%, transparent);
-  translate: 0 -4px;
+  box-shadow: 0 2rem 3.5rem -1.5rem color-mix(in srgb, var(--pillar-accent, var(--ab-petroleo)) 60%, transparent);
+  translate: 0 -8px;
 }
 
 .pillarIcon {
@@ -94,11 +104,14 @@
   background:
     radial-gradient(closest-side, color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 20%, var(--ab-raised)), var(--ab-raised));
   border: 1px solid color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 35%, var(--ab-rule));
-  transition: scale 320ms var(--ease-out);
+  transition: scale 320ms var(--ease-out), box-shadow 320ms var(--ease-out);
 }
 
 .pillarCard:hover .pillarIcon {
   scale: 1.08;
+  /* A soft ring bloom, not a spin or a bounce — the "brillo" the icon gets
+     on hover, restrained to match the rest of the section's hover language. */
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 16%, transparent);
 }
 
 .pillarIcon svg {

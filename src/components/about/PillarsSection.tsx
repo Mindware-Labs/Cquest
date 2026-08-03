@@ -3,18 +3,68 @@
 import { motion } from "motion/react";
 import { useRef } from "react";
 import SectionIntro from "@/components/services/SectionIntro";
-import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceIconName } from "@/components/services/data";
 import { Particles } from "@/components/ui/particles";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import container from "@/components/services/Container.module.css";
-import { dropCardVariants, dropGroupVariants, VIEWPORT } from "@/components/services/motion";
+import { VIEWPORT } from "@/components/services/motion";
+import type { Variants } from "motion/react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { gsap } from "@/lib/gsap";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./PillarsSection.module.css";
 
 const ACCENTS = ["var(--ab-petroleo)", "var(--ab-celeste)", "var(--ab-verde)"] as const;
+
+// A lighter entrance than the shared `dropCardVariants`: no rotation, no
+// spring overshoot — the card rises gently from below and settles, then
+// the next one starts a beat later. Reads as the section "building itself"
+// rather than cards being dropped onto the page.
+const liftGroupVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.15 } },
+};
+const liftCardVariants: Variants = {
+  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
+};
+
+// The stroke-draw itself needs `motion.path`/`motion.circle` — the shared
+// `ServiceIcon` renders plain static SVG elements, reused across every
+// service page, so redrawing it there would ripple into sections that never
+// asked for this. These three pillars get their own draw-capable copy
+// instead, geometry lifted straight from `ServiceIcon`'s "flag-mountain",
+// "eye" and "diamond" entries so they stay pixel-identical to the rest of
+// the site's icon set.
+const DRAW_ICONS: Record<string, { paths?: string[]; circle?: { cx: number; cy: number; r: number } }> = {
+  mission: { paths: ["M3 20 9.5 8l3.2 5.5L15.5 9 21 20Z", "M9.5 8 12 4l1.3 2.3"] },
+  vision: { paths: ["M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"], circle: { cx: 12, cy: 12, r: 3 } },
+  values: { paths: ["M4.5 9 8 4h8l3.5 5-7.5 11Z", "M4.5 9h15M8 4l1.5 5L12 20l2.5-11L16 4M8 4l-3.5 5M16 4l3.5 5"] },
+};
+
+// Each stroke draws in (pathLength 0 → 1) once the card has landed — delay
+// clears the 0.8s lift — with the second stroke of a two-part icon following
+// a beat behind the first, so it reads as one continuous pen stroke rather
+// than the whole icon fading in at once. Inherits "visible" from the parent
+// stagger automatically — no separate viewport trigger needed.
+const drawVariants = (order: number): Variants => ({
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: {
+    pathLength: 1,
+    opacity: 1,
+    transition: { pathLength: { duration: 0.6, delay: 0.45 + order * 0.25, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.15, delay: 0.45 + order * 0.25 } },
+  },
+});
+
+function DrawIcon({ id }: { id: string }) {
+  const icon = DRAW_ICONS[id];
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      {icon.paths?.map((d, i) => <motion.path key={d} d={d} variants={drawVariants(i)} />)}
+      {icon.circle && <motion.circle cx={icon.circle.cx} cy={icon.circle.cy} r={icon.circle.r} variants={drawVariants(icon.paths?.length ?? 0)} />}
+    </svg>
+  );
+}
 
 const COPY = {
   en: {
@@ -121,7 +171,7 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
         </span>
       )}
       <div className={container.container}>
-        <SectionIntro title={t.heading} description={t.description} reduced={reduced} rule={false} />
+        <SectionIntro title={t.heading} description={t.description} reduced={reduced} rule accentColor="var(--ab-verde)" />
         {/* The drop lives on this wrapper, not on `.pillarCard`: the card owns a
             CSS hover lift (`translate: 0 -4px`), and an inline transform left
             behind by the reveal would outrank it. Same anchor/card split the
@@ -131,13 +181,13 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
           initial={reduced ? false : "hidden"}
           whileInView={reduced ? undefined : "visible"}
           viewport={VIEWPORT}
-          variants={dropGroupVariants}
+          variants={liftGroupVariants}
         >
           {t.cards.map((card, index) => (
-            <motion.div key={card.id} className={styles.pillarDrop} variants={dropCardVariants}>
+            <motion.div key={card.id} className={styles.pillarDrop} variants={liftCardVariants}>
               <SpotlightCard className={styles.pillarCard} reduced={reduced} glowColor={ACCENTS[index]}>
                 <span className={styles.pillarIcon}>
-                  <ServiceIcon name={card.icon} />
+                  <DrawIcon id={card.id} />
                 </span>
                 <h3>{card.title}</h3>
                 <p>{card.body}</p>
