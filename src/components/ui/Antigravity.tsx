@@ -33,6 +33,21 @@ interface AntigravityProps {
   ringRadius?: number;
   /** Vertical radius. Defaults to `ringRadius`, i.e. a circle. */
   ringRadiusY?: number;
+  /**
+   * Radius as a fraction of the canvas's own half-HEIGHT, applied to both
+   * axes — so the formation is a true circle that scales with its box.
+   * Overrides `ringRadius`/`ringRadiusY` when set.
+   *
+   * This exists because the world-unit radii above cannot survive a layout
+   * change. The camera is fixed, so the canvas always shows ~31.5 world units
+   * of height regardless of how many pixels tall it is: a radius of 11 draws
+   * a 202px circle in a 578px box and a 133px one in a 380px box, while the
+   * diagram it is supposed to enclose is laid out in percentages and stays
+   * proportional throughout. The two agree at exactly one box size and drift
+   * apart at every other — which is what turned a ring into a scatter the
+   * moment this figure moved into a narrower column.
+   */
+  ringScale?: number;
   waveSpeed?: number;
   waveAmplitude?: number;
   particleSize?: number;
@@ -89,6 +104,7 @@ function AntigravityInner({
   magnetRadius = 60,
   ringRadius = 13,
   ringRadiusY,
+  ringScale,
   waveSpeed = 0.4,
   waveAmplitude = 1,
   particleSize = 1.2,
@@ -254,7 +270,12 @@ function AntigravityInner({
     const pullActive = pull.current > 0.002;
 
     const globalRotation = state.clock.getElapsedTime() * rotationSpeed;
-    const radiusY = ringRadiusY ?? ringRadius;
+    /* Resolved per frame from the live viewport, so the formation tracks its
+       own box instead of a number tuned against one. Both axes read the
+       HALF-HEIGHT: world units are isotropic, so taking x from the width
+       would draw an ellipse on any box that is not square. */
+    const radiusX = ringScale != null ? (v.height / 2) * ringScale : ringRadius;
+    const radiusY = ringScale != null ? radiusX : ringRadiusY ?? ringRadius;
 
     for (let i = 0; i < particles.length; i++) {
       const particle = particles[i];
@@ -278,7 +299,7 @@ function AntigravityInner({
         const wave = Math.sin(t * waveSpeed + angle) * (0.5 * waveAmplitude);
         const deviation = randomRadiusOffset * (5 / (fieldStrength + 0.1));
 
-        targetPos.x = projectedTargetX + (ringRadius + wave + deviation) * Math.cos(angle);
+        targetPos.x = projectedTargetX + (radiusX + wave + deviation) * Math.cos(angle);
         targetPos.y = projectedTargetY + (radiusY + wave + deviation) * Math.sin(angle);
         targetPos.z = mz * depthFactor + Math.sin(t) * (waveAmplitude * depthFactor);
       }
@@ -319,7 +340,7 @@ function AntigravityInner({
          pulls out of it are precisely the ones that must stay visible — so
          only the pulse modulates scale here. */
       const scaleFactor = followPointer
-        ? Math.max(0, Math.min(1, 1 - Math.abs(Math.hypot(particle.cx - projectedTargetX, particle.cy - projectedTargetY) - ringRadius) / 10))
+        ? Math.max(0, Math.min(1, 1 - Math.abs(Math.hypot(particle.cx - projectedTargetX, particle.cy - projectedTargetY) - radiusX) / 10))
         : 1;
       const finalScale =
         scaleFactor * (0.8 + Math.sin(t * pulseSpeed) * 0.2 * particleVariance) * particleSize;
