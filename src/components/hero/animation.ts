@@ -101,8 +101,14 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
         icon: SERVICE_ICON[service.id],
       })),
     },
-    { label: dict.hero.navLinks.about, href: "#about" },
-    { label: dict.hero.navLinks.contact, href: "/quote" },
+    // The three bands inside "#about" on the way down the page, standing in
+    // for the generic "About" link now that they name what's actually
+    // there: the team headcount, the sectors diagram, and the partnerships
+    // placeholder — see MetricsSection ("#metrics"), StorySection
+    // ("#sectors") and AboutSection's own "#partnerships" UpcomingSection.
+    { label: dict.hero.navLinks.team, href: "#metrics" },
+    { label: dict.hero.navLinks.sectors, href: "#sectors" },
+    { label: dict.hero.navLinks.partnerships, href: "#partnerships" },
   ];
 }
 

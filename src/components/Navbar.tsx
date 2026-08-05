@@ -102,14 +102,14 @@ export default function Navbar() {
         aria-label={dict.nav.mainNavAriaLabel}
         className={`${container.container} flex items-center justify-between py-5`}
       >
-        <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="shrink-0">
+        <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="ml-2 shrink-0">
           <Image
             src="/logo.png"
             alt="Center Quest"
             width={692}
             height={512}
             preload
-            className={`h-12 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
+            className={`h-14 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />
         </LocalizedLink>
 

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import QuestLogoMark from "./QuestLogoMark";
 import { EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
 
 export default function HeroNav({
@@ -34,9 +34,20 @@ export default function HeroNav({
         <LocalizedLink
           href="/"
           aria-label={dict.nav.homeLinkAriaLabel}
-          className="shrink-0 justify-self-start"
+          className="ml-2 shrink-0 justify-self-start sm:ml-3"
         >
-          <QuestLogoMark />
+          {/* The real mark, not the placeholder compass — always rendered
+              white, the same brightness(0)/invert(1) pair Navbar and
+              SiteFooter use on this exact PNG, since the hero stage under
+              it is always dark. */}
+          <Image
+            src="/logo.png"
+            alt="Center Quest"
+            width={692}
+            height={512}
+            preload
+            className="h-12 w-auto brightness-0 invert sm:h-14"
+          />
         </LocalizedLink>
 
         <div className="hidden justify-self-center md:flex">
