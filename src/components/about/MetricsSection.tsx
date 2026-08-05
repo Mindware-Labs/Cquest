@@ -4,14 +4,13 @@ import { motion } from "motion/react";
 import { useCallback, useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
-import { focusRiseVariants, groupVariants, ruleYVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
+import { EASE_OUT, focusRiseVariants, groupVariants, ruleYVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { gsap } from "@/lib/gsap";
 import { ABOUT_METRICS, TEAM_HR_NOTE } from "./data";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
-import TeamConstellation from "./TeamConstellation";
 import styles from "./MetricsSection.module.css";
 
 /* The lead is TEAM_HR_NOTE verbatim — already-approved client copy about the
@@ -24,11 +23,13 @@ const COPY = {
     eyebrow: "Our team",
     heading: "The team behind the operation.",
     cta: "Meet the team",
+    photoLabel: "Team photo — coming soon",
   },
   es: {
     eyebrow: "Nuestro equipo",
     heading: "El equipo detrás de la operación.",
     cta: "Conoce al equipo",
+    photoLabel: "Fotografía del equipo — próximamente",
   },
 };
 
@@ -92,10 +93,9 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
       <div aria-hidden className={`${styles.grain} cq-noise`} />
 
       <div className={`${container.container} ${styles.inner}`}>
-        {/* Copy on the left, the org chart in miniature on the right. The
-            figure is not decoration: it is the /team page's own diagram at a
-            glance, so the link under the copy reads as "go and open this"
-            rather than as a bare cross-reference. */}
+        {/* Copy on the left, an empty photo frame on the right — honest
+            placeholder for the team photograph that has not been shot yet,
+            rather than an invented diagram standing in for it. */}
         <div className={styles.lede}>
           <motion.div
             className={styles.metricsHeading}
@@ -122,7 +122,33 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
           </motion.div>
 
           <div className={styles.figure}>
-            <TeamConstellation reduced={reduced} />
+            <motion.div
+              className={styles.photoFrame}
+              initial={reduced ? false : { opacity: 0, scale: 0.97 }}
+              whileInView={reduced ? undefined : { opacity: 1, scale: 1 }}
+              viewport={VIEWPORT}
+              transition={{ duration: 0.6, ease: EASE_OUT }}
+            >
+              <span aria-hidden className={styles.photoFrameCorner} data-corner="tl" />
+              <span aria-hidden className={styles.photoFrameCorner} data-corner="tr" />
+              <span aria-hidden className={styles.photoFrameCorner} data-corner="bl" />
+              <span aria-hidden className={styles.photoFrameCorner} data-corner="br" />
+              <svg
+                aria-hidden
+                className={styles.photoFrameIcon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="4.5" width="18" height="15" rx="1.5" />
+                <circle cx="8.5" cy="10" r="1.75" />
+                <path d="M21 15.5 15.6 10.6a1.6 1.6 0 0 0-2.15.02L6 17" />
+              </svg>
+              <span className={styles.photoFrameLabel}>{t.photoLabel}</span>
+            </motion.div>
           </div>
         </div>
         <motion.dl
@@ -136,14 +162,10 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
             <motion.div key={metric.id} variants={statCardVariants}>
               <motion.dt variants={statLineVariants}>
                 {/* ── The riser ────────────────────────────────────────
-                    The org chart above drops a hairline from its bus onto
-                    each portrait. This is the same drawing one tier down:
-                    every figure hangs from the same kind of line, landing on
-                    the same kind of junction. That is what turns the band's
-                    empty middle from padding into the distance the diagram
-                    travels — and what lets four numbers read as the last
-                    level of one schematic rather than as a stat strip
-                    parked underneath a picture.
+                    A hairline dropping onto a junction dot, the same mark
+                    the metric list's top rule carries elsewhere in this
+                    band — what turns the empty middle from padding into a
+                    distance the layout is deliberately crossing.
 
                     It lives inside the <dt> because a <div> grouping inside
                     a <dl> may contain nothing but dt/dd; absolute

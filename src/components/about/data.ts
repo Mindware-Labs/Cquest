@@ -117,8 +117,9 @@ export const ABOUT_SECTORS: ReadonlyArray<{
   },
 ];
 
-/* NOTE — general clients wall (home #clients): currently an UpcomingSection
-   placeholder by client request. When it gets built, derive its roster as the
-   union of the two per-service CLIENT_LOGOS lists (call-center wins the
-   dedupe for Rig Hut / Paso Rápido — its `provides` write-ups cover both
-   sides of those engagements). See git history for a working implementation. */
+/* NOTE — general clients wall (home "Clients who trust Center Quest"): not
+   built yet, and its placeholder section was removed from AboutSection by
+   client request. When it gets built, derive its roster as the union of the
+   two per-service CLIENT_LOGOS lists (call-center wins the dedupe for Rig
+   Hut / Paso Rápido — its `provides` write-ups cover both sides of those
+   engagements). See git history for a working implementation. */

@@ -73,6 +73,7 @@ const clamp01 = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t);
 export default function ParticleLogo({
   active,
   reduced,
+  resolved = false,
   color = "#3f738d",
   accent = "#74c3d5",
   className,
@@ -80,6 +81,15 @@ export default function ParticleLogo({
   /** False parks the loop — off screen, hidden tab, or before the hub lands. */
   active: boolean;
   reduced: boolean;
+  /* True once the real image on top has taken over. The cloud's job was to
+     draw the eye to the formation, not to keep drawing forever underneath a
+     mark that has already landed — left running, its idle drift keeps
+     nudging points a fraction of a pixel apart at the mark's own antialiased
+     edge, which reads as a permanent, gently animating grain around every
+     stroke rather than as a settled logo. Stopping the loop here, paired
+     with the CSS opacity this drives on the canvas itself, is what makes the
+     handoff to the real asset actually final. */
+  resolved?: boolean;
   color?: string;
   accent?: string;
   className?: string;
@@ -87,6 +97,7 @@ export default function ParticleLogo({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   const reducedRef = useRef(reduced);
+  const resolvedRef = useRef(resolved);
   /* Published by the engine below. The loop stops itself the moment the gate
      closes — that is the whole point of gating it — so reopening the gate
      needs something to start it again. */
@@ -99,9 +110,10 @@ export default function ParticleLogo({
   useEffect(() => {
     activeRef.current = active;
     reducedRef.current = reduced;
+    resolvedRef.current = resolved;
     paintRef.current = { color, accent };
-    if (active && !reduced) wakeRef.current?.();
-  }, [active, reduced, color, accent]);
+    if (active && !reduced && !resolved) wakeRef.current?.();
+  }, [active, reduced, resolved, color, accent]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -168,8 +180,12 @@ export default function ParticleLogo({
       start = now;
       draw(elapsed);
       /* The formation is finite; only the idle keeps it running, and the idle
-         is what the ambient gate exists to stop. */
-      frame = activeRef.current && !reducedRef.current ? requestAnimationFrame(loop) : 0;
+         is what the ambient gate exists to stop — resolved stops it for good,
+         the others merely pause it. */
+      frame =
+        activeRef.current && !reducedRef.current && !resolvedRef.current
+          ? requestAnimationFrame(loop)
+          : 0;
     };
 
     wakeRef.current = () => {
@@ -178,7 +194,7 @@ export default function ParticleLogo({
          wake before the figure is on screen would run one frame at elapsed 0
          — every point still outside the box — and stop, leaving the core
          permanently blank for anyone whose gate never opened. */
-      if (!activeRef.current || reducedRef.current) return;
+      if (!activeRef.current || reducedRef.current || resolvedRef.current) return;
       start = 0;
       frame = requestAnimationFrame(loop);
     };
@@ -312,5 +328,5 @@ export default function ParticleLogo({
        re-sample the bitmap and restart the assembly from scratch. */
   }, []);
 
-  return <canvas ref={canvasRef} className={className} aria-hidden />;
+  return <canvas ref={canvasRef} className={className} aria-hidden data-resolved={resolved ? "" : undefined} />;
 }

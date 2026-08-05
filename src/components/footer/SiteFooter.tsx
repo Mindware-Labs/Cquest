@@ -139,19 +139,19 @@ export default function SiteFooter() {
               aria-label={dict.nav.homeLinkAriaLabel}
               className={styles.brandLink}
             >
-              {/* Height-constrained, width auto. logo.png is 173×128, so
-                  128 CSS px is the asset's ceiling; at 2.25rem it has pixels
-                  to spare on any display. Whitened with the same
-                  `brightness(0) invert(1)` pair Navbar and HeroNav use on
-                  this exact PNG — brightness(0) crushes every colour to
-                  black, invert(1) flips that to pure white, which is why it
-                  works regardless of the logo's own colours and why the
-                  order matters. */}
+              {/* Height-constrained, width auto. logo.png ships at 692×512
+                  (4x its 1.35:1 display ratio) so it stays crisp at retina
+                  DPRs; at 2.25rem it has pixels to spare on any display.
+                  Whitened with the same `brightness(0) invert(1)` pair
+                  Navbar and HeroNav use on this exact PNG — brightness(0)
+                  crushes every colour to black, invert(1) flips that to
+                  pure white, which is why it works regardless of the
+                  logo's own colours and why the order matters. */}
               <Image
                 src="/logo.png"
                 alt="Center Quest"
-                width={173}
-                height={128}
+                width={692}
+                height={512}
                 className={styles.brandLogo}
               />
             </LocalizedLink>

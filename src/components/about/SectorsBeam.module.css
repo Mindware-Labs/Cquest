@@ -557,6 +557,17 @@
   z-index: 1;
   width: 74%;
   aspect-ratio: 1;
+  transition: opacity 700ms var(--ease-out);
+}
+
+/* Once the real asset has resolved on top, the cloud's loop stops itself
+   (see ParticleLogo's `resolved` prop) and this fades its last drawn frame
+   out in step with the mark fading in below — a handoff, not two layers
+   left stacked. Without it the cloud's idle drift kept nudging points at the
+   mark's antialiased edge forever, which read as the logo never quite
+   finishing rather than as a settled mark. */
+.hubCloud[data-resolved] {
+  opacity: 0;
 }
 
 .hubMark {

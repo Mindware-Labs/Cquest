@@ -642,17 +642,25 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
 
                 They are the same shape in the same box, so the handover
                 reads as the mark coming into focus rather than as one thing
-                being swapped for another. The cloud stays behind afterwards:
-                the field never stops holding the core together.
+                being swapped for another. `resolved` retires the cloud once
+                that happens — its loop stops and it fades out in step with
+                the real asset fading in — rather than leaving it idling
+                underneath forever, which used to read as a permanent, faint
+                grain around the mark instead of a settled logo.
 
                 `alt` carries the name, which is why there is no separate
                 visually-hidden label. The canvas is decoration by then. */}
-            <ParticleLogo active={fieldActive} reduced={reduced} className={styles.hubCloud} />
+            <ParticleLogo
+              active={fieldActive}
+              reduced={reduced}
+              resolved={markShown}
+              className={styles.hubCloud}
+            />
             <Image
               src="/logo.png"
               alt={t.hub}
-              width={173}
-              height={128}
+              width={692}
+              height={512}
               className={styles.hubMark}
               data-shown={markShown ? "" : undefined}
             />

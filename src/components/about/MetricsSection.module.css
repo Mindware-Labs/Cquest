@@ -222,6 +222,60 @@
   padding-inline: 0;
 }
 
+/* ── The photo frame ──────────────────────────────────────────────────────
+   No team photography exists yet, so this is an honest empty frame rather
+   than a stand-in animation: a dashed plate with crop-mark corners, sized to
+   the aspect ratio the real photo will fill. Same "visibly unfinished on
+   purpose" rule as UpcomingSection's placeholder panel, restated in this
+   band's own dark, instrument-drafted register instead of that one's light
+   surface. */
+.photoFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  aspect-ratio: 21 / 10;
+  border: 1px dashed color-mix(in srgb, var(--ab-celeste) 28%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, white 2.5%, transparent);
+}
+
+/* Crop-mark corners — the same terse instrument language the org chart used
+   (terminals, datum ticks): a frame that reads as measured, not decorative. */
+.photoFrameCorner {
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 55%, white);
+}
+
+.photoFrameCorner[data-corner="tl"] { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.photoFrameCorner[data-corner="tr"] { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+.photoFrameCorner[data-corner="bl"] { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+.photoFrameCorner[data-corner="br"] { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+.photoFrameIcon {
+  width: clamp(2.25rem, 4vw, 3rem);
+  height: clamp(2.25rem, 4vw, 3rem);
+  color: color-mix(in srgb, var(--ab-celeste) 55%, white);
+  opacity: 0.7;
+}
+
+.photoFrameLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  color: color-mix(in srgb, var(--ab-celeste) 45%, rgba(255, 255, 255, 0.7));
+}
+
+@media (max-width: 42rem) {
+  .photoFrame { aspect-ratio: 16 / 11; }
+}
+
 /* Display type and figures share ONE size. That is the tension in this band:
    the same 4.25rem at weight 600 on the left and weight 200 on the right,
    with nothing but tracked micro-caps between them. A heading that outranks
@@ -269,10 +323,10 @@
 .metricList > div + div { border-left: 1px solid var(--ab-rule-invert); }
 
 /* ── Where the riser lands ───────────────────────────────────────────────
-   The junction, sitting on the ledger's top rule at exactly the mix
-   TeamConstellation paints its own bus junctions in (celeste 58%). The two
-   drawings have to agree to the value or the eye files them as two ideas
-   that merely look similar. */
+   The junction, sitting on the ledger's top rule at celeste 58% — the same
+   mix the photo frame's own accents are drawn from, so the two elements
+   read as one coordinated palette rather than as two ideas that merely
+   look similar. */
 .metricList > div::before {
   content: "";
   position: absolute;

@@ -25,31 +25,8 @@ export default function AboutSection() {
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
       <MetricsSection reduced={reduced} />
       <StorySection reduced={reduced} />
-      {/* Reserved seats, not shipped designs: each is marked "in development"
-          on purpose (see UpcomingSection). The clients wall will hold the
-          general roster across all three business lines; partnerships closes
-          the section once its content exists. */}
-      <UpcomingSection
-        id="clients"
-        reduced={reduced}
-        title={{
-          en: "Clients who trust Center Quest",
-          es: "Clientes que confían en Center Quest",
-        }}
-        note={{
-          en: "The general client roster — one wall across call center, BPO and systems development — will live here. This section is in development.",
-          es: "Aquí vivirá la cartera general de clientes — un solo muro a través de call center, BPO y desarrollo de sistemas. Esta sección está en desarrollo.",
-        }}
-      />
-      <UpcomingSection
-        id="pillars"
-        reduced={reduced}
-        title={{ en: "What we stand for", es: "En qué creemos" }}
-        note={{
-          en: "Our mission, vision and values will be presented here. This section is in development.",
-          es: "Aquí presentaremos nuestra misión, visión y valores. Esta sección está en desarrollo.",
-        }}
-      />
+      {/* Reserved seat, not a shipped design: marked "in development" on
+          purpose (see UpcomingSection). Closes once its content exists. */}
       <UpcomingSection
         id="partnerships"
         reduced={reduced}

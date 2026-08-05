@@ -14,8 +14,8 @@ export default function Footer() {
         <Image
           src="/logo.png"
           alt="Center Quest"
-          width={173}
-          height={128}
+          width={692}
+          height={512}
           className={styles.footerLogo}
         />
       </LocalizedLink>

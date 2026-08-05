@@ -107,10 +107,22 @@
   padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
 }
 
+/* Shrunk to its content — not the grid column, which runs much wider — so
+   centring the logo below has something honest to centre against: the
+   text's own rendered width, not the empty column margin beside it.
+   `width: fit-content`, not a `max-width: 20ch` of its own: `ch` resolves
+   against the element's OWN font-size, and this block sits at the body
+   size while `.statement` is set in the large heading size — the same
+   "20ch" on each is a completely different pixel width, and capping the
+   block to its own tiny 20ch was what squeezed the heading into four short
+   lines instead of the two it wraps to on its own. Sizing to fit-content
+   measures the actual rendered children instead, so the heading keeps its
+   own wrap and this box just hugs it. */
 .statementBlock {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: fit-content;
 }
 
 .brandLink {
@@ -119,16 +131,19 @@
      rather than being a bare decorative image. */
   min-height: 2.75rem;
   align-items: center;
+  /* The one exception to the block's flush-left flow: centred against the
+     statement text's own width. */
+  align-self: center;
 }
 
-/* Height-constrained, width auto. logo.png is 173×128, so 128 CSS px is the
-   asset's hard ceiling — at 2.25rem (36px) it still has pixels to spare on a
-   2× display. Raising this past 4rem needs a bigger asset or an SVG, not a
-   bigger number. Down here it only has to identify the brand; the statement
-   below carries the weight. */
+/* Height-constrained, width auto. logo.png ships at 692×512, so 512 CSS px
+   is the asset's hard ceiling — at 4.25rem (68px) it still has pixels to
+   spare on any display up to 3×. This is the site's last word, and the
+   mark now reads at the "signature scale" the block comment above already
+   promised. */
 .brandLogo {
   width: auto;
-  height: 2.25rem;
+  height: 4.25rem;
   filter: brightness(0) invert(1);
 }
 
