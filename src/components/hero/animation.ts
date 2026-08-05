@@ -8,6 +8,14 @@ import type { NavLink } from "@/components/navigation/data";
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 /** ease-out-expo — mirrors `--ease-out-soft`. Long, cinematic settles. */
 export const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
+/**
+ * ease-in-expo — the mirror of the house expo, for anything LEAVING. Exits
+ * accelerate; an exit that settles reads as a second entrance. Used by the
+ * hidden variants below so a replay's retreat is one quick authored gesture
+ * instead of Motion's per-value default springs (which can bounce a masked
+ * word back below its own baseline — the exact curve the house banned).
+ */
+export const EASE_IN_EXPO = [0.7, 0, 0.84, 0] as const;
 
 /**
  * ── Act one: the mascot alone ────────────────────────────────────────────
@@ -46,13 +54,33 @@ export const REVEAL = {
   headline: 0.18,
   /** Per-word offset. 70ms reads as one wave, not seven events. */
   headlineStep: 0.07,
-  /** Supporting lead. */
+  /**
+   * Supporting lead — last, so it's the final thing the eye lands on.
+   * A BASE, not the beat itself: "last" depends on how many words the
+   * headline has, which depends on the locale — see leadDelayFor below.
+   */
   lead: 0.5,
-  /** Primary CTA — last, so it's the final thing the eye lands on. */
-  cta: 0.6,
-  /** Scroll cue, once the composition has resolved. */
+  /** Scroll cue, once the composition has resolved. Also a base — the real
+   *  delay is leadDelayFor(words) + 0.28, passed into HeroScrollCue. */
   cue: 0.78,
 } as const;
+
+/**
+ * The lead's actual delay for a given headline. The stated intent — the
+ * lead lands last — was only true of the Spanish headline: at six words its
+ * final mask starts at 0.53s and the fixed 0.5 was a hair early; English,
+ * at nine words, had the lead arriving a full quarter-second before the
+ * display tier resolved, inverting the hierarchy. 0.2s after the last mask
+ * starts is the word ~70% seated on the expo curve — arrival is felt, not
+ * waited for. Floored at REVEAL.lead so a hypothetical short headline never
+ * lands its lead before the rule has finished drawing.
+ */
+export function leadDelayFor(wordCount: number): number {
+  return Math.max(
+    REVEAL.lead,
+    REVEAL.headline + (wordCount - 1) * REVEAL.headlineStep + 0.2,
+  );
+}
 
 /**
  * Beats *inside* the mascot's CSS timeline, relative to `BEAT.scene`.
@@ -73,6 +101,11 @@ export const SCENE = {
  * Beat of silence after the last keystroke before act two begins. Without it
  * the page starts arriving on the same frame the line lands, and the two read
  * as one event instead of a statement and its answer.
+ *
+ * The silence is marked, not empty: the last keystroke flips `data-said` on
+ * the mascot (QuestBotScene), the caret switches from burning solid to
+ * breathing and the halo takes one quiet swell — the mascot handing the
+ * stage over, so act two arrives as an answer rather than a scheduled event.
  */
 export const INTRO_TAIL_MS = 420;
 
@@ -120,7 +153,14 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
  * mask already does the hiding and a fade would only muddy the edge.
  */
 export const wordVariants: Variants = {
-  hidden: { y: "116%" },
+  /* The exit is uniform — no reverse stagger. On a replay the words leave
+     as one curtain, which is calmer than unwinding the wave; hidden-variant
+     transitions never fire on first mount (initial="hidden" renders without
+     animating), so first paint pays nothing for this. */
+  hidden: {
+    y: "116%",
+    transition: { duration: 0.45, ease: EASE_IN_EXPO },
+  },
   visible: (i: number) => ({
     y: "0%",
     transition: {
@@ -134,7 +174,12 @@ export const wordVariants: Variants = {
 /** Generic rise used by the lead and the CTA. Blur stays ≤8px (Safari cost). */
 export function rise(delay: number, distance = 18): Variants {
   return {
-    hidden: { opacity: 0, y: distance, filter: "blur(6px)" },
+    hidden: {
+      opacity: 0,
+      y: distance,
+      filter: "blur(6px)",
+      transition: { duration: 0.35, ease: EASE_IN_EXPO },
+    },
     visible: {
       opacity: 1,
       y: 0,
@@ -144,9 +189,13 @@ export function rise(delay: number, distance = 18): Variants {
   };
 }
 
-/** Hairline that draws from its left edge. */
+/** Hairline that draws from its left edge — and collapses back to it. */
 export const ruleVariants: Variants = {
-  hidden: { scaleX: 0, opacity: 0 },
+  hidden: {
+    scaleX: 0,
+    opacity: 0,
+    transition: { duration: 0.4, ease: EASE_IN_EXPO },
+  },
   visible: {
     scaleX: 1,
     opacity: 1,

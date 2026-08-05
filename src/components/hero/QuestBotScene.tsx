@@ -50,6 +50,12 @@ export default function QuestBotScene({
   /* True once the mascot has finished assembling. Only then does it start
      tracking the pointer — a gaze that fights the roll-in reads as a glitch. */
   const [settled, setSettled] = useState(false);
+  /* True from the last keystroke: the mascot has said its line and is now
+     waiting. The CSS reads it as `data-said` — the caret switches from
+     burning solid (typing) to breathing (waiting) and the halo takes one
+     quiet swell, so the INTRO_TAIL beat reads as the mascot handing the
+     stage over rather than as dead air. */
+  const [said, setSaid] = useState(false);
   const [replayReady, setReplayReady] = useState(false);
   /* True once the speech bubble has popped, which is when its link becomes
      real. Tracked separately from `settled` because the bubble arrives at
@@ -87,9 +93,19 @@ export default function QuestBotScene({
   const leanX = useTransform(smoothX, [-1, 1], [-4.5, 4.5]);
   const leanY = useTransform(smoothY, [-1, 1], [-2.5, 2.5]);
 
+  /* ── Acknowledgement ───────────────────────────────────────────────────
+     The bubble is the mascot's own ask, so pointing at it (or landing
+     keyboard focus on it) earns a response: the eye dilates ~6% on a
+     spring. Its own motion group, deliberately — `.core` is animated by
+     coreLean/coreScan in CSS, and a scale written to the same element
+     would lose that argument. */
+  const dilate = useMotionValue(1);
+  const dilateSpring = useSpring(dilate, { stiffness: 260, damping: 22 });
+
   const beginRun = useCallback(() => {
     startedRef.current = true;
     setSettled(false);
+    setSaid(false);
     setReplayReady(false);
     setSayReady(false);
     if (typedLineRef.current) typedLineRef.current.textContent = "";
@@ -236,6 +252,7 @@ export default function QuestBotScene({
       timers.push(
         window.setTimeout(() => {
           if (typedLineRef.current) typedLineRef.current.textContent = line;
+          setSaid(true);
           setReplayReady(true);
           introDoneRef.current?.();
         }, 0),
@@ -251,7 +268,10 @@ export default function QuestBotScene({
         timers.push(window.setTimeout(() => type(i + 1), keystrokeDelay(line[i - 1] ?? "")));
         return;
       }
-      /* Last keystroke has landed. This is the end of act one. */
+      /* Last keystroke has landed. This is the end of act one. `said` flips
+         NOW, not after the tail — the tail is the beat the caret spends
+         breathing and the halo spends swelling (see the module CSS). */
+      setSaid(true);
       timers.push(
         window.setTimeout(() => {
           setReplayReady(true);
@@ -276,6 +296,7 @@ export default function QuestBotScene({
         key={runId}
         className={cx(styles.robot, runId > 0 && styles.run)}
         data-ambient={alive ? "on" : "off"}
+        data-said={said ? "true" : "false"}
       >
         {/* viewBox height trimmed from 470 to 432. The lowest thing the scene
             ever draws is the ground flash at its widest — absolute y ≈ 410 —
@@ -407,14 +428,21 @@ export default function QuestBotScene({
                         pointerEvents="none"
                       />
 
-                      {/* Eye — leads the body, so the head arrives first. */}
+                      {/* Eye — leads the body, so the head arrives first.
+                          The inner group carries the bubble-hover dilation;
+                          see the `dilate` motion value above. */}
                       <motion.g style={{ x: gazeX, y: gazeY }}>
-                        <g className={styles.core}>
-                          <circle cx="2" cy="-2" r="24" fill="#06202C" opacity=".55" />
-                          <circle cx="2" cy="-2" r="21" fill="none" stroke="#3080a2" strokeOpacity=".7" strokeWidth="2.4" />
-                          <circle className={styles.lens} cx="2" cy="-2" r="16" fill="url(#qbLensGrad)" opacity=".12" />
-                          <circle cx="-3" cy="-8" r="4.6" fill="#fff" opacity=".85" />
-                        </g>
+                        <motion.g
+                          className={styles.coreDilate}
+                          style={{ scale: dilateSpring }}
+                        >
+                          <g className={styles.core}>
+                            <circle cx="2" cy="-2" r="24" fill="#06202C" opacity=".55" />
+                            <circle cx="2" cy="-2" r="21" fill="none" stroke="#3080a2" strokeOpacity=".7" strokeWidth="2.4" />
+                            <circle className={styles.lens} cx="2" cy="-2" r="16" fill="url(#qbLensGrad)" opacity=".12" />
+                            <circle cx="-3" cy="-8" r="4.6" fill="#fff" opacity=".85" />
+                          </g>
+                        </motion.g>
                       </motion.g>
                     </motion.g>
                   </g>
@@ -436,11 +464,39 @@ export default function QuestBotScene({
             aria-label={dict.hero.sayCtaLabel}
             className={styles.sayBox}
             inert={!sayReady}
+            /* The mascot acknowledges attention on its own ask. Hover needs
+               no gaze aim — the window pointermove already has the cursor at
+               the bubble — but keyboard focus has no cursor, so it aims the
+               gaze springs up-right at the bubble by hand: parity of
+               attention for non-pointer users. `inert` above blocks all of
+               this until the bubble has actually popped. */
+            onPointerEnter={() => {
+              if (!reduced && settled) dilate.set(1.06);
+            }}
+            onPointerLeave={() => dilate.set(1)}
+            onFocus={() => {
+              if (reduced || !settled) return;
+              dilate.set(1.06);
+              pointerX.set(0.55);
+              pointerY.set(-0.7);
+            }}
+            onBlur={() => {
+              dilate.set(1);
+              pointerX.set(0);
+              pointerY.set(0);
+            }}
           >
             {/* aria-hidden: the accessible name comes from the label above.
                 Mid-typing this line is a fragment ("dame tu mi"), which is
                 worse than useless read aloud. */}
-            <div aria-hidden className={styles.sayEyebrow}>{dict.hero.onlineLabel}</div>
+            {/* The dot is the live half of the status line and the label is
+                the stated half — a presence light the way an agent console
+                shows one. Decorative: the whole bubble's accessible name
+                comes from the `aria-label` on the link above. */}
+            <div aria-hidden className={styles.sayEyebrow}>
+              <span className={styles.presence} />
+              {dict.hero.onlineLabel}
+            </div>
             <div aria-hidden className={styles.sayLine}>
               <span ref={typedLineRef} />
               <span className={styles.caret} />

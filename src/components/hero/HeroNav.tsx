@@ -5,7 +5,7 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
+import { EASE_IN_EXPO, EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
 
 export default function HeroNav({
   reduced,
@@ -23,7 +23,13 @@ export default function HeroNav({
     <motion.div
       initial={reduced ? false : { opacity: 0, y: -14 }}
       animate={revealed ? { opacity: 1, y: 0 } : { opacity: 0, y: -14 }}
-      transition={{ duration: 0.7, ease: EASE_OUT, delay: revealed ? REVEAL.nav : 0 }}
+      /* The retreat (a replay returning the hero to act one) is its own
+         gesture: shorter and accelerating, not the entrance played back. */
+      transition={
+        revealed
+          ? { duration: 0.7, ease: EASE_OUT, delay: REVEAL.nav }
+          : { duration: 0.35, ease: EASE_IN_EXPO }
+      }
       /* Hidden means hidden: while it's invisible the chrome must also be
          untabbable and unclickable, or there's an invisible menu button
          sitting over the mascot waiting to be hit. */
@@ -34,7 +40,13 @@ export default function HeroNav({
         <LocalizedLink
           href="/"
           aria-label={dict.nav.homeLinkAriaLabel}
-          className="ml-2 shrink-0 justify-self-start sm:ml-3"
+          /* From lg the mark starts on the copy's left edge — same
+             `--hero-inset` the composition's cell uses as padding, on top of
+             the identical container padding this row and that plane both
+             carry. The 8/12px nudge below lg is the mobile row's own
+             composition and has nothing to do with the copy, which is
+             full-width and flush down there. */
+          className="ml-2 shrink-0 justify-self-start sm:ml-3 lg:ml-[var(--hero-inset)]"
         >
           {/* The real mark, not the placeholder compass — always rendered
               white, the same brightness(0)/invert(1) pair Navbar and
@@ -55,10 +67,6 @@ export default function HeroNav({
         </div>
 
         <div className="flex items-center justify-self-end gap-4">
-          <span className="hidden font-mono text-xs uppercase tracking-[0.2em] text-white/55 md:inline">
-            {dict.hero.locationLabel}
-          </span>
-
           <button
             type="button"
             aria-expanded={open}

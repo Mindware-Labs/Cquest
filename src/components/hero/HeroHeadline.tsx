@@ -30,6 +30,15 @@ export default function HeroHeadline({
   className?: string;
 }) {
   const words = text.split(" ");
+  /* The copy's rhetoric is a two-sentence contrast (we run ↔ you grow), and
+     from lg the second sentence renders one tonal step down (.cq-word-soft,
+     gated to the desktop measure in site.css where the sentence boundary
+     provably lands at a line end). The boundary is found, not marked: the
+     first word ending in a full stop, in either locale — and if future copy
+     has no mid-string period, nothing softens. The aria-label is untouched,
+     so a screen reader still hears one clean sentence pair. */
+  const boundary = words.findIndex((word) => word.endsWith("."));
+  const tiered = boundary !== -1 && boundary < words.length - 1;
 
   return (
     <motion.h1
@@ -40,7 +49,10 @@ export default function HeroHeadline({
     >
       {words.map((word, i) => (
         <Fragment key={`${word}-${i}`}>
-          <span aria-hidden className="cq-word">
+          <span
+            aria-hidden
+            className={tiered && i > boundary ? "cq-word cq-word-soft" : "cq-word"}
+          >
             <motion.span variants={wordVariants} custom={i}>
               {word}
             </motion.span>

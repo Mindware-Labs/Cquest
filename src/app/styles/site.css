@@ -36,27 +36,148 @@
    overlaps photo that was never visible — the first viewport stays 100% hero. */
 .cq-hero {
   min-height: calc(100svh + var(--curtain));
+
+  /* ── The hero's left edge ──────────────────────────────
+     Where the nav's mark, the accent rule, the headline and the lead all
+     begin. One property rather than the same clamp written twice, because
+     "the logo is aligned with the text" has to survive someone editing one
+     of them: the copy reads it as padding on its grid cell, the mark as a
+     margin on its link, and neither can drift.
+
+     It sits on top of the container padding both of them already carry
+     (px-4 → xl:px-10), which is why it is an indent and not the whole
+     offset. Zero below lg: there the copy is a full-width stacked cell and
+     an inset would only eat measure it doesn't have. */
+  --hero-inset: 0px;
+
+  /* ── The stage's key light ─────────────────────────────
+     Where the field's standing pool of light sits — on the mascot's mark,
+     which is a layout fact, not a paint fact, so it lives here with the
+     other layout facts. Below lg the mascot owns the lower row of the
+     stacked band; from lg it parks in the right third (see the stage rules
+     in QuestBotScene.module.css — change one, change the other). The y sits
+     slightly ABOVE the body so the pool's lower falloff dims past the floor
+     line on its own: light from above, floor falling away to shadow. */
+  --hero-key-x: 50%;
+  --hero-key-y: 74%;
+
+  /* ── The composition band's floor ──────────────────────
+     Where the composition plane's bottom edge sits. On tablet/desktop this
+     is simply the curtain line. On phones the hero grows to 100lvh (below)
+     so the strip a collapsing URL bar reveals is dark field, not the
+     services sheet's white lip — while the band keeps measuring the 100svh
+     first frame, so the composition's centring never moves between toolbar
+     states. */
+  --hero-band-bottom: var(--curtain);
+}
+
+@media (max-width: 767.98px) {
+  .cq-hero {
+    /* lvh, not dvh, deliberately: dvh re-resolves while the toolbar
+       animates and would reflow the hero mid-scroll. lvh is static — the
+       hero simply owns the largest frame the phone can show, and svh/lvh
+       share a support cohort so the pair can't split. */
+    min-height: calc(100lvh + var(--curtain));
+    --hero-band-bottom: calc(100lvh - 100svh + var(--curtain));
+  }
+}
+
+/* The second arm of this list is the landscape-phone guard: short-wide
+   viewports get the desktop's single-row composition (see .cq-hero-band
+   below), so they take the desktop inset too. Keep the list in step with
+   the h1 measure, the vignette, and the stage-parking block in
+   QuestBotScene.module.css. */
+@media (min-width: 1024px),
+  (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .cq-hero {
+    /* ~10% of the frame at every desktop width — where a centred content
+       column would put the text on the sizes this is read at. Capped at
+       12rem so an ultrawide doesn't keep walking it inward; floored at
+       2.5rem so it stays an indent and not a margin. */
+    --hero-inset: clamp(2.5rem, 8vw, 12rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cq-hero {
+    /* The mascot's centre solves to ~70% of the frame at every desktop
+       width (the margin-inline maths in QuestBotScene.module.css); its
+       body sits a little above the band's middle. */
+    --hero-key-x: 70%;
+    --hero-key-y: 56%;
+  }
+}
+
+/* ── Landscape-phone guard ───────────────────────────────
+   Below 560px of height the stacked two-row band physically cannot seat
+   both cells, so it collapses into the desktop's single-row overlap
+   composition — the same collapse the lg breakpoint performs, reproduced
+   here in plain CSS (unlayered, so it outranks the row utilities). The
+   copy is last in the DOM and wins the hit test, exactly as documented on
+   the composition plane in HeroImage.tsx. */
+@media (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .cq-hero-band {
+    grid-template-rows: 1fr;
+    padding-inline: max(1.5rem, env(safe-area-inset-left))
+      max(1.5rem, env(safe-area-inset-right));
+  }
+
+  .cq-hero-band > * {
+    grid-row-start: 1;
+    grid-column-start: 1;
+  }
 }
 
 /* ── Hero reactive surface ───────────────────────────────
    The dark field is intentionally architectural rather than atmospheric.
    A canvas grid above it provides the only spatial gesture, keeping the
-   composition crisp and avoiding the familiar cloud/nebula treatment. */
+   composition crisp and avoiding the familiar cloud/nebula treatment.
+
+   Two layers, and each is a decision about light rather than filler:
+
+   1. The key light — a static petroleo pool at the mascot's mark
+      (--hero-key-x/y on .cq-hero). The composition claims a lit stage,
+      and a stage lights its mark before the actor arrives; the mascot
+      rolls in and stops inside a light that was already waiting. Petroleo,
+      never cyan: the #7FE9E4 family is the mascot's own. Alpha is the
+      whole game — at 14% this reads as depth; above ~18% it becomes a
+      spotlight effect and cheapens.
+
+   2. The vertical grade — dimmer ceiling, lightest band at the action
+      height (~55%, where the mascot and headline share their axis), then
+      a fall to a true dark apron at the bottom edge so the services
+      sheet's white shoulders cut against real dark. Per-stop channel
+      deltas stay ≤4 to sit under the banding threshold; the grain covers
+      the rest.
+
+   The 118deg petroleo corner wash that used to live here now belongs to
+   .cq-hero-ambience below: it is act two's light, not the room's. */
 .cq-hero-field {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(
-      118deg,
-      color-mix(in srgb, var(--brand-petroleo) 8%, transparent),
-      transparent 38%
+    radial-gradient(
+      38% 32% at var(--hero-key-x) var(--hero-key-y),
+      color-mix(in srgb, var(--brand-petroleo) 14%, transparent),
+      color-mix(in srgb, var(--brand-petroleo) 6%, transparent) 55%,
+      transparent 100%
     ),
-    linear-gradient(180deg, #071116 0%, #0a171e 54%, #081116 100%);
+    linear-gradient(
+      180deg,
+      #050d12 0%,
+      #08131b 34%,
+      #0b1a23 55%,
+      #081019 78%,
+      #04080c 100%
+    );
 }
 
 /* ── Hero parallax planes ────────────────────────────────
-   The three groups the scroll parallax drives: the field behind, the mascot
-   stage, and the copy block. Motion writes their transforms straight to
+   The two groups the scroll parallax drives: the field behind, and the
+   composition (mascot + copy) in front. The copy used to be a third plane
+   with its own pair of motion values, whose ranges were identical to the
+   scene's — a second promoted layer to say the same thing twice. Motion
+   writes their transforms straight to
    `style` on every scroll frame, and — unlike a CSS animation or transition —
    that alone does not promote anything. Without this hint the browser
    re-paints what is underneath those transforms sixty times a second while
@@ -91,6 +212,11 @@
   will-change: auto;
 }
 
+/* Gates the grid canvas AND the room's petroleo wash (the ::before below).
+   Act one is a dark room with one lit mark; when the mascot lands its line
+   the house lights come up — the wash and the grid arrive together on this
+   layer's fade. The grain is deliberately NOT in here any more: texture is
+   the room's constant, light is what changes. */
 .cq-hero-ambience {
   position: absolute;
   inset: 0;
@@ -102,8 +228,34 @@
   transition-timing-function: var(--ease-out-expo);
 }
 
+/* The 118deg corner wash, slightly more present than when it was painted
+   into the always-on field (8% → 11%): a light that turns ON can afford to
+   be. Tree order keeps it beneath the canvas child — same stacking as when
+   it lived in .cq-hero-field. */
+.cq-hero-ambience::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    118deg,
+    color-mix(in srgb, var(--brand-petroleo) 11%, transparent),
+    transparent 42%
+  );
+}
+
 .cq-hero-ambience[data-revealed="true"] {
   opacity: 1;
+  /* Structure first, then light: the chrome and the rule land on the still
+     stage, and the field blooms beneath the headline words as they clear
+     their masks. Delay on the on-state only, so the fade-OUT (a replay's
+     retreat) starts the moment it's asked to. */
+  transition-delay: 240ms;
+}
+
+/* The retreat dims faster than the arrival bloomed — exits accelerate,
+   entrances settle. Mirrors the EASE_IN_EXPO exits in animation.ts. */
+.cq-hero-ambience[data-revealed="false"] {
+  transition-duration: 550ms;
 }
 
 /* ── Field grain ─────────────────────────────────────────
@@ -121,29 +273,61 @@
 }
 
 /* Corner falloff, so the composition reads as a lit stage rather than a
-   flat rectangle of colour. Weighted low and left — that corner carries the
-   headline, and it is the one part of the frame that must stay clean.
-   Static: one paint, no per-frame cost. */
+   flat rectangle of colour. Static: one paint, no per-frame cost.
+
+   The directional arm follows the copy, because the copy is what the
+   anchoring shadow exists to seat. Base rule = the stacked band (copy in
+   the TOP row), so the ink falls from the top-left and the mascot's lower
+   seat stays in the lit centre. From lg — and in the landscape guard,
+   which borrows the desktop composition — the copy is low-left, so the
+   shadow returns there and the radial aperture leans toward the
+   composition's true centre of gravity (between the headline's end and
+   the mascot) instead of the geometric middle. */
 .cq-hero-vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
     radial-gradient(
-      118% 88% at 50% 40%,
+      118% 88% at 50% 44%,
       transparent 40%,
       color-mix(in srgb, var(--ink) 80%, transparent) 100%
     ),
     linear-gradient(
-      to top right,
+      to bottom right,
       color-mix(in srgb, var(--ink) 62%, transparent),
       transparent 46%
     );
 }
 
+/* Keep this list in step with --hero-inset, the h1 measure, and the
+   stage-parking block in QuestBotScene.module.css. */
+@media (min-width: 1024px),
+  (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .cq-hero-vignette {
+    background:
+      radial-gradient(
+        118% 88% at 58% 42%,
+        transparent 40%,
+        color-mix(in srgb, var(--ink) 80%, transparent) 100%
+      ),
+      linear-gradient(
+        to top right,
+        color-mix(in srgb, var(--ink) 62%, transparent),
+        transparent 46%
+      );
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cq-hero-ambience {
+  /* Both attribute states restated at their own specificity — the bare
+     class alone would lose to [data-revealed="false"]'s 0-2-0 and leave
+     reduced-motion users a 550ms fade. */
+  .cq-hero-ambience,
+  .cq-hero-ambience[data-revealed="true"],
+  .cq-hero-ambience[data-revealed="false"] {
     transition-duration: 0ms;
+    transition-delay: 0ms;
   }
 }
 
@@ -154,15 +338,91 @@
 .cq-hero-h1 {
   font-family: var(--font-heading), sans-serif;
   font-weight: 500;
-  /* Sized down from 3.4rem and given a wider measure: at the old cap the
-     headline was a narrow, very heavy column jammed against the left edge,
-     out of proportion with the mascot above it. A wider measure at a smaller
-     size still resolves to two balanced lines but sits calmer in the frame. */
-  font-size: clamp(1.8rem, 3.9vw, 3rem);
+  /* Only the ceiling moved (3rem → 4.5rem); the 3.9vw slope is untouched, so
+     nothing below ~1850px changes shape, it just keeps climbing where it
+     used to flatten out. 4.5rem is where the headline reads at the same
+     proportion of the frame as the reference: ~3.1% of the viewport width in
+     cap height, which for this face's ~0.72 cap ratio lands at 72px on a
+     1857px screen. The floor came up with it, 1.8 → 2.05rem, so phones get
+     the same intent; the vw arm only reaches the floor below ~525px, so this
+     is the small-phone size and nothing else. */
+  font-size: clamp(2.05rem, 3.9vw, 4.5rem);
   line-height: 1.06;
-  letter-spacing: -0.02em;
+  /* Opened from -0.02em. The negative value was the usual reflex for display
+     type — set big, track tight — but it is the wrong reflex for this face:
+     a rounded geometric with wide round bowls and already-narrow sidebearings,
+     so pulling it in further closes the counters against their neighbours
+     instead of tidying the line. In `em`, so it holds at every step of the
+     clamp above rather than only at the size it was judged on.
+
+     It costs measure — every character is 0.03em wider than before — which
+     the 8.8em below has room for: the widest line it has to seat goes from
+     ~7.8em to ~8.1em, and the line it has to refuse stays well over 11em. */
+  letter-spacing: 0.01em;
   max-width: 24ch;
   text-wrap: balance;
+  /* The gap up to the accent rule, on the same doctrine as the gap below:
+     the headline is the only one of the pair that changes size, so `em`
+     here means the air tracks the type — ~24px at the 72px ceiling (where
+     the old fixed mt-6 was judged, so nothing changes there), tightening
+     to ~11px at the phone floor instead of holding a desktop-sized hole
+     open over 33px type. The rule and the headline scale as one lockup. */
+  margin-top: 0.33em;
+  /* The gap down to the lead, and it lives here rather than as a margin on
+     the lead because the headline is the only one of the two that changes
+     size — `em` here is the headline's own size, so the air tracks it from
+     the 33px phone step to the 72px desktop one. On the lead, `em` would
+     have meant its own fixed 17px and the gap would have been frozen at
+     whatever it looked like on one screen.
+
+     It replaces a -8px pull that was judged when this line was 48px. Fixed
+     px against a clamped size ages badly in one direction: the leading below
+     the last baseline grows with the type while the correction does not, so
+     what read as a deliberate tuck at 48px had closed to ~8px of daylight
+     between the "y" of "business." and the lead's cap line at 72px. This
+     lands at roughly 33px there and holds the same proportion everywhere
+     else. The descenders are the reason it errs open — the reference this
+     was drawn from sets its headline in all caps and has none to clear. */
+  margin-bottom: 0.24em;
+}
+
+/* ── The headline's measure, from lg up ──────────────────
+   Deliberately narrow — this is what makes the type stack into short lines
+   instead of running across the frame, and it is the other half of the
+   hero's two-column split (see the stage rules in QuestBotScene.module.css).
+
+   8.8em, not a ch or px value, because what has to hold is a RATIO to the
+   font size: the break points have to survive every step of the clamp above.
+   The number is chosen to sit between two specific lines rather than to look
+   round. In `em` at this face's ~0.56em average advance, it fits "While you
+   grow" (≈7.8em) and refuses "While you grow your" (≈10.6em) — so each
+   sentence takes two lines and the full stop lands at the end of one, which
+   is the rhythm the reference has. The band is wider than the estimate's
+   error: the measure still breaks correctly anywhere from a 0.50em to a
+   0.62em average advance.
+
+   Both strings are written to this measure — 52 characters in English, 45 in
+   Spanish, four lines each. The Spanish one was cut to fit it (see the note
+   in the dictionary): at its original 71 characters no measure that also
+   kept English's sentence breaks could get it under six lines. */
+@media (min-width: 1024px),
+  (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .cq-hero-h1 {
+    max-width: 8.8em;
+  }
+
+  /* ── Two-intensity headline ────────────────────────────
+     The copy's own rhetoric is a contrast — we run ↔ you grow — and at the
+     8.8em measure the sentence boundary provably lands at a line end, so
+     the second sentence can take one tonal step down and the type carries
+     the rhetoric visibly. 0.70 is the judged value and 0.64 the floor:
+     below that it reads as disabled text, not as a tier. Gated to the
+     desktop measure on purpose — in the stacked band `balance` decides the
+     breaks and the tint could shift mid-line, which reads as an error.
+     Contrast over the ink field at 0.70 ≈ 9.9:1. */
+  .cq-word-soft {
+    color: rgba(255, 255, 255, 0.7);
+  }
 }
 
 .cq-word {
@@ -181,16 +441,40 @@
 /* The brand's accent hairline — it opens the hero's copy block and, at the
    other end of the page, the footer's closing statement. Weighted to one
    side rather than symmetric, so it reads as light falling from a single
-   source instead of as a decorative underline. */
+   source — and the source is now literal: a near-white head at the left
+   terminus, cooling into celeste by 24%, sitting exactly on the copy
+   block's shared left datum (--hero-inset). The scaleX draw reveals the
+   hot head first, which reads as the light igniting the line. Keep the
+   hot stop at or below 24%: longer and it becomes a second colour band
+   rather than a source. */
 .cq-hero-rule {
   height: 1px;
   width: clamp(3.5rem, 9vw, 6rem);
   transform-origin: left center;
   background: linear-gradient(
     90deg,
-    var(--brand-celeste),
+    color-mix(in srgb, #fff 45%, var(--brand-celeste)),
+    var(--brand-celeste) 24%,
     color-mix(in srgb, var(--brand-celeste) 0%, transparent)
   );
+}
+
+/* ── Hero lead ───────────────────────────────────────────
+   The supporting line under the headline, recomposed as its own tier:
+   true 400 (the utility's font-light resolved to a real 300, outside the
+   brand's 400/500 system), a size that steps gently with the frame, and
+   the speech bubble's own near-white — #e9f2f8, one step of alpha down —
+   so the h1, the lead and the mascot's voice share one temperature system.
+   Contrast over the ink field ≈ 12:1. `balance` here also settles the old
+   conflict where an inline text-wrap silently overrode `text-pretty`. */
+.cq-hero-lead {
+  font-weight: 400;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  max-width: 42ch;
+  text-wrap: balance;
+  color: rgb(233 242 248 / 0.87);
 }
 
 /* ── Scroll cue ──────────────────────────────────────────
@@ -217,8 +501,24 @@
   inset-inline: 0;
   height: 45%;
   background: linear-gradient(180deg, transparent, var(--brand-celeste), transparent);
-  animation: cq-cue-run 2.6s linear infinite;
+  /* The delay phase-locks the loop to the cue's own entrance: it only
+     starts counting when [data-revealed] flips (the animation is `none`
+     until then), so the first light drops from the top of the hairline
+     just as the line finishes materialising — every load shows the same
+     authored first frame instead of whatever phase a mount-time loop
+     happened to be in. The var is written by HeroScrollCue.tsx as
+     (cueDelay + 0.35s); cueDelay itself derives from the headline's word
+     count (leadDelayFor in animation.ts), so the fallback only covers the
+     style being read before hydration. */
+  animation: cq-cue-run 2.6s linear var(--cq-cue-run-delay, 1.15s) infinite;
   will-change: transform;
+}
+
+/* No loop during act one — the cue is invisible, and an animation that is
+   `none` (rather than paused) restarts from zero at the flip, which is
+   what the phase-lock above needs. */
+.cq-scroll-cue[data-revealed="false"]::after {
+  animation: none;
 }
 
 .cq-scroll-cue[data-ambient="off"]::after {

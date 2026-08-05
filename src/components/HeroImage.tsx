@@ -7,7 +7,6 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
-import HeroActions from "@/components/hero/HeroActions";
 import HeroHeadline from "@/components/hero/HeroHeadline";
 import HeroNav from "@/components/hero/HeroNav";
 import HeroReactiveGrid from "@/components/hero/HeroReactiveGrid";
@@ -19,7 +18,7 @@ import {
   BEAT,
   EASE_OUT_EXPO,
   INTRO_SAFETY_MS,
-  REVEAL,
+  leadDelayFor,
   rise,
   ruleVariants,
 } from "@/components/hero/animation";
@@ -27,6 +26,10 @@ import {
 export default function HeroImage() {
   const { dict } = useI18n();
   const reduced = useReducedMotion() ?? false;
+  /* "The lead lands last" depends on the headline's word count, which
+     depends on the locale — six words in Spanish, nine in English. Derived
+     here so the lead and the cue stay on one clock. */
+  const leadDelay = leadDelayFor(dict.hero.headline.split(" ").length);
   const tabVisible = useTabVisibility();
   const sectionRef = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(true);
@@ -48,17 +51,24 @@ export default function HeroImage() {
      plane, matching the physical handoff into the services sheet. */
   const fieldY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, 54]);
   const fieldScale = useTransform(scrollYProgress, [0, 1], reduced ? [1, 1] : [1, 1.07]);
-  const sceneY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, -24]);
+  /* One value, not two. The copy used to have its own pair with exactly the
+     same range — a second motion value writing the same number to a second
+     promoted layer, and one more thing to keep in step by hand.
+
+     The range ends at 0.55, not 1: the sheet's top edge passes the
+     composition's centre at roughly that point (half a viewport plus the
+     curtain, over a track of 100svh + curtain), so anything after it plays
+     to a covered stage. Compressing the drift and fade into the visible
+     window is what makes the exit read as authored — the stage visibly
+     dims and recedes in answer to the gesture, then the sheet covers it.
+     useTransform clamps past the last stop, so p > 0.55 simply holds. The
+     0.2 midpoint keeps a hesitant half-scroll from washing the hero out:
+     the fade accelerates as commitment increases. */
+  const sceneY = useTransform(scrollYProgress, [0, 0.55], reduced ? [0, 0] : [0, -24]);
   const sceneOpacity = useTransform(
     scrollYProgress,
-    [0, 1],
-    reduced ? [1, 1] : [1, 0.38],
-  );
-  const copyY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [0, -24]);
-  const copyOpacity = useTransform(
-    scrollYProgress,
-    [0, 1],
-    reduced ? [1, 1] : [1, 0.38],
+    [0, 0.2, 0.55],
+    reduced ? [1, 1, 1] : [1, 0.92, 0.42],
   );
   /* The cue has done its job the moment scrolling starts. */
   const cueOpacity = useTransform(
@@ -146,10 +156,10 @@ export default function HeroImage() {
     <section
       ref={sectionRef}
       id="hero"
-      /* Read by styles/site.css to hand the three parallax planes' layers
-         back once the hero has left. `will-change: transform` on a
-         full-viewport element is a standing reservation of GPU memory, and
-         three of them were being held for the whole page. `data-parallax`
+      /* Read by styles/site.css to hand the parallax planes' layers back
+         once the hero has left. `will-change: transform` on a full-viewport
+         element is a standing reservation of GPU memory, and they were being
+         held for the whole page. `data-parallax`
          and not `data-onscreen`: the release has to wait for the transforms
          to stop, not for the loops to park. See the observers above. */
       data-onscreen={onScreen ? "true" : "false"}
@@ -171,23 +181,63 @@ export default function HeroImage() {
           data-revealed={revealed ? "true" : "false"}
         >
           <HeroReactiveGrid ambient={ambient && revealed} reduced={reduced} />
-          <span className="cq-field-grain" />
         </div>
+
+        {/* Outside the ambience on purpose: the grain's job is to keep the
+            bare gradient from banding, and act one — five seconds of the
+            audience staring at exactly that gradient — is where it earns
+            its keep. Texture is the room's constant; what the reveal
+            brings up is light. Same paint order as before (above the
+            canvas, below the vignette). */}
+        <span className="cq-field-grain" />
 
         <div className="cq-hero-vignette" />
       </motion.div>
 
       <HeroNav reduced={reduced} revealed={revealed} />
 
+      {/* ── The composition ──────────────────────────────────────────────
+          One plane holding both halves, and the reason is that "the copy and
+          the mascot sit at the same height" has to be structural. They were
+          two independently placed boxes — the mascot centred in whatever the
+          flex column had left over after the nav, the copy pinned at a
+          measured 27% down the section — so their shared axis was a number
+          that happened to agree, and it stopped agreeing the moment either
+          the nav's height or the headline's measure moved. Two cells of one
+          grid cannot drift apart.
+
+          Absolutely placed from the section's top edge to the curtain line,
+          NOT in the flex flow. The curtain is the strip the services sheet
+          slides up over, so the last row of hero anyone actually sees is
+          `100svh` — centring inside that band is what puts equal air above
+          and below. Out of flow also means the nav no longer pushes the
+          composition down its own height: the nav is chrome pinned to the top
+          edge and simply overlaps, which is the only way the centre of the
+          composition can be the centre of the section.
+
+          Below lg the two can't share an axis without landing on top of each
+          other, so the band splits into two equal halves with each half
+          centring its own cell — the same symmetry, stacked. From lg both
+          cells collapse onto row 1 / column 1 and centre together. */}
       <motion.div
         style={{ y: sceneY, opacity: sceneOpacity }}
-        className="cq-hero-plane relative z-10 flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10"
+        /* `cq-hero-band` is the hook for two plain-CSS refinements in
+           site.css: the svh/lvh band floor (--hero-band-bottom — on phones
+           the hero grows to 100lvh while this band keeps measuring the
+           100svh first frame), and the landscape-phone guard that collapses
+           the two rows into the desktop composition below 560px of height. */
+        className="cq-hero-band cq-hero-plane absolute inset-x-0 bottom-[var(--hero-band-bottom)] top-0 z-10 grid grid-rows-2 items-center px-4 sm:px-6 lg:grid-rows-1 lg:px-8 xl:px-10"
       >
+        {/* First in the DOM, second in the frame. The stage's box is far
+            wider than the mascot drawn inside it, so on desktop it lies
+            across the copy's column; keeping the copy after it means the copy
+            wins the hit test over its own text, instead of the reader getting
+            the mascot's replay cursor while pointing at the headline. */}
         <motion.div
           initial={reduced ? false : { opacity: 0, scale: 0.985 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.95, ease: EASE_OUT_EXPO, delay: BEAT.scene }}
-          className="w-full"
+          className="row-start-2 w-full lg:col-start-1 lg:row-start-1"
         >
           <QuestBotScene
             reduced={reduced}
@@ -196,58 +246,36 @@ export default function HeroImage() {
             onReplayStart={restartIntro}
           />
         </motion.div>
-      </motion.div>
 
-      <motion.div
-        style={{ y: copyY, opacity: copyOpacity }}
-        initial={reduced ? false : "hidden"}
-        animate={revealed ? "visible" : "hidden"}
-        /* Deliberately NOT inert as a block. `inert` pulls a subtree out of
-           the accessibility tree, and the h1 is the page's only heading — a
-           screen reader landing here during act one must still find it. Text
-           that is merely invisible costs nothing; it's the focusable CTA
-           inside that needs neutralising, so the guard sits on that alone. */
-        className="cq-hero-plane relative z-10 px-4 pb-[calc(max(2.5rem,env(safe-area-inset-bottom))+var(--curtain))] sm:px-6 lg:px-8 xl:px-10"
-      >
-        {/* The headline spans the full measure, and the row beneath it is
-            anchored at both ends — lead on the left, CTA on the right. Hanging
-            the CTA off the headline's own column instead left it stranded in
-            the far corner with nothing on the opposite side to balance the
-            weight of the type. */}
-        <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
+        <motion.div
+          initial={reduced ? false : "hidden"}
+          animate={revealed ? "visible" : "hidden"}
+          /* Not `inert`: the h1 inside is the page's only heading, and a
+             screen reader landing here during act one must still find it.
+             Text that is merely invisible costs nothing.
 
-        <HeroHeadline
-          text={dict.hero.headline}
-          reduced={reduced}
-          revealed={revealed}
-          className="mt-6"
-        />
+             The inset goes on the cell, not on any one child: the rule, the
+             headline and the lead share a left edge, and so does the nav's
+             mark, which reads the same property as a margin. It is defined
+             once on `.cq-hero` in site.css — including the breakpoint it
+             turns on at, which is why there is no `lg:` here. */
+          className="row-start-1 ps-[var(--hero-inset)] lg:col-start-1 lg:row-start-1"
+        >
+          <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
 
-        {/* Negative on purpose. The headline's own line box already carries
-            ~28px below its last baseline — one full line of the lead — so zero
-            margin still reads as a full line break. Pulling back 8px claws
-            into that leading and lands at ~20px optically, ~10px between the
-            'y' descender and the lead's cap line. That descender clearance is
-            the hard floor: past roughly -8px the two start to touch.
+          {/* No margins of its own in either direction — both gaps belong
+              to the headline, the only element of the lockup that changes
+              size. See `margin-top`/`margin-bottom` on `.cq-hero-h1`. */}
+          <HeroHeadline
+            text={dict.hero.headline}
+            reduced={reduced}
+            revealed={revealed}
+          />
 
-            The copy block is bottom-anchored — the scene above absorbs the
-            flex slack — so this gap sets how far the headline sits *down* the
-            frame, not how far the lead sits up. */}
-        <div className="-mt-2 grid items-end gap-x-12 gap-y-6 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <motion.p
-            variants={rise(REVEAL.lead)}
-            style={{ textWrap: "balance" }}
-            className="max-w-[42ch] text-pretty text-[1.0625rem] font-light leading-relaxed text-white/85"
-          >
+          <motion.p variants={rise(leadDelay)} className="cq-hero-lead">
             {dict.hero.lead}
           </motion.p>
-
-          {/* An invisible link lying across the mascot is a trap for keyboard
-              and pointer alike — inert until it's actually on screen. */}
-          <motion.div variants={rise(REVEAL.cta, 14)} inert={!revealed}>
-            <HeroActions />
-          </motion.div>
-        </div>
+        </motion.div>
       </motion.div>
 
       <HeroScrollCue
@@ -255,6 +283,9 @@ export default function HeroImage() {
         ambient={ambient}
         revealed={revealed}
         opacity={cueOpacity}
+        /* After the lead — the cue is the last thing to resolve, and "after
+           the lead" is a locale-dependent moment (see leadDelayFor). */
+        cueDelay={leadDelay + 0.28}
       />
     </section>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, type MotionValue } from "motion/react";
-import { EASE_OUT, REVEAL } from "./animation";
+import { motion, type MotionStyle, type MotionValue } from "motion/react";
+import { EASE_IN_EXPO, EASE_OUT, REVEAL } from "./animation";
 
 /**
  * Hairline scroll affordance, centred in the hero's bottom padding band so it
@@ -18,12 +18,19 @@ export default function HeroScrollCue({
   ambient,
   revealed,
   opacity,
+  cueDelay = REVEAL.cue,
 }: {
   reduced: boolean;
   ambient: boolean;
   /** False during act one, while the mascot has the stage to itself. */
   revealed: boolean;
   opacity: MotionValue<number>;
+  /**
+   * When the cue enters, seconds after the reveal. Locale-dependent — it
+   * follows the lead, whose own beat follows the headline's word count
+   * (leadDelayFor in animation.ts) — so HeroImage passes it down.
+   */
+  cueDelay?: number;
 }) {
   return (
     <motion.div
@@ -34,8 +41,21 @@ export default function HeroScrollCue({
       <motion.span
         initial={reduced ? false : { opacity: 0, scaleY: 0.4 }}
         animate={revealed ? { opacity: 1, scaleY: 1 } : { opacity: 0, scaleY: 0.4 }}
-        transition={{ duration: 0.9, ease: EASE_OUT, delay: revealed ? REVEAL.cue : 0 }}
+        transition={
+          revealed
+            ? { duration: 0.9, ease: EASE_OUT, delay: cueDelay }
+            : { duration: 0.3, ease: EASE_IN_EXPO }
+        }
         data-ambient={ambient ? "on" : "off"}
+        /* Phase-locks the running light to this entrance: the loop's
+           animation is `none` until the flip (see site.css), and its delay
+           — entrance delay plus ~0.35s, the hairline ~80% seated on the
+           ease — lands the FIRST sweep dropping from the top of a line
+           that has just finished materialising. Every load, same frame. */
+        data-revealed={revealed ? "true" : "false"}
+        /* Cast because MotionStyle's type doesn't admit custom properties,
+           though Motion writes them through just fine. */
+        style={{ "--cq-cue-run-delay": `${(cueDelay + 0.35).toFixed(2)}s` } as MotionStyle}
         className="cq-scroll-cue origin-top"
       />
     </motion.div>

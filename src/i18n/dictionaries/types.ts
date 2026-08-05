@@ -50,7 +50,6 @@ export interface Dictionary {
      */
     sayCtaLabel: string;
     onlineLabel: string;
-    locationLabel: string;
   };
   carousel: {
     ariaLabel: string;

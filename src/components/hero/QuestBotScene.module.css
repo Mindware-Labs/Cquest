@@ -21,7 +21,10 @@
      2.60  lens wakes, halo blooms
      2.78  foot lights on
      2.85  speech bubble pops
-     3.00  typing starts, idle float begins                                */
+     3.00  typing starts, idle float begins
+     ~4.4  last keystroke (jittered, so reported by JS as `data-said`):
+           caret switches solid→breathing, halo takes one quiet swell —
+           the INTRO_TAIL beat, the mascot handing the stage over        */
 
 .stage {
   --qb-cyan: #7fe9e4;
@@ -41,6 +44,58 @@
      empty space remains under the mascot is space those two actually use. */
   max-width: min(1180px, 139vh);
   margin: 0 auto;
+}
+
+/* ── Desktop: the mascot parks in the right third ────────────────────────
+   The copy and the mascot are two cells of one centred grid (see the
+   composition plane in HeroImage), sharing an axis. A centred stage would
+   land the mascot's halo straight against the end of the headline's lines.
+   Two columns instead: the copy owns the left of the frame, the mascot and
+   its bubble own the right.
+
+   Placed by its centre, not by its right edge. The mascot only draws across
+   the middle ~22% of its own box (halo r = 132 either side of user x 560,
+   i.e. 39%–61% of the stage), so pinning the box to the right margin would
+   park it at 75%+ of an ultrawide screen with a hole in the middle of the
+   composition. Solving for the mascot's own centre instead — `72% -
+   width/2` — holds it at ~70–71% of the frame at every desktop size.
+
+   The two clamp arms are guards, not preferences. 0 keeps the stage off the
+   copy on a narrow window. The upper arm measures the SPEECH BUBBLE, not the
+   stage box, and that distinction is what lets the mascot sit this far
+   right: the box's last ~6% is empty — the bubble starts at 57.5% of it and
+   its own width is capped at 330px, so on a wide stage it stops around 88% —
+   and guarding the box's edge was reserving air that nothing was using.
+   Measuring the bubble hands that back while keeping a real 1.5rem of
+   clearance to the padded column, which is a promise about something visible
+   rather than about a bounding box. `clamp()` returns its minimum when the
+   arms cross, which is exactly the fallback we want.
+
+   58vw, meanwhile, is what makes the second column exist at all: at the
+   original 1180px cap the box alone is wider than a 1280px laptop, so
+   there would be nothing to move it into. Mirrored by the headline's
+   measure cap in site.css — the two divide the same frame. */
+/* The second arm is the landscape-phone guard: those viewports borrow the
+   desktop composition (see .cq-hero-band in site.css), so the stage parks
+   right there too. Keep the list in step with --hero-inset, the h1
+   measure, and the vignette in site.css. */
+@media (min-width: 1024px),
+  (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .stage {
+    --qb-stage-w: min(1180px, 139vh, 58vw);
+    /* Restatement of `.say`'s own width rule below — the guard has to know
+       how wide the bubble actually gets. Change one, change the other. */
+    --qb-bubble-w: min(0.36 * var(--qb-stage-w), 330px);
+
+    width: var(--qb-stage-w);
+    max-width: 100%;
+    margin-inline: clamp(
+        0px,
+        calc(72% - var(--qb-stage-w) / 2),
+        calc(100% - 0.575 * var(--qb-stage-w) - var(--qb-bubble-w) - 1.5rem)
+      )
+      0;
+  }
 }
 
 .robot {
@@ -83,16 +138,33 @@
   opacity: 0;
   pointer-events: none;
   transform: scale(0.9);
+  /* `visibility` waits out the opacity fade on the way OUT (a replay press
+     retires the control gracefully instead of vanishing it); the ready
+     state below zeroes the delay so appearing is instant. */
   transition:
     opacity 220ms var(--ease-out),
     transform 220ms var(--ease-out),
     color 150ms ease,
-    border-color 150ms ease;
+    border-color 150ms ease,
+    visibility 0s linear 240ms;
 }
 
 .stage[data-replay-ready="true"] .replay {
   visibility: visible;
   pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* The icon demonstrates its own verb: a quarter-turn backward on hover —
+   winding up — and a further half-turn on press, so "rewind" is shown
+   before it's clicked. Transform-only, nothing at rest. */
+.replay svg {
+  transition: transform 450ms var(--ease-out-expo);
+}
+
+.replay:active svg {
+  transform: rotate(-180deg);
+  transition-duration: 200ms;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -104,6 +176,10 @@
   .replay:hover {
     color: #fff;
     border-color: rgba(127, 233, 228, 0.55);
+  }
+
+  .replay:hover svg {
+    transform: rotate(-90deg);
   }
 }
 
@@ -176,12 +252,19 @@
      Custom properties don't interpolate, but they don't need to: swapping
      this re-resolves `border-color` on both elements, and border-color is
      what actually transitions. */
-  --say-edge: rgba(99, 182, 214, 0.5);
+  --say-edge: rgba(99, 182, 214, 0.42);
+  /* The lit top edge, on the same swap mechanism as the border above and for
+     the same reason: it has to brighten with it, in one move, or the plate
+     lights in two stages. */
+  --say-sheen: rgba(255, 255, 255, 0.09);
 
   display: block;
   position: relative;
-  padding: 13px 16px 14px;
-  border: 1.5px solid var(--say-edge);
+  padding: 14px 18px 15px;
+  /* 1px, down from 1.5. At this size 1.5 reads as a drawn outline around a
+     shape; a hairline reads as the edge of a surface, which is what the rest
+     of the treatment below is trying to say. */
+  border: 1px solid var(--say-edge);
   /* Opaque enough to read as a plate on its own — no `backdrop-filter`.
      A backdrop blur is the single most expensive thing a small element can
      ask for: the compositor has to copy back everything painted beneath it
@@ -190,25 +273,58 @@
      which translates AND fades on every scroll frame, over the reactive grid
      canvas, which repaints on every pointer frame — so it was re-blurring
      essentially always, to soften a grid already hidden behind 80% ink. The
-     extra 8% of opacity buys back the same read for nothing. */
-  background: rgba(6, 29, 42, 0.88);
-  border-radius: 15px 15px 15px 3px;
-  box-shadow: 0 20px 54px -22px rgba(48, 128, 162, 0.9);
+     extra 8% of opacity buys back the same read for nothing.
+
+     What replaces the blur is light. A flat fill lit from nowhere is what
+     makes a plate read as a rectangle of colour; a surface reads as a
+     surface when it is brighter where the light hits it. The gradient is
+     shallow on purpose — three per cent of lightness across 60px, which the
+     eye reads as form rather than as a gradient. The same light source the
+     rest of the hero uses: above. */
+  background: linear-gradient(
+    180deg,
+    rgba(10, 38, 52, 0.94),
+    rgba(5, 24, 35, 0.94)
+  );
+  border-radius: 16px 16px 16px 4px;
+  /* Four layers doing four different jobs, which is the whole difference
+     between depth and a glow:
+       1. the lit top edge, one pixel, inside the border
+       2. a tight contact shadow — what stops it floating
+       3. the ambient occlusion under the plate, neutral and dark
+       4. the brand light it sits in, pushed far back and dialled down from
+          0.9 to 0.6 so it reads as atmosphere and not as a halo
+     Painted once into the parallax plane's layer, so scrolling moves them
+     on the GPU rather than re-drawing them. */
+  box-shadow:
+    inset 0 1px 0 var(--say-sheen),
+    0 1px 2px rgba(2, 12, 18, 0.5),
+    0 16px 34px -18px rgba(3, 16, 24, 0.9),
+    0 30px 64px -34px rgba(48, 128, 162, 0.6);
   text-decoration: none;
+  /* Longer and on the expo curve rather than the quint: the difference
+     between a control that responds and one that answers. */
   transition:
-    transform 260ms var(--ease-out),
-    border-color 200ms ease,
-    box-shadow 260ms var(--ease-out);
+    transform 320ms var(--ease-out-expo),
+    border-color 220ms ease,
+    box-shadow 320ms var(--ease-out-expo);
 }
 
 @media (hover: hover) and (pointer: fine) {
   /* Setting the variable, not `border-color` — that way the tail lights with
      the box instead of needing its own hover rule. */
   .sayBox:hover {
-    --say-edge: rgba(127, 233, 228, 0.8);
+    --say-edge: rgba(127, 233, 228, 0.72);
+    --say-sheen: rgba(255, 255, 255, 0.14);
 
-    transform: translateY(-2px);
-    box-shadow: 0 28px 62px -22px rgba(48, 128, 162, 1);
+    /* It lifts and comes very slightly toward you. 0.6% of scale is under a
+       pixel of edge travel — not seen, only felt, which is the point. */
+    transform: translateY(-3px) scale(1.006);
+    box-shadow:
+      inset 0 1px 0 var(--say-sheen),
+      0 1px 2px rgba(2, 12, 18, 0.5),
+      0 22px 44px -18px rgba(3, 16, 24, 0.95),
+      0 38px 78px -34px rgba(48, 128, 162, 0.85);
   }
 }
 
@@ -224,7 +340,7 @@
 
 /* Asymmetric press — quick down, the slower curve above carries it back. */
 .sayBox:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.997);
   transition-duration: 90ms;
 }
 
@@ -235,24 +351,62 @@
   bottom: -13px;
   width: 15px;
   height: 14px;
-  background: rgba(6, 29, 42, 0.8);
-  border-left: 1.5px solid var(--say-edge);
-  border-bottom: 1.5px solid var(--say-edge);
-  border-bottom-left-radius: 3px;
+  /* The bottom stop of the box's gradient, not a value of its own. The tail
+     used to sit at 0.8 against the box's 0.88 and the seam showed — two
+     objects at the exact moment the thing is meant to read as one. */
+  background: rgba(5, 24, 35, 0.94);
+  border-left: 1px solid var(--say-edge);
+  border-bottom: 1px solid var(--say-edge);
+  border-bottom-left-radius: 4px;
   transform: skewX(-22deg);
   /* Matches the box's own border-color timing, so the edge lights up as one
      continuous outline rather than in two stages. */
-  transition: border-color 200ms ease;
+  transition: border-color 220ms ease;
 }
 
+/* ── Status line ─────────────────────────────────────────
+   Not a chat header. A contact centre's console shows agent presence, and
+   that is what this row is: a live light, then the agent, then its state.
+   It is the one place the bubble is allowed to be characterful, so
+   everything around it stays flat and quiet.
+
+   The colour is mixed rather than faded. `opacity: 0.72` on the whole row
+   dimmed the dot along with the label and pushed the cyan toward grey; the
+   dot has to stay fully saturated to read as a light that is on. */
 .sayEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--qb-cyan);
-  opacity: 0.72;
-  margin-bottom: 7px;
+  color: color-mix(in srgb, var(--qb-cyan) 76%, transparent);
+  margin-bottom: 9px;
+}
+
+.presence {
+  position: relative;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--qb-cyan);
+  box-shadow: 0 0 6px rgba(127, 233, 228, 0.7);
+}
+
+/* The pulse is a ring on a pseudo-element, scaled and faded — transform and
+   opacity only, so the compositor owns it. The obvious way to write this is
+   an animated `box-shadow` spread on the dot itself, and that repaints the
+   row on every frame of an infinite loop, which is exactly the kind of
+   always-on cost the ambient park list below exists to avoid. */
+.presence::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1px solid var(--qb-cyan);
+  opacity: 0;
 }
 
 .sayLine {
@@ -264,12 +418,16 @@
   color: #e9f2f8;
 }
 
+/* Still a block caret — the mono line and the typing are the mascot's voice
+   and a hairline bar would be someone else's. Narrowed a touch and given a
+   radius so it reads as drawn rather than as a filled cell. */
 .caret {
   display: inline-block;
-  width: 0.56em;
+  width: 0.5em;
   height: 1.05em;
-  margin-left: 0.05em;
+  margin-left: 0.08em;
   vertical-align: -0.16em;
+  border-radius: 1.5px;
   background: var(--qb-cyan);
   opacity: 0;
 }
@@ -278,12 +436,19 @@
 .spin,
 .bob,
 .core,
+.coreDilate,
 .stem,
 .puff,
 .halo,
 .impact,
 .floorFlash {
   transform-box: fill-box;
+}
+
+/* The bubble-hover dilation wrapper (QuestBotScene.tsx). Its own group so
+   Motion's scale never fights coreLean/coreScan on `.core` itself. */
+.coreDilate {
+  transform-origin: center;
 }
 .spin {
   transform-origin: center;
@@ -417,11 +582,96 @@
 .robot.run .p5 {
   animation-delay: calc(var(--qb-t0, 0s) + 1.6s);
 }
+/* The old curve overshot at 1.5 — a bounce, which is a young gesture. The
+   expo curve arrives just as fast and then keeps settling for a long time,
+   which is what reads as considered. Longer with it: 0.55s → 0.68s. It now
+   overlaps the first keystrokes at 3.0s by more than it used to, and that is
+   the better read anyway — the bubble is still settling as the line starts,
+   so the two are one event instead of two. */
 .robot.run .say {
-  animation: pop 0.55s cubic-bezier(0.2, 1.5, 0.35, 1) calc(var(--qb-t0, 0s) + 2.85s) forwards;
+  animation: pop 0.68s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--qb-t0, 0s) + 2.85s) forwards;
 }
+/* The caret has grammar: it burns SOLID while the mascot is typing — a
+   caret that blinks mid-keystroke is a caret nobody is using — and only
+   starts breathing once the line has landed (data-said, below). tipOn just
+   lights it at the typing beat and holds. */
 .robot.run .caret {
-  animation: blink 1s step-end calc(var(--qb-t0, 0s) + 3s) infinite;
+  animation: tipOn 0.2s ease-out calc(var(--qb-t0, 0s) + 3s) both;
+}
+
+/* ── The said beat ───────────────────────────────────────
+   The most-watched frame of the intro is the one where the line lands, and
+   it used to pass unmarked. `data-said` flips on the last keystroke
+   (QuestBotScene.tsx): the caret switches to its waiting blink — eased,
+   not `step-end`; a hard chop is how a terminal blinks, every caret the
+   reader has actually used in the last decade fades, and it rests lit
+   longer than dark so it never reads as an alarm. The halo takes one
+   breath and the lens flicks — both sized INSIDE their idle loops'
+   amplitude (≤5.5% scale, ≤0.8s) so they read as the same organism
+   breathing once, slightly deeper, never as a notification badge. Each
+   swell's 100% frame equals its idle loop's 0% frame, so the infinite
+   loops resume without a step. */
+.robot.run[data-said="true"] .caret {
+  animation: blink 1.15s ease-in-out infinite;
+}
+
+.robot.run[data-said="true"] .halo {
+  animation:
+    qbSaidHalo 0.8s var(--ease-out-expo) both,
+    haloBreathe 6s ease-in-out 0.8s infinite;
+}
+
+.robot.run[data-said="true"] .lens {
+  animation:
+    qbSaidLens 0.5s ease-out both,
+    lensPulse 3.6s ease-in-out 0.5s infinite;
+}
+
+@keyframes qbSaidHalo {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.055);
+  }
+  100% {
+    opacity: 0.78;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes qbSaidLens {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  35% {
+    opacity: 1;
+  }
+}
+.robot.run .presence::after {
+  animation: presencePing 2.8s cubic-bezier(0.16, 1, 0.3, 1)
+    calc(var(--qb-t0, 0s) + 3s) infinite;
+}
+
+/* Attention steadies the caret: while the reader points at (or focuses)
+   the bubble, the mascot is listening, and a listening caret holds solid —
+   ready for input. `animation: none` lets the declared opacity apply; on
+   leave the waiting blink restarts at its 0–40% lit phase, so the resume
+   is seamless. Specificity is deliberate: these must outrank the
+   data-said blink above. */
+@media (hover: hover) and (pointer: fine) {
+  .robot.run .sayBox:hover .caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.robot.run .sayBox:focus-visible .caret {
+  animation: none;
+  opacity: 1;
 }
 
 /* ── Park the always-on loops ────────────────────────────
@@ -435,14 +685,26 @@
 .robot[data-ambient="off"] .halo,
 .robot[data-ambient="off"] .tip,
 .robot[data-ambient="off"] .footlight,
-.robot[data-ambient="off"] .caret {
+.robot[data-ambient="off"] .caret,
+.robot[data-ambient="off"] .presence::after {
   animation-play-state: paused;
 }
 
-/* two exact laps: 942px of travel = 2 x circumference (471.24) */
+/* Three exact laps: 1414px of travel = 3 x circumference (471.24).
+   Two laps used to be enough because the stage was centred and the mascot
+   rested in the middle of it, which put the -382 start right at the left
+   edge of the window. Now that the stage is pushed into the right third,
+   that same start would have the mascot materialise a third of the way
+   across the screen instead of rolling in from off-frame. The lap count is
+   not a free number: travel and rotation have to stay locked or the ring
+   skids instead of rolls, so the extra distance buys exactly one more full
+   turn — 942 → 1414 units, 720° → 1080°.
+
+   The 84% overshoot is 32 units past the rest position, and its rotation
+   is the same arc measured the same way: 1446 / 471.24 = 3.068 laps. */
 @keyframes rollIn {
   0% {
-    transform: translateX(-382px);
+    transform: translateX(-854px);
   }
   84% {
     transform: translateX(592px);
@@ -456,10 +718,10 @@
     transform: rotate(0deg);
   }
   84% {
-    transform: rotate(744deg);
+    transform: rotate(1104deg);
   }
   100% {
-    transform: rotate(720deg);
+    transform: rotate(1080deg);
   }
 }
 @keyframes coreLean {
@@ -699,10 +961,17 @@
     transform: scale(1.85) translateY(-14px);
   }
 }
+/* Origin is the tail (see `.say`), so this is the bubble inflating from the
+   mascot's own corner rather than a card fading up. Opacity finishes at 55%,
+   well before the transform does: it is fully there while it is still
+   arriving, which is what stops a long settle from reading as a slow load. */
 @keyframes pop {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.9);
+    transform: translateY(12px) scale(0.92);
+  }
+  55% {
+    opacity: 1;
   }
   100% {
     opacity: 1;
@@ -711,37 +980,90 @@
 }
 @keyframes blink {
   0%,
+  40% {
+    opacity: 1;
+  }
+  62%,
+  88% {
+    opacity: 0.12;
+  }
   100% {
     opacity: 1;
   }
-  50% {
+}
+@keyframes presencePing {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.55);
+  }
+  55%,
+  100% {
     opacity: 0;
+    transform: scale(2.2);
   }
 }
 
-@media (max-width: 760px) {
+/* The min-height arm keeps this block off landscape phones: short-wide
+   viewports fall through to the desktop composition (the landscape guard
+   in site.css) and must see the desktop's stage-relative bubble maths,
+   never a scaled stage. Mirror the arm in the reduced-motion override at
+   the bottom of this file. */
+@media (max-width: 760px) and (min-height: 561px) {
+  /* ── Phone-scale presence ──────────────────────────────
+     Act one holds the page for ~5 seconds, and it was holding it for a
+     45px sprite under a 320px bubble — an inverted hierarchy that reads
+     as a loading quirk to the majority audience. The stage renders wider
+     than the viewport (the mascot only draws across the middle ~22% of
+     its own box, so at 1.8× the halo still spans well under half the
+     screen) and the section's overflow-hidden clips the empty overhang;
+     the roll-in still starts off-frame. The svh arm caps the box's height
+     (width ÷ 2.78) so the bubble never climbs into the copy row — checked
+     at 390×844 and 375×667. 1.8×, not more: the idle loops repaint the
+     mascot's tile, and repaint area grows with the square of this. */
+  .stage {
+    --qb-stage-w-m: min(180%, 88svh);
+    width: var(--qb-stage-w-m);
+    max-width: none;
+    margin-inline: calc((100% - var(--qb-stage-w-m)) / 2);
+  }
+
+  /* Viewport units, not stage %: 80% of the scaled stage would overflow a
+     320px screen. */
   .say {
     left: 50%;
     top: -4.35%; /* same restatement as above: -4% of 470 in the new 432 box */
-    width: min(80%, 320px);
+    width: min(85vw, 320px);
     transform: translate(-50%, 8px) scale(0.94);
     transform-origin: 50% 100%;
   }
+
+  /* The stage's right edge now lies past the screen; re-pin the only
+     accessible control back inside it. (100% - 100vw) / 2 is the overhang
+     per side; the max() guard covers the svh arm making the stage narrower
+     than the viewport. */
+  .replay {
+    right: max(1rem, calc((100% - 100vw) / 2 + 1rem));
+  }
   .sayBox {
-    border-radius: 15px;
+    border-radius: 16px;
   }
   .sayBox::after {
     left: 50%;
     transform: translateX(-50%) rotate(-45deg);
-    border-radius: 0 0 3px 0;
+    border-radius: 0 0 4px 0;
   }
   .robot.run .say {
     animation-name: popMobile;
   }
+  /* Same score as `pop` above — the opacity has to land at 55% here too, or
+     the centred variant reads as the slower of the two. */
   @keyframes popMobile {
     0% {
       opacity: 0;
-      transform: translate(-50%, 10px) scale(0.9);
+      transform: translate(-50%, 12px) scale(0.92);
+    }
+    55% {
+      opacity: 1;
     }
     100% {
       opacity: 1;
@@ -768,6 +1090,7 @@
   .robot.run .puff,
   .robot.run .say,
   .robot.run .caret,
+  .robot.run .presence::after,
   .robot.run .cradleDetail,
   .robot.run .footlight,
   .robot.run .impact,
@@ -786,7 +1109,14 @@
   .tip {
     opacity: 1;
   }
-  @media (max-width: 760px) {
+  /* Reduced motion never shows the caret, so the hover/focus "steady to
+     solid" rules above must not resurrect it. Same specificity, later in
+     the file — this wins. */
+  .robot.run .sayBox:hover .caret,
+  .robot.run .sayBox:focus-visible .caret {
+    opacity: 0;
+  }
+  @media (max-width: 760px) and (min-height: 561px) {
     .say {
       transform: translateX(-50%);
     }

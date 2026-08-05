@@ -40,8 +40,17 @@ type Point = {
   vl: number;
 };
 
-function spring(value: number, velocity: number, target: number, delta: number) {
-  const acceleration = (target - value) * 135 - velocity * 22;
+/* Defaults are the tracking spring; the lift's RELEASE passes softer
+   constants (see animate) so the surface yields fast and settles slow. */
+function spring(
+  value: number,
+  velocity: number,
+  target: number,
+  delta: number,
+  stiffness = 135,
+  damping = 22,
+) {
+  const acceleration = (target - value) * stiffness - velocity * damping;
   const nextVelocity = velocity + acceleration * delta;
   return [value + nextVelocity * delta, nextVelocity] as const;
 }
@@ -69,10 +78,15 @@ export default function HeroReactiveGrid({
   /* Published by the engine so the gate effect below can let the dome settle
      out without touching anything else. */
   const relaxRef = useRef<(() => void) | null>(null);
+  /* Published by the engine: one authored breath of the surface for touch
+     devices, fired on the ambient gate's rising edge (the reveal). */
+  const swellRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    const was = ambientRef.current;
     ambientRef.current = ambient;
     reducedRef.current = reduced;
+    if (ambient && !was) swellRef.current?.();
     relaxRef.current?.();
   }, [ambient, reduced]);
 
@@ -108,10 +122,20 @@ export default function HeroReactiveGrid({
     let fadeAcross: CanvasGradient | null = null;
 
     const buildFades = (compact: boolean) => {
+      /* Not a flat edge fade any more: the vertical ramp is the grid's
+         share of the field's light structure. A partial plateau through the
+         upper half, full brightness centred on the band where the mascot
+         stands (~0.62 of the canvas' height once the plane's -inset-y-8 is
+         counted in), then the same fall to nothing at the bottom edge — the
+         grid is brightest where the action is and recedes toward the
+         ceiling, agreeing with the field gradient under it (site.css).
+         Compact keeps a higher plateau: the element already sits at 0.72
+         opacity there and the mascot owns the lower half of the band. */
       const down = context.createLinearGradient(0, 0, 0, height);
       down.addColorStop(0, "rgba(0,0,0,0)");
-      down.addColorStop(compact ? 0.12 : 0.09, "rgba(0,0,0,1)");
-      down.addColorStop(compact ? 0.68 : 0.72, "rgba(0,0,0,1)");
+      down.addColorStop(compact ? 0.12 : 0.1, `rgba(0,0,0,${compact ? 0.75 : 0.62})`);
+      down.addColorStop(0.4, `rgba(0,0,0,${compact ? 0.75 : 0.62})`);
+      down.addColorStop(compact ? 0.68 : 0.66, "rgba(0,0,0,1)");
       down.addColorStop(compact ? 0.94 : 0.98, "rgba(0,0,0,0)");
       fadeDown = down;
 
@@ -235,15 +259,21 @@ export default function HeroReactiveGrid({
       return { minor, major };
     };
 
+    /* `minorAlpha` lets a pass dim the minors relative to the majors — the
+       reflection uses it so the light REVEALS the line hierarchy instead of
+       flattening every line to one brightness. */
     const strokeGrid = (
       paths: ReturnType<typeof buildGridPaths>,
       minorStyle: string | CanvasGradient,
       majorStyle: string | CanvasGradient,
       highlighted = false,
+      minorAlpha = 1,
     ) => {
+      if (minorAlpha < 1) context.globalAlpha = minorAlpha;
       context.strokeStyle = minorStyle;
       context.lineWidth = highlighted ? 0.85 : 0.65;
       context.stroke(paths.minor);
+      if (minorAlpha < 1) context.globalAlpha = 1;
 
       context.strokeStyle = majorStyle;
       context.lineWidth = highlighted ? 1.15 : 0.9;
@@ -254,10 +284,15 @@ export default function HeroReactiveGrid({
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
       const paths = buildGridPaths();
+      /* Temperature split: the majors carry the reflection's own white-cyan
+         (#CAEDF4) at lower alpha — net luminance ≈ unchanged — so the lit
+         disc and the resting grid share one material and every fourth line
+         reads as structure rather than as a brighter copy of the others.
+         If it is only felt as depth and never seen as colour, it's right. */
       strokeGrid(
         paths,
-        "rgba(116, 195, 213, 0.072)",
-        "rgba(116, 195, 213, 0.145)",
+        "rgba(116, 195, 213, 0.066)",
+        "rgba(202, 237, 244, 0.12)",
       );
 
       if (current.lift > 0.01) {
@@ -295,7 +330,9 @@ export default function HeroReactiveGrid({
         context.beginPath();
         context.arc(current.x, current.y, radius + 24, 0, Math.PI * 2);
         context.clip();
-        strokeGrid(paths, lineReflection, lineReflection, true);
+        /* Minors at 0.55 inside the disc: polished light catching an
+           elevated surface still shows the surface's rank. */
+        strokeGrid(paths, lineReflection, lineReflection, true, 0.55);
         context.restore();
       }
 
@@ -308,11 +345,20 @@ export default function HeroReactiveGrid({
 
       [current.x, current.vx] = spring(current.x, current.vx, target.x, delta);
       [current.y, current.vy] = spring(current.y, current.vy, target.y, delta);
+      /* Asymmetric lift: rise and tracking keep the tight spring, but the
+         RELEASE — pointer leaving, or the mid-descent relax() — rides a
+         softer one, so the surface sighs flat over ~550ms instead of
+         snapping down. Materials yield fast and settle slow. The loop
+         merely runs ~0.3s longer per park before the `moving` test below
+         retires it; per-frame cost is identical. */
+      const releasing = target.lift < current.lift;
       [current.lift, current.vl] = spring(
         current.lift,
         current.vl,
         target.lift,
         delta,
+        releasing ? 62 : 135,
+        releasing ? 17 : 22,
       );
       draw();
 
@@ -339,12 +385,44 @@ export default function HeroReactiveGrid({
       frame = requestAnimationFrame(animate);
     };
 
+    /* Read once, at mount: whether the device has a hovering pointer is not
+       something that changes underneath us, and it has to be answered
+       before the listeners below are attached — and before the swell can
+       decide whether it applies. */
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
     /* The hero has left (or reduced motion came on): let the surface relax
        flat rather than holding whatever the pointer last carved into it. */
     relaxRef.current = () => {
       if (ambientRef.current || target.lift === 0) return;
       target.lift = 0;
       requestDraw();
+    };
+
+    /* ── One breath, for the audience the dome never plays to ───────────
+       On touch there is no hovering pointer, so the grid would be a still
+       texture for its whole life. When the reveal raises the ambient gate,
+       the surface takes a single dome swell at the seam between the copy
+       and the mascot and settles flat — arriving already alive under the
+       ambience's own fade-in, then stillness. Touch only: on desktop the
+       dome is CAUSED motion, and a self-actuated dome there would read as
+       a phantom cursor. Once per page load, deliberately: the gate also
+       rises again on every scroll-return, and re-breathing on each would
+       turn an entrance into a tic. Cost: one bounded spring cycle through
+       the existing draw path, at the compact DPR cap, then zero. */
+    let swellTimer = 0;
+    let swelled = false;
+    swellRef.current = () => {
+      if (finePointer || reducedRef.current || swelled) return;
+      swelled = true;
+      target.x = width * 0.5;
+      target.y = height * 0.58;
+      target.lift = 1;
+      requestDraw();
+      swellTimer = window.setTimeout(() => {
+        target.lift = 0;
+        requestDraw();
+      }, 620);
     };
 
     const resize = () => {
@@ -442,11 +520,6 @@ export default function HeroReactiveGrid({
     resizeObserver.observe(canvas);
     resize();
 
-    /* Read once, at mount: whether the device has a hovering pointer is not
-       something that changes underneath us, and it is the only part of the
-       old gate that had to be answered before the listeners were attached. */
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
     if (finePointer) {
       window.addEventListener("pointermove", onPointerMove, { passive: true });
       window.addEventListener("scroll", invalidateRect, { passive: true });
@@ -456,6 +529,8 @@ export default function HeroReactiveGrid({
 
     return () => {
       relaxRef.current = null;
+      swellRef.current = null;
+      if (swellTimer) window.clearTimeout(swellTimer);
       if (frame) cancelAnimationFrame(frame);
       if (pointerFrame) cancelAnimationFrame(pointerFrame);
       resizeObserver.disconnect();

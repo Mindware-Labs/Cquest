@@ -28,7 +28,7 @@ export const dictionary: Dictionary = {
     backToServices: "Back to all services",
   },
   hero: {
-    headline: "Call center, operations and systems development.",
+    headline: "We run your operations. While you grow your business.",
     lead: "One partner across your three growth priorities.",
     primaryCta: "Give us a quest",
     replayLabel: "Replay the animation",
@@ -41,7 +41,6 @@ export const dictionary: Dictionary = {
     typedLine: "give me your quest",
     sayCtaLabel: "Give me your quest — open the quote form",
     onlineLabel: "cq · online",
-    locationLabel: "Santo Domingo",
   },
   carousel: {
     ariaLabel: "Center Quest business lines",

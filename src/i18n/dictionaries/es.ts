@@ -28,7 +28,14 @@ export const dictionary: Dictionary = {
     backToServices: "Volver a todos los servicios",
   },
   hero: {
-    headline: "Call center, operaciones y desarrollo de sistemas.",
+    /* 71 → 45 caracteres. "Nosotros" sobra: el español no necesita el sujeto
+       explícito y "Manejamos" ya lo carga. El contraste que sostiene la frase
+       es operaciones ↔ crecimiento, y ése se conserva entero; lo que se fue
+       es "haces crecer tu negocio", que el lead de abajo ya recoge. El corte
+       tiene que dejar el punto al final de una línea, y para eso la segunda
+       oración tiene que empezar con una palabra de cinco letras o más —
+       "operaciones." deja ~2em libres y un "Tú" suelto se sube a esa línea. */
+    headline: "Manejamos tus operaciones. Mientras tú creces.",
     lead: "Un solo aliado para tus tres prioridades de crecimiento.",
     primaryCta: "Cuéntanos tu misión",
     replayLabel: "Repetir la animación",
@@ -41,7 +48,6 @@ export const dictionary: Dictionary = {
     typedLine: "¿cuál es tu misión?",
     sayCtaLabel: "¿Cuál es tu misión? — abrir el formulario de cotización",
     onlineLabel: "cq · online",
-    locationLabel: "Santo Domingo",
   },
   carousel: {
     ariaLabel: "Líneas de negocio de Center Quest",
