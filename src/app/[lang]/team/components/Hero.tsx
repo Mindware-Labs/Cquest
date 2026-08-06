@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
@@ -16,7 +17,6 @@ const COPY = {
     lead: "Our team is organized around clear responsibilities, so customer experience, operations, technology, quality and talent move in the same direction.",
     explore: "Explore the departments",
     talk: "Talk to us",
-    mapTitle: "Center Quest",
     mapMeta: "Operating structure",
     mapStatus: "6 connected departments",
   },
@@ -25,7 +25,6 @@ const COPY = {
     lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que la experiencia del cliente, las operaciones, la tecnología, la calidad y el talento avancen en una misma dirección.",
     explore: "Explorar los departamentos",
     talk: "Hablemos",
-    mapTitle: "Center Quest",
     mapMeta: "Estructura operativa",
     mapStatus: "6 departamentos conectados",
   },
@@ -62,7 +61,13 @@ export default function Hero({ reduced }: { reduced: boolean }) {
         <div className={styles.systemMap} aria-label={t.mapStatus}>
           <div className={styles.mapHeader}>
             <span className={styles.mapIdentity}>
-              <strong>{t.mapTitle}</strong>
+              <Image
+                src="/logo.png"
+                alt="Center Quest"
+                width={692}
+                height={512}
+                className={styles.mapLogo}
+              />
               <span>{t.mapMeta}</span>
             </span>
             <span className={styles.mapStatus}>
