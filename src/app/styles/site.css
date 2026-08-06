@@ -417,17 +417,17 @@
     max-width: 8.8em;
   }
 
-  /* ── Two-intensity headline ────────────────────────────
+  /* ── Two-tone headline ──────────────────────────────────
      The copy's own rhetoric is a contrast — we run ↔ you grow — and at the
      8.8em measure the sentence boundary provably lands at a line end, so
-     the second sentence can take one tonal step down and the type carries
-     the rhetoric visibly. 0.70 is the judged value and 0.64 the floor:
-     below that it reads as disabled text, not as a tier. Gated to the
-     desktop measure on purpose — in the stacked band `balance` decides the
-     breaks and the tint could shift mid-line, which reads as an error.
-     Contrast over the ink field at 0.70 ≈ 9.9:1. */
+     the second sentence can take a different colour and the type carries
+     the rhetoric visibly. The brand's own celeste — the same blue every CTA
+     on the site is filled with — rather than a dimmed white, so the second
+     sentence reads as an answer in the site's own accent voice. Gated to
+     the desktop measure on purpose — in the stacked band `balance` decides
+     the breaks and the tint could shift mid-line, which reads as an error. */
   .cq-word-soft {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--brand-celeste);
   }
 }
 
