@@ -3,9 +3,19 @@ import type { Locale } from "@/i18n/config";
 export const PARTNER_SLOTS: ReadonlyArray<{
   slug: string;
   name: Record<Locale, string>;
+  logo: {
+    src: string;
+    width: number;
+    height: number;
+  };
 }> = [
   {
-    slug: "company-name",
-    name: { en: "Company name", es: "Nombre de empresa" },
+    slug: "mindware-labs",
+    name: { en: "Mindware Labs", es: "Mindware Labs" },
+    logo: {
+      src: "/mindware-labs/logo_white_background.jpg",
+      width: 2048,
+      height: 737,
+    },
   },
 ];

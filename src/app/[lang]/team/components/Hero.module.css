@@ -1,39 +1,22 @@
-/* ── Team hero ───────────────────────────────────────────────────────────
-   Rebuilt away from the systems hero, which it had been a near-copy of:
-   centred composition, blueprint hairline grid, a radial celeste bloom at the
-   top, a signals row with dashes between the items. Four borrowed signatures
-   is not a family resemblance, it is the same page twice.
-
-   None of them survive here. The composition is asymmetric, the background
-   carries no grid, the bloom is gone, and the signals row is gone with it.
-   What the page is about supplies the idea instead: a wall of portraits. */
-
 .hero {
   position: relative;
-  padding-top: 7.5rem;
-  padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
-  /* Ink, and nothing on top of it. Every gradient this hero used to stack —
-     the bloom especially — was doing the systems page's job. */
-  background: linear-gradient(180deg, #071116 0%, #0a171e 62%, #081116 100%);
-  color: white;
+  display: grid;
+  min-height: min(48rem, 100svh);
+  align-items: center;
   overflow: clip;
+  padding-block: clamp(8.5rem, 15vh, 11rem) clamp(4.5rem, 8vh, 6.5rem);
+  background:
+    radial-gradient(72% 90% at 88% 38%, rgba(116, 195, 213, 0.11), transparent 62%),
+    linear-gradient(145deg, #071116 0%, #0a171e 55%, #081218 100%);
+  color: white;
 }
 
-.vignette {
+.hero::before {
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    114% 82% at 62% 44%,
-    transparent 38%,
-    color-mix(in srgb, var(--ink) 72%, transparent) 100%
-  );
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0 49.96%, rgba(116, 195, 213, 0.08) 50%, transparent 50.04%);
 }
 
 .hero::after {
@@ -41,96 +24,49 @@
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--brand-celeste), transparent);
-  opacity: 0.4;
+  background: linear-gradient(90deg, transparent, rgba(116, 195, 213, 0.72), transparent);
 }
 
-/* ── Composition ─────────────────────────────────────────────────────────
-   Statement left, wall right. Asymmetric on purpose — the systems hero is
-   centred, and a centred axis is the single loudest thing two heroes can
-   share. The wall takes the larger share because it is the object with the
-   scale in it. */
-.grid {
+.layout {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(34rem, 1.1fr);
   align-items: center;
-  gap: clamp(2.5rem, 5vw, 4.5rem);
-  padding-top: clamp(1rem, 3vh, 2.5rem);
+  gap: clamp(3.5rem, 7vw, 7rem);
 }
 
 .copy {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   align-items: flex-start;
-  text-align: left;
-}
-
-/* A rule running INTO the eyebrow rather than a bare label above the
-   headline — the other half of moving off a centred axis. */
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--brand-celeste);
-}
-
-.eyebrowRule {
-  width: clamp(1.75rem, 4vw, 3rem);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--brand-celeste));
 }
 
 .headline {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  margin-top: 1.25rem;
+  max-width: 12ch;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2.4rem, 4.6vw, 3.9rem);
-  font-weight: 500;
-  letter-spacing: -0.04em;
-  line-height: 0.98;
+  font-size: clamp(3.15rem, 5.2vw, 5.5rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 0.96;
+  text-wrap: balance;
 }
 
-.lineStrong {
-  /* 700 is the top of Josefin Sans' wght axis — see [lang]/layout.tsx. */
-  font-weight: 700;
-}
-
-/* Clip clearance, not spacing: `line-height: 0.98` makes the line box shorter
-   than the em, so Josefin Sans' ascenders and descenders stick out of it and
-   `overflow: hidden` would shave them. The padding pushes the clip edge off
-   the glyphs and the negative margin gives the space straight back, leaving
-   the tight leading unchanged. */
-.lineMask {
-  display: block;
-  overflow: hidden;
-  padding-top: 0.2em;
-  margin-top: -0.2em;
-  padding-bottom: 0.12em;
-}
-
-.lineMask:not(:last-child) {
-  margin-bottom: -0.12em;
-}
-
-.line {
-  display: block;
-  will-change: transform;
+.headline strong {
+  margin-top: 0.12em;
+  font-weight: 650;
+  color: var(--brand-celeste);
 }
 
 .lead {
-  max-width: 46ch;
-  margin-top: 1.35rem;
-  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.72);
+  max-width: 51ch;
+  margin-top: 1.65rem;
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  line-height: 1.72;
+  color: rgba(240, 248, 250, 0.76);
   text-wrap: pretty;
 }
 
@@ -138,203 +74,302 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 1.85rem;
+  margin-top: 2rem;
 }
 
 .primaryCta,
 .secondaryCta {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: 2.9rem;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border-radius: 2px;
-  padding: 0.85rem 1.35rem;
   border: 1px solid transparent;
-  font-size: 0.72rem;
+  border-radius: 2px;
+  padding: 0.88rem 1.35rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   line-height: 1;
   text-transform: uppercase;
   transition:
-    background-color 260ms var(--ease-out),
-    color 260ms var(--ease-out),
-    border-color 260ms var(--ease-out),
-    box-shadow 260ms var(--ease-out),
-    transform 180ms var(--ease-out);
-}
-
-.primaryCta:active,
-.secondaryCta:active {
-  transform: scale(0.97);
+    transform 180ms var(--ease-out),
+    background-color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out),
+    color 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out);
 }
 
 .primaryCta {
   background: var(--brand-celeste);
   color: var(--ink);
-  box-shadow: 0 2px 10px -4px rgba(15, 32, 40, 0.35);
+  box-shadow: 0 12px 30px -22px rgba(116, 195, 213, 0.9);
 }
 
 .primaryCta:hover {
   background: white;
-  box-shadow: 0 14px 28px -8px rgba(15, 32, 40, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -22px rgba(116, 195, 213, 0.8);
 }
 
 .secondaryCta {
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.24);
   color: white;
 }
 
 .secondaryCta:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(116, 195, 213, 0.7);
+  background: rgba(116, 195, 213, 0.08);
+  transform: translateY(-2px);
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.98);
 }
 
 .primaryCta:focus-visible,
 .secondaryCta:focus-visible {
   outline: 2px solid var(--brand-celeste);
-  outline-offset: 3px;
+  outline-offset: 4px;
 }
 
-/* ── The wall ────────────────────────────────────────────────────────────
-   Three columns of portrait frames, deliberately taller than the box that
-   holds them so they run off the top and bottom edges.
-
-   The overflow is the point. A finite block of empty frames reads as empty
-   frames — as something missing. A wall that leaves the frame in both
-   directions reads as SCALE: the eye takes it for a fragment of something
-   larger, and the emptiness stops being an absence and becomes the size of
-   the organisation. */
-.wall {
+.systemMap {
   position: relative;
-  height: clamp(21rem, 46vh, 30rem);
-  overflow: hidden;
+  min-width: 0;
+  border: 1px solid rgba(116, 195, 213, 0.28);
+  border-radius: 14px;
+  background: rgba(7, 20, 27, 0.7);
+  box-shadow: 0 30px 70px -48px rgba(116, 195, 213, 0.52);
 }
 
-.wallInner {
+.systemMap::before {
+  content: "";
   position: absolute;
-  /* Bleed for the drift below — the columns must never run out of tiles
-     inside the masked band. */
-  inset: -16% 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  /* On the inner element, not on `.wall`: the caption is a sibling and must
-     not be faded along with the tiles. */
-  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  inset: 5px;
+  border: 1px solid rgba(116, 195, 213, 0.08);
+  border-radius: 10px;
+  pointer-events: none;
 }
 
-.wallColumn {
+.mapHeader {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.35rem 1.5rem 1.15rem;
+  border-bottom: 1px solid rgba(116, 195, 213, 0.17);
+}
+
+.mapIdentity {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  will-change: transform;
-  animation: cq-wall-drift 26s ease-in-out infinite alternate;
+  gap: 0.2rem;
 }
 
-/* Offset like brickwork so the three columns never line up into rows, and
-   drifting at three different rates in two directions so they never beat
-   together — the same rule the carousel's six orbs follow. */
-.wallColumn[data-column="1"] {
-  margin-top: 8%;
-  animation-duration: 33s;
-  animation-direction: alternate-reverse;
+.mapIdentity strong {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
-.wallColumn[data-column="2"] {
-  margin-top: -5%;
-  animation-duration: 29s;
+.mapIdentity > span {
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(240, 248, 250, 0.48);
 }
 
-@keyframes cq-wall-drift {
-  from {
-    transform: translateY(-2.5%);
-  }
-  to {
-    transform: translateY(2.5%);
-  }
-}
-
-.wallInner[data-still="true"] .wallColumn {
-  animation: none;
-}
-
-/* One frame. Dashed, because a solid border would read as a card that failed
-   to load rather than as a place held open on purpose. */
-.tile {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  aspect-ratio: 3 / 4;
-  border-radius: 2px;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
-}
-
-.tileArt {
-  width: 44%;
-  height: auto;
-  fill: rgba(255, 255, 255, 0.17);
-}
-
-/* Says out loud what the wall is. Without it the frames are ambiguous — a
-   stylistic choice or missing assets, and the reader has no way to tell. */
-.wallCaption {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+.mapStatus {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  gap: 0.55rem;
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
+  color: rgba(220, 244, 248, 0.64);
 }
 
-.wallCaption::before {
+.statusDot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--brand-celeste);
+  box-shadow: 0 2px 10px rgba(116, 195, 213, 0.7);
+}
+
+.mapGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 2rem 1.5rem;
+  list-style: none;
+}
+
+.mapGrid::before {
   content: "";
-  width: 1.5rem;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.28);
+  position: absolute;
+  top: 1.2rem;
+  bottom: 1.2rem;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(transparent, rgba(116, 195, 213, 0.42) 15% 85%, transparent);
 }
 
-@media (max-width: 64rem) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: clamp(2.25rem, 6vw, 3rem);
+.mapNode {
+  position: relative;
+  display: flex;
+  min-height: 5.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: rgba(240, 248, 250, 0.88);
+  font-size: clamp(0.82rem, 1vw, 0.92rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.mapNode:nth-child(odd) {
+  padding-left: 0.25rem;
+  padding-right: 2rem;
+}
+
+.mapNode:nth-child(even) {
+  padding-left: 2rem;
+  padding-right: 0.25rem;
+}
+
+.mapNode::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1.35rem;
+  height: 1px;
+  background: rgba(116, 195, 213, 0.38);
+}
+
+.mapNode::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 2px);
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--brand-celeste);
+}
+
+.mapNode:nth-child(odd)::before {
+  right: 0;
+}
+
+.mapNode:nth-child(odd)::after {
+  right: -2px;
+}
+
+.mapNode:nth-child(even)::before {
+  left: 0;
+}
+
+.mapNode:nth-child(even)::after {
+  left: -2px;
+}
+
+.mapIcon {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(116, 195, 213, 0.25);
+  border-radius: 12px;
+  color: var(--brand-celeste);
+  background: rgba(116, 195, 213, 0.06);
+}
+
+.mapIcon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+@media (max-width: 70rem) {
+  .hero {
+    min-height: auto;
   }
 
-  .wall {
-    height: clamp(13rem, 32vh, 17rem);
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .headline {
+    max-width: 15ch;
+  }
+
+  .systemMap {
+    max-width: 48rem;
   }
 }
 
 @media (max-width: 42rem) {
   .hero {
-    padding-top: 6.5rem;
+    padding-block: 7rem 3.5rem;
   }
 
   .headline {
-    font-size: clamp(2.3rem, 12vw, 3.4rem);
+    font-size: clamp(2.7rem, 13vw, 4.1rem);
+  }
+
+  .lead {
+    font-size: 1rem;
   }
 
   .actions {
     width: 100%;
     flex-direction: column;
-    align-items: stretch;
   }
 
   .primaryCta,
   .secondaryCta {
     width: 100%;
   }
+
+  .mapHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .mapGrid {
+    grid-template-columns: 1fr;
+    padding-block: 1.25rem;
+  }
+
+  .mapGrid::before,
+  .mapNode::before,
+  .mapNode::after {
+    display: none;
+  }
+
+  .mapNode:nth-child(n) {
+    min-height: 3.8rem;
+    padding: 0.65rem 0.25rem;
+  }
+
+  .mapNode + .mapNode {
+    border-top: 1px solid rgba(116, 195, 213, 0.12);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wallColumn {
-    animation: none;
+  .primaryCta,
+  .secondaryCta {
+    transition-duration: 0.01ms;
   }
 }

@@ -178,7 +178,18 @@
   border: 1px solid color-mix(in srgb, var(--sy-sky) 30%, transparent);
 }
 
-.workChip svg { width: 0.85rem; height: 0.85rem; color: var(--sy-blue); }
+.workChip svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--sy-blue);
+  transition: scale 260ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .workPlate:hover .workChip svg {
+    scale: 1.15;
+  }
+}
 
 .workTitle {
   font-family: var(--font-heading), sans-serif;

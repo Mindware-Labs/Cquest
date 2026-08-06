@@ -58,17 +58,20 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
 // On a service detail page the logo is the only way back to the home page —
 // this gives every such page an explicit nav item for it too, with a small
 // dropdown to jump straight to a section of home instead of always landing
-// back at the top. Only lists sections that actually exist on "/" today
-// (HeroImage's #hero, ServicesCarousel's #services) — add to this list only
-// once a matching section ships on the home page.
+// back at the top. Mirrors getHeroNavLinks in hero/animation.ts, which lists
+// what's actually on "/" today: reuse its labels rather than the coarser
+// generic "About us" stub, and keep both lists in step as home's sections
+// change.
 function getHomeNavLink(dict: Dictionary): NavLink {
   return {
     label: dict.nav.home,
     href: "/",
     children: [
       { label: dict.nav.overview, href: "/" },
-      { label: dict.nav.services, href: "/#services" },
-      { label: dict.nav.aboutUs, href: "/#about" },
+      { label: dict.hero.navLinks.services, href: "/#services" },
+      { label: dict.hero.navLinks.team, href: "/#metrics" },
+      { label: dict.hero.navLinks.sectors, href: "/#sectors" },
+      { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
     ],
   };
 }

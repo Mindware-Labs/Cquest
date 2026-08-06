@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import SectionIntro from "@/components/services/SectionIntro";
@@ -13,23 +14,23 @@ import styles from "./PartnershipsSection.module.css";
 const COPY = {
   en: {
     heading: "Partnerships",
-    lead: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    lead:
+      "Strategic relationships with specialized teams whose expertise complements ours and expands what we can build together.",
     directory: "Partnership profile",
-    sampleNote: "Sample content · Profile in development",
+    sampleNote: "Profile in development",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.",
+      "A software engineering team focused on designing, building and maintaining digital products and operational systems.",
     viewProfile: "View partnership",
-    logoPlaceholder: "Logo placeholder",
   },
   es: {
     heading: "Partnerships",
-    lead: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    lead:
+      "Relaciones estratégicas con equipos especializados cuya experiencia complementa la nuestra y amplía lo que podemos desarrollar juntos.",
     directory: "Perfil de alianza",
-    sampleNote: "Contenido de ejemplo · Perfil en desarrollo",
+    sampleNote: "Perfil en desarrollo",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.",
+      "Un equipo de ingeniería de software enfocado en diseñar, construir y mantener productos digitales y sistemas para operaciones.",
     viewProfile: "Ver alianza",
-    logoPlaceholder: "Espacio para logo",
   },
 };
 
@@ -68,8 +69,15 @@ export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
                   className={styles.partnerRow}
                   aria-label={`${t.viewProfile}: ${partner.name[lang]}`}
                 >
-                  <span className={styles.logoFrame} aria-label={t.logoPlaceholder}>
-                    <span>Logo</span>
+                  <span className={styles.logoFrame}>
+                    <Image
+                      src={partner.logo.src}
+                      alt={`${partner.name[lang]} logo`}
+                      width={partner.logo.width}
+                      height={partner.logo.height}
+                      sizes="(max-width: 672px) 144px, 184px"
+                      className={styles.logoImage}
+                    />
                   </span>
 
                   <span className={styles.identity}>

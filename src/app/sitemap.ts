@@ -17,6 +17,7 @@ const ROUTES = [
   "/services/operations",
   "/services/systems",
   "/services/systems/work",
+  "/team",
   "/quote",
 ];
 

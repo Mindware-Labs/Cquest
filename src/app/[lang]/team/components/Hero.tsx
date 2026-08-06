@@ -3,94 +3,33 @@
 import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
-import {
-  EASE_OUT,
-  focusRiseVariants,
-  heroCopyVariants,
-  heroCurtainVariants,
-  heroLinesVariants,
-  passThroughVariants,
-} from "@/components/services/motion";
-import Silhouette from "@/components/team/Silhouette";
+import ServiceIcon from "@/components/services/ServiceIcon";
+import { EASE_OUT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { DEPARTMENTS } from "../data";
 import styles from "./Hero.module.css";
 
-/* Every figure below comes from components/about/data.ts, which marks it as
-   real client-supplied headcount. Nothing here describes the DEPARTMENT
-   structure — that does not exist yet, and the chart below carries its own
-   placeholder notice. */
 const COPY = {
   en: {
-    eyebrow: "Our team",
-    lines: [
-      { text: "The people behind", strong: false },
-      { text: "every operation.", strong: true },
-    ],
-    lead: "Over 200 call center operators, 10 specialized developers, and a dedicated HR department whose only job is finding and training the right people.",
-    seeChart: "See the org chart",
+    title: ["Six departments.", "One coordinated operation."],
+    lead: "Our team is organized around clear responsibilities, so customer experience, operations, technology, quality and talent move in the same direction.",
+    explore: "Explore the departments",
     talk: "Talk to us",
-    wallCaption: "Portraits pending",
+    mapTitle: "Center Quest",
+    mapMeta: "Operating structure",
+    mapStatus: "6 connected departments",
   },
   es: {
-    eyebrow: "Nuestro equipo",
-    lines: [
-      { text: "La gente detrás", strong: false },
-      { text: "de cada operación.", strong: true },
-    ],
-    lead: "Más de 200 operadores de call center, 10 programadores especializados y un departamento de RRHH dedicado exclusivamente a buscar y formar a la gente correcta.",
-    seeChart: "Ver el organigrama",
+    title: ["Seis departamentos.", "Una operación coordinada."],
+    lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que la experiencia del cliente, las operaciones, la tecnología, la calidad y el talento avancen en una misma dirección.",
+    explore: "Explorar los departamentos",
     talk: "Hablemos",
-    wallCaption: "Retratos pendientes",
+    mapTitle: "Center Quest",
+    mapMeta: "Estructura operativa",
+    mapStatus: "6 departamentos conectados",
   },
 };
-
-/* ── The wall ────────────────────────────────────────────────────────────
-   Three columns of portrait frames, taller than the frame that holds them so
-   they run off the top and bottom edges.
-
-   That overflow is the whole design. A finite 4×3 block of empty frames reads
-   as twelve empty boxes — as something missing. A wall that leaves the frame
-   in both directions reads as scale: the eye takes it as a fragment of
-   something much larger, and the emptiness stops being an absence and becomes
-   the size of the organisation. The columns drift slowly against each other
-   for the same reason, which is also what keeps it from reading as wallpaper.
-
-   When the real portraits arrive they drop into exactly these tiles. */
-const COLUMNS = 3;
-const TILES_PER_COLUMN = 5;
-
-function Wall({ reduced, caption }: { reduced: boolean; caption: string }) {
-  return (
-    <div className={styles.wall} aria-hidden>
-      <div className={styles.wallInner} data-still={reduced}>
-        {Array.from({ length: COLUMNS }, (_, column) => (
-          <div key={column} className={styles.wallColumn} data-column={column}>
-            {Array.from({ length: TILES_PER_COLUMN }, (_, tile) => (
-              <motion.span
-                key={tile}
-                className={styles.tile}
-                initial={reduced ? false : { opacity: 0, y: 26 }}
-                animate={{ opacity: 1, y: 0 }}
-                /* Diagonal cascade: the wall assembles from the near corner
-                   outward rather than column by column, which would read as
-                   three separate lists arriving. */
-                transition={{
-                  duration: 0.7,
-                  ease: EASE_OUT,
-                  delay: 0.35 + (column + tile) * 0.06,
-                }}
-              >
-                <Silhouette className={styles.tileArt} />
-              </motion.span>
-            ))}
-          </div>
-        ))}
-      </div>
-      <span className={styles.wallCaption}>{caption}</span>
-    </div>
-  );
-}
 
 export default function Hero({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
@@ -98,53 +37,51 @@ export default function Hero({ reduced }: { reduced: boolean }) {
 
   return (
     <header data-hero-boundary className={styles.hero}>
-      <div aria-hidden className={styles.vignette} />
-      <div aria-hidden className={`${styles.grain} cq-noise`} />
-
-      <div className={`${container.container} ${styles.grid}`}>
+      <div className={`${container.container} ${styles.layout}`}>
         <motion.div
           className={styles.copy}
-          variants={heroCopyVariants}
-          initial={reduced ? false : "hidden"}
-          animate="visible"
+          initial={reduced ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, ease: EASE_OUT }}
         >
-          <motion.span className={styles.eyebrow} variants={focusRiseVariants}>
-            <span className={styles.eyebrowRule} aria-hidden />
-            {t.eyebrow}
-          </motion.span>
-
-          <motion.h1 className={styles.headline} variants={heroLinesVariants}>
-            {t.lines.map((line) => (
-              <motion.span key={line.text} className={styles.lineMask} variants={passThroughVariants}>
-                <motion.span
-                  className={line.strong ? `${styles.line} ${styles.lineStrong}` : styles.line}
-                  variants={heroCurtainVariants}
-                >
-                  {line.text}
-                </motion.span>
-              </motion.span>
-            ))}
-          </motion.h1>
-
-          <motion.p className={styles.lead} variants={focusRiseVariants}>
-            {t.lead}
-          </motion.p>
-
-          <motion.div className={styles.actions} variants={focusRiseVariants}>
-            <a href="#chart" className={styles.primaryCta}>
-              {t.seeChart} <Arrow direction="down" />
+          <h1 className={styles.headline}>
+            <span>{t.title[0]}</span>
+            <strong>{t.title[1]}</strong>
+          </h1>
+          <p className={styles.lead}>{t.lead}</p>
+          <div className={styles.actions}>
+            <a href="#departments" className={styles.primaryCta}>
+              {t.explore} <Arrow direction="down" />
             </a>
             <LocalizedLink href="/quote" className={styles.secondaryCta}>
               {t.talk} <Arrow />
             </LocalizedLink>
-          </motion.div>
+          </div>
         </motion.div>
 
-        {/* The caption deliberately carries no count. The only headcount this
-            page can reach is the mockup roster's (25), and printing it beside
-            a lead that says "over 200 operators" would put two contradictory
-            numbers one column apart. */}
-        <Wall reduced={reduced} caption={t.wallCaption} />
+        <div className={styles.systemMap} aria-label={t.mapStatus}>
+          <div className={styles.mapHeader}>
+            <span className={styles.mapIdentity}>
+              <strong>{t.mapTitle}</strong>
+              <span>{t.mapMeta}</span>
+            </span>
+            <span className={styles.mapStatus}>
+              <span aria-hidden className={styles.statusDot} />
+              {t.mapStatus}
+            </span>
+          </div>
+
+          <ul className={styles.mapGrid}>
+            {DEPARTMENTS.map((department) => (
+              <li key={department.id} className={styles.mapNode}>
+                <span className={styles.mapIcon}>
+                  <ServiceIcon name={department.icon} />
+                </span>
+                <span>{department.shortLabel[lang]}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </header>
   );

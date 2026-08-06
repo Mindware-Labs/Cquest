@@ -4,8 +4,10 @@
 
   position: relative;
   display: grid;
-  grid-template-columns: minmax(18rem, 0.82fr) minmax(0, 1.18fr);
-  gap: var(--board-gap);
+  /* The gutter is its own track, not a `gap` — that gives the connector a
+     real box to live in, so the beam and the port it plugs into are one
+     element instead of two independently-positioned guesses. */
+  grid-template-columns: minmax(18rem, 0.82fr) var(--board-gap) minmax(0, 1.18fr);
   width: 100%;
   margin: clamp(1.75rem, 2.5vw, 2.25rem) 0 0;
 }
@@ -77,34 +79,6 @@
 
 .sectorButton:last-child {
   border-bottom: 0;
-}
-
-.sectorButton::after {
-  content: "";
-  position: absolute;
-  z-index: -2;
-  top: calc(50% - 0.5px);
-  left: 100%;
-  width: var(--board-gap);
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--ab-petroleo) 52%, var(--ab-celeste)),
-    var(--ab-celeste) 62%,
-    color-mix(in srgb, var(--ab-celeste) 88%, white)
-  );
-  opacity: 0;
-  box-shadow: 0 0 0.45rem color-mix(in srgb, var(--ab-celeste) 34%, transparent);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition:
-    transform 360ms var(--ease-out),
-    opacity 180ms var(--ease-out);
-}
-
-.sectorButton[data-active]::after {
-  opacity: 1;
-  transform: scaleX(1);
 }
 
 .activeSurface {
@@ -205,6 +179,29 @@
   outline-offset: -2px;
 }
 
+/* ── Connector ─────────────────────────────────────────────
+   A single notch, not a wire: it lives in the gutter track itself (not
+   clipped by either neighbor) and its tip always touches the panel's edge
+   exactly at the active row's height — geometry doing the pointing instead
+   of a glowing line-and-port pair. */
+.connector {
+  position: relative;
+  height: var(--board-height);
+  pointer-events: none;
+}
+
+.connectorArrow {
+  position: absolute;
+  top: var(--port-offset);
+  right: 0;
+  width: 0.65rem;
+  height: 0.85rem;
+  background: linear-gradient(90deg, var(--ab-petroleo), var(--ab-celeste));
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform: translateY(-50%);
+  transition: top 380ms var(--ease-out);
+}
+
 .detail {
   position: relative;
   isolation: isolate;
@@ -228,48 +225,6 @@
   position: absolute;
   z-index: -1;
   pointer-events: none;
-}
-
-.detailPort {
-  position: absolute;
-  top: var(--port-offset);
-  left: 0.2rem;
-  z-index: 2;
-  width: 0.72rem;
-  height: 0.72rem;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 72%, var(--ab-deep));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ab-deep) 88%, var(--ab-celeste));
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--ab-celeste) 8%, transparent),
-    0 0 0.9rem color-mix(in srgb, var(--ab-celeste) 48%, transparent);
-  transform: translateY(-50%);
-  transition: top 380ms var(--ease-out);
-}
-
-.detailPort::before,
-.detailPort::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-}
-
-.detailPort::before {
-  left: 50%;
-  width: 0.24rem;
-  height: 0.24rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ab-celeste) 86%, white);
-  box-shadow: 0 0 0.45rem var(--ab-celeste);
-  transform: translate(-50%, -50%);
-}
-
-.detailPort::after {
-  right: 100%;
-  width: 0.25rem;
-  height: 1px;
-  background: var(--ab-celeste);
-  transform: translateY(-50%);
 }
 
 .detail::before {
@@ -449,6 +404,7 @@
   .controlBoard {
     --board-gap: 1rem;
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--board-gap);
   }
 
   .selector {
@@ -488,9 +444,8 @@
     scroll-snap-align: start;
   }
 
-  .sectorButton::after,
   .sectorArrow,
-  .detailPort {
+  .connector {
     display: none;
   }
 
@@ -607,13 +562,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sectorButton::after,
   .sectorIcon,
   .sectorArrow {
     transition: none;
   }
 
-  .detailPort {
+  .connectorArrow {
     transition: none;
   }
 }

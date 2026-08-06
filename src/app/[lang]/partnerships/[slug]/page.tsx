@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
@@ -9,13 +10,11 @@ import styles from "./partnership.module.css";
 
 const COPY = {
   en: {
-    label: "Partnership profile",
     status: "In development",
     note: "This partnership profile is being developed. Its final content will be added in a later phase.",
     back: "Back to partnerships",
   },
   es: {
-    label: "Perfil de alianza",
     status: "En desarrollo",
     note: "Este perfil de alianza está en desarrollo. Su contenido final se incorporará en una fase posterior.",
     back: "Volver a partnerships",
@@ -59,8 +58,16 @@ export default async function PartnershipPlaceholderPage({
   return (
     <section className={styles.placeholderPage}>
       <div className={`${container.container} ${styles.inner}`}>
-        <div className={styles.logoFrame} aria-label={t.label}>
-          <span>Logo</span>
+        <div className={styles.logoFrame}>
+          <Image
+            src={partner.logo.src}
+            alt={`${partner.name[lang]} logo`}
+            width={partner.logo.width}
+            height={partner.logo.height}
+            sizes="(max-width: 672px) 224px, 352px"
+            className={styles.logoImage}
+            priority
+          />
         </div>
 
         <div className={styles.copy}>

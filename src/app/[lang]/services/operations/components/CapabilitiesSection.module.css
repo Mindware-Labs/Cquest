@@ -338,10 +338,16 @@
   align-items: center;
   justify-content: center;
   color: color-mix(in srgb, var(--bp-teal) 52%, var(--muted));
-  transition: color 320ms var(--ease-out);
+  transition:
+    color 320ms var(--ease-out),
+    scale 260ms var(--ease-out);
 }
 
 .accordionItem[data-active] .accordionIcon { color: var(--bp-teal); }
+
+.accordionHeader:hover .accordionIcon {
+  scale: 1.12;
+}
 
 .accordionIcon svg {
   width: 1.4rem;

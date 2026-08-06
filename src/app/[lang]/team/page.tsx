@@ -10,8 +10,8 @@ const TITLE: Record<Locale, string> = {
 };
 
 const DESCRIPTION: Record<Locale, string> = {
-  en: "The people behind every operation: over 200 call center operators, 10 specialized developers and a dedicated HR department, organised by department.",
-  es: "La gente detrás de cada operación: más de 200 operadores de call center, 10 programadores especializados y un departamento de RRHH dedicado, organizados por departamento.",
+  en: "Meet the six specialized departments behind Center Quest's customer experience, business operations, back office, technology, quality and human capital services.",
+  es: "Conoce los seis departamentos especializados detrás de los servicios de experiencia del cliente, operaciones, back office, tecnología, calidad y capital humano de Center Quest.",
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
@@ -21,12 +21,6 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/team"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
-    /* The org chart below is a placeholder structure with invented department
-       names and lorem profiles (see data.ts). Indexing it would put fabricated
-       people into search results under Center Quest's name — and the fix once
-       the real structure lands is deleting these two lines, not remembering
-       to. Also kept out of sitemap.ts for the same reason. */
-    robots: { index: false, follow: true },
   };
 }
 

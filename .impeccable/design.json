@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-06T17:04:10.5625470Z",
+  "title": "Design System: Center Quest",
+  "extensions": {
+    "colorMeta": {
+      "celeste": { "role": "primary", "displayName": "Celeste institucional", "canonical": "#74c3d5", "tonalRamp": ["oklch(from #74c3d5 15% c h)", "oklch(from #74c3d5 27% c h)", "oklch(from #74c3d5 39% c h)", "oklch(from #74c3d5 51% c h)", "oklch(from #74c3d5 63% c h)", "oklch(from #74c3d5 75% c h)", "oklch(from #74c3d5 87% c h)", "oklch(from #74c3d5 95% c h)"] },
+      "petroleo": { "role": "primary", "displayName": "Azul petróleo institucional", "canonical": "#3f738d", "tonalRamp": ["oklch(from #3f738d 15% c h)", "oklch(from #3f738d 27% c h)", "oklch(from #3f738d 39% c h)", "oklch(from #3f738d 51% c h)", "oklch(from #3f738d 63% c h)", "oklch(from #3f738d 75% c h)", "oklch(from #3f738d 87% c h)", "oklch(from #3f738d 95% c h)"] },
+      "verde-web": { "role": "secondary", "displayName": "Verde web accesible", "canonical": "#6aaa00", "tonalRamp": ["oklch(from #6aaa00 15% c h)", "oklch(from #6aaa00 27% c h)", "oklch(from #6aaa00 39% c h)", "oklch(from #6aaa00 51% c h)", "oklch(from #6aaa00 63% c h)", "oklch(from #6aaa00 75% c h)", "oklch(from #6aaa00 87% c h)", "oklch(from #6aaa00 95% c h)"] },
+      "gris-calido": { "role": "secondary", "displayName": "Gris cálido", "canonical": "#d6d1ca", "tonalRamp": ["oklch(from #d6d1ca 15% c h)", "oklch(from #d6d1ca 27% c h)", "oklch(from #d6d1ca 39% c h)", "oklch(from #d6d1ca 51% c h)", "oklch(from #d6d1ca 63% c h)", "oklch(from #d6d1ca 75% c h)", "oklch(from #d6d1ca 87% c h)", "oklch(from #d6d1ca 95% c h)"] },
+      "page": { "role": "neutral", "displayName": "Marfil de página", "canonical": "#f8f7f4", "tonalRamp": ["oklch(from #f8f7f4 15% c h)", "oklch(from #f8f7f4 27% c h)", "oklch(from #f8f7f4 39% c h)", "oklch(from #f8f7f4 51% c h)", "oklch(from #f8f7f4 63% c h)", "oklch(from #f8f7f4 75% c h)", "oklch(from #f8f7f4 87% c h)", "oklch(from #f8f7f4 95% c h)"] },
+      "foreground": { "role": "neutral", "displayName": "Tinta de contenido", "canonical": "#0d1e29", "tonalRamp": ["oklch(from #0d1e29 15% c h)", "oklch(from #0d1e29 27% c h)", "oklch(from #0d1e29 39% c h)", "oklch(from #0d1e29 51% c h)", "oklch(from #0d1e29 63% c h)", "oklch(from #0d1e29 75% c h)", "oklch(from #0d1e29 87% c h)", "oklch(from #0d1e29 95% c h)"] },
+      "muted": { "role": "neutral", "displayName": "Texto atenuado", "canonical": "#4a5c6a", "tonalRamp": ["oklch(from #4a5c6a 15% c h)", "oklch(from #4a5c6a 27% c h)", "oklch(from #4a5c6a 39% c h)", "oklch(from #4a5c6a 51% c h)", "oklch(from #4a5c6a 63% c h)", "oklch(from #4a5c6a 75% c h)", "oklch(from #4a5c6a 87% c h)", "oklch(from #4a5c6a 95% c h)"] },
+      "border": { "role": "neutral", "displayName": "Borde cálido", "canonical": "#e2ddd6", "tonalRamp": ["oklch(from #e2ddd6 15% c h)", "oklch(from #e2ddd6 27% c h)", "oklch(from #e2ddd6 39% c h)", "oklch(from #e2ddd6 51% c h)", "oklch(from #e2ddd6 63% c h)", "oklch(from #e2ddd6 75% c h)", "oklch(from #e2ddd6 87% c h)", "oklch(from #e2ddd6 95% c h)"] },
+      "surface-raised": { "role": "neutral", "displayName": "Superficie elevada", "canonical": "#ffffff", "tonalRamp": ["oklch(from #ffffff 15% c h)", "oklch(from #ffffff 27% c h)", "oklch(from #ffffff 39% c h)", "oklch(from #ffffff 51% c h)", "oklch(from #ffffff 63% c h)", "oklch(from #ffffff 75% c h)", "oklch(from #ffffff 87% c h)", "oklch(from #ffffff 95% c h)"] },
+      "surface-sunken": { "role": "neutral", "displayName": "Superficie hundida", "canonical": "#f0ede8", "tonalRamp": ["oklch(from #f0ede8 15% c h)", "oklch(from #f0ede8 27% c h)", "oklch(from #f0ede8 39% c h)", "oklch(from #f0ede8 51% c h)", "oklch(from #f0ede8 63% c h)", "oklch(from #f0ede8 75% c h)", "oklch(from #f0ede8 87% c h)", "oklch(from #f0ede8 95% c h)"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#0a1116", "tonalRamp": ["oklch(from #0a1116 15% c h)", "oklch(from #0a1116 27% c h)", "oklch(from #0a1116 39% c h)", "oklch(from #0a1116 51% c h)", "oklch(from #0a1116 63% c h)", "oklch(from #0a1116 75% c h)", "oklch(from #0a1116 87% c h)", "oklch(from #0a1116 95% c h)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Titulares de apertura con medida controlada." },
+      "headline": { "displayName": "Headline", "purpose": "Encabezados editoriales de sección." },
+      "body": { "displayName": "Body", "purpose": "Lectura principal y texto explicativo." },
+      "label": { "displayName": "Label", "purpose": "CTAs, estados y microetiquetas en mayúsculas." }
+    },
+    "shadows": [
+      { "name": "cta-rest", "value": "0 2px 8px -2px color-mix(in srgb, var(--brand-celeste) 40%, transparent)", "purpose": "Separación ambiental de una acción comercial en reposo." },
+      { "name": "cta-hover", "value": "0 20px 40px -10px color-mix(in srgb, var(--brand-celeste) 50%, transparent)", "purpose": "Respuesta elevada de la acción comercial." },
+      { "name": "floating-panel", "value": "0 20px 40px -16px rgba(15, 32, 40, 0.35)", "purpose": "Dropdowns y paneles flotantes sobre el plano de lectura." },
+      { "name": "instrument-surface", "value": "inset 0 1px 0 rgba(255,255,255,0.8), 0 24px 50px -34px color-mix(in srgb, var(--ink) 30%, transparent), 0 8px 22px -20px color-mix(in srgb, var(--ink) 36%, transparent)", "purpose": "Superficie contenida del formulario de cotización." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Entradas, salidas y estados de interfaz." },
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Gestos largos y cinematográficos." },
+      { "name": "ease-out-quart", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Asentamiento corto y controlado." },
+      { "name": "ease-in-out-strong", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Elementos que viajan a través de la pantalla." },
+      { "name": "ease-spring", "value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "purpose": "Cambios de escala con peso y ligero sobrepaso." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "42rem" },
+      { "name": "simplify", "value": "64rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Commercial CTA",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción comercial principal sobre fondos oscuros.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\"><span>Solicitar cotización</span><svg aria-hidden=\"true\" viewBox=\"0 0 16 16\"><path d=\"M6 3.5 10.5 8 6 12.5\"/></svg></a>",
+      "css": ".ds-btn-primary{display:inline-flex;min-height:2.75rem;align-items:center;gap:.75rem;padding:.75rem 1.375rem .75rem 1.5rem;border:0;border-radius:2px;background:var(--brand-celeste);color:var(--foreground);font:700 .72rem/1 var(--font-josefin),sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;box-shadow:0 2px 8px -2px color-mix(in srgb,var(--brand-celeste) 40%,transparent);transition:transform .18s var(--ease-out),background-color .24s var(--ease-out),box-shadow .24s var(--ease-out)}.ds-btn-primary svg{width:1rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ds-btn-primary:hover{background:#fff;transform:translateY(-2px);box-shadow:0 20px 40px -10px color-mix(in srgb,var(--brand-celeste) 50%,transparent)}.ds-btn-primary:active{transform:scale(.98)}.ds-btn-primary:focus-visible{outline:2px solid var(--brand-celeste);outline-offset:4px}"
+    },
+    {
+      "name": "Dark Commercial CTA",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "Acción primaria sobre superficies claras.",
+      "html": "<a class=\"ds-btn-dark\" href=\"#\">Contáctanos</a>",
+      "css": ".ds-btn-dark{display:inline-flex;min-height:2.75rem;align-items:center;justify-content:center;padding:.75rem 1.5rem;border:0;border-radius:2px;background:var(--brand-petroleo);color:#fff;font:700 .72rem/1 var(--font-josefin),sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;box-shadow:0 2px 10px -4px rgba(15,32,40,.35);transition:transform .18s var(--ease-out),background-color .24s var(--ease-out),box-shadow .24s var(--ease-out)}.ds-btn-dark:hover{background:color-mix(in srgb,var(--brand-petroleo) 88%,#000);transform:translateY(-1px);box-shadow:0 14px 28px -8px rgba(15,32,40,.45)}.ds-btn-dark:active{transform:scale(.98)}.ds-btn-dark:focus-visible{outline:2px solid var(--brand-petroleo);outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción secundaria para flujos y formularios.",
+      "html": "<button class=\"ds-btn-ghost\">Volver</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;min-height:2.75rem;align-items:center;justify-content:center;padding:0 1.2rem;border:1px solid var(--border);border-radius:2px;background:transparent;color:var(--foreground);font:600 .92rem/1.4 var(--font-josefin),sans-serif;transition:border-color .25s var(--ease-out),color .25s var(--ease-out),background-color .25s var(--ease-out)}.ds-btn-ghost:hover{border-color:color-mix(in srgb,var(--foreground) 25%,var(--border));background:color-mix(in srgb,var(--foreground) 4%,transparent)}.ds-btn-ghost:active{transform:scale(.985)}.ds-btn-ghost:focus-visible{outline:2px solid var(--brand-petroleo);outline-offset:2px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto compacto del flujo de cotización.",
+      "html": "<label class=\"ds-field\"><span>Correo electrónico</span><input type=\"email\" placeholder=\"nombre@empresa.com\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:.35rem;color:var(--foreground);font:600 .85rem/1.4 var(--font-josefin),sans-serif}.ds-field input{width:100%;padding:.6rem .8rem;border:1px solid var(--border);border-radius:2px;background:var(--surface-raised);color:var(--foreground);font:400 .92rem/1.4 var(--font-josefin),sans-serif;transition:border-color .2s var(--ease-out),box-shadow .2s var(--ease-out)}.ds-field input::placeholder{color:var(--muted);opacity:.55}.ds-field input:hover{border-color:color-mix(in srgb,var(--brand-petroleo) 45%,var(--border))}.ds-field input:focus{outline:none;border-color:var(--brand-petroleo);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand-petroleo) 18%,transparent)}"
+    },
+    {
+      "name": "Choice Chip",
+      "kind": "chip",
+      "refersTo": "choice-chip",
+      "description": "Opción compacta seleccionable del formulario.",
+      "html": "<label class=\"ds-choice\"><input type=\"radio\" name=\"service\" checked><span>Call Center</span></label>",
+      "css": ".ds-choice{position:relative;display:inline-flex;align-items:center;padding:.48rem .8rem;border:1px solid var(--border);border-radius:2px;background:var(--surface-raised);color:var(--foreground);font:500 .85rem/1.3 var(--font-josefin),sans-serif;cursor:pointer;transition:border-color .2s var(--ease-out),background-color .2s var(--ease-out),box-shadow .2s var(--ease-out)}.ds-choice input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.ds-choice:hover{border-color:color-mix(in srgb,var(--brand-petroleo) 45%,var(--border))}.ds-choice:has(input:checked){border-color:var(--brand-petroleo);background:color-mix(in srgb,var(--brand-petroleo) 12%,var(--surface-raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--brand-petroleo) 35%,transparent)}.ds-choice:has(input:focus-visible){outline:2px solid var(--brand-petroleo);outline-offset:2px}"
+    },
+    {
+      "name": "Desktop Navigation Link",
+      "kind": "nav",
+      "description": "Enlace editorial con marcador lineal activo.",
+      "html": "<a class=\"ds-nav-link\" aria-current=\"page\" href=\"#\">Servicios</a>",
+      "css": ".ds-nav-link{position:relative;display:inline-flex;padding:.5rem 1rem;color:color-mix(in srgb,var(--foreground) 80%,transparent);font:500 .875rem/1.25 var(--font-josefin),sans-serif;text-decoration:none;transition:color .3s}.ds-nav-link::after{content:\"\";position:absolute;inset-inline:1rem;bottom:0;height:2px;background:var(--brand-celeste);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease-out)}.ds-nav-link:hover,.ds-nav-link[aria-current=\"page\"]{color:var(--brand-petroleo)}.ds-nav-link:hover::after,.ds-nav-link[aria-current=\"page\"]::after{transform:scaleX(1)}.ds-nav-link:focus-visible{outline:2px solid var(--brand-petroleo);outline-offset:2px}"
+    },
+    {
+      "name": "Quote Instrument Surface",
+      "kind": "card",
+      "description": "Panel utilitario elevado que contiene el asistente de cotización.",
+      "html": "<section class=\"ds-instrument\"><span>Paso 1 de 3</span><h3>Selecciona un servicio</h3><p>Elige la línea que mejor describe tu operación.</p></section>",
+      "css": ".ds-instrument{position:relative;overflow:hidden;padding:1.4rem;border:1px solid var(--border);border-radius:2px;background:var(--surface-raised);color:var(--foreground);font-family:var(--font-josefin),sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 24px 50px -34px color-mix(in srgb,var(--ink) 30%,transparent),0 8px 22px -20px color-mix(in srgb,var(--ink) 36%,transparent)}.ds-instrument::before{content:\"\";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--brand-petroleo),var(--brand-celeste))}.ds-instrument span{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.ds-instrument h3{margin:.8rem 0 .4rem;font-size:1.4rem;line-height:1.15}.ds-instrument p{margin:0;color:var(--muted);line-height:1.6}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La sala de control institucional",
+    "overview": "Center Quest se presenta como una operación coordinada que ya está en marcha: precisa, serena y capaz. El mundo visual combina campos de tinta, superficies cálidas y luz celeste para transmitir control sin caer en la estética de software genérico ni en el lujo decorativo.\n\nLa interfaz trabaja con contención premium. La jerarquía nace de la tipografía, el contraste, las reglas finas y el espacio; los acentos aparecen donde orientan una decisión o explican un estado. La profundidad es mayormente tonal y las sombras solo hacen visible una elevación, un cambio de estado o una superficie que necesita separarse.\n\nEl lenguaje técnico es institucional, no futurista: linework preciso, bordes casi cuadrados, paneles sobrios y movimiento con peso. Las experiencias pueden expresar cada servicio de forma propia, pero deben seguir compartiendo la paleta, la voz tipográfica, la cuadrícula y la ruta clara hacia una cotización.",
+    "keyCharacteristics": [
+      "Dos azules institucionales con funciones distintas, no un campo de acentos intercambiables.",
+      "Josefin Sans como única voz tipográfica.",
+      "Superficies marfil cálido y campos de tinta casi negros.",
+      "Reglas finas, cuadrícula compartida y linework técnico contenido.",
+      "Controles comerciales casi cuadrados con estados táctiles claros."
+    ],
+    "rules": [
+      { "name": "The Two-Blue Rule", "body": "El celeste atrae y señala; el petróleo estructura y afirma. No intercambiar sus papeles por conveniencia local.", "section": "colors" },
+      { "name": "The One-Family Rule", "body": "Toda la voz visual usa Josefin Sans; la jerarquía se resuelve dentro de sus pesos 400 y 500/600, no añadiendo otra familia.", "section": "typography" },
+      { "name": "The Flat-by-Default Rule", "body": "Una superficie en reposo no recibe sombra por estilo; solo la obtiene cuando su elevación o estado necesita explicarse.", "section": "elevation" },
+      { "name": "The Precision-before-Rounding Rule", "body": "Usar primero alineación, hairlines y contraste; la curvatura nunca debe convertir navegación, filtros o CTAs en una colección de píldoras.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do alinear navegación y secciones al contenedor compartido de 84rem y conservar sus gutters responsivos.",
+      "Do reservar el celeste para acciones, focos y señales que realmente orientan la lectura.",
+      "Do construir jerarquía con Josefin Sans, contraste, medida y espacio antes de introducir contenedores.",
+      "Do mantener zonas táctiles de al menos 2.75rem y foco visible sobre superficies claras y oscuras.",
+      "Do usar linework fino y cambios tonales para explicar estructura operativa."
+    ],
+    "donts": [
+      "Don't introducir otras familias tipográficas ni pesos extremos ajenos al sistema.",
+      "Don't sustituir reglas activas o divisores por píldoras de color sin una necesidad funcional.",
+      "Don't redondear cada bloque o convertir listados editoriales en mosaicos de tarjetas genéricas.",
+      "Don't usar sombras decorativas permanentes donde un borde o cambio tonal comunica la misma jerarquía.",
+      "Don't recurrir a grises fríos genéricos, colores sin fuente o composiciones dominadas por fotografía de stock."
+    ]
+  }
+}

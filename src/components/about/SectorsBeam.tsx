@@ -155,6 +155,10 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
         </div>
       </div>
 
+      <div className={styles.connector} aria-hidden>
+        <span className={styles.connectorArrow} />
+      </div>
+
       <section
         id={panelId}
         className={styles.detail}
@@ -162,7 +166,6 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
         aria-labelledby={`${tabId}-${active.id}`}
         tabIndex={0}
       >
-        <span className={styles.detailPort} aria-hidden />
         <div className={styles.detailTopline}>
           <span className={styles.protocolLabel}>
             <span className={styles.liveDot} aria-hidden />

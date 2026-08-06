@@ -87,6 +87,13 @@
   place-items: center;
   flex: 0 0 auto;
   color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
+  transition:
+    color 0.2s var(--ease-out),
+    scale 0.2s var(--ease-out);
+}
+
+.option:hover .optionIcon {
+  scale: 1.12;
 }
 
 .optionIcon svg {

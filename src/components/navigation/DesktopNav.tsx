@@ -226,7 +226,11 @@ export default function DesktopNav({
                                     inverse ? "bg-white/[0.06]" : "bg-[color-mix(in_srgb,var(--brand-celeste)_8%,transparent)]"
                                   }`}
                                 />
-                                <span className={inverse ? "text-celeste" : "text-petroleo"}>
+                                <span
+                                  className={`inline-block transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:scale-110 ${
+                                    inverse ? "text-celeste" : "text-petroleo"
+                                  }`}
+                                >
                                   {child.icon && <ServiceIcon name={child.icon} />}
                                 </span>
                                 <span

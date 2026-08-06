@@ -378,6 +378,11 @@
   align-items: center;
   justify-content: center;
   color: var(--cc-sky);
+  transition: scale 260ms var(--ease-out);
+}
+
+.accordionHeader:hover .accordionIcon {
+  scale: 1.12;
 }
 
 .accordionIcon svg {
