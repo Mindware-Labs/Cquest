@@ -49,7 +49,10 @@
   font-size: 1.5rem;
   font-weight: 500;
   letter-spacing: -0.04em;
-  color: color-mix(in srgb, var(--ab-petroleo) 46%, transparent);
+  /* Full-strength, not a 46%-transparent mix: the mix read as a soft brand
+     tint but only cleared ~1.9:1 against --ab-base, well under the 3:1 large
+     -text floor. Solid petroleo keeps the same tint while clearing ~5.1:1. */
+  color: var(--ab-petroleo);
 }
 
 .sectorList {
@@ -208,8 +211,12 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  height: var(--board-height);
-  min-height: 0;
+  /* min-, not a fixed height: the real per-sector, per-locale copy (data.ts)
+     varies enough that a hard 29rem risked silently clipping the longer
+     combinations against `overflow: hidden` below, with no scrollbar to
+     reveal it. Letting the panel grow when it needs to is the same fix the
+     ≤64rem breakpoint already uses. */
+  min-height: var(--board-height);
   padding: clamp(1.5rem, 2vw, 2rem);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--ab-celeste) 34%, transparent);
@@ -217,6 +224,11 @@
   background: var(--ab-deep);
   color: var(--ab-raised);
   outline: none;
+  /* Shared "quiet register" tint for this panel's secondary uppercase
+     labels — tinted from the surface's own celeste rather than a flat
+     white-alpha (which reads grey on this ink), the same technique
+     MetricsSection's .metricList dt already uses on this same --ab-deep. */
+  --detail-muted: color-mix(in srgb, var(--ab-celeste) 26%, rgba(255, 255, 255, 0.82));
 }
 
 .detail::before,
@@ -246,8 +258,13 @@
 }
 
 .detail:focus-visible {
+  /* Inset, not outset: a positive offset draws the ring outside the panel's
+     own border, onto the light page background behind it — where celeste
+     clears only ~2:1. DESIGN.md's own rule ("los oscuros usan celeste") and
+     .sectorButton's inset ring right above this file both put the ring on
+     the surface it's meant for; this one was the odd one out. */
   outline: 2px solid var(--ab-celeste);
-  outline-offset: 3px;
+  outline-offset: -3px;
 }
 
 .detailTopline {
@@ -279,7 +296,7 @@
   font-size: 0.76rem;
   font-weight: 500;
   letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.48);
+  color: var(--detail-muted);
 }
 
 .detailContent {
@@ -328,7 +345,7 @@
 
 .detailLabel {
   display: block;
-  color: rgba(255, 255, 255, 0.48);
+  color: var(--detail-muted);
 }
 
 .demand p {
@@ -469,7 +486,6 @@
   }
 
   .detail {
-    height: auto;
     min-height: 27rem;
   }
 }
@@ -511,7 +527,11 @@
   }
 
   .detailHeading h3 {
-    font-size: clamp(1rem, 5vw, 1.4rem);
+    /* Floor raised from 1rem: below ~359px it could drop to or under
+       .demand p's fixed 1.12rem at the same font-weight, letting the body
+       sentence outrank the sector name it introduces. 1.25rem keeps the
+       heading ahead of it at every width this query covers. */
+    font-size: clamp(1.25rem, 5vw, 1.4rem);
   }
 
   .demand {

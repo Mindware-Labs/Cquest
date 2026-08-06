@@ -43,7 +43,9 @@
   font-size: 0.68rem;
   font-weight: 650;
   letter-spacing: 0.15em;
-  line-height: 1.3;
+  /* Matches SectorsBeam's identical 0.68rem/650/0.15em compact-label
+     pattern — same conceptual role, one line-height between the two. */
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
