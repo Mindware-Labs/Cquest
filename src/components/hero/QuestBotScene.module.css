@@ -46,34 +46,24 @@
   margin: 0 auto;
 }
 
-/* ── Desktop: the mascot parks in the right third ────────────────────────
+/* ── Desktop: the mascot centres in the space after the copy ─────────────
    The copy and the mascot are two cells of one centred grid (see the
    composition plane in HeroImage), sharing an axis. A centred stage would
    land the mascot's halo straight against the end of the headline's lines.
-   Two columns instead: the copy owns the left of the frame, the mascot and
-   its bubble own the right.
+   Instead, the mascot's centre is the midpoint between the headline's right
+   edge and the hero's right edge. That makes the two visible gaps equal:
 
-   Placed by its centre, not by its right edge. The mascot only draws across
-   the middle ~22% of its own box (halo r = 132 either side of user x 560,
-   i.e. 39%–61% of the stage), so pinning the box to the right margin would
-   park it at 75%+ of an ultrawide screen with a hole in the middle of the
-   composition. Solving for the mascot's own centre instead — `78% -
-   width/2` — holds it at ~76–77% of the frame at every desktop size, up
-   from 72% by request.
+     mascot left - headline right = hero right - mascot right
+
+   The mascot is centred at 50% of its wide SVG stage, so the margin equation
+   below can solve that midpoint directly. `--qb-copy-w` is the desktop h1's
+   8.8em measure with each arm of its font-size clamp multiplied by 8.8;
+   `--qb-frame-pad` mirrors the composition band's responsive right padding.
 
    The two clamp arms are guards, not preferences. 0 keeps the stage off the
-   copy on a narrow window. The upper arm measures the SPEECH BUBBLE, not the
-   stage box, and that distinction is what lets the mascot sit this far
-   right: the box's last ~6% is empty — the bubble starts at 57.5% of it and
-   its own width is capped at 500px, so on a wide stage it stops around 100% —
-   and guarding the box's edge was reserving air that nothing was using.
-   Measuring the bubble hands that back while keeping 40% of `--hero-inset`
-   as clearance from the frame's own right edge — a deliberately partial
-   echo of the nav mark and the copy's full inset on the left, not an exact
-   match: the 78% target above pushes harder right than a full inset would
-   allow, and this is the room that trade costs the earlier left/right
-   symmetry. `clamp()` returns its minimum when the arms cross, which is
-   exactly the fallback we want.
+   copy on a narrow window. The upper arm measures the speech bubble rather
+   than the mostly empty stage box; it only overrides the symmetric target
+   when the longest line would cross the hero's right edge.
 
    64vw, meanwhile, is what makes the second column exist at all: at the
    1300px cap the box alone is wider than a 1280px laptop, so there would
@@ -90,20 +80,41 @@
   (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .stage {
     --qb-stage-w: min(1300px, 139vh, 64vw);
+    --qb-copy-w: clamp(18.04rem, 34.32vw, 39.6rem);
+    --qb-frame-pad: 2rem;
     /* Restatement of `.say`'s own max-width rule below — the guard has to
        know how wide the bubble can get. `.say` itself shrinks to content
        (it's `max-content`, not a fixed box), so this is the WORST case,
        which is the right number for a guard. Change one, change the other. */
-    --qb-bubble-w: min(0.46 * var(--qb-stage-w), 500px);
+    --qb-bubble-w: min(0.46 * var(--qb-stage-w), 460px);
 
     width: var(--qb-stage-w);
     max-width: 100%;
     margin-inline: clamp(
         0px,
-        calc(78% - var(--qb-stage-w) / 2),
-        calc(100% - 0.575 * var(--qb-stage-w) - var(--qb-bubble-w) - 0.4 * var(--hero-inset))
+        calc(
+          (
+              100% + var(--hero-inset) + var(--qb-copy-w) + var(--qb-frame-pad) -
+                var(--qb-stage-w)
+            ) / 2
+        ),
+        calc(
+          100% + var(--qb-frame-pad) - 0.575 * var(--qb-stage-w) - var(--qb-bubble-w)
+        )
       )
       0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .stage {
+    --qb-frame-pad: 2.5rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
+  .stage {
+    --qb-frame-pad: 1.5rem;
   }
 }
 
@@ -245,15 +256,15 @@
      one line (see `.sayLine`'s `white-space: nowrap`, and no `overflow`
      guard backs it up — a string that doesn't fit visibly spills out of
      the box, so this max-width has to be a real ceiling, not an estimate).
-     They run 19 to 35 characters; the 500px cap is sized for the longest
+     They run 19 to 35 characters; the 460px cap is sized for the longest
      — 35 mono characters at the 20px font ceiling plus the caret plus the
      18px side padding, rounded up for font-metric slack across the
-     `--font-mono` stack's fallbacks — with room to spare for anything
-     shorter. Keep it in step with `--qb-bubble-w` below, which assumes
+     `--font-mono` stack's fallbacks. Keep it in step with `--qb-bubble-w`
+     above, which assumes
      this exact number as the bubble's worst-case width when it clears the
      mascot off the copy column. */
   width: max-content;
-  max-width: min(46%, 500px);
+  max-width: min(46%, 460px);
   opacity: 0;
   transform: translateY(8px) scale(0.94);
   transform-origin: 0% 100%;
