@@ -1,7 +1,12 @@
 .section {
   position: relative;
   padding-block: clamp(4.5rem, 8vw, 7.5rem);
-  background: var(--background);
+  /* Not var(--background): that's the exact token the scrolled Navbar's own
+     bg-background/80 reads from, so the two composited to the same colour
+     and the bar vanished into the page the moment you scrolled past the
+     hero. Every other dark-hero page avoids this with its own near-white
+     surface token (e.g. call-center's --cc-surface: #fbfcfc) — same fix. */
+  background: #fbfcfc;
   scroll-margin-top: 5.5rem;
 }
 
