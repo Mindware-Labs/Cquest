@@ -1,0 +1,261 @@
+/* Mindware Labs partner profile — a black, purple, symbiote-veined page.
+   Deliberately off the Center Quest palette (DISENIO.md's celeste/petroleo):
+   this profile is Mindware Labs' own identity, sampled from their logo
+   (#522566), not Center Quest's. */
+.page {
+  --mw-ink: #08050e;
+  --mw-purple: #522566;
+  --mw-purple-bright: #9d5ce0;
+  --mw-purple-glow: #c9a8f5;
+
+  position: relative;
+  isolation: isolate;
+  background: var(--mw-ink);
+  color: #f2ecfb;
+  overflow-x: clip;
+}
+
+.ambientField,
+.venomField {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  padding-block: clamp(9rem, 18vh, 12rem) 4rem;
+  padding-inline: 1.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--mw-purple-glow);
+  opacity: 0.85;
+}
+
+.logoWrap {
+  width: min(90%, 22rem);
+}
+
+.logoImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The transparent-background mark ships in Mindware Labs' own deep
+     purple — legible on white, but it sinks into this near-black page at
+     the same contrast the brand logo does elsewhere on dark surfaces.
+     Filtered white so it reads as a mark first; the field around it
+     carries the purple instead. */
+  filter: brightness(0) invert(1);
+}
+
+.lead {
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.1vw + 0.7rem, 1.15rem);
+  line-height: 1.65;
+  color: rgba(242, 236, 251, 0.72);
+  text-wrap: pretty;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 251, 0.55);
+}
+
+.status::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--mw-purple-bright);
+  box-shadow: 0 0 8px var(--mw-purple-bright);
+}
+
+.scrollCue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 251, 0.4);
+}
+
+.scrollCue svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  animation: mw-scroll-bob 1.8s var(--ease-in-out-strong, ease-in-out) infinite;
+}
+
+@keyframes mw-scroll-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollCue svg {
+    animation: none;
+  }
+}
+
+/* ── Content sections ────────────────────────────────────────────────── */
+.section {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(3rem, 7vw, 5rem);
+}
+
+.card {
+  max-width: 44rem;
+  margin-inline: auto;
+  border: 1px solid rgba(157, 92, 224, 0.22);
+  border-radius: 4px;
+  /* A wash of Mindware's own brand purple over the dark glass, rather than
+     a neutral tint — so the card reads as this profile's material even
+     where the field behind it has grown sparse. */
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--mw-purple) 20%, transparent),
+      color-mix(in srgb, var(--mw-purple) 20%, transparent)
+    ),
+    rgba(10, 6, 16, 0.55);
+  backdrop-filter: blur(18px);
+  padding: clamp(1.75rem, 5vw, 3rem);
+}
+
+.sectionHeading {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1rem + 1.8vw, 2.15rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.sectionBody {
+  margin-top: 1rem;
+  color: rgba(242, 236, 251, 0.76);
+  font-size: 1rem;
+  line-height: 1.8;
+  text-wrap: pretty;
+}
+
+/* ── Connect ──────────────────────────────────────────────────────────── */
+.connect {
+  text-align: center;
+}
+
+.connectHeading {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 1rem + 1.4vw, 1.9rem);
+}
+
+.socialRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-top: 1.75rem;
+}
+
+.socialLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid rgba(157, 92, 224, 0.3);
+  border-radius: 2px;
+  padding-inline: 1.25rem;
+  color: #f2ecfb;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    border-color 220ms var(--ease-out, ease-out),
+    background-color 220ms var(--ease-out, ease-out),
+    transform 180ms var(--ease-out, ease-out);
+}
+
+.socialLink svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.socialLink[data-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.socialLink:not([data-disabled="true"]):hover {
+  border-color: var(--mw-purple-bright);
+  background: rgba(157, 92, 224, 0.12);
+  transform: translateY(-2px);
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--mw-purple-bright);
+  outline-offset: 3px;
+}
+
+.connectNote {
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: rgba(242, 236, 251, 0.42);
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 3rem;
+  color: var(--mw-purple-glow);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.backLink:focus-visible {
+  outline: 2px solid var(--mw-purple-bright);
+  outline-offset: 4px;
+}
+
+@media (max-width: 42rem) {
+  .hero {
+    padding-block: 7.5rem 3rem;
+  }
+
+  .logoWrap {
+    width: min(85%, 16rem);
+  }
+}

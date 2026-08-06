@@ -22,6 +22,7 @@ export const dictionary: Dictionary = {
     callCenter: { capabilities: "Capacidades", process: "Proceso", results: "Resultados", clients: "Clientes" },
     bpo: { disciplines: "Disciplinas", method: "Método", slas: "SLAs", facilities: "Instalaciones" },
     systems: { capabilities: "Capacidades", method: "Método", commitments: "Compromisos", work: "Trabajo" },
+    team: { departments: "Departamentos" },
   },
   footer: {
     tagline: "Call Center · Operaciones · Desarrollo de Sistemas",

@@ -34,7 +34,21 @@ export const SERVICE_DETAIL_PAGES = [
 export const DARK_HERO_PAGES = [
   ...SERVICE_DETAIL_PAGES,
   "/team",
+  "/partnerships/mindware-labs",
 ] as const;
+
+// Dark-hero pages whose CTA should carry that page's OWN accent instead of
+// the brand celeste — currently just Mindware Labs, which runs its own
+// purple identity rather than Center Quest's. The actual color has to be
+// written as a literal Tailwind class in Navbar.tsx (arbitrary-value
+// classes built from a runtime string here wouldn't be visible to
+// Tailwind's static scanner), so this list only gates which branch applies.
+export const ACCENT_CTA_PAGES = ["/partnerships/mindware-labs"] as const;
+
+// Pages that skip the site-wide footer entirely — currently just Mindware
+// Labs, whose page is meant to read as its own closed, self-contained
+// surface rather than bottoming out on Center Quest's own closing statement.
+export const NO_FOOTER_PAGES = ["/partnerships/mindware-labs"] as const;
 
 export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
   return [
@@ -82,7 +96,7 @@ function getHomeNavLink(dict: Dictionary): NavLink {
 // useLocalizedPathname) so each service page can define its own list without
 // the shared Navbar/DesktopNav/MobileNav needing to know anything about a
 // specific page's structure.
-export function getServiceNavLinks(dict: Dictionary): Record<string, readonly NavLink[]> {
+export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<string, readonly NavLink[]> {
   const home = getHomeNavLink(dict);
   return {
     "/services/call-center": [
@@ -105,6 +119,35 @@ export function getServiceNavLinks(dict: Dictionary): Record<string, readonly Na
       { label: dict.serviceSections.systems.method, href: "#method" },
       { label: dict.serviceSections.systems.commitments, href: "#commitments" },
       { label: dict.serviceSections.systems.work, href: "#work" },
+    ],
+    // /team isn't a SERVICE_DETAIL_PAGES entry (see the comment on
+    // DARK_HERO_PAGES above — it has a dark hero but no quote-wizard
+    // service to deep-link), but it's the same "own page, own anchors"
+    // shape as the three above: a dark hero, then one real in-page section.
+    "/team": [
+      home,
+      { label: dict.serviceSections.team.departments, href: "#departments" },
+    ],
+    // Mindware Labs runs its own visual identity end to end (see
+    // ACCENT_CTA_PAGES/NO_FOOTER_PAGES) and reads as its own surface rather
+    // than another Center Quest subpage — so unlike the pages above, it
+    // skips the "Home ▾" wrapper and shows home's own top-level set
+    // (getHeroNavLinks in components/hero/animation.ts) directly, just
+    // without the Partnerships entry: linking back to the section that
+    // lists this very page would be circular here.
+    "/partnerships/mindware-labs": [
+      {
+        label: dict.hero.navLinks.services,
+        href: "/#services",
+        children: SERVICES.map((service) => ({
+          label: service.label[lang],
+          href: service.href,
+          description: service.strapline[lang],
+          icon: SERVICE_ICON[service.id],
+        })),
+      },
+      { label: dict.hero.navLinks.team, href: "/#metrics" },
+      { label: dict.hero.navLinks.sectors, href: "/#sectors" },
     ],
   };
 }

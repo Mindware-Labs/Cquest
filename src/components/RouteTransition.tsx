@@ -142,6 +142,13 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     const destination = hash ? document.getElementById(hash) : null;
 
     if (destination) {
+      // Lenis derives its scrollable height from a ResizeObserver, which
+      // hasn't necessarily run yet at this point — scrolling against a
+      // stale/undersized height (still the OUTGOING page's, or the
+      // incoming one measured before its full content settled) clamps the
+      // target short on a hash deep down a tall page. Forcing a synchronous
+      // remeasure first is what `resize()` is for.
+      window.__lenis?.resize();
       window.__lenis?.scrollTo(destination, { immediate: true, force: true });
       if (!window.__lenis) destination.scrollIntoView();
       return;
@@ -161,9 +168,10 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     root.style.scrollBehavior = previousBehavior;
   }, []);
 
-  // Before paint, not after: the scroll reset and the back/forward fade both
-  // have to be committed in the same frame the new route first renders, or
-  // there is a visible frame at the old offset / at full opacity.
+  // Before paint, not after: the back/forward fade has to be committed in
+  // the same frame the new route first renders, or there is a visible frame
+  // at full opacity. The scroll reset queues from here too but doesn't fire
+  // until a couple of frames later — see the comment further down.
   useIsomorphicLayoutEffect(() => {
     if (previousPathname.current === pathname) return;
     const drivenByClick = phase === "covered" && pendingHref.current !== null;
@@ -190,8 +198,8 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
 
     clearSafetyTimer();
 
+    const scrollHref = drivenByClick ? pendingHref.current : null;
     if (drivenByClick) {
-      resetScroll(pendingHref.current!);
       pendingHref.current = null;
     } else {
       // A traversal keeps whatever offset the browser restored for that
@@ -201,10 +209,17 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
     }
 
     // Let the new route finish layout behind the opaque curtain before it is
-    // revealed. Two frames avoid exposing an intermediate streamed layout.
+    // revealed. Two frames avoid exposing an intermediate streamed layout —
+    // and the scroll reset now rides along on the SECOND one rather than
+    // firing synchronously up front, for the same reason: give the new
+    // route's content (and Lenis's own remeasure) a couple of frames to
+    // exist before anything tries to scroll to a spot inside it.
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => setPhase("revealing"));
+      secondFrame = window.requestAnimationFrame(() => {
+        if (scrollHref) resetScroll(scrollHref);
+        setPhase("revealing");
+      });
     });
 
     return () => {

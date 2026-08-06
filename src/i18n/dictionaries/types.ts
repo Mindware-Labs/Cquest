@@ -23,6 +23,7 @@ export interface Dictionary {
     callCenter: { capabilities: string; process: string; results: string; clients: string };
     bpo: { disciplines: string; method: string; slas: string; facilities: string };
     systems: { capabilities: string; method: string; commitments: string; work: string };
+    team: { departments: string };
   };
   footer: {
     tagline: string;

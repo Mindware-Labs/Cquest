@@ -6,7 +6,16 @@ import container from "@/components/services/Container.module.css";
 import { PARTNER_SLOTS } from "@/components/about/partnershipsData";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { resolveLang } from "@/i18n/resolveLangParam";
+import MindwareLabsProfile from "./components/MindwareLabsProfile";
 import styles from "./partnership.module.css";
+
+// Mindware Labs is the one partner with a real profile so far; every other
+// slug still falls through to the generic placeholder below. Special-cased
+// here rather than split into its own static route so generateStaticParams/
+// generateMetadata stay centralized for the whole [slug] segment.
+const CUSTOM_PROFILES: Record<string, true> = {
+  "mindware-labs": true,
+};
 
 const COPY = {
   en: {
@@ -18,6 +27,19 @@ const COPY = {
     status: "En desarrollo",
     note: "Este perfil de alianza está en desarrollo. Su contenido final se incorporará en una fase posterior.",
     back: "Volver a partnerships",
+  },
+};
+
+const MINDWARE_META = {
+  en: {
+    title: "Mindware Labs | Center Quest",
+    description:
+      "Mindware Labs is Center Quest's software engineering partner, building and maintaining the systems behind our operations.",
+  },
+  es: {
+    title: "Mindware Labs | Center Quest",
+    description:
+      "Mindware Labs es el aliado de ingeniería de software de Center Quest, y construye y mantiene los sistemas detrás de nuestras operaciones.",
   },
 };
 
@@ -33,6 +55,15 @@ export async function generateMetadata({
   const lang = await resolveLang(params);
   const { slug } = await params;
   const partner = PARTNER_SLOTS.find((entry) => entry.slug === slug);
+
+  if (partner && CUSTOM_PROFILES[slug]) {
+    return {
+      title: MINDWARE_META[lang].title,
+      description: MINDWARE_META[lang].description,
+      robots: { index: true, follow: true },
+    };
+  }
+
   const title = partner ? `${partner.name[lang]} | Center Quest` : `Partnerships | Center Quest`;
 
   return {
@@ -52,6 +83,10 @@ export default async function PartnershipPlaceholderPage({
   const partner = PARTNER_SLOTS.find((entry) => entry.slug === slug);
 
   if (!partner) notFound();
+
+  if (CUSTOM_PROFILES[slug]) {
+    return <MindwareLabsProfile />;
+  }
 
   const t = COPY[lang];
 

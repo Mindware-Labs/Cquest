@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { DARK_HERO_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+import { ACCENT_CTA_PAGES, DARK_HERO_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
 // The same width utility every service page's sections use. Imported rather
 // than re-expressed in Tailwind so the bar's logo and CTA land on exactly the
 // page grid's outer edges — approximating it is what left the nav's contents
@@ -62,7 +62,10 @@ export default function Navbar() {
   // page — see the two lists in navigation/data.ts. `inverse` follows the
   // hero; the quote deep-link below follows the service.
   const inverse = (DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open;
-  const navLinks = getServiceNavLinks(dict)[pathname] ?? getNavLinks(dict, lang);
+  // Mindware Labs runs its own purple identity, not Center Quest's celeste —
+  // see the comment on ACCENT_CTA_PAGES.
+  const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
+  const navLinks = getServiceNavLinks(dict, lang)[pathname] ?? getNavLinks(dict, lang);
   // The quote CTA opens the dedicated /quote form — on a service page it
   // deep-links with that service preselected (Step 2). Left un-prefixed here;
   // MotionLink/LocalizedLink resolves the locale itself.
@@ -126,7 +129,16 @@ export default function Navbar() {
             whileHover={{ scale: 1.045 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 420, damping: 26 }}
-            className={`cq-rect-cta group/cta relative hidden items-center overflow-hidden px-6 py-3 shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-[background-color,color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 md:inline-flex ${inverse ? "bg-celeste text-ink focus-visible:outline-celeste" : "bg-petroleo text-white focus-visible:outline-petroleo"}`}
+            className={`cq-rect-cta group/cta relative hidden items-center overflow-hidden px-6 py-3 shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-[background-color,color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 md:inline-flex ${
+              inverse
+                ? accentCta
+                  ? // Mindware Labs' own bright purple — #9d5ce0 on black text
+                    // holds ~5:1 contrast, the same margin bg-celeste/text-ink
+                    // holds elsewhere.
+                    "bg-[#9d5ce0] text-black focus-visible:outline-[#9d5ce0]"
+                  : "bg-celeste text-ink focus-visible:outline-celeste"
+                : "bg-petroleo text-white focus-visible:outline-petroleo"
+            }`}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
             <span className="relative z-10">{dict.common.contactUs}</span>

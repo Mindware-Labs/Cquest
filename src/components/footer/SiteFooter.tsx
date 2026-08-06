@@ -5,9 +5,10 @@ import { useRef, type CSSProperties } from "react";
 import { useReducedMotion } from "motion/react";
 import container from "@/components/services/Container.module.css";
 import { useIsomorphicLayoutEffect } from "@/components/about/motion";
+import { NO_FOOTER_PAGES } from "@/components/navigation/data";
 import QuestCta from "@/components/ui/QuestCta";
 import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { LocalizedLink, useLocalizedPathname } from "@/i18n/LocalizedLink";
 import { CQ_EASE, gsap } from "@/lib/gsap";
 import { BRAND_LINE, CONTACT, COPY, getBaseLinks, getServiceRows } from "./data";
 import styles from "./SiteFooter.module.css";
@@ -38,6 +39,14 @@ export default function SiteFooter() {
   const { lang, dict } = useI18n();
   const t = COPY[lang];
   const reduced = useReducedMotion() ?? false;
+  const pathname = useLocalizedPathname();
+  // Hidden via the `hidden` attribute rather than skipping the render
+  // (`return null`): this component mounts once in the locale layout and
+  // survives every client-side route change, so its GSAP reveal effect only
+  // ever runs once, against the refs from that first render. Unmounting the
+  // <footer> here would leave those refs null forever and the reveal would
+  // never wire up on a later route that DOES want the footer.
+  const footerHidden = (NO_FOOTER_PAGES as readonly string[]).includes(pathname);
 
   const footerRef = useRef<HTMLElement>(null);
   const ruleRef = useRef<HTMLSpanElement>(null);
@@ -121,7 +130,7 @@ export default function SiteFooter() {
   const services = getServiceRows(lang);
 
   return (
-    <footer ref={footerRef} className={styles.footer}>
+    <footer ref={footerRef} className={styles.footer} hidden={footerHidden}>
       {/* The hero's field, reprised: static grain over the gradient, a corner
           falloff so it reads as a lit stage rather than a flat rectangle of
           colour, and one celeste bloom in the corner that carries the
