@@ -31,6 +31,7 @@ export default function QuestBotScene({
   ambient,
   onIntroDone,
   onReplayStart,
+  pinnedQuestionIndex = null,
 }: {
   reduced: boolean;
   /** False when the hero is off-screen or the tab is hidden — parks the loops. */
@@ -43,9 +44,16 @@ export default function QuestBotScene({
   onIntroDone?: () => void;
   /** Returns the whole hero to act one before a user-requested replay. */
   onReplayStart?: () => void;
+  /**
+   * Set from outside (HeroImage, on hover of a Services nav link) to swap
+   * the bubble to that service's question in dict.hero.questions. `null`
+   * — the default, and wherever it returns to on mouse-leave — shows
+   * questions[0], the mascot's own fixed opening line.
+   */
+  pinnedQuestionIndex?: number | null;
 }) {
   const { dict } = useI18n();
-  const line = dict.hero.typedLine;
+  const questions = dict.hero.questions;
   const [runId, setRunId] = useState(0);
   /* True once the mascot has finished assembling. Only then does it start
      tracking the pointer — a gaze that fights the roll-in reads as a glitch. */
@@ -64,6 +72,28 @@ export default function QuestBotScene({
   const [sayReady, setSayReady] = useState(false);
   /* Whether the mascot itself is still in frame — see the observer below. */
   const [inFrame, setInFrame] = useState(true);
+  /* True once the opening line (questions[0]) has settled — the signal for
+     the ongoing "terminal chatter" effect further down to take over. Never
+     true under reduced motion: that reader gets the opening line and
+     nothing else moves again. */
+  const [cycling, setCycling] = useState(false);
+  /* Which question is CURRENTLY on screen (fully or mid-type/erase) — drives
+     the bubble's accessible name. Deliberately not read back by the typing
+     loops themselves; they track that in `lastIndexRef` below, since a ref
+     survives an effect re-run (e.g. the mascot pausing and resuming) without
+     the stale-closure problem a plain variable would have. */
+  const [displayIndex, setDisplayIndex] = useState(0);
+  const lastIndexRef = useRef(0);
+  /* Set by the sync effect below from the `pinnedQuestionIndex` prop, and
+     read by the cycle effect's own `settle` — kept as a ref because the
+     cycle effect must not restart (and cancel its in-flight timer) on every
+     hover change. */
+  const pinnedRef = useRef<number | null>(pinnedQuestionIndex);
+  /* The cycle effect installs these so the sync effect (or anything else)
+     can reach into a running loop without restarting it. No-ops before the
+     loop exists and after it tears down. */
+  const jumpToRef = useRef<(index: number) => void>(() => {});
+  const resumeRef = useRef<() => void>(() => {});
   const stageRef = useRef<HTMLDivElement>(null);
   const typedLineRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
@@ -108,6 +138,9 @@ export default function QuestBotScene({
     setSaid(false);
     setReplayReady(false);
     setSayReady(false);
+    setCycling(false);
+    setDisplayIndex(0);
+    lastIndexRef.current = 0;
     if (typedLineRef.current) typedLineRef.current.textContent = "";
     setRunId((id) => id + 1);
   }, []);
@@ -244,10 +277,14 @@ export default function QuestBotScene({
 
   useEffect(() => {
     if (runId === 0) return;
+    const line = questions[0];
 
     const timers: number[] = [];
 
-    /* Reduced motion has no intro to wait out — release the page at once. */
+    /* Reduced motion has no intro to wait out — release the page at once,
+       and no ongoing chatter after it: `cycling` stays false, so the mascot
+       says its one line and holds it, same as any other settled state under
+       this preference. */
     if (reduced) {
       timers.push(
         window.setTimeout(() => {
@@ -276,6 +313,10 @@ export default function QuestBotScene({
         window.setTimeout(() => {
           setReplayReady(true);
           introDoneRef.current?.();
+          /* Hands off to the ongoing cycle effect below. Its own first
+             move is a HOLD, not a retype — this line is already on screen
+             and stays exactly where act one left it. */
+          setCycling(true);
         }, INTRO_TAIL_MS),
       );
     };
@@ -284,7 +325,109 @@ export default function QuestBotScene({
     timers.push(window.setTimeout(() => type(0), sceneAt(SCENE.type)));
 
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [runId, reduced, line]);
+  }, [runId, reduced, questions]);
+
+  /* ── Ongoing terminal chatter ──────────────────────────────────────────
+     Erase, pause, type the next question, wrap back to [0] after the last
+     — forever, for as long as the mascot is `alive`. A separate effect from
+     the intro above on purpose: that one is locked to the mascot's own CSS
+     build via `sceneAt`, and this loop has no score to hit — it runs at its
+     own pace and, like every other ambient loop in this file, restarts
+     clean rather than resuming mid-character when it is paused and
+     re-armed (see the redraw at the top of the effect below).
+
+     Hovering a Services link pins the bubble to that service's question —
+     see the sync effect right after this comment — and un-pinning resumes
+     the cycle from there rather than jumping back to wherever it would have
+     been had the hover never happened. */
+  useEffect(() => {
+    pinnedRef.current = pinnedQuestionIndex;
+    if (pinnedQuestionIndex !== null) jumpToRef.current(pinnedQuestionIndex);
+    else resumeRef.current();
+  }, [pinnedQuestionIndex]);
+
+  useEffect(() => {
+    if (!cycling || reduced || !alive) return;
+
+    let disposed = false;
+    let timer = 0;
+    let shown = lastIndexRef.current;
+
+    /* A pause (ambient false, or a replay) may have left the DOM mid-erase
+       or mid-type from a previous instance of this effect. Redraw the last
+       known-good question in full before doing anything else, so the loop
+       always resumes from a state it actually recognises. */
+    if (typedLineRef.current) typedLineRef.current.textContent = questions[shown];
+
+    const ERASE_MS = 26;
+    const HOLD_MS = 2400;
+    const GAP_MS = 380;
+
+    const typeQuestion = (index: number) => {
+      shown = index;
+      lastIndexRef.current = index;
+      setDisplayIndex(index);
+      const q = questions[index];
+      const step = (i: number) => {
+        if (disposed) return;
+        if (typedLineRef.current) typedLineRef.current.textContent = q.slice(0, i);
+        if (i < q.length) {
+          timer = window.setTimeout(() => step(i + 1), keystrokeDelay(q[i - 1] ?? ""));
+          return;
+        }
+        timer = window.setTimeout(settle, HOLD_MS);
+      };
+      step(0);
+    };
+
+    const eraseThen = (next: () => void) => {
+      const step = () => {
+        if (disposed) return;
+        const text = typedLineRef.current?.textContent ?? "";
+        if (!text.length) {
+          timer = window.setTimeout(next, GAP_MS);
+          return;
+        }
+        if (typedLineRef.current) typedLineRef.current.textContent = text.slice(0, -1);
+        timer = window.setTimeout(step, ERASE_MS);
+      };
+      step();
+    };
+
+    const advance = () => {
+      if (disposed) return;
+      eraseThen(() => typeQuestion((shown + 1) % questions.length));
+    };
+
+    /* The natural end of a hold. Does nothing while a hover is pinning the
+       bubble — `pinnedRef`'s own sync effect is what moves things along
+       from here, either by jumping to a new pin or by calling `resumeRef`
+       once the pointer leaves. */
+    const settle = () => {
+      if (disposed || pinnedRef.current !== null) return;
+      advance();
+    };
+
+    jumpToRef.current = (index) => {
+      if (disposed || index === shown) return;
+      window.clearTimeout(timer);
+      eraseThen(() => typeQuestion(index));
+    };
+    resumeRef.current = () => {
+      if (disposed) return;
+      window.clearTimeout(timer);
+      advance();
+    };
+
+    timer = window.setTimeout(settle, HOLD_MS);
+
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+      jumpToRef.current = () => {};
+      resumeRef.current = () => {};
+    };
+  }, [cycling, reduced, alive, questions]);
 
   return (
     <div
@@ -461,7 +604,7 @@ export default function QuestBotScene({
         <div className={styles.say}>
           <LocalizedLink
             href="/quote"
-            aria-label={dict.hero.sayCtaLabel}
+            aria-label={`${questions[displayIndex]} ${dict.hero.sayCtaSuffix}`}
             className={styles.sayBox}
             inert={!sayReady}
             /* The mascot acknowledges attention on its own ask. Hover needs

@@ -7,11 +7,10 @@ import { LocalizedLink } from "@/i18n/LocalizedLink";
 const MotionLink = motion.create(LocalizedLink);
 
 /* ── The commercial CTA ───────────────────────────────────
-   The footer closes the page with this button. It used to open the home
-   hero too, sharing one component (formerly hero/HeroActions) so the two
-   couldn't drift apart — the hero's own CTA was later removed by request,
-   but the button lives on here for the footer and stays ready to be reused
-   anywhere else the site asks for the quote.
+   The footer closes the page with this button — kept as its own component,
+   not copied inline, so it stays ready to be reused anywhere else the site
+   asks for the quote without drifting from this one (the footer's used to
+   be a pill with a single darkening wash and none of the layering below).
 
    Four layers, deliberately on four different clocks so they read as one
    gesture with depth rather than four things firing at once:

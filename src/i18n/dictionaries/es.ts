@@ -45,8 +45,21 @@ export const dictionary: Dictionary = {
       sectors: "Sectores",
       partnerships: "Partnerships",
     },
-    typedLine: "¿cuál es tu misión?",
-    sayCtaLabel: "¿Cuál es tu misión? — abrir el formulario de cotización",
+    /* Trimmed against .sayLine's `white-space: nowrap` in
+       QuestBotScene.module.css — every line here has to fit the bubble in
+       one row, so these read a shade terser than a direct translation of
+       the English set would. */
+    questions: [
+      "¿Cuál es tu misión?",
+      "¿Ayuda con tus operaciones?",
+      "¿Necesitas soporte al cliente?",
+      "¿Necesitas software a la medida?",
+      "¿Buscas escalar tu negocio?",
+      "¿Listo para automatizar procesos?",
+      "¿Buscas reducir costos operativos?",
+      "¿Necesitas un socio estratégico?",
+    ],
+    sayCtaSuffix: "— abrir el formulario de cotización",
     onlineLabel: "cq · online",
   },
   carousel: {

@@ -41,14 +41,25 @@ export interface Dictionary {
       sectors: string;
       partnerships: string;
     };
-    typedLine: string;
     /**
-     * Accessible name for the mascot's speech bubble, which links to the
-     * quote form. Must open with the same words as `typedLine` — the bubble's
-     * visible text is that line, and WCAG 2.5.3 (Label in Name) requires the
-     * accessible name to contain the visible label.
+     * The terminal's rotating lines. [0] is always the mascot's opening
+     * line, typed once as part of the intro; after that the bubble cycles
+     * through the rest (and back to [0]) on its own, erasing and retyping
+     * each in turn. Hovering a Services link in the nav jumps straight to
+     * that service's own question — see SERVICE_QUESTION_INDEX in
+     * hero/animation.ts, which the array's order has to stay in step with.
      */
-    sayCtaLabel: string;
+    questions: readonly string[];
+    /**
+     * Suffix for the mascot's speech bubble's accessible name — the
+     * component builds the full label as `${currentQuestion} ${suffix}`.
+     * A plain string, not a function of the question: the dictionary is
+     * loaded server-side and handed to a Client Component as a prop
+     * (I18nProvider), and a function can't survive that serialization
+     * boundary. WCAG 2.5.3 (Label in Name) still holds — the accessible
+     * name is built to always start with whatever's visible.
+     */
+    sayCtaSuffix: string;
     onlineLabel: string;
   };
   carousel: {

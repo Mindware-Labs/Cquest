@@ -3,21 +3,35 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
+import { useMagnetic } from "@/hooks/useMagnetic";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { EASE_IN_EXPO, EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
 
+const MotionLink = motion.create(LocalizedLink);
+
 export default function HeroNav({
   reduced,
   revealed,
+  onServiceHover,
 }: {
   reduced: boolean;
   /** False during act one, while the mascot has the stage to itself. */
   revealed: boolean;
+  /** Forwarded straight to DesktopNav's `onChildHover` — see there and
+   *  SERVICE_QUESTION_INDEX in ./animation for what it drives. */
+  onServiceHover?: (href: string | null) => void;
 }) {
   const { dict, lang } = useI18n();
   const heroNavLinks = getHeroNavLinks(dict, lang);
   const [open, setOpen] = useState(false);
+  const {
+    ref: ctaRef,
+    style: ctaStyle,
+    onMouseEnter,
+    onMouseMove,
+    onMouseLeave,
+  } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
   return (
     <motion.div
@@ -43,10 +57,13 @@ export default function HeroNav({
           /* From lg the mark starts on the copy's left edge — same
              `--hero-inset` the composition's cell uses as padding, on top of
              the identical container padding this row and that plane both
-             carry. The 8/12px nudge below lg is the mobile row's own
+             carry. The right-hand column below mirrors this exact scale
+             (ml-1/sm:ml-2/lg:hero-inset ↔ mr-1/sm:mr-2/lg:hero-inset) so the
+             mark, the copy and the CTA all sit the same distance from their
+             own edge. The nudge below lg is the mobile row's own
              composition and has nothing to do with the copy, which is
              full-width and flush down there. */
-          className="ml-2 shrink-0 justify-self-start sm:ml-3 lg:ml-[var(--hero-inset)]"
+          className="ml-1 shrink-0 justify-self-start sm:ml-2 lg:ml-[var(--hero-inset)]"
         >
           {/* The real mark, not the placeholder compass — always rendered
               white, the same brightness(0)/invert(1) pair Navbar and
@@ -63,10 +80,37 @@ export default function HeroNav({
         </LocalizedLink>
 
         <div className="hidden justify-self-center md:flex">
-          <DesktopNav reduced={reduced} inverse links={heroNavLinks} />
+          <DesktopNav
+            reduced={reduced}
+            inverse
+            links={heroNavLinks}
+            onChildHover={onServiceHover}
+          />
         </div>
 
-        <div className="flex items-center justify-self-end gap-4">
+        <div className="mr-1 flex items-center justify-self-end gap-4 sm:mr-2 lg:mr-[var(--hero-inset)]">
+          {/* Desktop-only — the mobile sidebar below is passed the same
+              label so the two stay in sync rather than drifting the way a
+              default-vs-override pair eventually does. Styled to match
+              Navbar's "inverse" contact pill exactly, hardcoded rather than
+              threaded through a prop: unlike Navbar, this bar never scrolls
+              onto a light background, so it never needs the other variant. */}
+          <MotionLink
+            ref={ctaRef}
+            href="/quote"
+            onMouseEnter={onMouseEnter}
+            onMouseMove={onMouseMove}
+            onMouseLeave={onMouseLeave}
+            style={ctaStyle}
+            whileHover={{ scale: 1.045 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 420, damping: 26 }}
+            className="cq-rect-cta group/cta relative hidden items-center overflow-hidden bg-celeste px-6 py-3 text-ink shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste md:inline-flex"
+          >
+            <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
+            <span className="relative z-10">{dict.hero.primaryCta}</span>
+          </MotionLink>
+
           <button
             type="button"
             aria-expanded={open}
@@ -97,6 +141,7 @@ export default function HeroNav({
         onClose={() => setOpen(false)}
         links={heroNavLinks}
         ctaHref="/quote"
+        ctaLabel={dict.hero.primaryCta}
         theme="dark"
       />
     </motion.div>

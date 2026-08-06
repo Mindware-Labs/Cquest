@@ -21,15 +21,25 @@ import {
   leadDelayFor,
   rise,
   ruleVariants,
+  SERVICE_QUESTION_INDEX,
 } from "@/components/hero/animation";
 
 export default function HeroImage() {
   const { dict } = useI18n();
   const reduced = useReducedMotion() ?? false;
+  /* Set by HeroNav on hover of a Services dropdown link, read by
+     QuestBotScene to jump its speech bubble to that service's own question.
+     Lives here because HeroNav and QuestBotScene are siblings — this is
+     their nearest common ancestor. */
+  const [hoveredServiceHref, setHoveredServiceHref] = useState<string | null>(null);
+  const pinnedQuestionIndex = hoveredServiceHref
+    ? (SERVICE_QUESTION_INDEX[hoveredServiceHref] ?? null)
+    : null;
   /* "The lead lands last" depends on the headline's word count, which
      depends on the locale — six words in Spanish, nine in English. Derived
      here so the lead and the cue stay on one clock. */
   const leadDelay = leadDelayFor(dict.hero.headline.split(" ").length);
+  const cueDelay = leadDelay + 0.28;
   const tabVisible = useTabVisibility();
   const sectionRef = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(true);
@@ -194,7 +204,11 @@ export default function HeroImage() {
         <div className="cq-hero-vignette" />
       </motion.div>
 
-      <HeroNav reduced={reduced} revealed={revealed} />
+      <HeroNav
+        reduced={reduced}
+        revealed={revealed}
+        onServiceHover={setHoveredServiceHref}
+      />
 
       {/* ── The composition ──────────────────────────────────────────────
           One plane holding both halves, and the reason is that "the copy and
@@ -244,6 +258,7 @@ export default function HeroImage() {
             ambient={ambient}
             onIntroDone={reveal}
             onReplayStart={restartIntro}
+            pinnedQuestionIndex={pinnedQuestionIndex}
           />
         </motion.div>
 
@@ -283,9 +298,8 @@ export default function HeroImage() {
         ambient={ambient}
         revealed={revealed}
         opacity={cueOpacity}
-        /* After the lead — the cue is the last thing to resolve, and "after
-           the lead" is a locale-dependent moment (see leadDelayFor). */
-        cueDelay={leadDelay + 0.28}
+        /* After the lead — the cue is the last thing to resolve. */
+        cueDelay={cueDelay}
       />
     </section>
   );

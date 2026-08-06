@@ -10,12 +10,18 @@ export default function DesktopNav({
   inverse = false,
   links,
   activeHref = null,
+  onChildHover,
 }: {
   reduced: boolean;
   inverse?: boolean;
   links: readonly NavLink[];
   /** The in-page section currently being read, from useSectionSpy. */
   activeHref?: string | null;
+  /** Fires with a dropdown child's href on hover, `null` on leave. Optional
+   *  — most callers don't care which child link is under the pointer; the
+   *  hero uses it to jump the mascot's speech bubble to that service's own
+   *  question (see SERVICE_QUESTION_INDEX in hero/animation.ts). */
+  onChildHover?: (href: string | null) => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
@@ -210,6 +216,8 @@ export default function DesktopNav({
                               <LocalizedLink
                                 href={child.href}
                                 onClick={() => setOpenLabel(null)}
+                                onMouseEnter={() => onChildHover?.(child.href)}
+                                onMouseLeave={() => onChildHover?.(null)}
                                 className="group relative flex h-full flex-col gap-3 p-5 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-celeste"
                               >
                                 <span
@@ -248,6 +256,8 @@ export default function DesktopNav({
                             <LocalizedLink
                               href={child.href}
                               onClick={() => setOpenLabel(null)}
+                              onMouseEnter={() => onChildHover?.(child.href)}
+                              onMouseLeave={() => onChildHover?.(null)}
                               className={`block rounded-[2px] px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                 inverse
                                   ? "text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-celeste"

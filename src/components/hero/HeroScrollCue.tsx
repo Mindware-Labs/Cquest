@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type MotionStyle, type MotionValue } from "motion/react";
-import { EASE_IN_EXPO, EASE_OUT, REVEAL } from "./animation";
+import { EASE_IN_EXPO, EASE_OUT } from "./animation";
 
 /**
  * Hairline scroll affordance, centred in the hero's bottom padding band so it
@@ -18,7 +18,7 @@ export default function HeroScrollCue({
   ambient,
   revealed,
   opacity,
-  cueDelay = REVEAL.cue,
+  cueDelay,
 }: {
   reduced: boolean;
   ambient: boolean;
@@ -28,9 +28,10 @@ export default function HeroScrollCue({
   /**
    * When the cue enters, seconds after the reveal. Locale-dependent — it
    * follows the lead, whose own beat follows the headline's word count
-   * (leadDelayFor in animation.ts) — so HeroImage passes it down.
+   * (leadDelayFor in animation.ts) — so HeroImage derives it and always
+   * passes it down.
    */
-  cueDelay?: number;
+  cueDelay: number;
 }) {
   return (
     <motion.div

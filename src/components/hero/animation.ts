@@ -60,9 +60,6 @@ export const REVEAL = {
    * headline has, which depends on the locale — see leadDelayFor below.
    */
   lead: 0.5,
-  /** Scroll cue, once the composition has resolved. Also a base — the real
-   *  delay is leadDelayFor(words) + 0.28, passed into HeroScrollCue. */
-  cue: 0.78,
 } as const;
 
 /**
@@ -144,6 +141,22 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
     { label: dict.hero.navLinks.partnerships, href: "#partnerships" },
   ];
 }
+
+/**
+ * Hovering a service in the nav's Services dropdown should jump the
+ * mascot's speech bubble straight to THAT service's own question instead of
+ * waiting for the ambient cycle to get there on its own. Keyed by the
+ * child link's href (what DesktopNav's hover callback actually hands back),
+ * pointing at the matching index in dict.hero.questions — [0] is the
+ * mascot's fixed opening line and is never a hover target, so the mapping
+ * starts at 1. Keep both in step: reordering one without the other points
+ * "Call Center" at the wrong question.
+ */
+export const SERVICE_QUESTION_INDEX: Record<string, number> = {
+  "/services/operations": 1,
+  "/services/call-center": 2,
+  "/services/systems": 3,
+};
 
 /**
  * Per-word mask reveal for the headline. The word sits inside an

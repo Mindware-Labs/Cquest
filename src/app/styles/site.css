@@ -90,11 +90,17 @@
 @media (min-width: 1024px),
   (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .cq-hero {
-    /* ~10% of the frame at every desktop width — where a centred content
-       column would put the text on the sizes this is read at. Capped at
-       12rem so an ultrawide doesn't keep walking it inward; floored at
-       2.5rem so it stays an indent and not a margin. */
-    --hero-inset: clamp(2.5rem, 8vw, 12rem);
+    /* ~5% of the frame at every desktop width — closer to the edge than a
+       centred content column would sit, by request. Capped at 6rem so an
+       ultrawide doesn't keep walking it inward; floored at 1.25rem so it
+       stays an indent and not a margin.
+
+       The single left datum for the nav mark, the copy column AND — as the
+       matching right clearance — the speech bubble in
+       QuestBotScene.module.css, so the composition reads as one frame with
+       the logo and the bubble equidistant from their own edge, not three
+       numbers that happen to agree today. */
+    --hero-inset: clamp(1.25rem, 4vw, 6rem);
   }
 }
 
