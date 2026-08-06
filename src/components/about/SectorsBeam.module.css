@@ -1,625 +1,439 @@
-/* ── The split ───────────────────────────────────────────────────────────
-   Map left, answer right, in one row.
+.controlBoard {
+  --board-gap: clamp(2rem, 4vw, 3.75rem);
+  --board-height: 29rem;
 
-   This used to be one column with 10.5rem of reserved band under the stage
-   for the panel to open into. The reserve was sound engineering — the space
-   existed whether or not anything was in it, so opening a sector cost no
-   reflow — but it was solving the wrong problem. A figure stacked on top of
-   its own detail is ~550px of section before the heading, which on a laptop
-   puts the answer under the fold: you click a sector and the thing you
-   asked for is off screen. Side by side the row is the height of the stage
-   alone, the reserve disappears entirely, and the whole exchange fits in a
-   view.
-
-   The stage is given the slightly larger share: it is the element with a
-   hard minimum — a ring on a 16:10 box, whose spokes turn into stubs the
-   moment the track is squeezed — while the panel reflows to whatever is
-   left, which it can.
-
-   The top margin is clearance, not spacing. The particle field is drawn on a
-   box 52% taller than the stage (it has to be, or it cannot be a circle), and
-   the band of particles inside it reaches past the stage's own top edge — so
-   this is the space that overflow lands in instead of in the heading above.
-   Raised alongside the tightening of the band itself (see `fieldStrength` and
-   `depthFactor` in SectorsBeam.tsx): the two together are what stop the field
-   colliding with the top of the section, and neither is sufficient alone. */
-.beamFigure {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  gap: clamp(1.5rem, 3.5vw, 3rem);
-  align-items: stretch;
-  margin: clamp(3rem, 6.5vw, 5rem) 0 0;
-}
-
-/* The ring radii are percentages of the stage's OWN box, so the same five
-   direction cosines produce a proportionally correct ring at any aspect
-   ratio. Changing the breakpoint's ring is therefore two numbers, not a
-   second layout. */
-.beamStage {
-  --ring-rx: 33%;
-  --ring-ry: 39%;
-
-  position: relative;
-  aspect-ratio: 16 / 10;
-  max-width: 38rem;
-  /* Centred in its own track, and self-aligned so `align-items: stretch` on
-     the row cannot pull it taller than its aspect ratio — the ring geometry
-     is percentages of this box, and stretching it would quietly turn the
-     circle into an ellipse. */
-  align-self: center;
-  margin-inline: auto;
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(0, 1.18fr);
+  gap: var(--board-gap);
   width: 100%;
+  margin: clamp(1.75rem, 2.5vw, 2.25rem) 0 0;
 }
 
-/* Sits between the ambient wash and the spoke layer. `z-index: 0` with the
-   svg also at 0 is deliberate — both are in the same stacking level, so DOM
-   order decides, and the field is written first so the connections always
-   draw over it. Pointer events are off at the Canvas itself; the field still
-   follows the pointer because it listens on the stage instead.
-
-   Taller than the stage on purpose. The camera is fixed, so the canvas always
-   shows ~31.5 world units of HEIGHT and gets its width from its own aspect
-   ratio — which means the vertical axis is what caps how large a circle can
-   be drawn without its top and bottom being cut off. The stage is 16:10, so a
-   field confined to it can only ever show an ellipse. Extending the box past
-   it (−26% top and bottom takes 380px to ~578px) is what lets a true circle
-   fit. It overflows the stage into the section, which is the point: the ring
-   is meant to enclose the diagram, not sit inside it — and `.storyBeam`'s
-   top margin was opened up to give that overflow somewhere to land instead of
-   arriving in the paragraph above. */
-.field {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -26%;
-  bottom: -26%;
-  z-index: 0;
+.selector {
+  display: grid;
+  grid-template-rows: 3.5rem minmax(0, 1fr);
+  min-width: 0;
+  height: var(--board-height);
+  border-top: 1px solid var(--ab-rule);
+  border-bottom: 1px solid var(--ab-rule);
 }
 
-.beamAmbient {
-  position: absolute;
-  inset: -12%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 10%, transparent), transparent 72%);
-}
-
-/* ── Sector nodes ─────────────────────────────────────────
-   Two elements, and the split is not cosmetic. The ANCHOR owns position and
-   the hover transform; the CARD owns paint and is the only thing GSAP's
-   entry timeline touches. Keeping the centring `translate` on an element
-   GSAP never animates is what makes the geometry stable: GSAP folds an
-   element's `translate` into its own transform, resolving `-50%` against the
-   box as measured at that instant, and any later reflow leaves that offset
-   stale. It also outranks anything this stylesheet writes to `translate` on
-   the same element, which silently killed the hover lift.
-
-   Elevation is declared once, as a hairline. There is no resting shadow to
-   go with it — the lift on hover is the only shadow in the figure, which is
-   what makes it read as a lift. */
-.nodeAnchor {
-  position: absolute;
-  z-index: 1;
-  left: calc(50% + var(--ring-rx) * var(--cos));
-  top: calc(50% + var(--ring-ry) * var(--sin));
-  translate: -50% -50%;
-  /* Wide enough that the longest label ("Telecomunicaciones", the 18-character
-     token that sets the floor) sets on one line and "Banca y Finanzas" breaks
-     at its space — i.e. wide enough that the hyphenation safety net further
-     down never has to engage at this breakpoint. Mid-word hyphens are legible
-     but they read cheap, and here there is room not to need them. Bounded at
-     33% so the ring still clears: at the 608px stage the two lower nodes stay
-     ~39px apart and the side pair stops at the stage edge.
-
-     `max-content` rather than the shrink-to-fit default, because an absolutely
-     positioned box offset with `left` alone gets an available width of only
-     "containing block − left". The right-hand nodes start at 81% of the stage,
-     so they were being handed ~113px while their mirrors on the left had ~495px
-     — the same label wrapped to three lines on one side of the ring and one on
-     the other. Sizing to content instead makes the pair symmetric, and the
-     max-width is what actually bounds it. */
-  width: max-content;
-  max-width: min(12.5rem, 33%);
-  /* Under 300ms and reversible mid-flight — a pointer crossing the ring
-     should feel like it is brushing the diagram, not triggering it. */
-  transition:
-    opacity 200ms var(--ease-out),
-    scale 220ms var(--ease-out),
-    translate 220ms var(--ease-out);
-}
-
-/* ── The sector plates ───────────────────────────────────────────────────
-   Squared off from 0.85rem. A soft-cornered card with an icon chip and a
-   label is the most generic object on the internet, and it was the one shape
-   in this section not speaking the language everything around it speaks —
-   the hero CTA, the carousel's capability tags, the quote wizard and the org
-   chart are all 2px rectangles. At 2px these stop reading as UI cards
-   dropped onto a diagram and start reading as labelled terminals ON it,
-   which is what they are.
-
-   The specular hairline along the top edge is the same light the services
-   sheet catches on its shoulder, at plate scale — it is what keeps a squared
-   white rectangle from reading as flat stock. */
-.node {
-  position: relative;
+.selectorHeader {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: space-between;
+  min-height: 0;
+  padding-inline: 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--ab-rule);
+}
+
+.selectorTitle,
+.protocolLabel,
+.detailLabel {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.selectorTitle {
+  color: var(--text-tertiary);
+}
+
+.selectorCount {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--ab-petroleo) 46%, transparent);
+}
+
+.sectorList {
+  display: grid;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.sectorButton {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: 1rem;
   width: 100%;
-  margin: 0;
-  padding: 0.5rem 0.85rem 0.5rem 0.6rem;
-  border: 1px solid var(--ab-rule);
-  border-radius: 2px;
-  background: linear-gradient(
-    180deg,
-    var(--ab-raised),
-    color-mix(in srgb, var(--ab-base) 55%, var(--ab-raised))
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  font: inherit;
-  color: inherit;
+  min-height: 0;
+  padding: 0.65rem 0.75rem 0.65rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ab-petroleo) 12%, transparent);
+  background: transparent;
+  color: var(--foreground);
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color 200ms var(--ease-out),
-    box-shadow 260ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* The inner hairline frame — the double rule of a drawn plate, held
-   transparent at rest so it fades up with the selection rather than
-   appearing. Same construction the org chart's open department wears. */
-.node::after {
+.sectorButton:last-child {
+  border-bottom: 0;
+}
+
+.sectorButton::after {
   content: "";
   position: absolute;
-  inset: 2px;
-  border: 1px solid transparent;
-  pointer-events: none;
-  transition: border-color 260ms var(--ease-out);
+  z-index: -2;
+  top: calc(50% - 0.5px);
+  left: 100%;
+  width: var(--board-gap);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ab-petroleo) 52%, var(--ab-celeste)),
+    var(--ab-celeste) 62%,
+    color-mix(in srgb, var(--ab-celeste) 88%, white)
+  );
+  opacity: 0;
+  box-shadow: 0 0 0.45rem color-mix(in srgb, var(--ab-celeste) 34%, transparent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform 360ms var(--ease-out),
+    opacity 180ms var(--ease-out);
 }
 
-.nodeAnchor[data-state="active"] .node::after {
-  border-color: color-mix(in srgb, var(--ab-petroleo) 20%, transparent);
+.sectorButton[data-active]::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
-/* Hover has a job again. While the panel opened on mouseenter, pointing at a
-   node WAS the interaction and needed no separate affordance; now that it
-   takes a click, the node has to say it is one before you spend the click.
-   Border and icon only — no lift, because the node is tied to a spoke and a
-   card that floats off its own connector breaks the drawing. */
-.node:hover {
-  border-color: color-mix(in srgb, var(--ab-petroleo) 38%, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0.4rem 1rem -0.7rem color-mix(in srgb, var(--ab-petroleo) 45%, transparent);
+.activeSurface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--ab-celeste) 14%, var(--ab-raised));
 }
 
-.node:hover .nodeIcon {
+.sectorIcon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: color-mix(in srgb, var(--ab-petroleo) 64%, transparent);
+  transition:
+    color 200ms var(--ease-out),
+    transform 260ms var(--ease-out);
+}
+
+.sectorIcon svg {
+  width: 1.55rem;
+  height: 1.55rem;
+  stroke-width: 1.55;
+}
+
+.sectorLabel {
+  position: relative;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(0.98rem, 1.15vw, 1.08rem);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.sectorArrow {
+  position: relative;
+  justify-self: end;
+  width: 1.3rem;
+  height: 1rem;
+  color: color-mix(in srgb, var(--ab-petroleo) 34%, transparent);
+  transition:
+    color 200ms var(--ease-out),
+    transform 260ms var(--ease-out);
+}
+
+.sectorArrow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+}
+
+.sectorArrow::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 3px);
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sectorButton:hover .sectorIcon,
+  .sectorButton:hover .sectorArrow {
+    color: var(--ab-petroleo);
+  }
+
+  .sectorButton:hover .sectorIcon {
+    transform: translateX(2px);
+  }
+
+  .sectorButton:hover .sectorArrow {
+    transform: translateX(3px);
+  }
+}
+
+.sectorButton[data-active] .sectorIcon,
+.sectorButton[data-active] .sectorArrow {
   color: var(--ab-petroleo);
 }
 
-.node:focus-visible {
+.sectorButton[data-active] .sectorArrow {
+  transform: translateX(0.75rem);
+}
+
+.sectorButton:focus-visible {
+  z-index: 2;
   outline: 2px solid var(--ab-petroleo);
+  outline-offset: -2px;
+}
+
+.detail {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: var(--board-height);
+  min-height: 0;
+  padding: clamp(1.5rem, 2vw, 2rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 34%, transparent);
+  border-radius: 2px;
+  background: var(--ab-deep);
+  color: var(--ab-raised);
+  outline: none;
+}
+
+.detail::before,
+.detail::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.detailPort {
+  position: absolute;
+  top: var(--port-offset);
+  left: 0.2rem;
+  z-index: 2;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 72%, var(--ab-deep));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ab-deep) 88%, var(--ab-celeste));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ab-celeste) 8%, transparent),
+    0 0 0.9rem color-mix(in srgb, var(--ab-celeste) 48%, transparent);
+  transform: translateY(-50%);
+  transition: top 380ms var(--ease-out);
+}
+
+.detailPort::before,
+.detailPort::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+}
+
+.detailPort::before {
+  left: 50%;
+  width: 0.24rem;
+  height: 0.24rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ab-celeste) 86%, white);
+  box-shadow: 0 0 0.45rem var(--ab-celeste);
+  transform: translate(-50%, -50%);
+}
+
+.detailPort::after {
+  right: 100%;
+  width: 0.25rem;
+  height: 1px;
+  background: var(--ab-celeste);
+  transform: translateY(-50%);
+}
+
+.detail::before {
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ab-celeste) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ab-celeste) 7%, transparent) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  mask-image: linear-gradient(90deg, transparent 8%, #000 62%);
+}
+
+.detail::after {
+  top: 0;
+  left: 0;
+  width: 8.5rem;
+  height: 2px;
+  background: var(--ab-celeste);
+  box-shadow: 0 0 1.5rem color-mix(in srgb, var(--ab-celeste) 46%, transparent);
+}
+
+.detail:focus-visible {
+  outline: 2px solid var(--ab-celeste);
   outline-offset: 3px;
 }
 
-.nodeAnchor[data-state="active"] {
-  scale: 1.05;
-  /* The 3px lift rides on top of the centring offset. */
-  translate: -50% calc(-50% - 3px);
-}
-
-.nodeAnchor[data-state="active"] .node {
-  border-color: color-mix(in srgb, var(--ab-petroleo) 45%, transparent);
-  background: linear-gradient(
-    180deg,
-    var(--ab-raised),
-    color-mix(in srgb, var(--ab-celeste) 12%, var(--ab-raised))
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0.6rem 1.4rem -0.7rem color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
-}
-
-/* Raised from 0.42. That value was tuned for a hover, which lasts as long as
-   the pointer rests and no longer; the selection is persistent now, and four
-   of five sectors sitting at 42% for as long as someone reads the panel
-   makes the map look half switched off rather than focused. */
-.nodeAnchor[data-state="muted"] {
-  opacity: 0.58;
-}
-
-/* The open node has to sit above the panel's neighbours — and above the panel
-   itself, so the thing you are pointing at is never the thing that gets
-   covered. */
-.nodeAnchor[data-state="active"] {
-  z-index: 3;
-}
-
-/* ── Detail panel ─────────────────────────────────────────
-   No longer a popover. It was a 30rem card opening in a reserved band under
-   the stage, and everything about it was sized to be a temporary answer —
-   0.875rem body, a title barely larger than the labels on the ring, the
-   whole thing gated behind `visibility: hidden` so it left the accessibility
-   tree between questions.
-
-   It is half the composition now, so it is built like it: a full-height
-   surface beside the map, at reading scale, that always holds something
-   true. There is no hidden state left to manage — closing a sector returns
-   it to the operation's standing statement rather than emptying it, which is
-   also why `aria-hidden` is gone. A panel that is always meaningful belongs
-   in the tree at all times. */
-.detailColumn {
+.detailTopline {
   display: flex;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: clamp(1rem, 1.5vw, 1.25rem);
+  border-bottom: 1px solid var(--ab-rule-invert);
 }
 
-/* ── De-genericised ──────────────────────────────────────────────────────
-   It was a 1rem-radius white card with a tinted border AND a wide soft
-   shadow: elevation declared twice, which is the ghost-card look, on the
-   softest shape in a section built entirely of drawn geometry. Three changes,
-   all of them subtraction or alignment rather than addition:
+.protocolLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: color-mix(in srgb, var(--ab-celeste) 88%, white);
+}
 
-     • 2px corners, the radius the hero CTA, the capability tags, the quote
-       wizard and the org chart all use. It stops being a card sitting near a
-       diagram and starts being the diagram's other half.
-     • One elevation. The shadow goes; the hairline stays, and the sense of a
-       surface comes from light instead — a specular line along the top edge
-       and a fall of tint down the face, the same treatment the sector plates
-       opposite it now carry.
-     • A celeste bloom off the top-left corner, on the same 118° axis the
-       hero's field and the metrics band open with. It is what tells the eye
-       the light in this panel comes from the same place as the light in the
-       rest of the page. */
-.detail {
-  position: relative;
+.liveDot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--ab-celeste);
+  box-shadow: 0 0 0.85rem color-mix(in srgb, var(--ab-celeste) 80%, transparent);
+}
+
+.position {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.detailContent {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-  padding: clamp(1.6rem, 3vw, 2.35rem);
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 40%, var(--ab-rule));
-  border-radius: 2px;
-  background:
-    radial-gradient(
-      120% 90% at 0% 0%,
-      color-mix(in srgb, var(--ab-celeste) 13%, transparent),
-      transparent 58%
-    ),
-    linear-gradient(
-      180deg,
-      var(--ab-raised),
-      color-mix(in srgb, var(--ab-base) 60%, var(--ab-raised))
-    );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  min-height: 0;
+  padding-top: clamp(1.25rem, 1.6vw, 1.5rem);
 }
 
-/* The inner rule, third and last appearance of the motif: sector plate, core,
-   answer. */
-.detail::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid color-mix(in srgb, var(--ab-petroleo) 8%, transparent);
-  pointer-events: none;
+.detailHeading {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
 }
 
-/* The standing statement is one sentence in a large card; top-aligning it
-   would leave it floating against a ceiling. Centred, it reads as the card's
-   subject rather than as its first item. */
-.detail[data-resting] {
-  justify-content: center;
-}
-
-/* The sector's own mark, at plate scale rather than the 1.9rem chip the ring
-   nodes wear — the panel is where you look at one sector, so its icon is the
-   largest statement of it on screen. */
-/* The plate is gone here too, and it mattered most here: this icon is the
-   largest statement of the sector on screen, and it was spending two thirds
-   of its box on a tinted square and a pair of registration ticks so that a
-   1.45rem glyph could sit in the middle of them. Without the container the
-   glyph takes the whole box — 2.4rem of drawn line on the card's own surface,
-   which is both simpler and nearly twice the mark. */
 .detailIcon {
-  display: block;
+  display: grid;
+  place-items: center;
   flex: none;
-  margin-bottom: 1.15rem;
-  color: var(--ab-petroleo);
+  width: 3rem;
+  height: 3rem;
+  color: var(--ab-celeste);
 }
 
 .detailIcon svg {
-  width: 2.4rem;
-  height: 2.4rem;
-  /* The site's icons ship at 1.7; at this size that reads as a heavy
-     pictogram rather than as drawn line. Thinning it back keeps the glyph
-     the same weight on the page that it is at 1.5rem on the ring. */
-  stroke-width: 1.35;
+  width: 2.65rem;
+  height: 2.65rem;
+  stroke-width: 1.25;
 }
 
-.detailTitle {
-  margin: 0 0 0.7rem;
-  font-family: var(--font-heading), sans-serif;
-  font-size: clamp(1.3rem, 2.1vw, 1.75rem);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  color: var(--foreground);
-  text-wrap: balance;
-}
-
-.detailFocus {
+.detailHeading h3 {
   margin: 0;
-  max-width: 40ch;
-  font-size: clamp(0.95rem, 1.15vw, 1.0625rem);
-  line-height: 1.7;
-  color: var(--text-secondary);
+  max-width: none;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.9rem, 2.6vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.038em;
+  line-height: 0.98;
+  white-space: nowrap;
+}
+
+.demand {
+  margin-top: clamp(1.35rem, 2vw, 1.65rem);
+}
+
+.detailLabel {
+  display: block;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.demand p {
+  margin: 0.55rem 0 0;
+  max-width: 39ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.08rem, 1.4vw, 1.3rem);
+  font-weight: 500;
+  letter-spacing: -0.024em;
+  line-height: 1.42;
+  color: rgba(255, 255, 255, 0.92);
   text-wrap: pretty;
 }
 
-/* Micro-caps over a hairline: the label names what the chips below it are,
-   which the bare row of pills never did. Pushed to the foot of the card by
-   the auto margin, so the answer and the services that deliver it read as
-   two registers rather than one list. */
-.detailServicesLabel {
-  width: 100%;
-  margin: auto 0 0.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--ab-rule);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+.services {
+  margin-top: auto;
+  padding-top: clamp(1rem, 1.5vw, 1.25rem);
 }
 
-.detailServices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0;
+.services ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0.55rem 0 0;
   padding: 0;
+  border-top: 1px solid var(--ab-rule-invert);
   list-style: none;
 }
 
-/* Squared off, not pills. These name service lines that exist elsewhere on
-   the site as rectangular CTAs and rectangular capability tags; a pill here
-   was the one soft shape in a section built entirely of drawn geometry. */
-.detailServices li {
-  padding: 0.32rem 0.65rem;
-  border-radius: 2px;
-  border: 1px solid color-mix(in srgb, var(--ab-celeste) 38%, transparent);
-  background: color-mix(in srgb, var(--ab-celeste) 14%, transparent);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--ab-petroleo);
-}
-
-/* ── The resting state ───────────────────────────────────────────────────
-   The pull quote that used to sit in a box beside this figure, doing the job
-   of a conclusion to prose that has since been cut. Here it is what the
-   operation says before you ask it anything specific — and it means the
-   panel is never a hole in the composition waiting to be filled. */
-.detailQuoteMark {
-  font-family: var(--font-heading), sans-serif;
-  font-size: 4.5rem;
-  font-weight: 700;
-  line-height: 0.6;
-  color: color-mix(in srgb, var(--ab-celeste) 30%, transparent);
-  pointer-events: none;
-}
-
-.detailStanding {
-  margin: 1rem 0 0;
-  max-width: 24ch;
-  font-family: var(--font-heading), sans-serif;
-  font-size: clamp(1.15rem, 1.9vw, 1.5rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-  color: var(--foreground);
-  text-wrap: balance;
-}
-
-.detailPrompt {
-  margin: 1.6rem 0 0;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--ab-rule);
-  width: 100%;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-/* The hub used to drop to 0.45 while the panel was open, and the unselected
-   nodes to 0.16. Both existed to make an overlap read as intentional. With the
-   panel outside the ring there is no overlap to excuse: the core stays at full
-   strength — it is the thing the whole figure is about — and `muted`'s own
-   0.42 is enough to say which sector is being asked about. */
-
-/* No plate. A tinted square behind a small pictogram is a chip inside a card
-   inside a diagram — three nested containers to present one glyph — and it
-   was what made the icon read as furniture rather than as the sector's mark.
-   With the plate gone the glyph sits directly on the plate's own surface and
-   can afford to be half again as large, which is where the legibility it was
-   losing to the chip actually comes from. */
-.nodeIcon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 1.55rem;
-  height: 1.55rem;
-  color: color-mix(in srgb, var(--ab-petroleo) 78%, transparent);
-  transition:
-    color 200ms var(--ease-out),
-    rotate 240ms var(--ease-out);
-}
-
-/* A 5° tilt — small enough to register as the icon acknowledging the pointer
-   rather than as a spin. Any more and five of these around a ring turn into
-   a fidget. */
-/* With no plate to tint, the glyph itself carries the state — it comes up to
-   full petroleo from the 78% it rests at. The 5° tilt survives: small enough
-   to register as the icon acknowledging you rather than as a spin. */
-.nodeAnchor[data-state="active"] .nodeIcon {
-  color: var(--ab-petroleo);
-  rotate: -5deg;
-}
-
-.nodeIcon svg {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.nodeLabel {
-  font-family: var(--font-heading), sans-serif;
+.services li {
+  position: relative;
+  min-width: 0;
+  padding: 0.65rem 0.75rem 0 0.85rem;
+  border-right: 1px solid var(--ab-rule-invert);
   font-size: 0.8rem;
   font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.012em;
-  color: var(--foreground);
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--ab-celeste) 68%, white);
   text-wrap: balance;
-  /* "Telecomunicaciones" / "Telecommunications" is a single 18-character
-     token — with no break opportunity it sets the minimum width of every
-     node, and at the mobile ring that width is the difference between spokes
-     that read and spokes that are stubs. Hyphenation gives the word a legal
-     break; <html lang> is already set per locale, which is what selects the
-     right dictionary. It only engages when the box is too narrow, so the
-     desktop labels still set on one line. `overflow-wrap` is the fallback for
-     a browser without a dictionary for the active locale: an ugly break beats
-     a label running out of its own node. */
-  hyphens: auto;
-  overflow-wrap: break-word;
 }
 
-/* ── Hub ──────────────────────────────────────────────────
-   One elevation, again: the shadow. The 1px border and the two stacked
-   zero-offset halos that used to sit on top of it were three edges doing one
-   edge's job — the "ghost card" look. The shadow keeps a real offset and a
-   soft blur so the hub sits above the ring rather than glowing behind it. */
-.hubAnchor {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
+.services li:first-child {
+  padding-left: 0;
 }
 
-/* Back to the size the ring's geometry was solved for. The hub was grown to
-   9rem to give a monogram assembled from a few hundred points enough room for
-   the counters of the C and the Q to stay open; a real image has no such
-   floor, and every rem the hub gains comes straight off the spokes, which
-   AnimatedBeam trims against the hub's measured radius. Handing those rems
-   back puts the two side spokes at ~33px again instead of ~29px. */
-.hub {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: clamp(6.5rem, 14vw, 8.5rem);
-  aspect-ratio: 1;
-  border-radius: 999px;
-  background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--ab-celeste) 30%, var(--ab-raised)), var(--ab-raised) 78%);
-  box-shadow: 0 1.1rem 2.4rem -1rem color-mix(in srgb, var(--ab-petroleo) 62%, transparent);
+.services li:last-child {
+  border-right: 0;
 }
 
-/* ── The mark ────────────────────────────────────────────────────────────
-   The full lockup — monogram over wordmark, 1.35:1 — sized as a fraction of
-   the disc so it tracks the hub across all three breakpoints.
-
-   74% is what fits. The constraint is the corners, not the edges: a box
-   inscribed in a circle is bounded by its diagonal, and at 74% of an 8.5rem
-   disc that half-diagonal is ~50px against a 68px radius. `height: auto`
-   keeps the asset's own proportions — the width is the only number here, so
-   there is nothing to get out of step. */
-/* ── The cloud is positioned OUT of the flow, and that is load-bearing ────
-   It sat in the hub's grid cell as `width: 74%; aspect-ratio: 1`, and that
-   is a runaway: a grid item's percentage resolves against its track, the
-   track is auto-sized by its contents, and a <canvas> contributes its own
-   bitmap dimensions as intrinsic size — which this component writes on every
-   resize. Canvas grows → track grows → ResizeObserver fires → canvas grows,
-   until the browser refuses to allocate the backing store and every draw
-   after that throws.
-
-   Absolute against the hub breaks the cycle at the only place it can be
-   broken: percentages now resolve against a definite box the canvas is not
-   part of, so nothing it does can feed back into what sizes it.
-
-   Square, because ParticleLogo letterboxes the asset inside whatever box it
-   is handed — at 74% square it draws the lockup 74% wide and 55% tall, which
-   is exactly the image stacked on it. */
-.hubCloud {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: 1;
-  width: 74%;
-  aspect-ratio: 1;
-  transition: opacity 700ms var(--ease-out);
+.standard {
+  margin: clamp(1rem, 1.5vw, 1.25rem) 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ab-rule-invert);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.6);
+  text-wrap: pretty;
 }
 
-/* Once the real asset has resolved on top, the cloud's loop stops itself
-   (see ParticleLogo's `resolved` prop) and this fades its last drawn frame
-   out in step with the mark fading in below — a handoff, not two layers
-   left stacked. Without it the cloud's idle drift kept nudging points at the
-   mark's antialiased edge forever, which read as the logo never quite
-   finishing rather than as a settled mark. */
-.hubCloud[data-resolved] {
-  opacity: 0;
-}
-
-.hubMark {
-  position: relative;
-  z-index: 2;
-  width: 74%;
-  height: auto;
-  opacity: 0;
-  transition: opacity 700ms var(--ease-out);
-}
-
-.hubMark[data-shown] {
-  opacity: 1;
-}
-
-/* The core's halo, and the only thing in the figure that keeps moving after
-   the build lands. It is a separate element rather than a shadow on `.hub`
-   because the idle animates it: `opacity` and `scale` on an isolated layer
-   composite, whereas breathing a box-shadow would repaint the hub every
-   frame — which is precisely the kind of cost this section was just cleaned
-   of. Sized past the hub so the falloff never clips against its edge. */
-.hubGlow {
-  position: absolute;
-  inset: -22%;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 999px;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--ab-celeste) 34%, transparent),
-    transparent 70%
-  );
-}
-
-
-/* The entry choreography used to live here as `data-phase` transitions. It is
-   a GSAP timeline in SectorsBeam.tsx now, because the sequence outgrew what
-   CSS can express: a pulse has to ride each line while it draws, and the
-   sector has to land as the pulse arrives. That is per-element timing on a
-   shared clock, which is a timeline's job.
-
-   What did not change is the contract: everything in this stylesheet
-   describes the RESTING state, the timeline only ever animates away from it
-   and back, and the resting state is what the server renders. A visitor whose
-   JS never runs — or who asked for reduced motion — gets the finished
-   diagram, not an empty stage waiting to be filled.
-
-   The anchors above are why that contract holds under animation: centring
-   lives on an element GSAP never touches, so `transform` on the card inside
-   is entirely GSAP's, and neither has to know about the other. */
-
-.beamCaption {
+.caption {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -631,123 +445,175 @@
   border: 0;
 }
 
-/* ── Mobile ───────────────────────────────────────────────
-   This used to become a flex-wrap chip cloud with the hub parked underneath,
-   which threw away the only thing the graphic says: that the five sectors
-   converge. The convergence survives here instead — same ring, same spokes,
-   same measured geometry — on a portrait stage with tighter radii and nodes
-   stacked icon-over-label, which is what lets a node be 92px wide instead of
-   160px and therefore what lets the ring exist at all at this width. Over
-   60% of this site's traffic sees this version. */
-/* ── Stacked ─────────────────────────────────────────────────────────────
-   Below this width there is no second column to put the answer in, so the
-   split folds: map first, panel under it. That is the layout this section
-   started from — but it costs nothing here, because a phone's fold is
-   already below the figure and there was never a side-by-side view to lose.
-   The panel keeps its full-width reading scale rather than reverting to the
-   popover it used to be. */
 @media (max-width: 64rem) {
-  .beamFigure {
+  .controlBoard {
+    --board-gap: 1rem;
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(1.75rem, 5vw, 2.5rem);
   }
 
-  .detail {
-    /* No column to match the height of, so the card takes its own. */
+  .selector {
+    display: block;
+    height: auto;
+    border-bottom: 0;
+  }
+
+  .selectorHeader {
+    min-height: 3.75rem;
+    padding-inline: 0.25rem;
+  }
+
+  .sectorList {
+    display: flex;
     min-height: 0;
-  }
-}
-
-@media (max-width: 48rem) {
-  .beamStage {
-    /* Portrait stage: width is the scarce axis on a phone, so the ring buys
-       its separation vertically. The three numbers below are constrained,
-       not chosen by eye — with a 92px node and a 76px hub on a ~343px stage
-       (a 390px viewport):
-
-         • rx 32% puts the two side nodes 104px out, clearing the hub's 38px
-           radius by ~20px horizontally, while their outer edge still lands
-           21px inside the stage;
-         • the two lower nodes sit 2 × 0.588 × rx = 129px apart, a 37px gap
-           between 92px boxes — the pair that collided at any wider node;
-         • ry 40% of a 3/5 stage is 229px, which is what gives the spokes
-           real length (149px vertical, 114px lower, 28px on the sides)
-           instead of the stubs a squarer stage produced.
-
-       It holds at 360px too, the narrowest phone width worth designing for:
-       every gap stays positive and the shortest spoke is still ~18px. */
-    --ring-rx: 32%;
-    --ring-ry: 40%;
-
-    aspect-ratio: 3 / 5;
-    max-width: 24rem;
+    padding: 0.65rem 0 0.85rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
   }
 
-  .nodeAnchor {
-    max-width: min(5.75rem, 34%);
+  .sectorList::-webkit-scrollbar {
+    display: none;
   }
 
-  .node {
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 0.5rem 0.4rem;
-    border-radius: 0.75rem;
-    text-align: center;
+  .sectorButton {
+    flex: 0 0 auto;
+    grid-template-columns: 2rem max-content;
+    gap: 0.65rem;
+    width: auto;
+    min-height: 3.15rem;
+    padding: 0.5rem 0.95rem 0.5rem 0.6rem;
+    border-right: 1px solid var(--ab-rule);
+    border-bottom: 0;
+    scroll-snap-align: start;
   }
 
-  .nodeIcon {
-    width: 1.65rem;
-    height: 1.65rem;
-    border-radius: 0.5rem;
+  .sectorButton::after,
+  .sectorArrow,
+  .detailPort {
+    display: none;
   }
 
-  .nodeIcon svg {
-    width: 0.9rem;
-    height: 0.9rem;
+  .activeSurface {
+    box-shadow: inset 0 -2px 0 var(--ab-celeste);
   }
 
-  .nodeLabel {
-    font-size: 0.7rem;
-    line-height: 1.2;
-  }
-
-  /* The 76px the ring geometry above is solved against — see the numbers in
-     the `.beamStage` note: a 38px hub radius is what clears the two side
-     nodes by ~20px on a 343px stage. */
-  .hub {
-    width: clamp(4rem, 21vw, 4.75rem);
-  }
-
-  /* Inverted here: the phone stage is PORTRAIT (3/5), so the scarce axis is
-     width, and a box tall enough to match it would put the circle's sides off
-     the screen. Pulling the field in vertically to roughly the stage's own
-     width is what keeps the circle whole. It cannot also enclose the top and
-     bottom nodes at this aspect — no circle centred on the hub can, on a
-     stage nearly twice as tall as it is wide — so here it rings the core and
-     passes behind the side cards. */
-  .field {
-    top: 20%;
-    bottom: 20%;
-  }
-
-  .detail {
-    padding: 1.35rem 1.25rem;
-  }
-
-  .detailIcon {
-    margin-bottom: 0.9rem;
-  }
-
-  .detailIcon svg {
+  .sectorIcon {
     width: 2rem;
     height: 2rem;
   }
 
-  .detailServicesLabel {
-    padding-top: 1.15rem;
+  .sectorIcon svg {
+    width: 1.3rem;
+    height: 1.3rem;
   }
 
-  .detailQuoteMark {
-    font-size: 3.5rem;
+  .sectorLabel {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .detail {
+    height: auto;
+    min-height: 27rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .controlBoard {
+    margin-top: 1.5rem;
+  }
+
+  .selectorCount {
+    font-size: 1.25rem;
+  }
+
+  .detail {
+    min-height: 29rem;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .detailTopline {
+    padding-bottom: 1.35rem;
+  }
+
+  .detailContent {
+    padding-top: 1.5rem;
+  }
+
+  .detailHeading {
+    gap: 0.85rem;
+  }
+
+  .detailIcon {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .detailIcon svg {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .detailHeading h3 {
+    font-size: clamp(1rem, 5vw, 1.4rem);
+  }
+
+  .demand {
+    margin-top: 1.75rem;
+  }
+
+  .demand p {
+    font-size: 1.12rem;
+    line-height: 1.48;
+  }
+
+  .services {
+    padding-top: 1.5rem;
+  }
+
+  .services ul {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 0.75rem;
+  }
+
+  .services li {
+    padding: 0.55rem 0 0.55rem 0.9rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--ab-rule-invert);
+  }
+
+  .services li::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0.32rem;
+    height: 1px;
+    background: var(--ab-celeste);
+  }
+
+  .services li:first-child {
+    padding-left: 0.9rem;
+  }
+
+  .services li:last-child {
+    border-bottom: 0;
+  }
+
+  .standard {
+    margin-top: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectorButton::after,
+  .sectorIcon,
+  .sectorArrow {
+    transition: none;
+  }
+
+  .detailPort {
+    transition: none;
   }
 }

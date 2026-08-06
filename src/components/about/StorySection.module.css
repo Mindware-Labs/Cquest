@@ -1,11 +1,10 @@
-/* Padding down from clamp(4rem, 9vw, 7rem). The section is now a heading row
-   and one side-by-side row, and it has to fit in a viewport — 7rem top and
-   bottom was 224px of the budget spent before anything was drawn. The floor
-   stays at 3rem so the band never runs into its neighbours on a phone. */
+/* This section is intentionally viewport-compact: the intro and control board
+   should read as one composition at 100% zoom without crowding neighbouring
+   bands. */
 .storySection {
   position: relative;
   scroll-margin-top: 5rem;
-  padding-block: clamp(3rem, 6vw, 5rem);
+  padding-block: clamp(3rem, 5vw, 4.5rem);
 }
 
 /* ── Ambient light ────────────────────────────────────────

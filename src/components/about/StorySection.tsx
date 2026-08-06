@@ -33,11 +33,11 @@ import styles from "./StorySection.module.css";
    below the thing you clicked. */
 const COPY = {
   en: {
-    heading: "Five sectors. One operational discipline.",
+    heading: ["Five sectors.", "One operational discipline."],
     lead: "There's no generic formula. Each sector gets its own SLA, its own protocol, its own trained team.",
   },
   es: {
-    heading: "Cinco sectores. Una misma disciplina operativa.",
+    heading: ["Cinco sectores.", "Una misma disciplina operativa."],
     lead: "No tenemos una fórmula genérica. Cada sector tiene su propio SLA, su propio protocolo, su propio equipo capacitado.",
   },
 };
@@ -84,7 +84,18 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
             reads better opening straight on the type. With the lead beside it
             the intro is one row rather than a column of prose, which is where
             the vertical budget for the split below comes from. */}
-        <SectionIntro title={t.heading} description={t.lead} reduced={reduced} rule={false} />
+        <SectionIntro
+          title={
+            <>
+              {t.heading[0]}
+              <br />
+              {t.heading[1]}
+            </>
+          }
+          description={t.lead}
+          reduced={reduced}
+          rule={false}
+        />
         <SectorsBeam reduced={reduced} />
       </div>
     </section>

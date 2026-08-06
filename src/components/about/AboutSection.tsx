@@ -3,8 +3,8 @@
 import { useReducedMotion } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import MetricsSection from "./MetricsSection";
+import PartnershipsSection from "./PartnershipsSection";
 import StorySection from "./StorySection";
-import UpcomingSection from "./UpcomingSection";
 import styles from "./AboutSection.module.css";
 
 // "Nosotros" as a home-page section — same architecture as ServicesCarousel's
@@ -25,17 +25,7 @@ export default function AboutSection() {
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
       <MetricsSection reduced={reduced} />
       <StorySection reduced={reduced} />
-      {/* Reserved seat, not a shipped design: marked "in development" on
-          purpose (see UpcomingSection). Closes once its content exists. */}
-      <UpcomingSection
-        id="partnerships"
-        reduced={reduced}
-        title={{ en: "Partnerships", es: "Partnerships" }}
-        note={{
-          en: "Strategic partnerships and alliances will be presented here. This section will be developed later.",
-          es: "Aquí se presentarán las alianzas y partnerships estratégicos. Esta sección se desarrollará posteriormente.",
-        }}
-      />
+      <PartnershipsSection reduced={reduced} />
     </section>
   );
 }
