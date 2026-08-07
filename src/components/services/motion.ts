@@ -2,10 +2,20 @@ import type { Variants } from "motion/react";
 
 /* ── Shared motion language ───────────────────────────────
    One curve carries every service page (ease-out-quint), and two gestures
-   do the talking: content sharpens up out of a soft blur (presence, never
-   a flat fade), and hero lines rise from behind a clipped edge like a
-   curtain lifting. Previously duplicated byte-for-byte across
-   CallCenterDetail.tsx, OperationsDetail.tsx and SystemsDetail.tsx — now shared. */
+   do the talking: content rises into place with presence (never a flat
+   fade), and hero lines rise from behind a clipped edge like a curtain
+   lifting. Previously duplicated byte-for-byte across CallCenterDetail.tsx,
+   OperationsDetail.tsx and SystemsDetail.tsx — now shared.
+
+   Transform + opacity ONLY, on every variant below — no `filter`. This used
+   to be a focus-pull out of `blur()`, but `filter` is not a compositor
+   property: every frame of the reveal re-rasterises the element at a new
+   blur radius on the main thread, and every section on every service page
+   staggers several of these at once, right as the route curtain is
+   revealing the page. ServicesCarousel.tsx hit the identical bug first (see
+   its stageItemVariants) — six simultaneous blurs made its page turn
+   stutter. Same fix here: the travel/duration carries the weight the blur
+   used to. */
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 export const VIEWPORT = { once: true, margin: "-80px" } as const;
 
@@ -15,17 +25,19 @@ export const groupVariants: Variants = {
   visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 
-// The premium replacement for a flat fade: y-rise + focus-pull out of blur.
+// The premium replacement for a flat fade: a deeper y-rise carries the
+// weight the focus-pull-out-of-blur used to.
 export const focusRiseVariants: Variants = {
-  hidden: { opacity: 0, y: 26, filter: "blur(10px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: EASE_OUT } },
+  hidden: { opacity: 0, y: 34 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE_OUT } },
 };
 
-// Blur-only reveal for elements that own a CSS hover transform — animating a
-// transform here would leave a lingering inline value that blocks the hover.
+// Opacity-only reveal for elements that own a CSS hover transform —
+// animating a transform here would leave a lingering inline value that
+// blocks the hover (and `filter` is off the table for the reason above).
 export const softRiseVariants: Variants = {
-  hidden: { opacity: 0, filter: "blur(10px)" },
-  visible: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.85, ease: EASE_OUT } },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.85, ease: EASE_OUT } },
 };
 
 // Hairline rules draw along their length, a beat before the heading lifts.
@@ -66,14 +78,14 @@ export const heroCurtainVariants: Variants = {
 // nested motion child without adding a transform of its own.
 export const passThroughVariants: Variants = { hidden: {}, visible: {} };
 
-// Stat/ledger card: the card itself only sharpens out of blur (its CSS owns
-// the hover transform), then its inner lines cascade up inside it — the row
-// lands first, the figures settle a beat later.
+// Stat/ledger card: the card itself only fades in (its CSS owns the hover
+// transform, and `filter` is off the table — see the note up top), then its
+// inner lines cascade up inside it — the row lands first, the figures settle
+// a beat later.
 export const statCardVariants: Variants = {
-  hidden: { opacity: 0, filter: "blur(10px)" },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    filter: "blur(0px)",
     transition: { duration: 0.85, ease: EASE_OUT, staggerChildren: 0.09, delayChildren: 0.1 },
   },
 };
