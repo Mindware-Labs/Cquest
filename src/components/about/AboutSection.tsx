@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
+import LocationSection from "./LocationSection";
 import MetricsSection from "./MetricsSection";
 import PartnershipsSection from "./PartnershipsSection";
 import StorySection from "./StorySection";
@@ -25,6 +26,7 @@ export default function AboutSection() {
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
       <MetricsSection reduced={reduced} />
       <StorySection reduced={reduced} />
+      <LocationSection reduced={reduced} />
       <PartnershipsSection reduced={reduced} />
     </section>
   );
