@@ -16,13 +16,12 @@ import {
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { useI18n } from "@/i18n/I18nProvider";
 import LocationMap from "./LocationMap";
-import { CONTACT, DIRECTIONS_URL, formatCoords, HQ, LOCATION_COPY } from "./locationData";
+import { CONTACT, DIRECTIONS_URL, LOCATION_COPY } from "./locationData";
 import styles from "./LocationSection.module.css";
 
 export default function LocationSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = LOCATION_COPY[lang];
-  const coords = formatCoords(HQ.lat, HQ.lng);
   const {
     ref: ctaRef,
     style: ctaStyle,
@@ -61,17 +60,6 @@ export default function LocationSection({ reduced }: { reduced: boolean }) {
           viewport={VIEWPORT}
           transition={{ duration: 0.72, ease: EASE_OUT }}
         >
-          <span aria-hidden className={styles.frameCorner} data-corner="tl" />
-          <span aria-hidden className={styles.frameCorner} data-corner="tr" />
-          <span aria-hidden className={styles.frameCorner} data-corner="bl" />
-          <span aria-hidden className={styles.frameCorner} data-corner="br" />
-
-          <div className={styles.topline}>
-            <span className={styles.plotLabel}>
-              {t.plotLabel}
-            </span>
-          </div>
-
           <div className={styles.stage} data-lenis-prevent-wheel data-lenis-prevent-touch>
             <LocationMap />
           </div>
@@ -86,28 +74,28 @@ export default function LocationSection({ reduced }: { reduced: boolean }) {
             <motion.dl className={styles.records} variants={groupVariants}>
               <motion.div variants={statCardVariants}>
                 <motion.dt className={styles.legendLabel} variants={statLineVariants}>
-                  {t.addressLabel}
+                  {t.hqLabel}
                 </motion.dt>
                 <motion.dd className={styles.legendValue} variants={statLineVariants}>
-                  {CONTACT.street}
+                  {CONTACT.city}
                 </motion.dd>
               </motion.div>
 
               <motion.div variants={statCardVariants}>
                 <motion.dt className={styles.legendLabel} variants={statLineVariants}>
-                  {t.cityLabel}
+                  {t.regionLabel}
                 </motion.dt>
                 <motion.dd className={styles.legendValue} variants={statLineVariants}>
-                  {CONTACT.city}, {CONTACT.country[lang]}
+                  {t.region}
                 </motion.dd>
               </motion.div>
 
               <motion.div variants={statCardVariants}>
                 <motion.dt className={styles.legendLabel} variants={statLineVariants}>
-                  {t.coordsLabel}
+                  {t.timezoneLabel}
                 </motion.dt>
                 <motion.dd className={`${styles.legendValue} ${styles.coords}`} variants={statLineVariants}>
-                  {coords.lat} · {coords.lng}
+                  {t.timezone}
                 </motion.dd>
               </motion.div>
             </motion.dl>

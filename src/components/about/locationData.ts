@@ -7,15 +7,27 @@ export const HQ = {
   zoom: 17,
 } as const;
 
+/**
+ * Cinematic intro: the globe spins horizontally (longitude only, bearing stays
+ * north-up) and the zoom rides in on the tail of that spin, landing on the HQ pin.
+ */
+export const MAP_INTRO = {
+  /** Degrees west of the HQ the globe starts at — the camera travels east (left to right). */
+  startLngOffset: -88,
+  /** Degrees still to travel when the fly-in takes over from the free spin. */
+  handoffLngOffset: -46,
+  spinZoom: 1.5,
+  spinDuration: 2600,
+  flyDuration: 4200,
+  /** Peak zoom of the fly path — keeps the flight from pulling back off the globe. */
+  flyMinZoom: 1.5,
+  holdBeforeSpin: 420,
+  /** Below this zoom the pin covers too much ground to point at anything, so it hides. */
+  pinRevealZoom: 8,
+} as const;
+
 export const MAP_STYLE_DARK = "mapbox://styles/mapbox/dark-v11";
 export const MAP_STYLE_LIGHT = "mapbox://styles/mapbox/light-v11";
-
-export function formatCoords(lat: number, lng: number) {
-  return {
-    lat: `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? "N" : "S"}`,
-    lng: `${Math.abs(lng).toFixed(4)}° ${lng >= 0 ? "E" : "W"}`,
-  };
-}
 
 export const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${HQ.lat},${HQ.lng}`;
 
@@ -24,12 +36,15 @@ export const MAP_URL = `https://www.google.com/maps/search/?api=1&query=${HQ.lat
 export const LOCATION_COPY = {
   en: {
     eyebrow: "Location",
-    heading: "We operate from Santo Domingo.",
+    heading: "One floor. One operations centre.",
+    lead: "Everything runs from a single control room, so nothing gets handed between sites. Come see the floor your campaign will run on — we host visits, book yours when you request your quote.",
     plotLabel: "CQ · Operations HQ",
-    mapAriaLabel: "Map showing Center Quest's operations centre in Santo Domingo",
-    addressLabel: "Address",
-    cityLabel: "City",
-    coordsLabel: "Coordinates",
+    mapAriaLabel: "Map showing Center Quest's operations centre",
+    hqLabel: "Operations HQ",
+    regionLabel: "Region",
+    region: "Caribbean · LATAM",
+    timezoneLabel: "Time zone",
+    timezone: "AST · UTC−4",
     directions: "Get directions",
     fallbackTitle: "Map unavailable",
     fallbackBody: "Open the location in Google Maps instead.",
@@ -37,13 +52,15 @@ export const LOCATION_COPY = {
   },
   es: {
     eyebrow: "Ubicación",
-    heading: "Operamos desde Santo Domingo.",
-    lead: "Un piso, un centro de operaciones, en el Ensanche Miraflores. Ven a ver la sala donde correrá tu campaña — recibimos visitas, agenda la tuya al solicitar tu cotización.",
+    heading: "Un piso. Un centro de operaciones.",
+    lead: "Todo corre desde una sola sala, sin operaciones repartidas entre sedes. Ven a ver la sala donde correrá tu campaña — recibimos visitas, agenda la tuya al solicitar tu cotización.",
     plotLabel: "CQ · Sede operativa",
-    mapAriaLabel: "Mapa con el centro de operaciones de Center Quest en Santo Domingo",
-    addressLabel: "Dirección",
-    cityLabel: "Ciudad",
-    coordsLabel: "Coordenadas",
+    mapAriaLabel: "Mapa con el centro de operaciones de Center Quest",
+    hqLabel: "Sede operativa",
+    regionLabel: "Región",
+    region: "Caribe · LATAM",
+    timezoneLabel: "Zona horaria",
+    timezone: "AST · UTC−4",
     directions: "Cómo llegar",
     fallbackTitle: "Mapa no disponible",
     fallbackBody: "Abre la ubicación en Google Maps.",

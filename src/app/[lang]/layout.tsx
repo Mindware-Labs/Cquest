@@ -39,8 +39,8 @@ const josefin = Josefin_Sans({
 });
 
 const SITE_DESCRIPTION: Record<Locale, string> = {
-  en: "Center Quest is a Dominican operations partner: Call Center, Operations (BPO) and Systems Development for operations in the Dominican Republic.",
-  es: "Center Quest es un aliado dominicano de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas para operaciones en República Dominicana.",
+  en: "Center Quest is an operations partner: Call Center, Operations (BPO) and Systems Development, run under clear SLAs and shaped around how your operation actually works.",
+  es: "Center Quest es un aliado de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas, con SLAs claros y ajustados a cómo funciona tu operación.",
 };
 
 // Same SITE_URL pattern as sitemap.ts/robots.ts — one env var, one fallback,

@@ -5,8 +5,8 @@ import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
 const TITLE: Record<Locale, string> = {
-  en: "Operations (BPO) in the Dominican Republic | Center Quest",
-  es: "Operaciones (BPO) en República Dominicana | Center Quest",
+  en: "Operations (BPO) | Center Quest",
+  es: "Operaciones (BPO) | Center Quest",
 };
 
 const DESCRIPTION: Record<Locale, string> = {

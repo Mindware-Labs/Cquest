@@ -5,8 +5,8 @@ import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
 const TITLE: Record<Locale, string> = {
-  en: "Call Center in the Dominican Republic | Center Quest",
-  es: "Call Center en República Dominicana | Center Quest",
+  en: "Call Center Services | Center Quest",
+  es: "Servicios de Call Center | Center Quest",
 };
 
 const DESCRIPTION: Record<Locale, string> = {
