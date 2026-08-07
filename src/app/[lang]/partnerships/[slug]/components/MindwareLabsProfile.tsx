@@ -106,10 +106,7 @@ export default function MindwareLabsProfile() {
         <p className={styles.lead}>{t.lead}</p>
         <span className={styles.status}>{t.status}</span>
 
-        <span className={styles.scrollCue} aria-hidden>
-          {t.scrollCue}
-          <Arrow direction="down" />
-        </span>
+
       </header>
 
       <section className={styles.section}>
