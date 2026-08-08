@@ -1,18 +1,18 @@
-/* ── Why Us — a real 3D drum, not a slide wearing a "3D" label ───────────
-   Four plaques are bolted to the rim of a cylinder (static per-plaque
-   rotateY+translateZ placement) and ONE parent transform — the drum's own
-   rotateY — turns the whole assembly. That split is what keeps this
-   compositor-safe: the browser only ever animates a single rotateY plus,
-   per plaque, an opacity fade derived from that same value. Nothing here
-   animates a filter or a background colour — this section follows the same
+/* ── Why Us — a fanned stack, not a spinning drum ────────────────────────
+   Four plaques each animate independently to one of four fixed depth slots
+   — front, left, right, back — via Motion's x/y/z/rotateY/scale/opacity (see
+   WhyUsSection.tsx's SLOT_FRONT/RIGHT/LEFT/BACK). Nothing here animates a
+   filter or a background colour — this section follows the same
    transform+opacity-only discipline the rest of the site enforces (see
-   ServicesCarousel.tsx's long note on why `filter: blur()` was banned).
+   ServicesCarousel.tsx's long note on why `filter: blur()` was banned); the
+   material differences below (data-slot, box-shadow) are discrete, CSS-only
+   state swaps, never part of that animated set.
 
-   Depth is read honestly: a plaque at 90° is genuinely edge-on to the
-   camera, so it fades to a thin glowing sliver rather than pretending to be
-   a "dimmed card" floating beside the front one. That is the section's
-   whole idea, and it only works if the geometry is trusted rather than
-   faked with an invented scale/blur trick. */
+   Depth is read in the SURFACE too, not just in Motion's opacity: side and
+   back plaques carry their own darker, less-tinted material (`[data-slot]`
+   below), and the front plaque alone gets a lit bevel — a top highlight, a
+   bottom deepening line, and a brand-tinted shadow — so it reads as the
+   chosen object among four real ones, not a bigger flat cutout. */
 
 .whyUsSection {
   position: relative;
@@ -40,9 +40,29 @@
   background: linear-gradient(90deg, transparent, var(--ab-rule-invert), transparent);
 }
 
-/* Corner falloff only — no second ambient layer competing with the drum for
-   attention. The drum is this section's one deliberate gesture; the backdrop
-   stays quiet on purpose (see the file-level note above). */
+/* The one background addition this section gets — a quiet hairline lattice,
+   the exact technique MetricsSection's own .fieldGrid uses two bands up
+   (same 3.4rem tile, same line-lattice construction), toned a touch quieter
+   since this band already stacks a diagonal wash, a vignette and grain on
+   top of it. Reads as "the same measured backdrop, continued" rather than a
+   second, competing decoration — deliberately not a dot-matrix or any other
+   invented pattern. Static background-image + static mask-image only, so it
+   costs one paint and nothing per frame. */
+.fieldGrid {
+  position: absolute;
+  inset: -12% 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(116, 195, 213, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(116, 195, 213, 0.045) 1px, transparent 1px);
+  background-position: center;
+  background-size: 3.4rem 3.4rem;
+  mask-image: radial-gradient(112% 84% at 50% 40%, transparent 44%, #000 78%, transparent 100%);
+  -webkit-mask-image: radial-gradient(112% 84% at 50% 40%, transparent 44%, #000 78%, transparent 100%);
+}
+
+/* Corner falloff — the drum is this section's one deliberate GESTURE; the
+   backdrop stays quiet on purpose (see the file-level note above). */
 .vignette {
   position: absolute;
   inset: 0;
@@ -104,7 +124,8 @@
   margin-top: 0.85rem;
   font-size: 0.95rem;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.68);
+  /* Matches .face p exactly — same job, same surface, one value. */
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ── The stage ────────────────────────────────────────────────────────── */
@@ -158,10 +179,20 @@
   margin: calc(var(--plaque-h) / -2) 0 0 calc(var(--plaque-w) / -2);
   display: flex;
   flex-direction: column;
-  padding: clamp(1.5rem, 2.4vw, 2.1rem);
+  /* Split rather than one clamp() reused on all four sides — that shorthand
+     default gives the numeral, title and body identical breathing room
+     everywhere, which is exactly what makes a card read as a generic
+     evenly-padded box. More headroom above the numeral (a stamped-mark
+     feel), tighter sides so the body's line length feels considered, less
+     below than above. */
+  padding: clamp(1.7rem, 2.5vw, 2.25rem) clamp(1.4rem, 2.3vw, 2rem) clamp(1.6rem, 2.3vw, 2.05rem);
   border: 1px solid var(--ab-rule-invert);
   border-radius: 2px;
   background: color-mix(in srgb, var(--ab-petroleo) 22%, var(--ab-deep));
+  /* A quiet top-edge catch-light on every plaque, active or not — the base
+     coat under the active card's fuller bevel below. Cheap and static: one
+     more line in a box-shadow list a browser already has to resolve. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   cursor: pointer;
   /* Guards a transition this codebase has otherwise banned (see
      ServicesCarousel's long note on why `filter: blur()` was removed):
@@ -172,27 +203,89 @@
   backface-visibility: hidden;
 }
 
+/* Depth in the MATERIAL, not just Motion's opacity: each step back from
+   front is a step darker and less tinted, so the receding plaques read as
+   real objects sitting further away, not the same flat cutout scaled down. */
+.face[data-slot="side"] {
+  background: color-mix(in srgb, var(--ab-petroleo) 14%, var(--ab-deep));
+  border-color: color-mix(in srgb, white 10%, transparent);
+}
+
+.face[data-slot="back"] {
+  background: color-mix(in srgb, var(--ab-petroleo) 8%, var(--ab-deep));
+  border-color: color-mix(in srgb, white 6%, transparent);
+}
+
+/* A side/back plaque is a real click target (see onSelect in the component)
+   with nothing but a cursor to say so until now — a quiet border brighten on
+   a discrete hover state, CSS-transitioned, never part of Motion's animated
+   set. */
+.face:not([data-active]):hover {
+  border-color: color-mix(in srgb, var(--ab-celeste) 38%, var(--ab-rule-invert));
+  transition: border-color 220ms var(--ease-out);
+}
+
 .face[data-active] {
   cursor: default;
   border-color: color-mix(in srgb, var(--ab-celeste) 55%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ab-celeste) 18%, transparent) inset,
-    0 24px 48px -28px rgba(0, 0, 0, 0.6);
+  /* The base top highlight, carried further: a brighter catch-light, a
+     bottom-edge deepening line completing the bevel, the existing celeste
+     ring, and a drop shadow retinted from flat black to the brand's own
+     petroleo — the one shadow in the file that used to be a generic
+     rgba(0,0,0,0.6) default now reads as this section's material. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px color-mix(in srgb, var(--ab-celeste) 18%, transparent),
+    0 24px 48px -28px color-mix(in srgb, var(--ab-petroleo) 70%, black);
+}
+
+/* The one card the copy itself calls the real differentiator (in-house
+   engineering) gets the one material mark verde is spent on — a single
+   hairline reusing .whyUsSection::before's own top-rule device, not a
+   second invented accent. */
+.face[data-accent="verde"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ab-verde) 65%, transparent), transparent);
 }
 
 .faceIndex {
   font-variant-numeric: tabular-nums;
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 2.6vw, 1.5rem);
   font-weight: 200;
-  letter-spacing: 0.01em;
+  /* Negative, matching MetricsSection's own <dd> figures — the same
+     "engraved instrument readout" register this numeral is meant to share;
+     it was tracking the opposite direction (+0.01em) before. */
+  letter-spacing: -0.015em;
   color: color-mix(in srgb, var(--ab-celeste) 70%, white);
+}
+
+/* The numeral's terminating mark — the small tick a stamped instrument
+   readout needs to not read as a bare page number. currentColor means it
+   inherits whichever tint .faceIndex already resolved to, celeste or (via
+   the rule below) verde, with no second selector to keep in sync. */
+.faceIndex::after {
+  content: "";
+  display: block;
+  width: 1.15rem;
+  height: 1px;
+  margin-top: 0.5rem;
+  background: currentColor;
+  opacity: 0.5;
 }
 
 .face[data-accent="verde"] .faceIndex {
   color: color-mix(in srgb, var(--ab-verde) 74%, white);
 }
 
+/* Numeral→title tighter than title→body (was the other way round): the
+   index now binds to the title as its own kicker, and the body reads as its
+   own paragraph below — the grouping a reader actually expects. */
 .face h3 {
-  margin-top: 0.9rem;
+  margin-top: 0.6rem;
   font-family: var(--font-heading), sans-serif;
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   font-weight: 600;
@@ -202,7 +295,7 @@
 }
 
 .face p {
-  margin-top: 0.6rem;
+  margin-top: 0.85rem;
   font-size: 0.86rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.7);
@@ -303,9 +396,16 @@
   font-variant-numeric: tabular-nums;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  /* Matches .eyebrow's tracking exactly — same role, same size/weight, so
+     the two quiet-caps registers on this section now agree instead of
+     drifting by a few thousandths of an em. */
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
+  /* Flat white at 0.42 alpha on --ab-deep sat close to the 4.5:1 AA floor
+     for text this small. Tinted with a touch of celeste rather than simply
+     brighter — the same "quiet but not flat-grey" move MetricsSection's own
+     dt labels make. */
+  color: color-mix(in srgb, var(--ab-celeste) 18%, rgba(255, 255, 255, 0.56));
 }
 
 /* ── Reduced motion: a different layout, not a slower version of this one.
@@ -323,18 +423,36 @@
 }
 
 .staticCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: clamp(1.5rem, 2.4vw, 2rem);
-  background: var(--ab-deep);
+  padding: clamp(1.65rem, 2.5vw, 2.15rem) clamp(1.4rem, 2.3vw, 1.9rem) clamp(1.5rem, 2.2vw, 1.95rem);
+  /* Was plain --ab-deep — a visibly thinner material than the animated
+     cards' own 22%-mix resting state, so reduced-motion readers saw a
+     noticeably less crafted section. Pitched just under the animated FRONT
+     card's mix, fitting since no card here is "chosen". */
+  background: color-mix(in srgb, var(--ab-petroleo) 18%, var(--ab-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Same verde hairline the animated stage's front card can carry — this is
+   the static fallback, so it's unconditional rather than gated on an active
+   state. */
+.staticCard[data-accent="verde"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ab-verde) 65%, transparent), transparent);
 }
 
 .staticCard .faceIndex {
   font-size: 1.3rem;
 }
 
+/* Same numeral→title / title→body inversion as .face above. */
 .staticCard h3 {
-  margin-top: 0.8rem;
+  margin-top: 0.55rem;
   font-family: var(--font-heading), sans-serif;
   font-size: 1.2rem;
   font-weight: 600;
@@ -343,7 +461,7 @@
 }
 
 .staticCard p {
-  margin-top: 0.55rem;
+  margin-top: 0.8rem;
   font-size: 0.88rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.7);

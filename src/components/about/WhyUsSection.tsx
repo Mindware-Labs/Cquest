@@ -31,14 +31,14 @@ const CARDS: readonly WhyCard[] = [
   {
     id: "engineering",
     accent: "verde",
-    es: { title: "Ingeniería propia", body: "Diez desarrolladores propios construyen CRMs, dashboards y automatización a la medida. La mayoría de los BPO no puede decir lo mismo." },
-    en: { title: "In-house engineering", body: "Ten in-house developers build CRMs, dashboards and automation shaped around your operation. Most BPOs can't say the same." },
+    es: { title: "Ingeniería propia", body: "Un equipo de desarrolladores propios construye CRMs, dashboards y automatización a la medida. La mayoría de los BPO no puede decir lo mismo." },
+    en: { title: "In-house engineering", body: "A team of in-house developers builds CRMs, dashboards and automation shaped around your operation. Most BPOs can't say the same." },
   },
   {
     id: "control-room",
     accent: "celeste",
-    es: { title: "Una sala de control real", body: "Más de 200 operadores trabajan desde un mismo piso en Santo Domingo. Real, visitable — no subcontratado en cascada." },
-    en: { title: "A real control room", body: "200+ operators work from one floor in Santo Domingo. Real, visitable — not layers of outsourced subcontracting." },
+    es: { title: "Una sala de control real", body: "Un mismo piso de operaciones, un mismo equipo. Real, visitable — no subcontratado en cascada." },
+    en: { title: "A real control room", body: "One operations floor, one team. Real, visitable — not layers of outsourced subcontracting." },
   },
   {
     id: "people",
@@ -141,6 +141,10 @@ function WhyCardFace({
       className={styles.face}
       data-accent={card.accent}
       data-active={isActive || undefined}
+      /* Discrete, never touched by Motion — the material itself (background/
+         border) steps darker with distance so depth reads in the surface,
+         not just in the opacity Motion is already animating toward zero. */
+      data-slot={isActive ? "front" : relative === 2 ? "back" : "side"}
       aria-hidden={!isActive}
       style={{ zIndex: slot.zIndex }}
       animate={{ x: slot.x, y: slot.y, z: slot.z, rotateY: slot.rotateY, scale: slot.scale, opacity: slot.opacity }}
@@ -249,6 +253,13 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
 
   return (
     <section id="why-us" ref={sectionRef} className={styles.whyUsSection}>
+      {/* Order matters — none of these three set z-index, so DOM order alone
+          decides paint order: the measured hairline field sits furthest
+          back, the vignette shapes it into a lit stage, grain sits on top of
+          both. Same lattice MetricsSection's own field uses two bands up —
+          continuing that material into this section rather than inventing a
+          second backdrop language. */}
+      <div aria-hidden className={styles.fieldGrid} />
       <div aria-hidden className={styles.vignette} />
       <div aria-hidden className={`${styles.grain} cq-noise`} />
 
