@@ -130,26 +130,22 @@
     transform 260ms var(--ease-out);
 }
 
+/* Same clip-path wedge as .connectorArrow below, at row scale — the row's
+   "port" and the gutter's "plug" used to be built from unrelated geometry
+   (a stem-and-corner chevron vs. a solid gradient triangle) despite being
+   the same physical part in the control-board metaphor. `currentColor`
+   keeps every existing hover/active/focus rule below working unchanged —
+   only the shape construction changes. */
 .sectorArrow::before {
   content: "";
   position: absolute;
   top: 50%;
   right: 0;
-  width: 100%;
-  height: 1px;
+  width: 0.6rem;
+  height: 0.75rem;
   background: currentColor;
-}
-
-.sectorArrow::after {
-  content: "";
-  position: absolute;
-  top: calc(50% - 3px);
-  right: 0;
-  width: 6px;
-  height: 6px;
-  border-top: 1px solid currentColor;
-  border-right: 1px solid currentColor;
-  transform: rotate(45deg);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform: translateY(-50%);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -339,13 +335,43 @@
   white-space: nowrap;
 }
 
+/* The panel's one real payload — "what the operation must handle" — used to
+   be the only content group here with no framing rule: .detailTopline,
+   .services and .standard all get a border; this fell through the cracks.
+   Same border-invert/padding-top the other two already use, so it reads as
+   a third instrument in that cadence instead of a stray paragraph. */
 .demand {
   margin-top: clamp(1.35rem, 2vw, 1.65rem);
+  padding-top: clamp(1rem, 1.5vw, 1.25rem);
+  border-top: 1px solid var(--ab-rule-invert);
 }
 
 .detailLabel {
   display: block;
   color: var(--detail-muted);
+}
+
+/* The connector's whole job is to point at the active row and "plug into"
+   this panel (--port-offset, .connectorArrow below) — but nothing marked
+   where that signal actually lands. This chevron is the arrow's own
+   gradient + clip-path, reused at label scale, so the panel's one moving
+   part visibly arrives at the one sentence it exists to deliver — and the
+   label's own tint steps up to .protocolLabel's full-strength celeste
+   (services' label stays at --detail-muted), so the reading order
+   protocol → demand → services is explicit rather than flat. */
+.demand .detailLabel {
+  color: color-mix(in srgb, var(--ab-celeste) 88%, white);
+}
+
+.demand .detailLabel::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.62rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  background: linear-gradient(90deg, var(--ab-petroleo), var(--ab-celeste));
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
 .demand p {
@@ -395,13 +421,19 @@
   border-right: 0;
 }
 
+/* This is the panel's RESTING state — what a visitor sees before ever
+   touching the selector (see StorySection.tsx's own note on why this
+   replaced the old pull quote). It was sized and tinted like a footnote,
+   tied with .services li for the dimmest text in the panel — recalibrated
+   here to actually read as the considered default statement it's meant to
+   be, still a clear step under --detail-muted's label register. */
 .standard {
   margin: clamp(1rem, 1.5vw, 1.25rem) 0 0;
   padding-top: 0.75rem;
   border-top: 1px solid var(--ab-rule-invert);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.72);
   text-wrap: pretty;
 }
 
