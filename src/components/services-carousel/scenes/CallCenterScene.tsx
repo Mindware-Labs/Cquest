@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useIsPresent } from "motion/react";
 
 /* Call Center's connection map. Six flight-routes radiate from the glow
    behind the message; on a shared 14s clock a light streak (the call)
@@ -43,6 +44,16 @@ const CALL_ROUTES = [
    elements, they carry the field's identity while the map is away, and
    removing them would make the sheet visibly ignite at the threshold. */
 export default function CallCenterScene({ active }: { active: boolean }) {
+  /* `active` alone isn't enough: AnimatePresence keeps this component's
+     props frozen at their last-rendered value for the whole exit — if
+     `active` and the page turn flip in the same commit (which they do,
+     since both come off the same scroll tick), the exiting instance never
+     re-renders with `active=false` and its stroke-dashoffset paths keep
+     repainting on the main thread through the entire 0.38s exit. Gating on
+     `isPresent` too catches the moment AnimatePresence actually starts
+     exiting THIS instance, independent of whatever `active` was frozen at. */
+  const isPresent = useIsPresent();
+  const running = active && isPresent;
   return (
     <div className="absolute inset-0">
       {/* The exchange's heart: a bloom breathing on the half clock (7s),
@@ -53,7 +64,7 @@ export default function CallCenterScene({ active }: { active: boolean }) {
       <span className="cq-v2-ring" style={{ animationDelay: "-3.5s" }} />
       {/* The map: crawling meridians, the standing route network, the
           calls in flight, and their landing points. */}
-      <div className="cq-v2-net" data-running={active ? "true" : "false"}>
+      <div className="cq-v2-net" data-running={running ? "true" : "false"}>
         <svg viewBox="0 0 100 100" aria-hidden>
           {/* ── The origin fade ────────────────────────────────────────
               What used to be a CSS mask on this <svg>. The comets animate

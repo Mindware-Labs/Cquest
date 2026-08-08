@@ -288,8 +288,20 @@ export default function ServicesCarousel() {
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const current = indexRef.current;
+    /* `current === 0` matters on backward re-entry: this window's upper bound
+       (BAND + HYSTERESIS) is the same value that fires the page turn OUT of
+       Call Center, but scrolling backward crosses it from the BPO side —
+       while `current` is still 1 — a beat before the turn itself fires (that
+       threshold is the looser BAND - HYSTERESIS). Without this guard,
+       CallCenterScene would mount already `active`, skipping the paused/
+       transparent starting frame its 240ms fade-in and animation-play-state
+       pause are built on, and its stroke-dashoffset repaint would run hot
+       from the very first frame of the incoming crossfade. Gating on the
+       settled index delays activation by the one scroll tick it takes for
+       `current` to actually become 0 — the same grace the forward direction
+       already gets for free. */
     const shouldRunScene =
-      progress >= STAGE_TAIL_BAND && progress < BAND + HYSTERESIS;
+      current === 0 && progress >= STAGE_TAIL_BAND && progress < BAND + HYSTERESIS;
     if (shouldRunScene !== sceneReadyRef.current) {
       sceneReadyRef.current = shouldRunScene;
       setSceneReady(shouldRunScene);
@@ -359,14 +371,22 @@ export default function ServicesCarousel() {
   const scrollToIndex = useCallback((next: number) => {
     const section = sectionRef.current;
     if (!section) return;
-    const top = section.getBoundingClientRect().top + window.scrollY;
-    const budget = Math.max(1, section.offsetHeight - window.innerHeight);
-    /* Aim at the middle of the band, not its edge, so the landing is not
-       parked on a threshold where a stray pixel flips the page. */
-    const target = top + ((next + 0.5) * BAND) * budget;
-    const lenis = window.__lenis;
-    if (lenis) lenis.scrollTo(target, { duration: 0.85 });
-    else window.scrollTo({ top: target, behavior: "smooth" });
+    /* getBoundingClientRect/offsetHeight force a synchronous layout. Reading
+       them straight out of the click/keydown/drag handler risks landing that
+       forced layout on the same tick as a page turn already in flight (e.g.
+       a second dot click while the previous turn's crossfade or the nav
+       dot's own width transition is still animating). Deferring one frame
+       costs nothing perceptible and keeps the read off that busy tick. */
+    requestAnimationFrame(() => {
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      const budget = Math.max(1, section.offsetHeight - window.innerHeight);
+      /* Aim at the middle of the band, not its edge, so the landing is not
+         parked on a threshold where a stray pixel flips the page. */
+      const target = top + ((next + 0.5) * BAND) * budget;
+      const lenis = window.__lenis;
+      if (lenis) lenis.scrollTo(target, { duration: 0.85 });
+      else window.scrollTo({ top: target, behavior: "smooth" });
+    });
   }, []);
 
   /* No wraparound any more: inside a pinned track "past the last page" is
@@ -386,13 +406,7 @@ export default function ServicesCarousel() {
       id="services"
       aria-roledescription="carousel"
       aria-label={dict.carousel.ariaLabel}
-      style={
-        {
-          "--svc": service.color,
-          "--svc-glow": service.glow,
-          height: `${TRACK_DVH}dvh`,
-        } as CSSProperties
-      }
+      style={{ height: `${TRACK_DVH}dvh` } as CSSProperties}
       className="cq-carousel-track relative w-full"
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") paginate(1);
@@ -421,6 +435,18 @@ export default function ServicesCarousel() {
             key={service.id}
             aria-label={format(dict.carousel.slideAriaLabel, { index: index + 1, total: SERVICES.length, label: service.label[lang] })}
             custom={direction}
+            /* --svc/--svc-glow live HERE, not on the section. AnimatePresence
+               keeps the outgoing article mounted for the whole exit, but as a
+               sibling of the incoming one — if the variables sat on their old
+               shared ancestor, the section, retheming it for the new page
+               would repaint every color-mix(var(--svc)) consumer in BOTH
+               subtrees (tint, orbs, ring, halo, lattice, streams, grid, nodes,
+               capability tags — a dozen-plus paint-only properties) on the
+               exact frame the crossfade starts. Scoped to the article, the
+               exiting instance keeps its own frozen colors for its whole exit
+               (Motion never re-renders it with new props) and the incoming
+               one is correct from its first paint — no cascade either way. */
+            style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
             variants={reduced ? undefined : pageVariants}
             initial="enter"
             animate="center"

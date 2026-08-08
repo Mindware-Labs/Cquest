@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { cancelFrame, frame } from "motion/react";
 
 /* Mirror of the scan beam's CSS geometry (globals.css .cq-v2-scan): one
    pass per SCAN_PERIOD, starting at -24rem, travelling to 100vw + 8rem,
@@ -26,15 +27,30 @@ export default function SystemsScene() {
     const layer = layerRef.current;
     if (!layer) return;
 
-    const sync = () => {
+    /* Last box the six nodes were actually solved against. The ResizeObserver
+       below always fires once on observe() even though `queue()` just
+       measured the same layer moments earlier (its guaranteed-initial-
+       notification behaviour, not a real size change) — comparing against
+       this skips that redundant second pass instead of re-running the full
+       read+write twice on every single mount. */
+    const lastSize = { width: 0, height: 0 };
+
+    /* The read half: one rect, one computed-style read and window.innerWidth,
+       then pure arithmetic — no DOM writes here, so this is safe to run in
+       Motion's `read` step without forcing a layout the write half could
+       otherwise trip over. Returns the per-node targets to apply, or null if
+       there's nothing new to solve. */
+    const doMeasure = () => {
       const box = layer.getBoundingClientRect();
-      /* Nothing to solve against yet — the ResizeObserver below re-runs the
-         sync as soon as the layer has real dimensions, so a zero-width mount
-         heals itself instead of leaving all six nodes stacked at 0,0 with
-         --nd: 0s (they would then flare in unison). */
-      if (box.width === 0 || box.height === 0) return;
-      /* Read once per sync, above the loop: this is a computed-style read
-         and the node loop must stay a pure measure-then-write pass. */
+      /* Nothing to solve against yet — the ResizeObserver re-runs this as
+         soon as the layer has real dimensions, so a zero-width mount heals
+         itself instead of leaving all six nodes stacked at 0,0 with
+         --nd: 0s (they would then flare in unison — see the CSS gate below). */
+      if (box.width === 0 || box.height === 0) return null;
+      if (box.width === lastSize.width && box.height === lastSize.height) return null;
+      lastSize.width = box.width;
+      lastSize.height = box.height;
+
       const rem =
         Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
       const cell = GRID_CELL_REM * rem;
@@ -49,37 +65,45 @@ export default function SystemsScene() {
       const beamTravel =
         window.innerWidth + (SCAN_OVERSHOOT_REM - SCAN_START_REM) * rem;
 
-      layer.querySelectorAll<HTMLElement>(".cq-v2-node").forEach((node) => {
+      return Array.from(layer.querySelectorAll<HTMLElement>(".cq-v2-node")).map((node) => {
         const targetX = (Number.parseFloat(node.dataset.x ?? "50") / 100) * box.width;
         const targetY = (Number.parseFloat(node.dataset.y ?? "50") / 100) * box.height;
         const gridBaseX = centerX - halfCell;
         const gridBaseY = centerY - halfCell;
         const x = gridBaseX + Math.round((targetX - gridBaseX) / cell) * cell;
         const y = gridBaseY + Math.round((targetY - gridBaseY) / cell) * cell;
-        node.style.left = `${x.toFixed(1)}px`;
-        node.style.top = `${y.toFixed(1)}px`;
         const crossing = (SCAN_PERIOD * (x - beamBrightStart)) / beamTravel;
-        node.style.setProperty("--nd", `${(crossing - SCAN_PERIOD).toFixed(2)}s`);
+        return { node, x, y, nd: crossing - SCAN_PERIOD };
       });
     };
 
-    /* sync() forces layout (a rect, a computed style and window.innerWidth)
-       and then writes six nodes, so it must run at most once per frame and
-       never inside a commit. Same rAF-coalescing shape as useSectionSpy:
-       events only ever queue a frame, the frame does the work.
-
-       The initial run is deferred for the same reason — called inline it
-       lands in the mount commit, which here is the middle of the
-       AnimatePresence page turn, and forces a synchronous layout flush on
-       exactly the frame that can least afford one. */
-    let frame = 0;
-    const queue = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        sync();
+    /* `measure` is the exact function reference handed to `frame.read` below
+       — Motion coalesces repeat calls to the same reference within a step
+       (no manual "already queued" guard needed) and `cancelFrame` on
+       unmount cancels precisely this, not some other closure wrapping it. */
+    const measure = () => {
+      const updates = doMeasure();
+      if (!updates) return;
+      frame.render(() => {
+        for (const { node, x, y, nd } of updates) {
+          node.style.left = `${x.toFixed(1)}px`;
+          node.style.top = `${y.toFixed(1)}px`;
+          node.style.setProperty("--nd", `${nd.toFixed(2)}s`);
+        }
+        /* Nodes stay paused and transparent (carousel.css) until this fires
+           once — see the comment on the wrapper below. Deliberately a plain
+           DOM write, not React state: flipping this doesn't need a
+           re-render any more than the six style writes above do. */
+        layer.dataset.synced = "true";
       });
     };
+
+    /* Read in Motion's `read` step, write in its `render` step — the same
+       batching fieldY/stageY/bandFill ride in ServicesCarousel, so this
+       component's forced layout is ordered against every other Motion-driven
+       read/write on the page by construction instead of by raw
+       requestAnimationFrame registration luck. */
+    const queue = () => frame.read(measure);
 
     queue();
     window.addEventListener("resize", queue, { passive: true });
@@ -91,14 +115,19 @@ export default function SystemsScene() {
     observer.observe(layer);
 
     return () => {
-      if (frame) cancelAnimationFrame(frame);
+      cancelFrame(measure);
       window.removeEventListener("resize", queue);
       observer.disconnect();
     };
   }, []);
 
   return (
-    <div ref={layerRef} className="absolute inset-0">
+    /* `data-synced="false"` from first paint holds the six nodes paused and
+       invisible (carousel.css) until `measure`'s write phase flips it — the
+       CSS keyframe would otherwise start advancing (and flare, at its 4%
+       mark) against the unset defaults (stacked at 0,0, --nd: 0s) the moment
+       this scene mounts, well before its position/phase has been solved. */
+    <div ref={layerRef} data-synced="false" className="cq-v2-systems absolute inset-0">
       {/* Blueprint grid framing the field; its mask keeps the reading
           column clear. */}
       <div className="cq-v2-grid" />
