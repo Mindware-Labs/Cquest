@@ -247,7 +247,7 @@ export default function SiteFooter() {
 
         <div className={styles.base}>
           <nav className={styles.baseNav} aria-label={t.navAriaLabel}>
-            {getBaseLinks(lang).map((link) => (
+            {getBaseLinks(dict, lang).map((link) => (
               <LocalizedLink key={link.href} href={link.href}>
                 {link.label}
               </LocalizedLink>

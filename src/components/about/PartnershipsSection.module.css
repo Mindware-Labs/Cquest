@@ -34,7 +34,6 @@
 .registryHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1.5rem;
   min-height: 3.5rem;
   padding-inline: 0.25rem;
@@ -47,11 +46,6 @@
      pattern — same conceptual role, one line-height between the two. */
   line-height: 1.2;
   text-transform: uppercase;
-}
-
-.registryHeader span:last-child {
-  color: color-mix(in srgb, var(--ab-petroleo) 86%, var(--foreground));
-  text-align: right;
 }
 
 .partnerList {
@@ -252,18 +246,6 @@
 @media (max-width: 42rem) {
   .partnershipsSection {
     padding-block: 3.75rem;
-  }
-
-  .registryHeader {
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.35rem;
-    min-height: 4.5rem;
-  }
-
-  .registryHeader span:last-child {
-    text-align: left;
   }
 
   .partnerRow {

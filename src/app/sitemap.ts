@@ -19,6 +19,8 @@ const ROUTES = [
   "/services/systems/work",
   "/team",
   "/quote",
+  "/legal/terms",
+  "/legal/privacy",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

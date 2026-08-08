@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import {
   CONTACT_FIELDS,
   CONTACT_METHODS,
@@ -81,7 +82,13 @@ export default function StepContact({
         onChange={(value) => onChange("preferred", value)}
       />
 
-      <p className={styles.consent}>{dict.wizard.step3.consent}</p>
+      <p className={styles.consent}>
+        {dict.wizard.step3.consent}{" "}
+        <LocalizedLink href="/legal/privacy" target="_blank" rel="noopener noreferrer">
+          {dict.wizard.step3.privacyLinkLabel}
+        </LocalizedLink>
+        .
+      </p>
     </div>
   );
 }

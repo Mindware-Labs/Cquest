@@ -94,7 +94,8 @@ export const dictionary: Dictionary = {
       title: "¿A dónde enviamos tu cotización?",
       lead: "Solo usaremos estos datos para preparar y enviarte tu propuesta.",
       preferredChannel: "Mejor forma de contactarte",
-      consent: "Al enviar, aceptas que te contactemos sobre tu solicitud. No compartimos tus datos con nadie.",
+      consent: "Al enviar, aceptas que te contactemos sobre tu solicitud. No compartimos tus datos con nadie — consulta nuestra",
+      privacyLinkLabel: "Política de Privacidad",
     },
     confirmation: {
       thanksNamed: "Gracias, {name} — tu solicitud está en camino.",

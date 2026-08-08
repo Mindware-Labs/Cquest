@@ -1,5 +1,7 @@
+import { getNavLinks } from "@/components/navigation/data";
 import { SERVICES } from "@/components/services/data";
 import type { Locale } from "@/i18n/config";
+import type { Dictionary } from "@/i18n/dictionaries/types";
 
 /* ── Footer content ───────────────────────────────────────
    Copy lives here as a local COPY table rather than in i18n/dictionaries,
@@ -50,17 +52,31 @@ export function brandLine(lang: Locale): string {
 
 export type FooterLink = { label: string; href: string };
 
-/* The closing row's navigation. Deliberately short: Services has its own
-   block above it, and the five Sectors links this footer used to carry all
-   resolved to the same /#sectors anchor — five labels for one destination is
-   link-shaped decoration, not navigation. */
-export function getBaseLinks(lang: Locale): FooterLink[] {
+// About us and Contact are dropped from the footer's copy of the primary
+// nav: both are already covered elsewhere on this same footer — About us by
+// the closing statement/brand block, Contact by the dedicated Contact column
+// (phone, email, address) right next to this row — so repeating them here
+// was pure duplication.
+const OMIT_FROM_FOOTER = ["/#about", "/quote"];
+
+/* The closing row's navigation. SOURCED from the same getNavLinks the header
+   Navbar reads (dropped down to just label/href — the footer is a flat list,
+   it has no mega-menu to hang Services' children off), rather than a second,
+   hand-kept list: two independent copies of "what the primary nav is" are
+   two things that can quietly drift apart, and the footer having its own
+   `/#team` while the header pointed at the real `/team` page was exactly
+   that drift. One function, read from both surfaces, cannot disagree with
+   itself. Terms/Privacy are appended after — they're real pages but not part
+   of the primary nav, so they don't belong in getNavLinks itself. */
+export function getBaseLinks(dict: Dictionary, lang: Locale): FooterLink[] {
   const t = COPY[lang];
+  const navLinks = getNavLinks(dict, lang)
+    .filter((link) => !OMIT_FROM_FOOTER.includes(link.href))
+    .map(({ label, href }) => ({ label, href }));
   return [
-    { label: t.links.home, href: "/" },
-    { label: t.links.about, href: "/#about" },
-    { label: t.links.team, href: "/#team" },
-    { label: t.links.quote, href: "/quote" },
+    ...navLinks,
+    { label: t.links.terms, href: "/legal/terms" },
+    { label: t.links.privacy, href: "/legal/privacy" },
   ];
 }
 
@@ -86,10 +102,8 @@ export const COPY = {
   en: {
     headings: { services: "Services", contact: "Contact" },
     links: {
-      home: "Home",
-      about: "About us",
-      team: "Our team",
-      quote: "Request a quote",
+      terms: "Terms & conditions",
+      privacy: "Privacy policy",
     },
     cta: "Request a quote",
     navAriaLabel: "Footer",
@@ -101,10 +115,8 @@ export const COPY = {
   es: {
     headings: { services: "Servicios", contact: "Contacto" },
     links: {
-      home: "Inicio",
-      about: "Nosotros",
-      team: "Nuestro equipo",
-      quote: "Solicitar cotización",
+      terms: "Términos y condiciones",
+      privacy: "Política de privacidad",
     },
     cta: "Solicitar cotización",
     navAriaLabel: "Pie de página",

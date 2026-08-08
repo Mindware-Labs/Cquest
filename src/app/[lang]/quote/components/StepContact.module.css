@@ -18,3 +18,14 @@
   line-height: 1.5;
   color: var(--text-tertiary);
 }
+
+.consent a {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 220ms var(--ease-out);
+}
+
+.consent a:hover {
+  color: var(--foreground);
+}

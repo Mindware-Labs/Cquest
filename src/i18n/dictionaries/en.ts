@@ -83,7 +83,8 @@ export const dictionary: Dictionary = {
       title: "Where should we send your quote?",
       lead: "We'll only use these details to prepare and send your proposal.",
       preferredChannel: "Best way to reach you",
-      consent: "By submitting, you agree to be contacted about your request. We don't share your details with anyone.",
+      consent: "By submitting, you agree to be contacted about your request. We don't share your details with anyone — see our",
+      privacyLinkLabel: "Privacy Policy",
     },
     confirmation: {
       thanksNamed: "Thanks, {name} — your request is in.",

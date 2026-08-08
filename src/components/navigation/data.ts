@@ -69,6 +69,38 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
   ];
 }
 
+// The legal pages' own nav: same Services/Sectors/Team set as getNavLinks,
+// but swapping About us and Contact — both already redundant here (About us
+// has nothing to do with a legal document; Contact is what the quote-wizard
+// is for) — for an explicit Home link. Those pages have no logo-adjacent
+// "you're deep in a subsection" cue the way a service page's own anchors do,
+// so unlike the rest of the site, spelling out the way back matters more
+// than repeating the two links every other page already covers.
+function getLegalNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+  return [
+    { label: dict.nav.home, href: "/" },
+    {
+      label: dict.nav.services,
+      href: "/#services",
+      children: SERVICES.map((service) => ({
+        label: service.label[lang],
+        href: service.href,
+        description: service.strapline[lang],
+        icon: SERVICE_ICON[service.id],
+      })),
+    },
+    // "Our team", not the plain "Team" of dict.nav.team — hero.navLinks is
+    // the label set the requested order was given in (Services, Our team,
+    // Sectors, Partnerships), so this list matches it label-for-label past
+    // the leading Home. Still points at the real /team page, not home's
+    // "/#metrics" anchor — that anchor only makes sense scrolling FROM home,
+    // and a legal page's reader clicking "Our team" wants the actual page.
+    { label: dict.hero.navLinks.team, href: "/team" },
+    { label: dict.nav.sectors, href: "/#sectors" },
+    { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
+  ];
+}
+
 // On a service detail page the logo is the only way back to the home page —
 // this gives every such page an explicit nav item for it too, with a small
 // dropdown to jump straight to a section of home instead of always landing
@@ -149,6 +181,9 @@ export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<strin
       { label: dict.hero.navLinks.team, href: "/#metrics" },
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
     ],
+    // Both legal pages share one nav — see getLegalNavLinks above.
+    "/legal/terms": getLegalNavLinks(dict, lang),
+    "/legal/privacy": getLegalNavLinks(dict, lang),
   };
 }
 

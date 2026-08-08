@@ -92,7 +92,9 @@ export interface Dictionary {
       title: string;
       lead: string;
       preferredChannel: string;
+      /** Rendered before the Privacy Policy link — see StepContact.tsx. */
       consent: string;
+      privacyLinkLabel: string;
     };
     confirmation: {
       /** {name} — see i18n/format.ts */

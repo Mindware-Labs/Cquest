@@ -17,7 +17,6 @@ const COPY = {
     lead:
       "Strategic relationships with specialized teams whose expertise complements ours and expands what we can build together.",
     directory: "Partnership profile",
-    sampleNote: "Profile in development",
     description:
       "A software engineering team focused on designing, building and maintaining digital products and operational systems.",
     viewProfile: "View partnership",
@@ -27,7 +26,6 @@ const COPY = {
     lead:
       "Relaciones estratégicas con equipos especializados cuya experiencia complementa la nuestra y amplía lo que podemos desarrollar juntos.",
     directory: "Perfil de alianza",
-    sampleNote: "Perfil en desarrollo",
     description:
       "Un equipo de ingeniería de software enfocado en diseñar, construir y mantener productos digitales y sistemas para operaciones.",
     viewProfile: "Ver alianza",
@@ -57,7 +55,6 @@ export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
         >
           <motion.div className={styles.registryHeader} variants={stepVariants}>
             <span>{t.directory}</span>
-            <span>{t.sampleNote}</span>
           </motion.div>
 
           <motion.ul className={styles.partnerList} variants={groupVariants}>
