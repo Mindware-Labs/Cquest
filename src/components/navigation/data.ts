@@ -35,6 +35,13 @@ export const DARK_HERO_PAGES = [
   ...SERVICE_DETAIL_PAGES,
   "/team",
   "/partnerships/mindware-labs",
+  // Not a full-bleed hero like the others — LocationSection just opens dark
+  // (--ab-deep) with no lighter band above it — but that's the same "white
+  // text needed before the first scroll" problem, and Navbar's own fallback
+  // (no [data-hero-boundary] on this page) already handles a page with no
+  // real hero: it switches to the scrolled/light-pill chrome after 8px
+  // regardless, which reads fine over anything.
+  "/location",
 ] as const;
 
 // Dark-hero pages whose CTA should carry that page's OWN accent instead of

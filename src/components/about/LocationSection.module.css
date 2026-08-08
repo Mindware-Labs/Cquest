@@ -1,4 +1,14 @@
 .locationSection {
+  /* Self-contained rather than inherited from AboutSection's wrapper: this
+     section now also mounts standalone on /location (see
+     app/[lang]/location), with no `.aboutSection` ancestor to hand these
+     down. Same derivation AboutSection.module.css uses, so a section
+     embedded there and one standing alone stay visually identical. */
+  --ab-deep: color-mix(in srgb, var(--ink) 84%, var(--brand-petroleo));
+  --ab-celeste: var(--brand-celeste);
+  --ab-verde: var(--brand-verde);
+  --ab-rule-invert: rgba(255, 255, 255, 0.16);
+
   position: relative;
   scroll-margin-top: 5rem;
   padding-block: clamp(3.75rem, 6vw, 5.5rem);

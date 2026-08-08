@@ -218,7 +218,8 @@ export default function SiteFooter() {
             <div className={styles.block}>
               <h3 className={styles.blockHeading}>{t.headings.contact}</h3>
               {/* A description list, not a link list: these are labelled
-                  facts, and only two of the three are actionable. */}
+                  facts, each one also actionable (call, email, or — since
+                  LocationSection moved to its own /location page — visit). */}
               <dl className={styles.contactList}>
                 <dt>{t.phoneLabel}</dt>
                 <dd>
@@ -232,12 +233,16 @@ export default function SiteFooter() {
                 {/* <address> is the semantic element for the contact details
                     of its nearest section — screen readers announce it as
                     such. Its browser default is italic, reset in the
-                    stylesheet. */}
+                    stylesheet. The link lives INSIDE it (not the reverse):
+                    an <a> wrapping an <address> is valid but unusual, while
+                    a link inside an address is the textbook pattern. */}
                 <dd>
                   <address className={styles.address}>
-                    {CONTACT.street}
-                    <br />
-                    {CONTACT.city}, {CONTACT.country[lang]}
+                    <LocalizedLink href="/location">
+                      {CONTACT.street}
+                      <br />
+                      {CONTACT.city}, {CONTACT.country[lang]}
+                    </LocalizedLink>
                   </address>
                 </dd>
               </dl>

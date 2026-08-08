@@ -335,6 +335,16 @@
   color: var(--ft-dim);
 }
 
+/* `.contactList a`'s single-line `inline-flex` pill (built for the tel:/
+   mailto: links and the base nav) fights the <br> between street and city —
+   flexbox doesn't wrap plain text + <br> the way block layout does. This
+   link is two lines on purpose, so it resets to a plain block and keeps
+   only `.contactList a`'s color/hover, not its layout. */
+.address a {
+  display: block;
+  min-height: 0;
+}
+
 .base {
   display: flex;
   flex-wrap: wrap;

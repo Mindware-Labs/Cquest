@@ -2,10 +2,10 @@
 
 import { useReducedMotion } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
-import LocationSection from "./LocationSection";
 import MetricsSection from "./MetricsSection";
 import PartnershipsSection from "./PartnershipsSection";
 import StorySection from "./StorySection";
+import WhyUsSection from "./WhyUsSection";
 import styles from "./AboutSection.module.css";
 
 // "Nosotros" as a home-page section — same architecture as ServicesCarousel's
@@ -26,7 +26,7 @@ export default function AboutSection() {
     <section id="about" className={styles.aboutSection} data-ambient-active={tabVisible && !reduced}>
       <MetricsSection reduced={reduced} />
       <StorySection reduced={reduced} />
-      <LocationSection reduced={reduced} />
+      <WhyUsSection reduced={reduced} />
       <PartnershipsSection reduced={reduced} />
     </section>
   );
