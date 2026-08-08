@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Arrow from "@/components/services/Arrow";
@@ -8,6 +9,8 @@ import SectionIntro from "@/components/services/SectionIntro";
 import { groupVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { useI18n } from "@/i18n/I18nProvider";
+import { gsap } from "@/lib/gsap";
+import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import { PARTNER_SLOTS } from "./partnershipsData";
 import styles from "./PartnershipsSection.module.css";
 
@@ -35,9 +38,45 @@ const COPY = {
 export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
+  const sectionRef = useRef<HTMLElement>(null);
+  const auraRef = useRef<HTMLSpanElement>(null);
+
+  /* The section's celeste corner wash used to be baked straight into the
+     background — the one About band that moved nothing on scroll, closing
+     the page's whole narrative on a frozen note next to StorySection's own
+     scrubbed aura one band up. Same device, verbatim: a parallaxed light
+     behind the content, too faint to notice as an effect on its own. */
+  useIsomorphicLayoutEffect(() => {
+    if (reduced || !sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        auraRef.current,
+        { yPercent: 14, scale: 0.94 },
+        {
+          yPercent: -14,
+          scale: 1.06,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: SCRUB,
+          },
+        },
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [reduced]);
 
   return (
-    <section id="partnerships" className={styles.partnershipsSection}>
+    <section id="partnerships" ref={sectionRef} className={styles.partnershipsSection}>
+      {!reduced && (
+        <span aria-hidden className={styles.partnershipsAura}>
+          <span ref={auraRef} className={styles.partnershipsAuraLight} />
+        </span>
+      )}
       <div className={container.container}>
         <SectionIntro
           title={t.heading}

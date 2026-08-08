@@ -7,6 +7,26 @@
   padding-block: clamp(3rem, 5vw, 4.5rem);
 }
 
+/* The chapter-break mark every other About seam draws on entry — this was
+   the one light-band-after-dark-band seam missing it (Partnerships, the
+   other light band in the same position, already carries this exact
+   petroleo→celeste line: a white rule wouldn't show here, which is why it's
+   tinted instead of the dark bands' plain white-alpha version). */
+.storySection::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ab-petroleo) 20%, transparent) 18%,
+    color-mix(in srgb, var(--ab-celeste) 42%, transparent) 82%,
+    transparent
+  );
+}
+
 /* ── Ambient light ────────────────────────────────────────
    One cold celeste wash behind the grid, parallaxed on scroll from
    StorySection.tsx. Its only job is to stop this paper-white section from

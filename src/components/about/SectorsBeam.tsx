@@ -10,6 +10,7 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import ServiceIcon from "@/components/services/ServiceIcon";
+import { EASE_OUT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import { ABOUT_SECTORS } from "./data";
 import styles from "./SectorsBeam.module.css";
@@ -98,7 +99,7 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
       initial={reduced ? false : { opacity: 0, y: 28 }}
       whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.72, ease: EASE_OUT }}
       style={{
         "--port-offset": `${SELECTOR_HEADER_REM + SELECTOR_ROW_REM * (activeIndex + 0.5)}rem`,
       } as CSSProperties}
@@ -183,7 +184,7 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
             initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduced ? undefined : { opacity: 0, y: -8 }}
-            transition={reduced ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={reduced ? { duration: 0 } : { duration: 0.28, ease: EASE_OUT }}
           >
             <div className={styles.detailHeading}>
               <span className={styles.detailIcon} aria-hidden>

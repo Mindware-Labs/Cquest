@@ -2,13 +2,43 @@
   position: relative;
   scroll-margin-top: 5rem;
   padding-block: clamp(3.75rem, 5vw, 4.75rem);
-  background:
-    radial-gradient(
-      ellipse 56% 58% at 100% 24%,
-      color-mix(in srgb, var(--ab-celeste) 10%, transparent),
-      transparent 72%
-    ),
-    var(--ab-base);
+  background: var(--ab-base);
+}
+
+/* ── Ambient light ────────────────────────────────────────
+   The corner wash used to be painted straight into .partnershipsSection's
+   own background — a single static layer with nothing to parallax. Same
+   construction as StorySection's .storyAura/.storyAuraLight (this section
+   is that one's structural sibling: the other light band, also closing off
+   a dark one above it), so scrolling past the LAST About band still moves
+   something, matching every band before it. Deliberately faint — see
+   StorySection.module.css's own note on why. No local `overflow: clip`
+   here either, for the same reason: AboutSection's own clip contains it. */
+.partnershipsAura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.partnershipsAuraLight {
+  position: absolute;
+  top: 12%;
+  right: -14rem;
+  width: 44rem;
+  height: 30rem;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--ab-celeste) 10%, transparent),
+    transparent 72%
+  );
+  will-change: transform;
+}
+
+/* Content sits above the aura; the aura itself keeps its own z-index 0. */
+.partnershipsSection > *:not(.partnershipsAura) {
+  position: relative;
+  z-index: 1;
 }
 
 .partnershipsSection::before {
