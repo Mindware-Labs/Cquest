@@ -1,17 +1,5 @@
-/* ── Systems case study — an editorial, premium write-up of a shipped build.
-   Light and airy, consistent with the Selected work gallery it opens from.
-   Uniform vertical rhythm (shell gap) with hairline dividers marking the
-   bigger breaks; small tracked accent labels; dark browser-chrome screen
-   previews (see components/ScreenPreview.tsx) standing in for real capture.
-
-   The two dense-information sections — Technology and Security — are set as
-   real, accessible tables (a light "ledger": hairline rows, a shared column
-   template between head and body, tabular indices, a quiet accent hover). It
-   is the dark BPO SLA ledger's DNA, brought into this page's light register,
-   and it is the through-line the whole rework is tuned around. */
-
 .page {
-  --accent: #4b98b1; /* systems blue */
+  --accent: #4b98b1;
   --rule: color-mix(in srgb, var(--foreground) 12%, transparent);
   min-height: 100svh;
   color: var(--foreground);
@@ -48,9 +36,6 @@
 .back:hover { color: var(--foreground); }
 .back:hover svg { transform: translateX(-0.2rem); }
 
-/* ── Header — an editorial masthead: eyebrow, title and lede on the left; a
-   bounded spec sheet on the right, opened by an accent rule. The two columns
-   draw in together on load. ── */
 .head {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(14rem, 0.82fr);
@@ -104,8 +89,6 @@
   text-wrap: pretty;
 }
 
-/* Header spec sheet — a vertical ledger of the essentials in the masthead's
-   right column, opened by an accent rule; each row a hairline apart. */
 .spec {
   display: flex;
   flex-direction: column;
@@ -204,9 +187,6 @@
 .splitCol .sectionLabel + .prose,
 .splitCol .prose { margin-top: 1rem; }
 
-/* ── How it works — full-width numbered rows in the systems Method grammar:
-   ghost numeral · title · description, each row opened by an accent hairline
-   that draws in from the left as the step reveals. ── */
 .steps {
   width: 100%;
   list-style: none;
@@ -258,11 +238,6 @@
   line-height: 1.7;
 }
 
-/* ── Architecture flow — a wired pipeline of tier cards. Each node carries a
-   glyph, a name and its role; the two Center-Quest-built services (BFF, API)
-   are marked with an accent top bar and tint, so the diagram itself shows the
-   "two services, one front door". A hairline rail runs through the connectors
-   rather than floating arrows. ── */
 .flow {
   display: flex;
   flex-wrap: wrap;
@@ -300,7 +275,6 @@
   background: color-mix(in srgb, var(--accent) 6%, white);
 }
 
-/* Accent top bar marks the built tier. */
 .flowNode[data-accent]::before {
   content: "";
   position: absolute;
@@ -341,7 +315,6 @@
   color: var(--muted);
 }
 
-/* Connector — a chevron riding a hairline rail that spans the gap. */
 .flowArrow {
   position: relative;
   display: grid;
@@ -365,8 +338,6 @@
 
 .flowArrow svg { position: relative; width: 0.85rem; height: 0.85rem; }
 
-/* ── Real-time & integrations — a strict 2×2 feature grid (four items, no
-   orphans), quiet cards that lift on hover with no drop-shadow decoration. ── */
 .blocks {
   width: 100%;
   display: grid;
@@ -414,10 +385,6 @@
   line-height: 1.7;
 }
 
-/* ── Data tables (Technology, Security) ─────────────────────────────────────
-   Real <table> markup, re-flowed with grid so head and body share one column
-   template and stay perfectly plumb. Explicit ARIA roles are restored because
-   display:block/grid drops the implicit table roles. ── */
 .table {
   display: block;
   width: 100%;
@@ -456,7 +423,6 @@
   color: color-mix(in srgb, var(--accent) 72%, transparent);
 }
 
-/* Technology: layer × technologies */
 .techTable { --cols: minmax(8.5rem, 12rem) 1fr; }
 
 .techRow {
@@ -510,7 +476,6 @@
   color: color-mix(in srgb, var(--accent) 70%, var(--foreground));
 }
 
-/* Security: control × layer × protection */
 .secTable { --cols: minmax(9.5rem, 13rem) 6.5rem 1fr; }
 
 .secRow {
@@ -558,9 +523,6 @@
   line-height: 1.65;
 }
 
-/* ── Scope — a bordered module matrix. 15 modules resolve to even rows at
-   every breakpoint (5×3 wide, 3×5 mid); on the narrowest layout the odd last
-   item spans full width so no cell is ever left dangling. ── */
 .manages {
   width: 100%;
   display: grid;
@@ -604,8 +566,6 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* ── Closing CTA — a quiet, framed close: the same radial glow as the page
-   header, one hairline border, one decisive move. ── */
 .closing {
   position: relative;
   display: flex;
@@ -678,17 +638,14 @@
 
 @media (max-width: 64rem) {
   .manages { grid-template-columns: repeat(3, 1fr); }
-  /* How it works collapses to numeral · (title over description). */
+
   .step { grid-template-columns: minmax(3.5rem, 0.2fr) minmax(0, 1fr); row-gap: 0.5rem; }
   .stepText { grid-column: 2; }
 }
 
 @media (max-width: 60rem) {
-  /* Masthead stacks: spec sheet drops below the title block, full width. */
   .head { grid-template-columns: 1fr; gap: clamp(1.75rem, 4vw, 2.5rem); }
 
-  /* Architecture flow becomes a centered vertical column; the rail turns
-     vertical and the chevron points down. */
   .flow { flex-direction: column; align-items: center; }
   .flowNode { width: min(22rem, 100%); min-height: 0; }
   .flowArrow { min-width: 0; min-height: 1.85rem; }
@@ -719,12 +676,10 @@
   .step { grid-template-columns: 1fr; gap: 0.55rem; padding-block: 1.4rem; }
   .stepText { grid-column: 1; }
 
-  /* Tables collapse to stacked rows; the head labels are dropped. */
   .tableHeadRow { display: none; }
   .techRow { grid-template-columns: 1fr; gap: 0.65rem; padding: 1.1rem 0.25rem; }
   .secRow { grid-template-columns: 1fr; gap: 0.55rem; padding: 1.1rem 0.25rem; }
 
-  /* Scope: two columns; the odd 15th item fills the final row. */
   .manages { grid-template-columns: repeat(2, 1fr); }
   .manageChip:last-child { grid-column: 1 / -1; }
 

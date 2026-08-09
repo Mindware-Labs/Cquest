@@ -23,8 +23,7 @@ const COPY = {
 export default function ProcessSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
-  // The process connecting line draws itself as the timeline scrolls through —
-  // spring-smoothed so it trails the scroll like a needle, not a scrubber.
+
   const trackRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: lineProgress } = useScroll({
     target: trackRef,

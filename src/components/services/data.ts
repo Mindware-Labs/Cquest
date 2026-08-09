@@ -242,9 +242,6 @@ export const SERVICES: ReadonlyArray<Service> = [
   },
 ];
 
-// One representative icon per business line — for contexts that reference
-// a whole service (nav menus, overview cards), distinct from the icons on
-// each service's own detail items above.
 export const SERVICE_ICON: Record<ServiceId, ServiceIconName> = {
   "call-center": "headset",
   bpo: "layers",

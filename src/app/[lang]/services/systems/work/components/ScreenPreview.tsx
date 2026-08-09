@@ -21,15 +21,6 @@ const ALT = {
   },
 };
 
-/* ── Case-study screen previews ───────────────────────────────────────────
-   The four "Shot" placeholders this case study used to reserve are replaced
-   with synthetic, image-free interfaces — the same move the Systems service
-   page makes with SystemPreview.tsx: show the product AS the product, drawn
-   live in CSS/SVG inside the hero's browser-chrome frame, rather than a gray
-   box waiting for a screenshot. Content is deliberately generic (synthetic
-   ids, skeleton lines, no invented client names) — the shape of the software
-   is real, the data in frame is not. */
-
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
 const frameVariants: Variants = {
@@ -39,8 +30,6 @@ const frameVariants: Variants = {
 
 const VIEWPORT = { once: true, margin: "-60px" } as const;
 
-/* Shared browser-chrome frame — three dots + a mono route label, matching
-   the hero's product window one level down in scale. */
 function Frame({
   address,
   ratio = "16 / 9",
@@ -72,9 +61,6 @@ function Frame({
   );
 }
 
-/* 1 · Contact Center — the platform's executive dashboard: KPI rollups and
-   the calls/tickets trend. A real product screenshot, cropped to the
-   generic KPI rows and de-branded — no client or company names in frame. */
 export function ContactCenterScreen({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   return (
@@ -90,9 +76,6 @@ export function ContactCenterScreen({ reduced }: { reduced: boolean }) {
   );
 }
 
-/* 2 · Marketing dashboard — contact rate, dispositions and campaign
-   performance. A real product screenshot, with the site-address labels on
-   the campaign chart redacted (no site locations in frame). */
 export function AgentDashboardScreen({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   return (
@@ -108,9 +91,6 @@ export function AgentDashboardScreen({ reduced }: { reduced: boolean }) {
   );
 }
 
-/* 3 · Analytics — call volume, contact-rate insights and agent activity.
-   A real product screenshot, with the agent-name labels on the "Agent
-   activity" chart redacted (no employee names in frame). */
 export function AnalyticsScreen({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   return (
@@ -126,9 +106,6 @@ export function AnalyticsScreen({ reduced }: { reduced: boolean }) {
   );
 }
 
-/* 4 · Per-site reporting — campaign performance rollup with export actions.
-   A real product screenshot, with the campaign name and yard identifier
-   redacted (no client or site names in frame). */
 export function ReportingScreen({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   return (

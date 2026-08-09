@@ -1,11 +1,3 @@
-/* ── Closing quote CTA (service pages' #contact) ──────────
-   A balanced two-column band on the section's dark ink, in the same editorial
-   language as the Metrics section it echoes: a big-statement heading with a
-   celeste tick on the left, and — on the right — an action card built from the
-   site's card idiom (hairline border, celeste top-accent, numbered rows like the
-   capability index). currentColor carries the neutrals so it reads on each
-   service's ink; --brand-celeste carries the accent. */
-
 .inner {
   width: min(100% - 2.5rem, 72rem);
   margin-inline: auto;
@@ -15,7 +7,6 @@
   gap: clamp(2.5rem, 5vw, 4.5rem);
 }
 
-/* ── Left: the statement (Metrics idiom) ── */
 .lead {
   display: flex;
   flex-direction: column;
@@ -50,9 +41,6 @@
   color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
-/* ── Right: the action card (site card idiom, on dark ink) ── */
-/* Borderless, like the capability panel: a soft raised surface defined by fill
-   and depth rather than a stroke. */
 .card {
   position: relative;
   display: flex;
@@ -71,8 +59,6 @@
   color: color-mix(in srgb, currentColor 55%, transparent);
 }
 
-/* Numbered rows, echoing the capability index — hairline dividers, celeste
-   number, plain label. */
 .stepList {
   margin-top: 1.15rem;
   border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
@@ -128,9 +114,6 @@
     box-shadow 0.35s var(--ease-out);
 }
 
-/* A band of light sweeps across on hover — the shimmer the logo cards use,
-   scoped to the button. Sits above the fill, below the label (z-index -1 inside
-   the button's own isolated stacking context). */
 .cta::before {
   content: "";
   position: absolute;

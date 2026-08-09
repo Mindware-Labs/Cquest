@@ -9,10 +9,6 @@ import { resolveLang } from "@/i18n/resolveLangParam";
 import MindwareLabsProfile from "./components/MindwareLabsProfile";
 import styles from "./partnership.module.css";
 
-// Mindware Labs is the one partner with a real profile so far; every other
-// slug still falls through to the generic placeholder below. Special-cased
-// here rather than split into its own static route so generateStaticParams/
-// generateMetadata stay centralized for the whole [slug] segment.
 const CUSTOM_PROFILES: Record<string, true> = {
   "mindware-labs": true,
 };

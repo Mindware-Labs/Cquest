@@ -1,7 +1,3 @@
-/* The beam layer is pure decoration sitting under the nodes: it must never
-   intercept a pointer, and it must never be the thing that sizes the
-   container (it is measured FROM the container, so giving it layout size
-   would be a feedback loop). */
 .beamSvg {
   position: absolute;
   inset: 0;
@@ -13,11 +9,7 @@
 .spoke {
   stroke: color-mix(in srgb, var(--ab-petroleo) 34%, transparent);
   stroke-width: 1.5;
-  /* Resting state = fully drawn, and it is what the server renders. The entry
-     timeline in SectorsBeam only ever animates *away from* and back to this,
-     so a slow or absent hydration leaves a finished diagram rather than a
-     blank one. GSAP owns `stroke-dashoffset` from hydration onward; the dash
-     pattern stays here because it is measured geometry, not animation. */
+
   stroke-dasharray: var(--spoke-length, 0);
   stroke-dashoffset: 0;
   transition:
@@ -26,12 +18,6 @@
     stroke-width 200ms var(--ease-out);
 }
 
-/* ── Energy pulse ─────────────────────────────────────────
-   A short lit dash that travels the spoke: once on entry as the connection
-   is drawn, and again on hover. `opacity: 0` is what guarantees it is unseen
-   at rest — GSAP raises it for the length of a travel and hands it back. That
-   makes the resting state safe even if a tween is interrupted mid-flight with
-   the dash parked somewhere visible. */
 .spokeLight {
   stroke: var(--ab-celeste);
   stroke-width: 2.5;
@@ -40,10 +26,6 @@
   stroke-dashoffset: var(--light-length, 26px);
 }
 
-/* ── Hover ────────────────────────────────────────────────
-   The ongoing life of the figure, paid for only while a pointer is on it:
-   the hovered sector's line takes the brand's darker primary and gains
-   weight, the other four recede. */
 .beamSvg[data-dimmed] .spoke {
   opacity: 0.26;
 }

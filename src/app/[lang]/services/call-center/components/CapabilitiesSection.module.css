@@ -1,7 +1,3 @@
-/* House section rhythm — the same scale Operations and Systems use for their
-   capabilities band. This section was on clamp(3rem, 4.5vw, 4rem), roughly
-   two-thirds of every other section on the page, which made the first band
-   after the hero read as cramped and threw the whole vertical rhythm off. */
 .capabilitiesSection {
   padding-block: clamp(4.5rem, 7vw, 6.5rem);
   background: var(--cc-surface);
@@ -47,10 +43,6 @@
   color: var(--cc-petroleum);
 }
 
-/* The active-tab highlight lives on its own layer so a single shared element
-   (layoutId in CapabilitiesSection.tsx) can glide between tabs instead of
-   the background switching on and off in place. It covers the button's
-   transparent 3px spacer edge with the sky accent. */
 .tabInk {
   position: absolute;
   inset: 0 0 0 -3px;
@@ -64,9 +56,6 @@
   z-index: 1;
 }
 
-/* `.tabArrow` is applied by CapabilitiesSection itself via Arrow's
-   `className` prop, so this context-specific shift stays local instead of
-   reaching into the shared Arrow component's own hashed class. */
 .capabilityTab[data-active] .tabArrow {
   transform: translateX(0.15rem);
 }
@@ -78,12 +67,6 @@
   letter-spacing: 0.08em;
 }
 
-/* The panel is roughly as tall as the six-tab index beside it, and that
-   height is a floor rather than a fit so a tab switch never makes the card —
-   or the section below it — jump. What changed when the client-benefit block
-   came out is where the slack goes: the card is a flex column now and the
-   closing row is pushed to its baseline, so the leftover height reads as the
-   composition holding its shape instead of as a hole under the bullets. */
 .capabilityPanel {
   display: flex;
   flex-direction: column;
@@ -91,22 +74,13 @@
   min-height: 27rem;
   border-radius: var(--cc-radius-card);
   background: white;
-  /* Elevation declared once. This carried a 1px border AND a wide soft
-     shadow — the ghost-card pair, and the one combination that reads as
-     generic no matter how well the rest of the card is made. The shadow
-     stays, because a white sheet on a surface 1% away from white has nothing
-     else to separate it, and it is the same idiom the services carousel's
-     lifted sheet already uses. Three layers of one system, not two systems:
-     contact, ambient, ground. */
+
   box-shadow:
     0 1px 0 rgba(10, 17, 22, 0.05),
     0 2px 8px -4px rgba(10, 17, 22, 0.14),
     0 26px 48px -32px rgba(10, 17, 22, 0.3);
 }
 
-/* The column has to live on the sheet, not on .capabilityPanel: this is the
-   element AnimatePresence swaps on a tab switch, so it is the one that
-   actually holds the blocks. */
 .panelSheet {
   display: flex;
   flex: 1;
@@ -117,19 +91,12 @@
   margin-top: auto;
 }
 
-/* Icon, title, position. No eyebrow above the title any more: "SELECTED
-   CAPABILITY" was a label restating what the highlighted tab and the title
-   underneath it already said, and a kicker over a heading is the one habit
-   that reads as template regardless of how good the heading is. The title
-   carries itself, and it gained the room the label was using. */
 .capabilityHeading {
   display: flex;
   align-items: center;
   gap: 0.9rem;
 }
 
-/* Sky, matching .accordionIcon — this is the same element in the two
-   renderings of this section, and it was ink on desktop, sky on mobile. */
 .capabilityIcon {
   display: inline-flex;
   flex: none;
@@ -152,11 +119,6 @@
   text-transform: uppercase;
 }
 
-/* A folio, not a kicker: pushed to the far edge of the header row and set at
-   caption weight, the way a page number sits on a spread. It says which of
-   the six is open without competing with the title for the entrance. Hidden
-   from assistive tech — the tab list already conveys position, and "zero one
-   slash zero six" read aloud is noise. */
 .capabilityCounter {
   margin-left: auto;
   align-self: flex-start;
@@ -184,9 +146,6 @@
   line-height: 1.6;
 }
 
-/* Only a top rule now. The lower hairline belongs to .panelFoot, which is
-   pinned to the card's baseline — if this block kept its own bottom border
-   that line would slide up and down with the bullet count on every switch. */
 .detailGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -207,11 +166,6 @@
   line-height: 1.6;
 }
 
-/* No height reservation on the list any more. It existed to stop the panel
-   reflowing on a tab switch; the flex column above does that job now by
-   pinning the closing row instead, and it does it without padding lists whose
-   bullets happen to be short (Onboarding, Surveys) out to the height of the
-   longest one — which is what made their spacing read looser than the rest. */
 .detailGrid li {
   position: relative;
   padding-left: 1.1rem;
@@ -229,27 +183,18 @@
   background: var(--cc-sky);
 }
 
-/* The card's baseline: where it operates on the left, what to do about it on
-   the right. Both sit on one rule, so the bottom of the card is a single
-   closing statement rather than a strip with an afterthought under it. */
 .panelFoot {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem 2rem;
-  /* Its own floor, not just whatever the flex column's auto margin leaves
-     over: on the longest capabilities that slack collapses to nothing and the
-     rule would otherwise land against the last bullet. */
+
   margin-top: 1.25rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--cc-hairline);
 }
 
-/* The section closes on a full CTA band of its own, and this card is not the
-   place for a second button competing with it — but it IS the deepest a
-   visitor gets into one capability, so the way out of it should be an action
-   rather than a dead end. A quiet link, at the weight of a caption. */
 .panelCta {
   display: inline-flex;
   align-items: center;
@@ -321,10 +266,6 @@
   .capabilityTab:nth-child(odd) { border-right: 1px solid var(--cc-rule); }
 }
 
-/* ── Mobile accordion — below `md` this replaces the tab+panel layout
-   entirely (see CapabilitiesSection.tsx). Each capability is its own
-   header + panel pair that opens in place, so there's nothing to scroll
-   sideways to discover and no separate panel to relate back to a tab. */
 .accordion {
   display: flex;
   flex-direction: column;
@@ -422,9 +363,6 @@
 .accordionPanelInner .capabilityDescription { min-height: 0; margin-top: 0; }
 .accordionPanelInner .channelRow ul { justify-content: flex-start; gap: 0.9rem 1.35rem; }
 
-/* The closing row stacks here. There is no card baseline to sit on — the
-   panel is exactly as tall as its own content — so the quote link reads as
-   the next step after the channels rather than as their right-hand column. */
 .accordionPanelInner .panelFoot {
   flex-direction: column;
   align-items: flex-start;

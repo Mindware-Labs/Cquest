@@ -1,11 +1,7 @@
 .section {
   position: relative;
   padding-block: clamp(4.5rem, 8vw, 7.5rem);
-  /* Not var(--background): that's the exact token the scrolled Navbar's own
-     bg-background/80 reads from, so the two composited to the same colour
-     and the bar vanished into the page the moment you scrolled past the
-     hero. Every other dark-hero page avoids this with its own near-white
-     surface token (e.g. call-center's --cc-surface: #fbfcfc) — same fix. */
+
   background: #fbfcfc;
   scroll-margin-top: 5.5rem;
 }
@@ -59,12 +55,6 @@
     transform 480ms var(--ease-out);
 }
 
-/* One joined grid, not six floating cards: departments share edges and a
-   hairline marks each seam, so it reads as a single divided panel — same
-   language as the responsibilities list below it. Every breakpoint restates
-   its own pattern at the same nth-child specificity tier rather than
-   patching the previous one, since the column count (and so which items
-   are "last in row") changes at each width. */
 .department:nth-child(n) {
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -95,11 +85,7 @@
   z-index: 1;
   background: color-mix(in srgb, var(--brand-celeste) 7%, var(--surface-raised));
   transform: translateY(-6px);
-  /* Two shadows doing two different jobs: the first is the real lift — a
-     grounded, offset, dark bloom, the same physics every other elevated
-     card on the site uses. The second is the aura — an un-offset celeste
-     glow riding on top of it — legitimate as a decorative layer only
-     because the depth shadow underneath is already doing the honest work. */
+
   box-shadow:
     0 26px 48px -28px color-mix(in srgb, var(--ink) 45%, transparent),
     0 0 54px 8px color-mix(in srgb, var(--brand-celeste) 48%, transparent);
@@ -150,9 +136,6 @@
   text-wrap: balance;
 }
 
-/* One joined list, not a cross-hatched table: a single column, tight
-   spacing, and one hairline between each row instead of the old two-column
-   grid's borders fighting each other on both axes. */
 .responsibilities {
   margin-top: auto;
   padding-top: 0.9rem;
@@ -270,8 +253,6 @@
     min-height: 16.5rem;
   }
 
-  /* Two columns now, three rows — restate both edges rather than patch the
-     desktop 3-column pattern. */
   .department:nth-child(n) {
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -304,8 +285,6 @@
     padding: 1.45rem;
   }
 
-  /* One column, six rows — every seam is a bottom border, none are a right
-     border, and only the last row drops it. */
   .department:nth-child(n) {
     border-right: 0;
     border-bottom: 1px solid var(--border);

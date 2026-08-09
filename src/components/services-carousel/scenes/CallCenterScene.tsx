@@ -3,20 +3,6 @@
 import type { CSSProperties } from "react";
 import { useIsPresent } from "motion/react";
 
-/* Call Center's connection map. Six flight-routes radiate from the glow
-   behind the message; on a shared 14s clock a light streak (the call)
-   departs the halo, rides its route and lands on a customer point that
-   blooms exactly on arrival. Each route's --cd phase-shifts BOTH its
-   streak and its landing ping, and the ping keyframes hold until the
-   streak's 14%-of-cycle arrival — the sync is a CSS constant shared by
-   construction, so no JS measurement is needed (the radar predecessor
-   had to measure angles at runtime). The SVG viewBox and the square
-   .cq-v2-net stage share the same 0–100 space, which lets each route's
-   endpoint coords double as its ping's left/top percentages. Routes bow
-   OUTWARD (around the reading column) and the SVG's radial mask fades
-   them toward the origin, so every call visibly materializes leaving the
-   glow and lands in the margins. Delays are slightly irregular on
-   purpose — departures read as traffic, not a metronome. */
 const CALL_ROUTES = [
   { d: "M50 50 Q 26 46 14 22", x: 14, y: 22, delay: "0s" },
   { d: "M50 50 Q 76 42 86 18", x: 86, y: 18, delay: "-2.2s" },
@@ -26,60 +12,20 @@ const CALL_ROUTES = [
   { d: "M50 50 Q 66 74 72 88", x: 72, y: 88, delay: "-11.8s" },
 ] as const;
 
-/* ── Why the map is paused until `active` ────────────────────────────────
-   This is the one layer in the section that is NOT free. `stroke-dashoffset`
-   is not a compositor property, so the comet paths repaint the whole ~960px
-   stage on the main thread every frame they run — and this scene is
-   slide ONE, so it is the scene that would be doing that for the entire
-   descent out of the hero, competing with the mascot, the reactive grid and
-   three parallax planes for the same frame budget. That descent is exactly
-   where the section felt heavy.
-
-   The subtree stays mounted so its construction never lands on a scroll
-   frame. While inactive the map is transparent and all its clocks are
-   paused, so negative delays cannot expose a frozen streak. It fades in only
-   once the sticky settle is complete.
-
-   The bloom and rings stay unconditional — they are scale/opacity on two
-   elements, they carry the field's identity while the map is away, and
-   removing them would make the sheet visibly ignite at the threshold. */
 export default function CallCenterScene({ active }: { active: boolean }) {
-  /* `active` alone isn't enough: AnimatePresence keeps this component's
-     props frozen at their last-rendered value for the whole exit — if
-     `active` and the page turn flip in the same commit (which they do,
-     since both come off the same scroll tick), the exiting instance never
-     re-renders with `active=false` and its stroke-dashoffset paths keep
-     repainting on the main thread through the entire 0.38s exit. Gating on
-     `isPresent` too catches the moment AnimatePresence actually starts
-     exiting THIS instance, independent of whatever `active` was frozen at. */
   const isPresent = useIsPresent();
   const running = active && isPresent;
   return (
     <div className="absolute inset-0">
-      {/* The exchange's heart: a bloom breathing on the half clock (7s),
-          the origin every streak visibly departs from. */}
+
       <span className="cq-v2-halo" />
-      {/* Emission rings leaving the heart every 3.5 seconds. */}
+
       <span className="cq-v2-ring" />
       <span className="cq-v2-ring" style={{ animationDelay: "-3.5s" }} />
-      {/* The map: crawling meridians, the standing route network, the
-          calls in flight, and their landing points. */}
+
       <div className="cq-v2-net" data-running={running ? "true" : "false"}>
         <svg viewBox="0 0 100 100" aria-hidden>
-          {/* ── The origin fade ────────────────────────────────────────
-              What used to be a CSS mask on this <svg>. The comets animate
-              stroke-dashoffset, which repaints the whole SVG every frame,
-              and a mask on the same element made the browser re-multiply
-              alpha across the entire ~960px stage on each of those frames.
-              Carried in the strokes instead: one radial ramp per paint,
-              centred on the hub, going transparent at 54% of the half-box
-              and fully opaque by 76% — the exact radii the mask used, so
-              routes and streaks still materialize out of the glow and only
-              reach full strength out in the margins.
 
-              gradientUnits="userSpaceOnUse" pins the ramp to the viewBox
-              (r=50 is half the 0–100 box), so it is the geometry that
-              decides the fade, not each path's own bounding box. */}
           <defs>
             <radialGradient id="cqNetGraticule" gradientUnits="userSpaceOnUse" cx="50" cy="50" r="50">
               <stop offset="0.54" stopColor="color-mix(in srgb, var(--svc) 30%, transparent)" stopOpacity="0" />

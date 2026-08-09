@@ -4,19 +4,8 @@ import { Fragment } from "react";
 import { motion } from "motion/react";
 import { wordVariants } from "./animation";
 
-/**
- * The page's single <h1>, revealed word by word from behind per-word masks.
- *
- * A mask reveal is used instead of the blur-up this block had before because
- * the two say different things: a fade says "this was always here, you just
- * couldn't see it"; a mask says "this is arriving". For the one line that
- * carries the value proposition, arriving is the right read — and it gives
- * the eye an edge to track, which a fade never does.
- *
- * Accessibility: the visible words are `aria-hidden` and the whole string is
- * exposed once via `aria-label`, so a screen reader announces one clean
- * sentence rather than seven fragments.
- */
+/* Las palabras van aria-hidden y la frase entera en aria-label: un lector de
+   pantalla oye una oración, no siete fragmentos. */
 export default function HeroHeadline({
   text,
   reduced,
@@ -25,18 +14,14 @@ export default function HeroHeadline({
 }: {
   text: string;
   reduced: boolean;
-  /** False during act one, while the mascot has the stage to itself. */
+
   revealed: boolean;
   className?: string;
 }) {
   const words = text.split(" ");
-  /* The copy's rhetoric is a two-sentence contrast (we run ↔ you grow), and
-     from lg the second sentence renders one tonal step down (.cq-word-soft,
-     gated to the desktop measure in site.css where the sentence boundary
-     provably lands at a line end). The boundary is found, not marked: the
-     first word ending in a full stop, in either locale — and if future copy
-     has no mid-string period, nothing softens. The aria-label is untouched,
-     so a screen reader still hears one clean sentence pair. */
+
+  /* El límite se busca, no se marca: la primera palabra terminada en punto, en
+     cualquiera de los dos idiomas. Sin punto intermedio, nada se atenúa. */
   const boundary = words.findIndex((word) => word.endsWith("."));
   const tiered = boundary !== -1 && boundary < words.length - 1;
 

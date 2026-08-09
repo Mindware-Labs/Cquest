@@ -24,10 +24,6 @@ const COPY = {
   },
 };
 
-// Client dialog state and the logo grid live here, isolated from the rest of
-// the page — opening/closing the dialog only re-renders this section. Same
-// component this page's design mirrors from Call Center's ClientsSection,
-// just re-themed to the systems accent and re-scoped to systems clients.
 export default function ClientsSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -45,10 +41,7 @@ export default function ClientsSection({ reduced }: { reduced: boolean }) {
   useEffect(() => {
     if (!activeClientName) return;
     document.body.style.overflow = "hidden";
-    // Lenis drives scroll through its own rAF loop independent of native
-    // overflow, so `body.style.overflow = "hidden"` alone doesn't stop the
-    // page behind the dialog from gliding along with a wheel/touch gesture —
-    // the smooth-scroll engine itself has to be paused too.
+
     window.__lenis?.stop();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeClientDialog();

@@ -1,22 +1,8 @@
-/* ── Services carousel — the lifted sheet and its living backdrops ──────
-   Consumed by src/components/services-carousel/. */
-
-/* ── The pinned track ────────────────────────────────────
-   The scroll budget for the carousel: SERVICES.length × 100dvh, set inline
-   by the component. It carries the curtain overlap over the hero (and the
-   matching scroll-margin, which SmoothScroll's anchor handler reads to land
-   `#services` correctly) because it is the element that owns the id.
-
-   It must NEVER get `overflow: hidden` — that would make it a scroll
-   container and the sticky stage inside would stop pinning. */
 .cq-carousel-track {
   margin-top: calc(-1 * var(--curtain));
   scroll-margin-top: calc(-1 * var(--curtain));
 }
 
-/* The services surface: a lifted sheet (rounded shoulders, rim light,
-   ambient field) on a full-viewport carousel stage, pinned to the top of
-   the viewport for the length of the track above. */
 .cq-carousel-sheet {
   border-radius: var(--curtain) var(--curtain) 0 0;
   box-shadow:
@@ -30,20 +16,6 @@
     #fafdff;
 }
 
-/* Promote the surfaces involved in the sticky handoff while the sheet is
-   approaching or visible.
-
-   `data-promote`, NOT `data-ambient-active`. The two used to be one flag, and
-   that flag is the ambient-animation gate, which deliberately holds off until
-   the sheet has climbed past the lower half of the viewport — so the browser
-   was allocating a full-viewport composited surface (three radial gradients
-   and a 44px shadow) plus the slide's two scroll layers halfway down the
-   descent, on the frames where the hero's parallax and the sheet's own
-   arrival are already both in flight. Allocating a layer is a synchronous
-   rasterisation: putting one there is a guaranteed hitch, and it is what made
-   the handoff read as a snag. `data-promote` fires on the first tenth of a
-   viewport of scroll instead, so by the time any of this matters the layers
-   have existed for the best part of a second. */
 .cq-carousel-sheet[data-promote="true"] {
   will-change: transform;
   backface-visibility: hidden;
@@ -53,33 +25,12 @@
   will-change: transform;
 }
 
-/* ── V2 carousel — per-service living backdrops ──────────
-   Each slide carries its own ambient scene, THEMED to its business line and
-   painted in its service colour, so a page turn re-lights the whole field
-   as part of the same gesture. All layers are transform/opacity only
-   (compositor-friendly), loop seamlessly (identical first/last frames or
-   fully off-screen at both ends), sit at whisper contrast behind the
-   content, and pause when the tab is hidden. The global reduced-motion net
-   freezes them entirely. */
-
 .cq-v2-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-/* Soft colour mass that drifts on the existing cq-float keyframes; colour
-   comes from the slide's --svc/--svc-glow (set per orb as --orb) so it
-   re-tints per service.
-
-   The softness is a radial gradient, NOT `filter: blur(72px)`. Same picture,
-   two very different costs: a blur is a post-process the browser has to
-   re-run over a ~480px square every time anything about that element's
-   rasterisation changes — and during a page turn the parent article is
-   animating x, opacity AND scale, which invalidates it on every single
-   frame, twice over (outgoing page + incoming page). A gradient is painted
-   once and then only ever transformed. `closest-side` keeps the falloff tied
-   to the element box, so the six orbs keep the sizes they were tuned at. */
 .cq-v2-orb {
   position: absolute;
   border-radius: 9999px;
@@ -92,14 +43,6 @@
   );
 }
 
-/* Each orb's drift, one class per call site. These live HERE and not as an
-   inline `animation` shorthand on the element (where they started) because
-   the shorthand resets `animation-play-state` to `running` at inline
-   priority — which silently beat the pause rule at the bottom of this file,
-   so six large gradient masses kept scale-animating with the tab hidden and
-   the section off screen. As classes they pause like every other layer.
-   Durations and directions are deliberately all different: the six orbs
-   must never visibly beat together. */
 .cq-v2-orb--cc-a {
   animation: cq-float-a 21s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
@@ -124,20 +67,6 @@
   animation: cq-float-c 27s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse;
 }
 
-/* 1 · CALL CENTER — a quiet map of live calls. One 14s master clock:
-   hairline flight-routes radiate from the glow behind the message; a
-   light streak (the call) departs the halo, rides its route and lands on
-   a customer point that blooms exactly on arrival — six routes, phase-
-   shifted so there is always a call in flight. Beneath them two dashed
-   graticules crawl like a map's meridians, and the breathing halo +
-   emission rings keep the heart alive on the half clock (7s = 14/2, so
-   every instrument stays phase-locked). Routes and streaks live in one
-   SVG whose radial mask clears the reading column: streaks materialize
-   leaving the glow and land in the margins, never crossing the text at
-   full strength. The streak is dash-driven over pathLength=1 and each
-   route's --cd phase-shifts BOTH its streak and its landing ping — the
-   arrival moment (14% of the cycle) is a shared CSS constant, so the
-   sync needs no JS measurement at all. */
 .cq-v2-ring {
   position: absolute;
   left: 50%;
@@ -158,9 +87,6 @@
   100% { transform: scale(1.14); opacity: 0; }
 }
 
-/* The exchange's heart: a soft bloom breathing on the SAME 7s clock as
-   the rings, so each pulse visibly leaves from it. Every streak departs
-   out of this glow — it doubles as the map's origin. */
 .cq-v2-halo {
   position: absolute;
   left: 50%;
@@ -178,10 +104,6 @@
   50%      { transform: scale(1.07); opacity: 1; }
 }
 
-/* The connection map's square stage, centred on the same origin as the
-   halo and rings. The SVG viewBox (0–100) and this square share one
-   coordinate space, so a route's endpoint coords double as its ping's
-   left/top percentages — geometry stays in sync by construction. */
 .cq-v2-net {
   position: absolute;
   left: 50%;
@@ -204,32 +126,12 @@
   animation-play-state: paused;
 }
 
-/* Routes and streaks fade out toward the origin, so every call visibly
-   MATERIALIZES leaving the glow and lands in the margins — nothing draws at
-   full strength under the text.
-
-   That fade used to be a CSS `mask-image` on this <svg>. It was the single
-   most expensive thing on the page. `stroke-dashoffset` is not a compositor
-   property, so the twelve comet paths repaint the SVG on EVERY frame; a mask
-   on the same element means the browser then re-applies a full-surface alpha
-   multiply over the whole ~960px square, sixty times a second, for as long
-   as the slide is on screen. That is roughly two million pixels of masking
-   per frame to fade twelve hairlines.
-
-   The fade is now carried by the strokes themselves — a userSpaceOnUse
-   radial gradient centred on the hub (CallCenterScene.tsx), whose stops sit
-   at exactly the radii the mask used: transparent to 54% of the half-box,
-   opaque from 76%. Identical picture, painted per-path as part of the stroke
-   instead of as a post-process over the entire stage. */
 .cq-v2-net svg {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-/* Meridians: two dashed graticules crawling almost imperceptibly. The
-   rotation itself is invisible on a circle — what animates is the dash
-   pattern drifting around the ring, a map quietly alive. */
 .cq-v2-graticule {
   fill: none;
   stroke: url(#cqNetGraticule);
@@ -244,10 +146,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* The standing route network: hairline flight paths, always present at
-   whisper contrast — the streaks ride ON these lines. Stroke widths are
-   in viewBox units (1u ≈ 9.6px at full size), so lines thin gracefully
-   on smaller stages instead of thickening relatively. */
 .cq-v2-route {
   fill: none;
   stroke: url(#cqNetRoute);
@@ -255,11 +153,6 @@
   opacity: 0.35;
 }
 
-/* The call in flight: a comet-tail dash (32% of its route, normalized by
-   pathLength=1) sweeping hub → endpoint. Offset 0.32 parks the dash just
-   before the path start; -0.68 puts the HEAD exactly on the endpoint
-   (the 14%-of-cycle arrival the ping keyframes aim at); -1 carries the
-   tail off the far end — absorbed into the landing point. */
 .cq-v2-comet {
   fill: none;
   stroke: url(#cqNetComet);
@@ -288,11 +181,6 @@
   100%      { stroke-dashoffset: -1; opacity: 0; }
 }
 
-/* Landing pings: the customer point blooming AS ITS CALL ARRIVES. Dot and
-   halo share the streak's 14s clock and its --cd phase shift (pseudo-
-   elements inherit it), and their keyframes hold until ~14% — the exact
-   moment the comet head reaches the endpoint. Centred on left/top with
-   standalone translate so the scale keyframes compose cleanly. */
 .cq-v2-ping {
   position: absolute;
   width: 7px;
@@ -329,11 +217,6 @@
   32%, 100% { opacity: 0; transform: scale(3.8); }
 }
 
-/* 2 · BPO — repeatable work at volume: the operations dot-lattice marches
-   diagonally on the compositor (exactly one cell per loop → seamless wrap)
-   beneath a stationary mask. The mask clears a GENEROUS central ellipse —
-   the entire reading column stays dot-free; the texture lives at the
-   field's edges as a frame, never under type. */
 .cq-v2-lattice {
   position: absolute;
   inset: 0;
@@ -357,10 +240,6 @@
   to { transform: translate3d(2.6rem, 2.6rem, 0); }
 }
 
-/* Data streams: throughput made visible. Confined by the JSX to safe
-   bands at the very top and bottom of the field — they NEVER cross the
-   reading column. Each line carries a glowing packet head at its tip and
-   is fully off-screen at both ends of the loop (no seam). */
 .cq-v2-stream {
   position: absolute;
   left: -30%;
@@ -390,12 +269,6 @@
   to { transform: translateX(560%); }
 }
 
-/* 3 · SYSTEMS — a system indexing itself. The blueprint grid frames the
-   field (its mask keeps the whole reading column clear), a light beam
-   scans LINEARLY across it — linear so JS can predict the beam's position
-   at any moment — and grid nodes flare exactly as the beam's bright line
-   crosses them (--nd is set from JS, which also snaps each node onto a
-   true grid intersection). */
 .cq-v2-grid {
   position: absolute;
   inset: 0;
@@ -408,10 +281,6 @@
   -webkit-mask-image: radial-gradient(ellipse 88% 74% at 50% 46%, transparent 40%, #000 64%, transparent 94%);
 }
 
-/* Beam geometry is mirrored in the TSX (SCAN_PERIOD etc., see
-   services-carousel/scenes/SystemsScene.tsx) — if the rem offsets, width,
-   bright-line position or duration change here, update the constants there
-   or the node sync drifts. */
 .cq-v2-scan {
   position: absolute;
   top: 0;
@@ -432,9 +301,6 @@
   to   { transform: translateX(calc(100vw + 8rem)); }
 }
 
-/* Grid nodes: small squares sitting ON grid intersections (snapped from
-   JS) that flare as the scan's bright line passes — the system touching
-   each point as it indexes. Compact flare, long rest. */
 .cq-v2-node {
   position: absolute;
   width: 5px;
@@ -448,11 +314,6 @@
   animation-delay: var(--nd, 0s);
 }
 
-/* Held inert until SystemsScene.tsx's measure/write pass has actually
-   positioned and phase-shifted the six nodes. Before that they sit at their
-   unset defaults (stacked at centre, --nd: 0s) — without this gate the
-   flare keyframe above would start advancing on mount regardless and peak
-   (4%, ~0.5s in) before the real solve has had a chance to land. */
 .cq-v2-systems[data-synced="false"] .cq-v2-node {
   animation-play-state: paused;
   opacity: 0;
@@ -465,18 +326,6 @@
   19%, 100% { opacity: 0; transform: scale(0.8); }
 }
 
-/* ── V2 capability tags ──────────────────────────────────
-   Capabilities as quiet tags — the slide's living backdrop owns the
-   ongoing motion, so at rest the tags spend no boldness of their own.
-   They borrow the hero CTA's rectangular language at readout scale:
-   2px radius, hairline border in the service tint, a barely-there fill
-   falling from white into the tint, and a 1px specular catch along the
-   top edge (the same light the sheet's shoulder catches). Monoline icon
-   in the service colour, letterspaced caps label.
-   On hover they answer quietly: the hairline and shadow bloom in the
-   service tint, the icon nods, and a specular sweep crosses the face —
-   the lift itself is a Motion spring on the tag (CapabilityTags.tsx),
-   which owns the transform channel end to end. */
 .cq-cap {
   position: relative;
   overflow: hidden;
@@ -511,8 +360,6 @@
     0 14px 26px -14px color-mix(in srgb, var(--svc) 62%, transparent);
 }
 
-/* Specular sweep — a band of light crossing the face once per hover,
-   the same light the sheet's shoulder catches, set in motion. */
 .cq-cap::after {
   content: "";
   position: absolute;
@@ -559,8 +406,6 @@
   color: color-mix(in srgb, var(--foreground) 74%, transparent);
 }
 
-/* Battery etiquette: everything holds its breath while the tab is hidden.
-   (Static controls and content stay fully usable.) */
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-orb,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-ring,
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-halo,
@@ -574,10 +419,6 @@
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-node {
   animation-play-state: paused;
 }
-
-/* ── Ambient background orbs (Services section) ──────────
-   Slow, brand-tinted aurora that drifts behind content. Transform-only
-   so it stays on the compositor; the reduced-motion net freezes it. */
 
 @keyframes cq-float-a {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }

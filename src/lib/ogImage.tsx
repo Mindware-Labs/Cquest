@@ -3,12 +3,6 @@ import { ImageResponse } from "next/og";
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 };
 export const OG_IMAGE_CONTENT_TYPE = "image/png";
 
-/* Shared visual template for every route's opengraph-image.tsx — a dark
-   brand field (ink → petroleo), the wordmark behind a celeste rule, then the
-   page's own title and a short tagline. Satori (the renderer behind
-   ImageResponse) supports only a small JSX/CSS subset — no external
-   stylesheets, flex layout on every node, no shorthand that assumes a
-   browser default. */
 export function renderOgImage(title: string, subtitle: string) {
   return new ImageResponse(
     (

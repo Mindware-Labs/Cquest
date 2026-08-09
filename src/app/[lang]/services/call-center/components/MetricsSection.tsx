@@ -35,8 +35,7 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
             <motion.span className={styles.metricsRule} aria-hidden variants={ruleYVariants} />
             <motion.h2 variants={focusRiseVariants}>{t.heading}</motion.h2>
           </motion.div>
-          {/* The second column the CSS was always written for — it sat empty,
-              leaving a 20rem hole beside the heading on every desktop view. */}
+
           <motion.p variants={focusRiseVariants}>{t.lede}</motion.p>
         </motion.div>
         <motion.dl

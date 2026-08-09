@@ -1,13 +1,8 @@
-"use client"; // Error boundaries must be Client Components
+"use client";
 
 import { useEffect } from "react";
 import "./globals.css";
 
-// Catches errors thrown above [lang]/error.tsx's boundary — i.e. from
-// [lang]/layout.tsx itself (locale resolution, dictionary loading). Since the
-// layout that mounts I18nProvider is exactly what may have failed, this can't
-// assume any locale context is available — copy is static, both languages at
-// once, rather than picked via useI18n.
 export default function GlobalError({
   error,
   unstable_retry,

@@ -17,9 +17,6 @@
   opacity: 0.45;
 }
 
-/* Even split rather than the old 0.9/1.1. The photo outweighing the copy on a
-   service page read as an accident, and it squeezed the text well below the
-   width the headline scale and lead measure need. */
 .heroGrid {
   display: grid;
   height: 100%;
@@ -27,10 +24,6 @@
   align-items: stretch;
 }
 
-/* `safe center` rather than `center`: the hero is pinned to 100svh, so on a
-   short viewport centred content would overflow equally in both directions
-   and .page's `overflow: clip` would take the top off the headline. `safe`
-   falls back to start-alignment at that point instead. */
 .heroCopy {
   display: flex;
   flex-direction: column;
@@ -50,18 +43,9 @@
 }
 
 .heroHeadlineStrong {
-  /* 700 is the top of Josefin Sans' wght axis; 800 had nothing to resolve
-     to and clamped here anyway. */
   font-weight: 700;
 }
 
-/* Each headline word is a clip window; the word rides up from behind its
-   own bottom edge (a curtain lift, not a fade). Both paddings carry glyphs
-   inside the clip box — descenders below, and Josefin Sans' tall ascenders
-   above, which `line-height: 0.98` pushes clear out of the line box and
-   `overflow: hidden` would otherwise cut. The matching negative margins give
-   that space back so the tight leading is preserved; they are exact because
-   `.heroHeadline` is a flex container, where sibling margins do not collapse. */
 .heroLineMask {
   display: block;
   overflow: hidden;
@@ -79,9 +63,6 @@
   will-change: transform;
 }
 
-/* 30ch matched the headline's own width but left the lead as five ragged
-   five-word lines. 42ch is inside the comfortable measure band and still
-   stops well short of the column edge. */
 .heroLead {
   max-width: 42ch;
   margin-top: 1.15rem;
@@ -122,11 +103,6 @@
   transform: scale(0.97);
 }
 
-/* The site-wide focus ring is petroleo, which lands at ~2.7:1 against the sky
-   face of the primary CTA — under WCAG 2.2's 3:1 floor for a focus indicator,
-   and on the page's most important control. Each CTA now rings in whichever
-   of the two brand tones its own surface can carry: ink on sky (9.6:1), sky
-   on charcoal (8.2:1). */
 .primaryCta:focus-visible {
   outline: 2px solid var(--cc-ink);
   outline-offset: 2px;
@@ -193,9 +169,6 @@
   background: #29495a;
 }
 
-/* Oversized so the scroll-linked drift + zoom never expose an edge: 8% of
-   vertical overscan plus the 1.12 scale keep the frame covered through the
-   whole parallax range. */
 .heroMediaParallax {
   position: absolute;
   inset: -8% 0;
@@ -207,8 +180,6 @@
   object-position: 50% 32%;
 }
 
-/* Retints the (warm, neutral) source photo toward the brand's cool
-   petroleum/ink hue without flattening its tonal detail. */
 .heroMediaTint {
   position: absolute;
   inset: 0;
@@ -227,9 +198,6 @@
   pointer-events: none;
 }
 
-/* Stacked below `lg`. The copy block's min-height was 42rem — 672px of text
-   column before the photo even started, which pushed the whole hero past two
-   viewports on a tablet. Sized to the copy it actually holds instead. */
 @media (max-width: 64rem) {
   .hero { height: auto; }
   .heroGrid { height: auto; grid-template-columns: 1fr; }

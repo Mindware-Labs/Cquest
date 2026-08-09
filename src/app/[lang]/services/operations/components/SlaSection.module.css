@@ -1,5 +1,3 @@
-/* ── SLA section — dark, asymmetric: the claim on the left, the commitments
-   as ledger rows on the right (not a metric table — a service contract). */
 .slaSection {
   position: relative;
   padding-block: clamp(5rem, 9vw, 8rem);
@@ -27,7 +25,6 @@
   align-items: start;
 }
 
-/* Matches .railIntro — see the note there on clearing the fixed navbar. */
 .slaHeading {
   position: sticky;
   top: var(--bp-sticky-top);
@@ -84,9 +81,6 @@
   animation: statusPulse 2.8s ease-out infinite;
 }
 
-/* Holds its breath while the tab is hidden, same as the call-center page's
-   status dots. A bare attribute selector so it applies regardless of which
-   module's `.page` class set the flag. */
 [data-ambient-active="false"] .slaMetaDot {
   animation-play-state: paused;
 }
@@ -117,8 +111,6 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* A lime hairline draws in from the left on hover — the ledger row
-   underscoring itself. */
 .slaList > div::after {
   content: "";
   position: absolute;
@@ -167,8 +159,7 @@
   font-family: var(--font-heading), sans-serif;
   font-size: clamp(1.6rem, 2.6vw, 2.35rem);
   font-weight: 300;
-  /* Display type wants tracking pulled in, not pushed out — +0.01em loosened
-     the figures at exactly the size where they should read tightest. */
+
   letter-spacing: -0.02em;
   line-height: 1;
   text-align: right;
@@ -211,19 +202,6 @@
   .slaHeading { position: static; }
 }
 
-/* The three-column ledger only works while the value track has room to be a
-   value. These are not figures — `dd` carries phrases ("Dentro del SLA",
-   "Hasta 24/7") at display size with `white-space: nowrap`, so on a phone that
-   column claims ~170px of a ~330px content box and leaves the label and the
-   status line fighting over what is left. The status strings are the longest
-   copy in the row ("La dotación de personal se ajusta a tu curva de demanda"),
-   so they were the ones wrapping into a narrow ribbon.
-
-   Stacked, each part gets the full measure: the number and its label read as
-   the row's title, the value lands underneath at full size, and the status
-   note runs the width of the row. `nowrap` is dropped with the columns — it
-   existed to stop a figure breaking mid-number, and there is no longer a
-   narrow track to protect it from. */
 @media (max-width: 42rem) {
   .slaList > div {
     grid-template-columns: auto minmax(0, 1fr);
@@ -241,8 +219,6 @@
     white-space: normal;
   }
 
-  /* The 0.5rem was separation from the label in the two-row desktop cell;
-     `row-gap` owns that spacing now, and keeping both double-counted it. */
   .slaStatus {
     margin-top: 0;
   }

@@ -32,15 +32,6 @@ const COPY = {
   },
 };
 
-/* ── System previews ──────────────────────────────────────────────────────
-   Each of the four systems is shown AS its product: a synthetic, image-free
-   interface drawn in CSS/SVG inside the same dark window chrome as the hero.
-   The window arrives with its row (the parent's softRise), then the interface
-   populates itself — records land, KPIs count into place, a rule fires down
-   its branches, the assistant answers. Motion is inherited from the capability
-   row: these variants carry no initial/animate of their own, so they wait for
-   the row to enter the viewport and then orchestrate on their own clocks. */
-
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 const EASE_SPRING = [0.34, 1.56, 0.64, 1] as const;
 
@@ -64,15 +55,12 @@ const pvGrow: Variants = {
   hidden: { scaleY: 0 },
   visible: { scaleY: 1, transition: { duration: 0.75, ease: EASE_OUT } },
 };
-// Connectors carry their draw timing on the component's transition prop (so
-// each branch can be sequenced), so the variant itself stays timing-free —
-// a per-variant transition would override that prop.
+
 const pvDraw: Variants = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: { pathLength: 1, opacity: 1 },
 };
 
-/* ── Monoline icons (viewBox 0 0 24 24, currentColor stroke) ────────────── */
 const I = {
   search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
@@ -105,8 +93,6 @@ function Bar({ dots, label }: { dots?: boolean; label: string }) {
   );
 }
 
-/* 1 · CRMs — a case list. Records land in sequence; one is the open case,
-   marked with the accent rail. */
 function CrmPreview() {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -141,8 +127,6 @@ function CrmPreview() {
   );
 }
 
-/* 2 · Dashboards — live KPIs. Tiles settle in, then the bars grow from their
-   baseline; the peak is called out and a live pulse keeps time. */
 function DashboardPreview() {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -184,9 +168,6 @@ function DashboardPreview() {
   );
 }
 
-/* 3 · Operations automation — a rule builder. The trigger reaches a rule,
-   which branches to two actions; the connectors draw, the nodes pop, and a
-   signal keeps flowing down the branches. */
 function AutomationPreview() {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -236,8 +217,6 @@ function AutomationPreview() {
   );
 }
 
-/* 4 · AI Implementation — an agent console. A prompt, the assistant's reply,
-   and a live typing indicator over a ready input line. */
 function AiPreview() {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -271,9 +250,6 @@ function AiPreview() {
   );
 }
 
-// Keyed by the capability's stable id (services/data.ts), not its title —
-// the title is locale-dependent and would silently miss this lookup in
-// whichever language isn't the literal English strings below.
 const PREVIEWS: Record<string, () => ReactElement> = {
   crms: CrmPreview,
   dashboards: DashboardPreview,

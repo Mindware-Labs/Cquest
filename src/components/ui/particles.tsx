@@ -72,14 +72,6 @@ export const Particles: React.FC<ParticlesProps> = ({
   const onMouseMoveRef = useRef<() => void>(() => {})
   const animateRef = useRef<() => void>(() => {})
 
-  /* ── Frame budget ─────────────────────────────────────────────────────
-     The loop used to be unconditional: a hundred-odd particles re-drawn
-     every frame for the whole life of the page, including while the field
-     was scrolled far out of view or the tab was in the background. It now
-     parks unless the canvas is actually on screen AND the tab is visible,
-     and never starts at all under reduced motion. Parking only cancels the
-     rAF — the circles keep their positions on the ref, so resuming picks up
-     exactly where it left off with no visible jump. */
   useEffect(() => {
     if (canvasRef.current) {
       context.current = canvasRef.current.getContext("2d")
@@ -129,8 +121,6 @@ export const Particles: React.FC<ParticlesProps> = ({
       }, 200)
     }
 
-    // Toggling the preference re-inits, because `initCanvas` is what decides
-    // between the animated field's alpha-0 first frame and the settled one.
     const handlePreferenceChange = () => {
       initCanvasRef.current()
       sync()
@@ -155,7 +145,6 @@ export const Particles: React.FC<ParticlesProps> = ({
     if (observer && canvasContainerRef.current) {
       observer.observe(canvasContainerRef.current)
     } else {
-      // No observer support: fall back to the old always-on behaviour.
       onScreen = true
     }
 
@@ -185,10 +174,7 @@ export const Particles: React.FC<ParticlesProps> = ({
   const initCanvas = () => {
     resizeCanvas()
     drawParticles()
-    /* Every particle starts at alpha 0 and is faded up by the loop, so under
-       reduced motion — where the loop never runs — the layer would simply
-       stay blank. Paint the field's settled state instead: one frame, every
-       particle already at its target alpha. */
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       clearContext()
       circles.current.forEach((circle: Circle) => {

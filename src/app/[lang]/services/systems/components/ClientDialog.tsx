@@ -28,10 +28,6 @@ const COPY = {
   },
 };
 
-// One quiet reveal, staggered — the same primitives every other section on
-// this page uses (rule draws, content sharpens out of blur) rather than a
-// bespoke effect. Consistency of motion language is what makes this read as
-// part of the page instead of a dropped-in widget.
 const dialogGroupVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
@@ -47,10 +43,6 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
   const titleId = `sy-client-dialog-title-${client.name}`;
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Focus the dialog itself on open (its aria-labelledby announces the title),
-  // and trap Tab/Shift+Tab within it so keyboard users can't tab past the
-  // overlay into content behind it. Escape-close and body-scroll-lock live in
-  // the parent's effect; this one only owns the dialog's own focus while mounted.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -84,13 +76,7 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
       transition={{ duration: reduced ? 0 : 0.25, ease: EASE_OUT }}
       onClick={onClose}
     >
-      {/* The shared layoutId morph lives on the logo frame below, not here —
-          stretching one box from a small grid badge straight into a panel
-          that also has to hold a long "provides" write-up made the FLIP
-          target so tall/narrow-then-wide that long copy rendered clipped
-          mid-transition on the Call Center clients dialog this mirrors. The
-          panel itself just fades/scales in, independent of how much text it
-          ends up holding. */}
+
       <motion.div
         ref={dialogRef}
         tabIndex={-1}
@@ -118,13 +104,6 @@ export default function ClientDialog({ client, onClose, reduced }: { client: Cli
           </svg>
         </motion.button>
 
-        {/* The close button stays outside this wrapper so it stays pinned to
-            the panel's corner instead of scrolling away with long copy.
-            data-lenis-prevent matters even though Lenis is stop()-ped while
-            the dialog is open: Lenis's own wheel handler still calls
-            event.preventDefault() whenever it's stopped, unless the event's
-            path contains this attribute — without it, mouse-wheel scroll
-            inside the dialog is silently swallowed. */}
         <div className={styles.dialogScroll} data-lenis-prevent>
           <motion.div initial={reduced ? false : "hidden"} animate="visible" variants={dialogGroupVariants}>
             <div className={styles.dialogHeader}>

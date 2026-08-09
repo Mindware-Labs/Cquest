@@ -1,17 +1,9 @@
-/* This section is intentionally viewport-compact: the intro and control board
-   should read as one composition at 100% zoom without crowding neighbouring
-   bands. */
 .storySection {
   position: relative;
   scroll-margin-top: 5rem;
   padding-block: clamp(3rem, 5vw, 4.5rem);
 }
 
-/* The chapter-break mark every other About seam draws on entry — this was
-   the one light-band-after-dark-band seam missing it (Partnerships, the
-   other light band in the same position, already carries this exact
-   petroleo→celeste line: a white rule wouldn't show here, which is why it's
-   tinted instead of the dark bands' plain white-alpha version). */
 .storySection::before {
   content: "";
   position: absolute;
@@ -27,15 +19,6 @@
   );
 }
 
-/* ── Ambient light ────────────────────────────────────────
-   One cold celeste wash behind the grid, parallaxed on scroll from
-   StorySection.tsx. Its only job is to stop this paper-white section from
-   reading as flat before the dark metrics band hits — it is deliberately
-   too faint to notice as an effect, and never renders under reduced motion. */
-/* No local `overflow: clip` here on purpose: the light is 30rem tall and
-   parallaxed ±14%, so a clip at the section boundary would cut the soft
-   radial into a visible hard edge. Containment is handled one level up by
-   .aboutSection's own `overflow: clip`. */
 .storyAura {
   position: absolute;
   inset: 0;
@@ -57,19 +40,7 @@
   will-change: transform;
 }
 
-/* Content sits above the aura; the aura itself keeps its own z-index 0. */
 .storySection > *:not(.storyAura) {
   position: relative;
   z-index: 1;
 }
-
-/* The prose column, the quote card and the beam wrapper all lived here. All
-   three are gone: the section is a heading row over SectorsBeam's own
-   two-column split now, and the copy that mattered moved with it — the
-   argument up into the heading's description slot, the quote down into the
-   detail panel's resting state. See the note at the top of StorySection.tsx
-   for what went where and why.
-
-   Nothing replaces them. The figure owns its own layout, and a wrapper whose
-   only job was `min-width: 0` on a grid track that no longer exists is not a
-   thing to keep for symmetry. */

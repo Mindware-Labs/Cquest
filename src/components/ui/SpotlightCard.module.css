@@ -1,9 +1,6 @@
 .spotlightCard {
   position: relative;
-  /* Creates the stacking context the glow's negative z-index is measured
-     against — without it, `z-index: -1` would escape behind the card's own
-     background (and behind the section) instead of sitting between the
-     background and the content. */
+
   isolation: isolate;
   overflow: hidden;
 }
@@ -11,9 +8,7 @@
 .spotlightGlow {
   position: absolute;
   inset: 0;
-  /* Below the content, above the card's background. The glow used to sit at
-     z-index 2 under a positioned content wrapper; that wrapper is now
-     `display: contents` (see below), so layering is done here instead. */
+
   z-index: -1;
   pointer-events: none;
   opacity: var(--spotlight-opacity, 0);
@@ -25,15 +20,6 @@
   );
 }
 
-/* `display: contents` is load-bearing, not cosmetic.
-   Consumers pass their row/card layout in via `className`, which lands on
-   .spotlightCard — so the children they hand us have to BE that element's
-   grid/flex items. As a real box, this wrapper was the only in-flow child of
-   the card, which collapsed every consumer's layout into a single track
-   (ValuesSection's 3.5rem / 3rem / 1fr manifesto row rendered entirely
-   inside the 3.5rem column, and SectorsSection's column gap never applied).
-   Removing the box from the layout tree hands the children straight to the
-   consumer's own layout. */
 .spotlightContent {
   display: contents;
 }

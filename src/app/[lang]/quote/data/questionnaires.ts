@@ -1,8 +1,6 @@
 import { SERVICES, type ServiceId } from "@/components/services/data";
 import type { Choice, Question, Questionnaire } from "./types";
 
-// Turn a service's own capability list into single/multi choices, so the
-// options a prospect sees match exactly what each service page advertises.
 function choicesFromDetails(id: ServiceId): Choice[] {
   const service = SERVICES.find((entry) => entry.id === id)!;
   return service.details.map((detail) => ({
@@ -11,7 +9,6 @@ function choicesFromDetails(id: ServiceId): Choice[] {
     icon: detail.icon,
   }));
 }
-
 
 const VOLUME: readonly Choice[] = [
   { value: "under-500", copy: { en: { label: "Under 500 / month" }, es: { label: "Menos de 500 / mes" } } },
@@ -27,10 +24,6 @@ const LANGUAGES: readonly Choice[] = [
   { value: "other", copy: { en: { label: "Other" }, es: { label: "Otro" } } },
 ];
 
-/* The follow-up to "Other". Required, but only while "Other" is actually
-   ticked — an unticked follow-up must never hold the Continue button shut.
-   Shared by both questionnaires that ask about languages, exactly like the
-   LANGUAGES list it hangs off. */
 const LANGUAGES_OTHER: Question = {
   id: "languagesOther",
   kind: "text",
@@ -63,7 +56,6 @@ const CHANNELS: readonly Choice[] = [
   { value: "whatsapp", icon: "messages", copy: { en: { label: "WhatsApp" }, es: { label: "WhatsApp" } } },
 ];
 
-// Optional free-text closer, shared by every questionnaire.
 const NOTES: Question = {
   id: "notes",
   kind: "textarea",
@@ -80,8 +72,6 @@ const NOTES: Question = {
     },
   },
 };
-
-/* ── Per-service questionnaires (Step 2) ────────────────── */
 
 export const QUESTIONNAIRES: Record<ServiceId, Questionnaire> = {
   "call-center": {

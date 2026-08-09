@@ -13,25 +13,8 @@ import { I18nProvider } from "@/i18n/I18nProvider";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 
-/* The VARIABLE cut, not a list of static weights — and this is the single
-   highest-leverage typographic decision in the project.
-
-   This used to load only 400 and 500. The stylesheets ask for 600 in 63
-   places, 700 in 69, plus 800, 350 and 300 — so every uppercase micro-label,
-   every section heading and the hero's own emphasis word were being rendered
-   with SYNTHETIC bold: the browser mechanically smearing the 500 master
-   because it had no real cut to reach for. Faux bold is at its ugliest
-   exactly where this design uses it most, on 11-12px tracked caps. The
-   sub-400 weights fared no better — browsers do not synthesise lighter, so
-   `font-weight: 300` on the metric figures simply rendered as 400 and the
-   light-display look never happened at all.
-
-   Josefin Sans ships a variable font with a wght axis of 100–700, so one
-   file covers the entire range the design already asks for — usually less
-   over the wire than the two static cuts it replaces, never more.
-
-   The axis stops at 700: `font-weight: 800` has no cut above it to reach and
-   clamps, which is why the three heroes that asked for 800 now ask for 700. */
+/* El corte VARIABLE, no una lista de pesos estáticos. Las hojas piden 600 y
+   700 en más de 130 sitios: sin el eje wght el navegador falseaba la negrita. */
 const josefin = Josefin_Sans({
   subsets: ["latin"],
   variable: "--font-josefin",
@@ -43,20 +26,12 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
   es: "Center Quest es un aliado de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas, con SLAs claros y ajustados a cómo funciona tu operación.",
 };
 
-// Same SITE_URL pattern as sitemap.ts/robots.ts — one env var, one fallback,
-// kept in sync across all three so canonical/hreflang/JSON-LD/metadataBase
-// all resolve against the same domain.
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-// Organization schema — still only fields we actually have. Phone, email and
-// address are now real (see components/footer/data.ts, the single source both
-// this and the footer read), so they belong here: the requirements list
-// structured data as an SEO deliverable, and address + phone are exactly what
-// a local-business query like "call center República Dominicana" resolves on.
-// No sameAs — no social profiles have been confirmed, and a guessed profile
-// URL is worse than an absent one.
+/* Solo campos que existen de verdad. Sin sameAs: no hay perfiles sociales
+   confirmados y una URL adivinada es peor que ninguna. */
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -78,17 +53,14 @@ const SITE_TITLE: Record<Locale, string> = {
   es: "Center Quest — Call Center, Operaciones y Desarrollo de Sistemas",
 };
 
-// Composed from BRAND_LINE rather than restating it: the footer now sets the
-// same sentence as its closing statement, and opengraph-image wants it
-// without the brand prefix (which is why it used to strip that prefix back
-// off with a regex). One source, three surfaces.
+/* Compuesto desde BRAND_LINE en vez de repetirlo: una fuente, tres superficies. */
 export const OG_TITLE: Record<Locale, string> = {
   en: `Center Quest — ${brandLine("en")}`,
   es: `Center Quest — ${brandLine("es")}`,
 };
 
-// Paints the mobile browser chrome in the hero's ink so the first screen
-// reads as one continuous dark surface instead of a white browser band.
+/* Pinta el cromo del navegador móvil con la tinta del hero: la primera
+   pantalla se lee como una superficie oscura continua. */
 export const viewport: Viewport = {
   themeColor: "#0a1116",
 };
@@ -142,24 +114,22 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
         />
         <I18nProvider dict={dict} lang={lang}>
-          {/* Accessibility: skip to main content */}
+
           <a href="#main-content" className="skip-link">
             {dict.common.skipToMainContent}
           </a>
           <RouteTransition>
             <SmoothScroll />
             <ScrollProgress />
-            {/* No <ViewTransition> here on purpose — RouteTransition's curtain
-                is the single handoff. See the long note in styles/base.css:
-                view-transition snapshots paint in the top layer, above the
-                curtain, which is what made the outgoing page flash back
-                through the wipe. */}
+
+            {/* Sin <ViewTransition>: el telón de RouteTransition es el único
+                traspaso. Los snapshots pintan en el top layer, por encima. */}
             <main id="main-content" className="flex flex-1 flex-col">
               {children}
             </main>
-            {/* Outside <main> on purpose: the footer is site chrome, not page
-                content, so it sits under the curtain like everything else
-                rather than being treated as route content. */}
+
+            {/* Fuera de <main> a propósito: el footer es cromo del sitio, no
+                contenido de ruta, y va bajo el telón como todo lo demás. */}
             <SiteFooter />
           </RouteTransition>
         </I18nProvider>

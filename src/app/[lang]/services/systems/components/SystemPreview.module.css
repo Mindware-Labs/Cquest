@@ -1,11 +1,3 @@
-/* ── System previews — each capability shown AS its product: a synthetic,
-   image-free interface drawn in CSS/SVG inside the same dark window chrome as
-   the hero. The window frame arrives with the row; the interface then
-   populates itself — records land, KPIs settle, a rule fires down its
-   branches, the assistant answers — so every panel reads as live software,
-   never a placeholder waiting for a screenshot. */
-
-/* Window chrome — three dots + a mono route label, matching the hero. */
 .pvBar {
   display: flex;
   align-items: center;
@@ -27,9 +19,6 @@
   color: rgba(255, 255, 255, 0.42);
 }
 
-/* The screen — a dark blueprint field, cleared through the centre so the
-   interface reads cleanly. --pv-green is the on-dark green the palette's
-   #6aaa00 is too muted for at this scale. */
 .pvScreen {
   --pv-green: #8ecb46;
   position: relative;

@@ -7,10 +7,6 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
-// The portal needs `document.body`, unavailable during SSR — this is the
-// idiomatic client-only-flag (see the React docs linked from the
-// react-hooks/set-state-in-effect rule) instead of an effect that calls
-// setState on mount, which forces an extra render pass.
 function subscribeNever() {
   return () => {};
 }
@@ -47,20 +43,12 @@ export default function MobileSidebar({
   const mounted = useSyncExternalStore(subscribeNever, getIsClient, getIsServer);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
 
-  // Reset the accordion the moment `open` flips closed — adjusting state
-  // during render (guarded by a "did this prop change" check) instead of in
-  // an effect, per the React docs' "Adjusting state when a prop changes"
-  // pattern, so it takes effect on this render rather than a follow-up one.
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);
     if (!open) setOpenLabel(null);
   }
 
-  // A real sidebar has to lock the page behind it — otherwise the backdrop
-  // reads as decorative instead of modal. Lenis scrolls by moving
-  // window/html scroll under the hood, so the lock has to sit on
-  // documentElement, not just body.
   useEffect(() => {
     if (!open) return;
     const { documentElement } = document;

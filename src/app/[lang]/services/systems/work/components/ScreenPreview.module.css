@@ -1,8 +1,3 @@
-/* ── Screen previews — synthetic, image-free interfaces drawn inside a
-   browser-chrome frame, one scale down from the Hero's product window. Local
-   dark tokens keep this file self-contained regardless of the page it's
-   dropped into (the same choice SystemPreview.module.css makes). */
-
 .frame {
   --wp-ink: #0f1a21;
   --wp-sky: #74c3d5;
@@ -188,7 +183,6 @@
   border: 1px solid color-mix(in srgb, var(--t) 32%, transparent);
 }
 
-/* 2 · Agent dashboard + 3 · Analytics (shared head/tiles/chart) */
 .dashHead { display: flex; align-items: center; }
 
 .dashLive, .rangeChip {
@@ -270,7 +264,6 @@
   box-shadow: 0 0 10px -2px color-mix(in srgb, var(--wp-green) 55%, transparent);
 }
 
-/* Follow-up accountability (agent dashboard) */
 .followLabel { margin-top: 0.75rem; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.45); }
 .followList { display: flex; flex-direction: column; gap: 0.32rem; margin-top: 0.45rem; flex: 1; min-height: 0; }
 
@@ -330,10 +323,6 @@
 .repSlaValue { justify-self: end; font-size: 0.58rem; font-weight: 700; color: rgba(255, 255, 255, 0.75); }
 
 @media (max-width: 30rem) {
-  /* The lead track narrowed to 1.2rem while `.ccDirection` stayed at its
-     declared 1.4rem, so the tile overflowed its own column by 0.2rem and
-     nudged the label out of alignment down the whole list. Both move
-     together now. */
   .ccRow { grid-template-columns: 1.2rem minmax(0, 1fr) auto; }
   .ccDirection { width: 1.2rem; height: 1.2rem; }
   .ccBarTrack { display: none; }

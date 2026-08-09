@@ -1,8 +1,3 @@
-/* ── Site-wide ornaments — progress hairline, CTA geometry, hero pieces ── */
-
-/* ── Scroll progress hairline ────────────────────────────
-   Fixed to the very top, above both navbars; grows left-to-right through
-   the brand gradient as the page is read. */
 .cq-scroll-progress {
   position: fixed;
   inset: 0 0 auto 0;
@@ -11,16 +6,10 @@
   transform-origin: 0 50%;
   background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste));
   pointer-events: none;
-  /* Spring-driven from JS, so its scaleX keeps changing for a beat after the
-     scroll itself has stopped — and a JS-written transform, unlike a CSS
-     animation, promotes nothing on its own. Without the hint the browser
-     re-rasterises this gradient every frame of every scroll on every page. */
+  /* Lo escribe un spring desde JS, y un transform inline no promociona solo. */
   will-change: transform;
 }
 
-/* Commercial CTA geometry: compact, almost-square corners and tracked caps,
-   matching the brand's editorial button reference while retaining a 44px
-   minimum touch target. Functional controls keep their native shapes. */
 .cq-rect-cta {
   min-height: 2.75rem;
   border-radius: 2px;
@@ -31,96 +20,45 @@
   text-transform: uppercase;
 }
 
-/* ── Hero sizing vs the curtain ──────────────────────────
-   The hero adds the curtain's height below the fold, so the services sheet
-   overlaps photo that was never visible — the first viewport stays 100% hero. */
 .cq-hero {
   min-height: calc(100svh + var(--curtain));
 
-  /* ── The hero's left edge ──────────────────────────────
-     Where the nav's mark, the accent rule, the headline and the lead all
-     begin. One property rather than the same clamp written twice, because
-     "the logo is aligned with the text" has to survive someone editing one
-     of them: the copy reads it as padding on its grid cell, the mark as a
-     margin on its link, and neither can drift.
-
-     It sits on top of the container padding both of them already carry
-     (px-4 → xl:px-10), which is why it is an indent and not the whole
-     offset. Zero below lg: there the copy is a full-width stacked cell and
-     an inset would only eat measure it doesn't have. */
+  /* Datum izquierdo único: logo, regla, headline y lead arrancan aquí. */
   --hero-inset: 0px;
 
-  /* ── The stage's key light ─────────────────────────────
-     Where the field's standing pool of light sits — on the mascot's mark,
-     which is a layout fact, not a paint fact, so it lives here with the
-     other layout facts. Below lg the mascot owns the lower row of the
-     stacked band; from lg it parks in the right third (see the stage rules
-     in QuestBotScene.module.css — change one, change the other). The y sits
-     slightly ABOVE the body so the pool's lower falloff dims past the floor
-     line on its own: light from above, floor falling away to shadow. */
+  /* La marca de la mascota. Las lee HeroReactiveGrid por getComputedStyle
+     para centrar su máscara — si cambian aquí, la grilla las sigue sola. */
   --hero-key-x: 50%;
   --hero-key-y: 74%;
 
-  /* ── The composition band's floor ──────────────────────
-     Where the composition plane's bottom edge sits. On tablet/desktop this
-     is simply the curtain line. On phones the hero grows to 100lvh (below)
-     so the strip a collapsing URL bar reveals is dark field, not the
-     services sheet's white lip — while the band keeps measuring the 100svh
-     first frame, so the composition's centring never moves between toolbar
-     states. */
   --hero-band-bottom: var(--curtain);
 }
 
 @media (max-width: 767.98px) {
   .cq-hero {
-    /* lvh, not dvh, deliberately: dvh re-resolves while the toolbar
-       animates and would reflow the hero mid-scroll. lvh is static — the
-       hero simply owns the largest frame the phone can show, and svh/lvh
-       share a support cohort so the pair can't split. */
+    /* lvh y no dvh: dvh se reevalúa mientras anima la barra del navegador
+       y reflowaría el hero a mitad del scroll. */
     min-height: calc(100lvh + var(--curtain));
     --hero-band-bottom: calc(100lvh - 100svh + var(--curtain));
   }
 }
 
-/* The second arm of this list is the landscape-phone guard: short-wide
-   viewports get the desktop's single-row composition (see .cq-hero-band
-   below), so they take the desktop inset too. Keep the list in step with
-   the h1 measure, the vignette, and the stage-parking block in
-   QuestBotScene.module.css. */
+/* El segundo brazo es la guarda de móvil apaisado: esos viewports usan la
+   composición de desktop. Misma lista en el h1, la viñeta y QuestBotScene. */
 @media (min-width: 1024px),
   (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .cq-hero {
-    /* ~5% of the frame at every desktop width — closer to the edge than a
-       centred content column would sit, by request. Capped at 6rem so an
-       ultrawide doesn't keep walking it inward; floored at 1.25rem so it
-       stays an indent and not a margin.
-
-       The single left datum for the nav mark, the copy column AND — as the
-       matching right clearance — the speech bubble in
-       QuestBotScene.module.css, so the composition reads as one frame with
-       the logo and the bubble equidistant from their own edge, not three
-       numbers that happen to agree today. */
     --hero-inset: clamp(1.25rem, 4vw, 6rem);
   }
 }
 
 @media (min-width: 1024px) {
   .cq-hero {
-    /* The mascot's centre solves to ~70% of the frame at every desktop
-       width (the margin-inline maths in QuestBotScene.module.css); its
-       body sits a little above the band's middle. */
     --hero-key-x: 70%;
     --hero-key-y: 56%;
   }
 }
 
-/* ── Landscape-phone guard ───────────────────────────────
-   Below 560px of height the stacked two-row band physically cannot seat
-   both cells, so it collapses into the desktop's single-row overlap
-   composition — the same collapse the lg breakpoint performs, reproduced
-   here in plain CSS (unlayered, so it outranks the row utilities). The
-   copy is last in the DOM and wins the hit test, exactly as documented on
-   the composition plane in HeroImage.tsx. */
 @media (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .cq-hero-band {
     grid-template-rows: 1fr;
@@ -134,73 +72,38 @@
   }
 }
 
-/* ── Hero reactive surface ───────────────────────────────
-   The dark field is intentionally architectural rather than atmospheric.
-   A canvas grid above it provides the only spatial gesture, keeping the
-   composition crisp and avoiding the familiar cloud/nebula treatment.
-
-   Two layers, and each is a decision about light rather than filler:
-
-   1. The key light — a static petroleo pool at the mascot's mark
-      (--hero-key-x/y on .cq-hero). The composition claims a lit stage,
-      and a stage lights its mark before the actor arrives; the mascot
-      rolls in and stops inside a light that was already waiting. Petroleo,
-      never cyan: the #7FE9E4 family is the mascot's own. Alpha is the
-      whole game — at 14% this reads as depth; above ~18% it becomes a
-      spotlight effect and cheapens.
-
-   2. The vertical grade — dimmer ceiling, lightest band at the action
-      height (~55%, where the mascot and headline share their axis), then
-      a fall to a true dark apron at the bottom edge so the services
-      sheet's white shoulders cut against real dark. Per-stop channel
-      deltas stay ≤4 to sit under the banding threshold; the grain covers
-      the rest.
-
-   The 118deg petroleo corner wash that used to live here now belongs to
-   .cq-hero-ambience below: it is act two's light, not the room's.
-
-   The key pool has likewise moved OUT of this element's background stack
-   and onto its ::after — see the ignition block below. Two lights painted
-   into one background list can only ever arrive together; they are two
-   different events and needed two layers to be two events. */
+/* El cuarto son tres capas: la rampa vertical (aquí), el piso (::before) y
+   la lámpara sobre ese piso (::after). Extremos casi neutros, centro petróleo. */
 .cq-hero-field {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    #050d12 0%,
-    #08131b 34%,
-    #0b1a23 55%,
-    #081019 78%,
-    #04080c 100%
+    #050a10 0%,
+    #07131d 26%,
+    #0c2030 50%,
+    #08151f 74%,
+    #03070b 100%
   );
 }
 
-/* ── Act zero: the stage lights itself ───────────────────
-   The one second of this page the reader is most certainly looking at used
-   to be the one second with nothing authored in it: the finished field
-   painted on frame one and then waited. This is the room coming up, and
-   every number in it is answering the mascot's own score (the beat sheet at
-   the top of QuestBotScene.module.css) rather than being a nice duration.
+/* El horizonte. Anclado a la lámpara (+8%) y no a un número propio: cae
+   donde la línea de piso de la mascota, y si mueves la lámpara la sigue. */
+.cq-hero-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    78% 9% at var(--hero-key-x) calc(var(--hero-key-y) + 8%),
+    color-mix(in srgb, var(--brand-petroleo) 8%, transparent),
+    color-mix(in srgb, var(--brand-petroleo) 3%, transparent) 48%,
+    transparent 100%
+  );
+  transform-origin: var(--hero-key-x) calc(var(--hero-key-y) + 8%);
+}
 
-     0.00  the room fades up — 820ms, so it is essentially there while the
-           mascot is still crossing the frame and never reads as a load
-     0.00  the camera settles out of 1.035 over 2.8s. Long and shallow on
-           purpose: 3.5% of scale spread over nearly three seconds is under
-           the rate at which motion is seen as motion, so it is felt as a
-           frame coming to rest rather than watched as a zoom
-     0.26  the key pool blooms open FROM the mascot's mark (the transform
-           origin is --hero-key-x/y, the mark itself), finishing at ~1.96s
-     1.89  the mascot lands on that mark
-
-   That last pair is the whole point. The comment above already claimed the
-   stage lights its mark before the actor arrives; now it does it where the
-   reader can see it, and it finishes on the frame the actor arrives. The
-   light was waiting — and you can watch it wait.
-
-   Both layers hold their FINAL values here, with the transitions; the
-   pre-ignition state is the [data-stage="dark"] block below, which is what
-   the server renders and what gets one committed frame before the flip. */
+/* Acto cero. Estos bloques llevan el estado FINAL; el inicial es
+   [data-stage="dark"] más abajo, que es lo que renderiza el servidor. */
 .cq-hero-field {
   opacity: 1;
   transform: scale(1);
@@ -209,106 +112,94 @@
     transform 2800ms var(--ease-out-expo);
 }
 
+.cq-hero-field::before {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity 1400ms var(--ease-out-expo) 120ms,
+    scale 2400ms var(--ease-out-expo) 120ms;
+}
+
 .cq-hero-field::after {
   content: "";
   position: absolute;
   inset: 0;
-  /* Petroleo, never cyan, and 14% is still the ceiling — see the field's own
-     note above. Nothing about the light changed; only when it arrives. */
+  /* Petróleo, nunca cian: el #7FE9E4 es de la mascota. 14% es el techo —
+     por encima de ~18% deja de leerse como profundidad y parece foco. */
   background: radial-gradient(
     38% 32% at var(--hero-key-x) var(--hero-key-y),
     color-mix(in srgb, var(--brand-petroleo) 14%, transparent),
     color-mix(in srgb, var(--brand-petroleo) 6%, transparent) 55%,
     transparent 100%
   );
-  /* The pool grows out of the mark rather than out of the element's middle.
-     Scaling a radial from the centre of a full-viewport box moves the light
-     across the stage; scaling it from its own centre of brightness opens it
-     in place, which is what a lamp does. */
   transform-origin: var(--hero-key-x) var(--hero-key-y);
   opacity: 1;
-  transform: scale(1);
+  /* `scale` y no `transform`: la respiración usa `transform`. En la misma
+     propiedad, la animación gana el cascade y borraría ignición y reveal. */
+  scale: 1;
   transition:
     opacity 1700ms var(--ease-out-expo) 260ms,
-    transform 2400ms var(--ease-out-expo) 260ms;
+    scale 2400ms var(--ease-out-expo) 260ms;
 }
 
-/* The vignette arrives with the light, not before it. Corner falloff over a
-   field that is itself still fading up is falloff from nothing to nothing —
-   what it reads as, brought up on its own slightly slower curve, is the
-   frame closing in as the room gains a floor. */
+/* La lámpara respira: lo único vivo del fondo en táctil, donde no hay
+   puntero que deforme la grilla. Se para con el resto por data-ambient. */
+.cq-hero[data-ambient="on"] .cq-hero-field::after {
+  animation: cq-key-breathe 26s ease-in-out infinite;
+}
+
+@keyframes cq-key-breathe {
+  0%,
+  100% {
+    transform: scale(0.982);
+  }
+  50% {
+    transform: scale(1.018);
+  }
+}
+
 .cq-hero-vignette {
   opacity: 1;
   transition: opacity 1500ms var(--ease-out) 180ms;
 }
 
-/* ── The committed first frame ───────────────────────────
-   Server-rendered, and it must survive one paint before HeroImage's rAF
-   flips the attribute — a transition with no committed start value simply
-   does not run. Everything here is the pre-ignition state: black room, no
-   key light, no frame. `bg-ink` on the section is what the reader actually
-   sees for that frame, which is the same near-black the field's own top
-   stop resolves to, so the fade-up starts from a matched colour rather than
-   from a visible cut. */
+/* El primer frame, el que renderiza el servidor. Tiene que pintarse una vez
+   antes del rAF de HeroImage: sin valor inicial comprometido no hay transición. */
 .cq-hero[data-stage="dark"] .cq-hero-field {
   opacity: 0;
   transform: scale(1.035);
 }
 
+.cq-hero[data-stage="dark"] .cq-hero-field::before {
+  opacity: 0;
+}
+
 .cq-hero[data-stage="dark"] .cq-hero-field::after {
   opacity: 0;
-  transform: scale(0.82);
+  scale: 0.82;
 }
 
 .cq-hero[data-stage="dark"] .cq-hero-vignette {
   opacity: 0;
 }
 
-/* ── Hero parallax planes ────────────────────────────────
-   The two groups the scroll parallax drives: the field behind, and the
-   composition (mascot + copy) in front. The copy used to be a third plane
-   with its own pair of motion values, whose ranges were identical to the
-   scene's — a second promoted layer to say the same thing twice. Motion
-   writes their transforms straight to
-   `style` on every scroll frame, and — unlike a CSS animation or transition —
-   that alone does not promote anything. Without this hint the browser
-   re-paints what is underneath those transforms sixty times a second while
-   the hero is being scrolled past: two full-viewport gradient stacks, a
-   masked canvas, a vignette and a grain tile. Naming the transform up front
-   turns all of that into one composited layer each, moved on the GPU. */
+/* Motion escribe el transform del parallax inline, y eso solo no promociona:
+   sin esto se repintan dos stacks de gradiente y un canvas en cada frame. */
 .cq-hero-plane {
   will-change: transform;
 }
 
-/* …and handed back once the hero has actually stopped moving. A promotion
-   hint is a standing reservation, not a one-off cost: left on, these three
-   full-viewport layers stay resident for the entire page.
-
-   `data-parallax`, NOT `data-onscreen`. The two used to be the same flag,
-   and the release therefore landed a fifth of a viewport BEFORE the parallax
-   finished — de-promoting three full-viewport planes while Motion was still
-   writing a new transform to each of them every frame. That turned the last
-   stretch of the descent, the one frame budget on this page that is already
-   spoken for, into a full re-paint of two gradient stacks, a masked canvas, a
-   vignette and a grain tile per frame. HeroImage now drives this off its own
-   observer, which trails the end of the parallax by a quarter viewport in
-   both directions. */
+/* Se devuelve cuando el parallax PARA, no cuando el hero sale de pantalla —
+   despromocionar mientras Motion sigue escribiendo transforms es lo peor. */
 .cq-hero[data-parallax="false"] .cq-hero-plane {
   will-change: auto;
 }
 
-/* The headline's per-word masks are the same kind of standing reservation —
-   one layer per word, hinted for an animation that runs exactly once, during
-   the intro, and is never replayed. Released on the same flag. */
 .cq-hero[data-parallax="false"] .cq-word > span {
   will-change: auto;
 }
 
-/* Gates the grid canvas AND the room's petroleo wash (the ::before below).
-   Act one is a dark room with one lit mark; when the mascot lands its line
-   the house lights come up — the wash and the grid arrive together on this
-   layer's fade. The grain is deliberately NOT in here any more: texture is
-   the room's constant, light is what changes. */
+/* Luz del acto dos: el wash y la grilla llegan juntos sobre esta capa. */
 .cq-hero-ambience {
   position: absolute;
   inset: 0;
@@ -320,10 +211,6 @@
   transition-timing-function: var(--ease-out-expo);
 }
 
-/* The 118deg corner wash, slightly more present than when it was painted
-   into the always-on field (8% → 11%): a light that turns ON can afford to
-   be. Tree order keeps it beneath the canvas child — same stacking as when
-   it lived in .cq-hero-field. */
 .cq-hero-ambience::before {
   content: "";
   position: absolute;
@@ -337,24 +224,15 @@
 
 .cq-hero-ambience[data-revealed="true"] {
   opacity: 1;
-  /* Structure first, then light: the chrome and the rule land on the still
-     stage, and the field blooms beneath the headline words as they clear
-     their masks. Delay on the on-state only, so the fade-OUT (a replay's
-     retreat) starts the moment it's asked to. */
+  /* Delay solo al encender, para que el repliegue de un replay salga ya. */
   transition-delay: 240ms;
 }
 
-/* The retreat dims faster than the arrival bloomed — exits accelerate,
-   entrances settle. Mirrors the EASE_IN_EXPO exits in animation.ts. */
 .cq-hero-ambience[data-revealed="false"] {
   transition-duration: 550ms;
 }
 
-/* ── Field grain ─────────────────────────────────────────
-   A static, low-opacity texture prevents banding without promoting a
-   viewport-sized layer or keeping the compositor busy after the intro.
-   Shared by the two surfaces that use the dark architectural field: the
-   hero, and the footer that closes the page on a reprise of it. */
+/* Textura estática contra el banding. Compartida con el footer. */
 .cq-field-grain {
   position: absolute;
   inset: 0;
@@ -364,17 +242,6 @@
   background-size: 180px 180px;
 }
 
-/* Corner falloff, so the composition reads as a lit stage rather than a
-   flat rectangle of colour. Static: one paint, no per-frame cost.
-
-   The directional arm follows the copy, because the copy is what the
-   anchoring shadow exists to seat. Base rule = the stacked band (copy in
-   the TOP row), so the ink falls from the top-left and the mascot's lower
-   seat stays in the lit centre. From lg — and in the landscape guard,
-   which borrows the desktop composition — the copy is low-left, so the
-   shadow returns there and the radial aperture leans toward the
-   composition's true centre of gravity (between the headline's end and
-   the mascot) instead of the geometric middle. */
 .cq-hero-vignette {
   position: absolute;
   inset: 0;
@@ -392,8 +259,8 @@
     );
 }
 
-/* Keep this list in step with --hero-inset, the h1 measure, and the
-   stage-parking block in QuestBotScene.module.css. */
+/* La sombra sigue al copy, que es lo que existe para asentar: abajo-izquierda
+   en la composición de desktop, arriba-izquierda en la apilada. */
 @media (min-width: 1024px),
   (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .cq-hero-vignette {
@@ -411,35 +278,20 @@
   }
 }
 
-/* ── Act two: the room opens ─────────────────────────────
-   The reveal was, until now, entirely a foreground event — chrome, a rule,
-   seven word masks and a lead, all arriving over a field that did not move.
-   The one thing the field DID do (the ambience layer's fade, above) is a
-   flat opacity ramp on a corner wash, which the eye reads as "something got
-   brighter", not as an answer.
-
-   These two are the answer. The key pool — a tight, theatrical spot on the
-   mascot's mark for the whole of act one — widens by 16% from that same
-   mark, so the light that belonged to the mascot spreads left across the
-   copy column as the copy arrives. And the vignette, which spent act one
-   pulling the frame in around one lit object, releases 14% of its ink so
-   the frame opens with it.
-
-   Both are the house lights coming up on a stage that had one lamp. Neither
-   is visible as an event on its own — the pool moves 16% over two seconds
-   and the vignette's release is a seventh of a value already under 80% —
-   and that is the requirement, not a compromise: the reader must be looking
-   at the headline, and feel the room grow. The delay puts both behind the
-   nav and the rule, on the ambience's own beat, so the sequence stays
-   structure → light.
-
-   Cost: one transform and one opacity on two layers that are already
-   composited inside the parallax plane. Nothing repaints. */
+/* Acto dos. Van DESPUÉS de los [data-stage] a propósito: misma especificidad,
+   gana el orden de aparición. */
 .cq-hero[data-revealed="true"] .cq-hero-field::after {
-  transform: scale(1.16);
+  scale: 1.16;
   transition:
     opacity 1700ms var(--ease-out-expo),
-    transform 2000ms var(--ease-out-expo) 200ms;
+    scale 2000ms var(--ease-out-expo) 200ms;
+}
+
+.cq-hero[data-revealed="true"] .cq-hero-field::before {
+  scale: 1.06;
+  transition:
+    opacity 1400ms var(--ease-out-expo),
+    scale 2200ms var(--ease-out-expo) 200ms;
 }
 
 .cq-hero[data-revealed="true"] .cq-hero-vignette {
@@ -448,9 +300,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Both attribute states restated at their own specificity — the bare
-     class alone would lose to [data-revealed="false"]'s 0-2-0 and leave
-     reduced-motion users a 550ms fade. */
+  /* Los dos estados restated a su propia especificidad: la clase sola
+     perdería contra [data-revealed="false"]. */
   .cq-hero-ambience,
   .cq-hero-ambience[data-revealed="true"],
   .cq-hero-ambience[data-revealed="false"] {
@@ -458,122 +309,69 @@
     transition-delay: 0ms;
   }
 
-  /* Act zero and act two, collapsed to their end state. Not `duration: 0`
-     — that still runs the ignition, just instantly, which is a one-frame
-     flash of a black room and then a cut. This reader gets the finished
-     field on frame one, exactly as before any of this existed.
+  /* Regla aparte: Lightning CSS elimina `scale` si comparte bloque con
+     `transform`. Verificado en el CSS compilado — no unir. */
+  .cq-hero-field::before,
+  .cq-hero-field::after,
+  .cq-hero[data-stage="dark"] .cq-hero-field::before,
+  .cq-hero[data-stage="dark"] .cq-hero-field::after,
+  .cq-hero[data-revealed="true"] .cq-hero-field::before,
+  .cq-hero[data-revealed="true"] .cq-hero-field::after {
+    scale: 1;
+  }
 
-     Every selector above is restated here at its own specificity (the
-     [data-stage] and [data-revealed] arms outrank a bare class), and this
-     block sits after all of them, so source order settles the ties. */
   .cq-hero-field,
+  .cq-hero-field::before,
   .cq-hero-field::after,
   .cq-hero-vignette,
+  .cq-hero[data-ambient="on"] .cq-hero-field::after,
   .cq-hero[data-stage="dark"] .cq-hero-field,
+  .cq-hero[data-stage="dark"] .cq-hero-field::before,
   .cq-hero[data-stage="dark"] .cq-hero-field::after,
   .cq-hero[data-stage="dark"] .cq-hero-vignette,
+  .cq-hero[data-revealed="true"] .cq-hero-field::before,
   .cq-hero[data-revealed="true"] .cq-hero-field::after,
   .cq-hero[data-revealed="true"] .cq-hero-vignette {
     opacity: 1;
     transform: none;
+    animation: none;
     transition: none;
   }
 }
 
-/* ── Hero headline ───────────────────────────────────────
-   Each word is its own clipping box; the inner span slides up from below its
-   own baseline. The padding/negative-margin pair gives descenders somewhere
-   to live so the mask never shaves a "y" or a "p". */
 .cq-hero-h1 {
   font-family: var(--font-heading), sans-serif;
   font-weight: 500;
-  /* Only the ceiling moved (3rem → 4.5rem); the 3.9vw slope is untouched, so
-     nothing below ~1850px changes shape, it just keeps climbing where it
-     used to flatten out. 4.5rem is where the headline reads at the same
-     proportion of the frame as the reference: ~3.1% of the viewport width in
-     cap height, which for this face's ~0.72 cap ratio lands at 72px on a
-     1857px screen. The floor came up with it, 1.8 → 2.05rem, so phones get
-     the same intent; the vw arm only reaches the floor below ~525px, so this
-     is the small-phone size and nothing else. */
   font-size: clamp(2.05rem, 3.9vw, 4.5rem);
   line-height: 1.06;
-  /* Opened from -0.02em. The negative value was the usual reflex for display
-     type — set big, track tight — but it is the wrong reflex for this face:
-     a rounded geometric with wide round bowls and already-narrow sidebearings,
-     so pulling it in further closes the counters against their neighbours
-     instead of tidying the line. In `em`, so it holds at every step of the
-     clamp above rather than only at the size it was judged on.
-
-     It costs measure — every character is 0.03em wider than before — which
-     the 8.8em below has room for: the widest line it has to seat goes from
-     ~7.8em to ~8.1em, and the line it has to refuse stays well over 11em. */
+  /* Tracking positivo, no negativo: esta fuente es geométrica redonda y
+     apretarla cierra los contadores contra sus vecinos. */
   letter-spacing: 0.01em;
   max-width: 24ch;
   text-wrap: balance;
-  /* The gap up to the accent rule, on the same doctrine as the gap below:
-     the headline is the only one of the pair that changes size, so `em`
-     here means the air tracks the type — ~24px at the 72px ceiling (where
-     the old fixed mt-6 was judged, so nothing changes there), tightening
-     to ~11px at the phone floor instead of holding a desktop-sized hole
-     open over 33px type. The rule and the headline scale as one lockup. */
+  /* En `em` los dos: el h1 es lo único del lockup que cambia de tamaño, así
+     que el aire tiene que escalar con la tipografía. */
   margin-top: 0.33em;
-  /* The gap down to the lead, and it lives here rather than as a margin on
-     the lead because the headline is the only one of the two that changes
-     size — `em` here is the headline's own size, so the air tracks it from
-     the 33px phone step to the 72px desktop one. On the lead, `em` would
-     have meant its own fixed 17px and the gap would have been frozen at
-     whatever it looked like on one screen.
-
-     It replaces a -8px pull that was judged when this line was 48px. Fixed
-     px against a clamped size ages badly in one direction: the leading below
-     the last baseline grows with the type while the correction does not, so
-     what read as a deliberate tuck at 48px had closed to ~8px of daylight
-     between the "y" of "business." and the lead's cap line at 72px. This
-     lands at roughly 33px there and holds the same proportion everywhere
-     else. The descenders are the reason it errs open — the reference this
-     was drawn from sets its headline in all caps and has none to clear. */
   margin-bottom: 0.24em;
 }
 
-/* ── The headline's measure, from lg up ──────────────────
-   Deliberately narrow — this is what makes the type stack into short lines
-   instead of running across the frame, and it is the other half of the
-   hero's two-column split (see the stage rules in QuestBotScene.module.css).
-
-   8.8em, not a ch or px value, because what has to hold is a RATIO to the
-   font size: the break points have to survive every step of the clamp above.
-   The number is chosen to sit between two specific lines rather than to look
-   round. In `em` at this face's ~0.56em average advance, it fits "While you
-   grow" (≈7.8em) and refuses "While you grow your" (≈10.6em) — so each
-   sentence takes two lines and the full stop lands at the end of one, which
-   is the rhythm the reference has. The band is wider than the estimate's
-   error: the measure still breaks correctly anywhere from a 0.50em to a
-   0.62em average advance.
-
-   Both strings are written to this measure — 52 characters in English, 45 in
-   Spanish, four lines each. The Spanish one was cut to fit it (see the note
-   in the dictionary): at its original 71 characters no measure that also
-   kept English's sentence breaks could get it under six lines. */
+/* 8.8em y no ch/px: lo que tiene que aguantar es la RAZÓN con el font-size,
+   para que los cortes de línea sobrevivan a todo el clamp de arriba. */
 @media (min-width: 1024px),
   (min-width: 640px) and (max-width: 1023.98px) and (max-height: 560px) {
   .cq-hero-h1 {
     max-width: 8.8em;
   }
 
-  /* ── Two-tone headline ──────────────────────────────────
-     The copy's own rhetoric is a contrast — we run ↔ you grow — and at the
-     8.8em measure the sentence boundary provably lands at a line end, so
-     the second sentence can take a different colour and the type carries
-     the rhetoric visibly. The brand's own celeste — the same blue every CTA
-     on the site is filled with — rather than a dimmed white, so the second
-     sentence reads as an answer in the site's own accent voice. Gated to
-     the desktop measure on purpose — in the stacked band `balance` decides
-     the breaks and the tint could shift mid-line, which reads as an error. */
+  /* Solo en esta medida: en la banda apilada `balance` decide los cortes y
+     el tinte podría caer a media línea, que se lee como error. */
   .cq-word-soft {
     color: var(--brand-celeste);
   }
 }
 
+/* El par padding/margin le da sitio a las descendentes para que la máscara
+   no rebane una "y" o una "p". */
 .cq-word {
   display: inline-block;
   overflow: hidden;
@@ -587,22 +385,12 @@
   will-change: transform;
 }
 
-/* The brand's accent hairline — it opens the hero's copy block and, at the
-   other end of the page, the footer's closing statement. Weighted to one
-   side rather than symmetric, so it reads as light falling from a single
-   source — and the source is now literal: a near-white head at the left
-   terminus, cooling into celeste by 24%, sitting exactly on the copy
-   block's shared left datum (--hero-inset). The scaleX draw reveals the
-   hot head first, which reads as the light igniting the line. Keep the
-   hot stop at or below 24%: longer and it becomes a second colour band
-   rather than a source. */
+/* Dos capas: la chispa y la línea. La chispa va en background-position y no
+   en un hijo — un hijo lo aplastaría el scaleX(0→1) del padre. */
 .cq-hero-rule {
   height: 1px;
   width: clamp(3.5rem, 9vw, 6rem);
   transform-origin: left center;
-  /* Two layers: the spark, then the hairline itself. The hairline is exactly
-     what it always was; the spark is a compact highlight parked off the left
-     edge, which is invisible until the reveal animates it across. */
   background-image:
     linear-gradient(
       90deg,
@@ -618,36 +406,12 @@
     );
   background-repeat: no-repeat;
   background-size: 46% 100%, 100% 100%;
-  /* -150% of the free space (54% of the width) puts the spark's right edge
-     at -0.35× the width — clear of the element, so nothing shows at rest or
-     after the pass. */
+  /* -150% del espacio libre deja la chispa fuera del elemento en reposo. */
   background-position: -150% 0, 0 0;
 }
 
-/* ── The rule ignites ────────────────────────────────────
-   The hairline already draws from its left terminus, and the gradient
-   already puts a near-white head there so the draw reveals the hot end
-   first — the note above calls that "the light igniting the line". It was
-   a still image of ignition: the head is painted at the left and stays
-   painted at the left, and what actually travels is the element's own
-   scaleX edge.
-
-   This is the light itself moving. A compact highlight runs the length of
-   the rule while the rule is drawing (draw: 0.1s + 1s; spark: 0.16s +
-   1.35s), so it emerges from the same terminus the draw starts at, rides
-   the growing line — the background is scaled with the element, so the
-   spark is genuinely IN the line rather than sliding over it — and runs off
-   the far end as the line finishes. One gesture, two things saying it.
-
-   `background-position` and not a child element: a child would be squashed
-   by the parent's scaleX(0→1) into a smear, and counter-scaling it needs a
-   number CSS cannot know. It costs a repaint of a 1px × 6rem box for 1.35
-   seconds, once.
-
-   `both` parks it at 260%, off the right edge — so the resting state after
-   the pass is the plain hairline, identical to the base rule. On a replay
-   the attribute drops, the animation is removed and the spark is back at
-   its start position, ready to run again. */
+/* Corre mientras la línea se dibuja (dibujo: 0.1s+1s), así que sale del
+   mismo extremo y se va por el otro justo cuando la línea termina. */
 .cq-hero[data-revealed="true"] .cq-hero-rule {
   animation: cq-rule-spark 1.35s var(--ease-out-expo) 0.16s both;
 }
@@ -667,14 +431,6 @@
   }
 }
 
-/* ── Hero lead ───────────────────────────────────────────
-   The supporting line under the headline, recomposed as its own tier:
-   true 400 (the utility's font-light resolved to a real 300, outside the
-   brand's 400/500 system), a size that steps gently with the frame, and
-   the speech bubble's own near-white — #e9f2f8, one step of alpha down —
-   so the h1, the lead and the mascot's voice share one temperature system.
-   Contrast over the ink field ≈ 12:1. `balance` here also settles the old
-   conflict where an inline text-wrap silently overrode `text-pretty`. */
 .cq-hero-lead {
   font-weight: 400;
   font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
@@ -685,14 +441,9 @@
   color: rgb(233 242 248 / 0.87);
 }
 
-/* ── Scroll cue ──────────────────────────────────────────
-   A hairline with a light running down it. Constant motion → `linear`, so
-   the travel reads as a steady signal and not as something easing to a stop. */
 .cq-scroll-cue {
   position: relative;
   width: 1px;
-  /* Sized and placed to sit inside the hero's bottom padding band, so it
-     never crowds the headline column or the CTA. */
   height: 2.25rem;
   overflow: hidden;
   background: linear-gradient(
@@ -709,22 +460,14 @@
   inset-inline: 0;
   height: 45%;
   background: linear-gradient(180deg, transparent, var(--brand-celeste), transparent);
-  /* The delay phase-locks the loop to the cue's own entrance: it only
-     starts counting when [data-revealed] flips (the animation is `none`
-     until then), so the first light drops from the top of the hairline
-     just as the line finishes materialising — every load shows the same
-     authored first frame instead of whatever phase a mount-time loop
-     happened to be in. The var is written by HeroScrollCue.tsx as
-     (cueDelay + 0.35s); cueDelay itself derives from the headline's word
-     count (leadDelayFor in animation.ts), so the fallback only covers the
-     style being read before hydration. */
+  /* El delay lo escribe HeroScrollCue.tsx (cueDelay + 0.35s) para engancharle
+     la fase a su propia entrada: mismo primer frame en cada carga. */
   animation: cq-cue-run 2.6s linear var(--cq-cue-run-delay, 1.15s) infinite;
   will-change: transform;
 }
 
-/* No loop during act one — the cue is invisible, and an animation that is
-   `none` (rather than paused) restarts from zero at the flip, which is
-   what the phase-lock above needs. */
+/* `none` y no `paused`: al volver tiene que reiniciar desde cero, que es lo
+   que necesita el enganche de fase de arriba. */
 .cq-scroll-cue[data-revealed="false"]::after {
   animation: none;
 }
@@ -742,17 +485,8 @@
   }
 }
 
-/* ── Photographic grain ──────────────────────────────────
-   A static SVG-noise tile at whisper opacity. Costs one paint, no animation —
-   it simply takes the digital sheen off the gradient field.
-
-   Deliberately NOT `mix-blend-mode: multiply`. A blend mode turns the whole
-   ancestor stack into one blending group: the compositor can no longer keep
-   the layers beneath it cached independently, so every frame in which
-   anything under the grain moves — which, over the carousel stage, is every
-   frame — re-composites a full viewport. The tile is desaturated at source
-   (feColorMatrix below) and sits at 3.5% opacity in normal blending, which
-   over a near-white sheet is visually the same grain for none of the cost. */
+/* Sin mix-blend-mode a propósito: un blend convierte todo el stack en un
+   grupo y recompone el viewport entero cada frame que algo debajo se mueve. */
 .cq-noise {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;

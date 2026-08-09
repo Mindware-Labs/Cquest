@@ -9,9 +9,6 @@ import shell from "./step.module.css";
 import styles from "./StepService.module.css";
 import { Check } from "./icons";
 
-/* Step 1 — pick a business line. Three large radio cards, each carrying its own
-   service colour (--svc) so hover/selection lights up in that line's identity,
-   the same tint the rest of the wizard then adopts. */
 export default function StepService({
   value,
   onSelect,
@@ -23,10 +20,6 @@ export default function StepService({
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const selectedIndex = SERVICE_CARDS.findIndex((service) => service.id === value);
 
-  // ARIA APG radiogroup: arrows move focus AND selection, and only one radio
-  // sits in the tab order (roving tabindex) so Tab steps over the group rather
-  // than through it. The group declared role="radiogroup" but behaved like
-  // three loose buttons — arrows did nothing and Tab hit all three.
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
     const count = SERVICE_CARDS.length;
     let next: number | null = null;
@@ -64,8 +57,7 @@ export default function StepService({
               ref={(node) => {
                 cardRefs.current[index] = node;
               }}
-              // Nothing selected yet: the first card holds the tab stop, so
-              // Tab always reaches the group exactly once.
+
               tabIndex={selectedIndex === -1 ? (index === 0 ? 0 : -1) : selected ? 0 : -1}
               onClick={() => onSelect(service.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}

@@ -2,19 +2,6 @@
   padding-block: clamp(4.5rem, 7vw, 6.5rem) clamp(4rem, 6vw, 5.5rem);
 }
 
-/* ── Discipline rack — six disciplines held to one standard.
-   A horizontal rack of expanding slats: each discipline is a persistent
-   vertical spine (index · icon · rotated name) that unfolds sideways to
-   reveal its full spec, like drawing a file from a drawer. The lit baseline
-   under the open slat is "one standard" made visible — every discipline
-   meets the same line. Collapses to a vertical accordion under 64rem.
-
-   Height is fixed, not min-height, on purpose: the six disciplines hold
-   different amounts of copy, and letting the tallest one set the height would
-   make the whole section jump as you glide across the rack. The cost is that
-   an overlong panel clips silently (.slatDetail hides its overflow), so the
-   floor carries the worst case — Spanish copy at the lg breakpoint runs to
-   about 26rem, and 28rem left almost no headroom for it. */
 .rack {
   --rail: 4.5rem;
   display: flex;
@@ -34,7 +21,7 @@
   min-width: 0;
   overflow: hidden;
   background: linear-gradient(180deg, var(--bp-card), color-mix(in srgb, var(--bp-teal) 2%, var(--bp-card)));
-  /* the standard baseline — faint under closed slats, lit under the open one */
+
   box-shadow: inset 0 -2px 0 var(--bp-rule);
   transition:
     flex-grow 720ms var(--ease-out),
@@ -53,7 +40,6 @@
   box-shadow: inset 0 -2px 0 var(--bp-lime);
 }
 
-/* Spine — the always-present vertical tab; the button that owns selection. */
 .slatSpine {
   position: relative;
   z-index: 1;
@@ -96,9 +82,6 @@
   stroke-width: 1.5;
 }
 
-/* Rotated name — reads bottom-to-top like a book spine; anchored to the
-   base of the closed slat, it fades out as the slat opens (the label
-   "stands up" into the panel's horizontal heading). */
 .slatTitle {
   margin-top: auto;
   writing-mode: vertical-rl;
@@ -122,8 +105,6 @@
   opacity: 0;
 }
 
-/* Detail — clipped to zero width while closed; revealed beside the spine as
-   the slat unfolds. */
 .slatDetail {
   flex: 1 1 0;
   min-width: 0;
@@ -141,8 +122,6 @@
   gap: 0.9rem;
 }
 
-/* Choreographed inner reveal — each block lifts out of a hair of blur on a
-   short stagger once its slat is open. */
 .slatDetailInner > * {
   opacity: 0;
   transform: translateY(12px);
@@ -242,9 +221,6 @@
   background: var(--bp-lime);
 }
 
-/* Same "benefit callout" idiom the call-center page uses — tinted well, accent
-   hairline, square-cut corner — so the one component both pages share the
-   concept of looks like one component. */
 .slatBenefit {
   align-self: start;
   padding: 1rem 1.15rem;
@@ -273,12 +249,6 @@
   color: color-mix(in srgb, var(--bp-teal) 60%, transparent);
 }
 
-/* ── Mobile accordion — below `lg` this replaces the six-slat rack
-   entirely (see CapabilitiesSection.tsx: DesktopCapabilities and
-   MobileCapabilities are two separate renderings, not one rack squeezed
-   by media query). Each discipline is its own header + panel pair that
-   opens in place on tap, animated to its real content height instead of a
-   guessed max-height. */
 .accordion {
   display: flex;
   flex-direction: column;

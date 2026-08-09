@@ -16,10 +16,6 @@ import styles from "./PillarsSection.module.css";
 
 const ACCENTS = ["var(--ab-petroleo)", "var(--ab-celeste)", "var(--ab-verde)"] as const;
 
-// A lighter entrance than the shared `dropCardVariants`: no rotation, no
-// spring overshoot — the card rises gently from below and settles, then
-// the next one starts a beat later. Reads as the section "building itself"
-// rather than cards being dropped onto the page.
 const liftGroupVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.15 } },
@@ -29,24 +25,12 @@ const liftCardVariants: Variants = {
   visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
 };
 
-// The stroke-draw itself needs `motion.path`/`motion.circle` — the shared
-// `ServiceIcon` renders plain static SVG elements, reused across every
-// service page, so redrawing it there would ripple into sections that never
-// asked for this. These three pillars get their own draw-capable copy
-// instead, geometry lifted straight from `ServiceIcon`'s "flag-mountain",
-// "eye" and "diamond" entries so they stay pixel-identical to the rest of
-// the site's icon set.
 const DRAW_ICONS: Record<string, { paths?: string[]; circle?: { cx: number; cy: number; r: number } }> = {
   mission: { paths: ["M3 20 9.5 8l3.2 5.5L15.5 9 21 20Z", "M9.5 8 12 4l1.3 2.3"] },
   vision: { paths: ["M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"], circle: { cx: 12, cy: 12, r: 3 } },
   values: { paths: ["M4.5 9 8 4h8l3.5 5-7.5 11Z", "M4.5 9h15M8 4l1.5 5L12 20l2.5-11L16 4M8 4l-3.5 5M16 4l3.5 5"] },
 };
 
-// Each stroke draws in (pathLength 0 → 1) once the card has landed — delay
-// clears the 0.8s lift — with the second stroke of a two-part icon following
-// a beat behind the first, so it reads as one continuous pen stroke rather
-// than the whole icon fading in at once. Inherits "visible" from the parent
-// stagger automatically — no separate viewport trigger needed.
 const drawVariants = (order: number): Variants => ({
   hidden: { pathLength: 0, opacity: 0 },
   visible: {
@@ -87,11 +71,7 @@ const COPY = {
         id: "values",
         icon: "diamond" as ServiceIconName,
         title: "Values",
-        /* This card used to read "…detailed above", which made it a pointer to
-           the commitments section rather than a card with content of its own —
-           the one piece of copy in About that carried no information. It states
-           where the principles are applied instead, which is the thing the
-           numbered commitments above do NOT say. */
+
         body: "The principles we don't negotiate: who we hire, how we train them, and what we accept as done right. They're applied when we recruit, not framed on a wall.",
       },
     ],
@@ -128,18 +108,6 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
 
-  /* The icons used to arrive on a GSAP timeline of their own — rotate −60°,
-     scale 0.4, `back.out(1.7)` — on top of the `focusRiseVariants` that
-     motion/react was already running on the same nodes. Two libraries owning
-     opacity and transform on one element, which is the exact failure this
-     codebase warns about elsewhere, and GSAP's inline transform also outranked
-     the `scale: 1.08` the stylesheet applies to the icon on card hover.
-
-     Both are gone. The card is what falls now, and a solid object's contents
-     do not animate independently of it while it is in the air — the icon and
-     the copy ride the card down, which is what makes it read as one thing
-     landing rather than a container arriving with its parts assembling inside. */
-
   useIsomorphicLayoutEffect(() => {
     if (reduced || !sectionRef.current) return;
     const ctx = gsap.context(() => {
@@ -172,10 +140,7 @@ export default function PillarsSection({ reduced }: { reduced: boolean }) {
       )}
       <div className={container.container}>
         <SectionIntro title={t.heading} description={t.description} reduced={reduced} rule accentColor="var(--ab-verde)" />
-        {/* The drop lives on this wrapper, not on `.pillarCard`: the card owns a
-            CSS hover lift (`translate: 0 -4px`), and an inline transform left
-            behind by the reveal would outrank it. Same anchor/card split the
-            quote card and the diagram nodes use. */}
+
         <motion.div
           className={styles.pillarGrid}
           initial={reduced ? false : "hidden"}

@@ -1,17 +1,3 @@
-/* ── Footer — the stage, closed ───────────────────────────
-   Tokens are declared locally rather than reaching for About's `--ab-*`:
-   those are scoped to .aboutSection and simply do not resolve out here on a
-   service page.
-
-   Every alpha below was checked against the DARKEST point of the field
-   (#071116, the gradient's top stop) rather than its average, and the
-   weakest of them still clears 6:1 — comfortably past AA's 4.5:1 floor for
-   the small sizes they are used at. Re-check with
-   webaim.org/resources/contrastchecker if any of them drops.
-
-   The accent each service row lights up in comes from that service's `glow`,
-   never its `color`: the carousel's #3f738d / #176c79 are tuned for a
-   near-white sheet and would land near 2:1 on this ink. */
 .footer {
   --ft-rule: rgba(255, 255, 255, 0.11);
   --ft-text: rgba(255, 255, 255, 0.72);
@@ -20,13 +6,10 @@
   --ft-label: rgba(255, 255, 255, 0.55);
 
   position: relative;
-  /* `clip` not `hidden`: it contains the bloom without turning the footer
-     into a scroll container. */
+
   overflow: clip;
   color: var(--ft-text);
-  /* The hero's own field recipe (styles/site.css .cq-hero-field), verbatim —
-     a petroleo wash raking across a near-black vertical gradient. The page
-     closes on the surface it opened with. */
+
   background:
     linear-gradient(
       118deg,
@@ -37,14 +20,6 @@
   padding-block: clamp(3rem, 6.5vw, 5.5rem) clamp(1.1rem, 2.2vw, 1.6rem);
 }
 
-/* The lifted sheet's shoulder light, inverted for a dark surface.
-   .cq-carousel-sheet catches a 1.5px white rim and a celeste inner glow
-   along its top edge; this catches the same light at the strength a dark
-   field can carry.
-
-   No rounded shoulders to go with it, though: the footer is the last
-   element on the page, so a top radius would expose the light body
-   background (#f8f7f4) at both corners. */
 .footer::before {
   content: "";
   position: absolute;
@@ -60,10 +35,6 @@
   );
 }
 
-/* One light source, in the corner that carries the statement — the same
-   rule the hero's vignette follows ("weighted low and left; that corner
-   carries the headline, and it is the one part of the frame that must stay
-   clean"), mirrored to the top for a block that is read downward. */
 .glow {
   position: absolute;
   top: -13rem;
@@ -82,8 +53,6 @@
   z-index: 0;
 }
 
-/* Corner falloff, so the block reads as a lit stage rather than a flat
-   rectangle of colour. Static: one paint, no per-frame cost. */
 .vignette {
   position: absolute;
   inset: 0;
@@ -107,17 +76,6 @@
   padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
 }
 
-/* Shrunk to its content — not the grid column, which runs much wider — so
-   centring the logo below has something honest to centre against: the
-   text's own rendered width, not the empty column margin beside it.
-   `width: fit-content`, not a `max-width: 20ch` of its own: `ch` resolves
-   against the element's OWN font-size, and this block sits at the body
-   size while `.statement` is set in the large heading size — the same
-   "20ch" on each is a completely different pixel width, and capping the
-   block to its own tiny 20ch was what squeezed the heading into four short
-   lines instead of the two it wraps to on its own. Sizing to fit-content
-   measures the actual rendered children instead, so the heading keeps its
-   own wrap and this box just hugs it. */
 .statementBlock {
   display: flex;
   flex-direction: column;
@@ -127,35 +85,24 @@
 
 .brandLink {
   display: inline-flex;
-  /* The logo is the brand's own link home, so it carries a real target size
-     rather than being a bare decorative image. */
+
   min-height: 2.75rem;
   align-items: center;
-  /* The one exception to the block's flush-left flow: centred against the
-     statement text's own width. */
+
   align-self: center;
 }
 
-/* Height-constrained, width auto. logo.png ships at 692×512, so 512 CSS px
-   is the asset's hard ceiling — at 4.25rem (68px) it still has pixels to
-   spare on any display up to 3×. This is the site's last word, and the
-   mark now reads at the "signature scale" the block comment above already
-   promised. */
 .brandLogo {
   width: auto;
   height: 4.25rem;
   filter: brightness(0) invert(1);
 }
 
-/* Extends the global .cq-hero-rule — same width, same one-sided gradient,
-   same left origin, so it draws exactly the way the hero's does. */
 .rule {
   margin-top: clamp(1.5rem, 3vw, 2.25rem);
   margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
 }
 
-/* The hero headline's metrics, one step down the scale: the hero stays the
-   loudest type on the site, and this is its answer, not its equal. */
 .statement {
   font-family: var(--font-heading), sans-serif;
   font-weight: 500;
@@ -171,9 +118,6 @@
   text-wrap: balance;
 }
 
-/* Each word is its own clipping box; the inner span lifts from below its own
-   baseline. The padding / negative-margin pair gives descenders somewhere to
-   live so the mask never shaves a "p" or a "y". */
 .word {
   display: inline-block;
   overflow: hidden;
@@ -201,9 +145,6 @@
   min-width: 0;
 }
 
-/* Celeste rather than a white at low alpha: it is the brand's own label
-   colour throughout the site, and it clears AA here where a 45%-white would
-   land at about 4.2:1. */
 .blockHeading {
   font-size: 0.7rem;
   font-weight: 700;
@@ -220,9 +161,6 @@
   border-bottom: 1px solid var(--ft-rule);
 }
 
-/* Rows and hairlines, not cards: the three business lines are a list, and
-   boxing them would say otherwise. The name and its one-line promise are the
-   same pairing the carousel gives each line, at readout scale. */
 .serviceRow {
   position: relative;
   display: grid;
@@ -233,10 +171,6 @@
   border-top: 1px solid var(--ft-rule);
 }
 
-/* The separator IS the accent rule. It draws along its own length in the
-   service's colour on hover — the hero rule's gradient and left origin,
-   reused as the row's answer — so the carousel's per-line colour identity
-   shows up as a reward rather than as permanent decoration. */
 .serviceRow::after {
   content: "";
   position: absolute;
@@ -328,18 +262,11 @@
   line-height: 1.6;
 }
 
-/* <address> ships italic in every browser — correct semantics, wrong
-   typography for a footer column. */
 .address {
   font-style: normal;
   color: var(--ft-dim);
 }
 
-/* `.contactList a`'s single-line `inline-flex` pill (built for the tel:/
-   mailto: links and the base nav) fights the <br> between street and city —
-   flexbox doesn't wrap plain text + <br> the way block layout does. This
-   link is two lines on purpose, so it resets to a plain block and keeps
-   only `.contactList a`'s color/hover, not its layout. */
 .address a {
   display: block;
   min-height: 0;
@@ -368,10 +295,6 @@
   text-wrap: balance;
 }
 
-/* Every text link is a 2.75rem target with its padding INSIDE the row, so a
-   dense footer still clears the mobile minimum — the usual failure mode down
-   here. On a precise pointer that floor is just dead vertical space, so it
-   tightens where the input device allows it. */
 .baseNav a,
 .contactList a {
   display: inline-flex;
@@ -394,9 +317,6 @@
   color: var(--ft-text-strong);
 }
 
-/* The global focus ring is petroleo, which is nearly invisible on this
-   field. Celeste is the same gesture at a contrast the dark surface can
-   actually carry. */
 .footer :focus-visible {
   outline: 2px solid var(--brand-celeste);
   outline-offset: 3px;
@@ -420,9 +340,6 @@
   }
 }
 
-/* The statement's entrance is GSAP's and is already gated on `reduced` in
-   the component. This is the belt-and-braces half for the hover and arrival
-   transitions above, matching how .aboutSection handles the same case. */
 @media (prefers-reduced-motion: reduce) {
   .footer *,
   .footer *::before,

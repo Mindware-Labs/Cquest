@@ -1,5 +1,3 @@
-/* ── Hero — centered composition over a blueprint grid, with the product
-   window rising beneath the copy: the deliverable itself is the hero image. */
 .hero {
   position: relative;
   padding-top: 5.5rem;
@@ -11,8 +9,6 @@
   overflow: clip;
 }
 
-/* Blueprint field — static hairline grid, masked so it frames the copy
-   instead of sitting under it at full strength. */
 .hero::before {
   content: "";
   position: absolute;
@@ -58,21 +54,9 @@
 }
 
 .heroHeadlineStrong {
-  /* 700 is the top of Josefin Sans' wght axis; 800 had nothing to resolve
-     to and clamped here anyway. */
   font-weight: 700;
 }
 
-/* Curtain masks — headline lines lift from behind their own clip edge.
-
-   Both paddings are clearance for the clip box, not spacing. `line-height:
-   0.98` makes the line box SHORTER than the em, so Josefin Sans' tall
-   ascenders (the f in "Software", the d in "diseñado") stick out of the top of
-   it and the b/y/ñ descenders out of the bottom — and `overflow: hidden` cuts
-   whatever sticks out. The padding pushes the clip edges off the glyphs; the
-   matching negative margins give the space straight back so the tight leading
-   is unchanged. This is exact rather than approximate because `.heroHeadline`
-   is a flex container, where sibling margins do not collapse. */
 .heroLineMask {
   display: block;
   overflow: hidden;
@@ -181,8 +165,6 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* ── Product window — a browser-chrome frame in perspective; the tilt
-   flattens as the page scrolls, like the product settling onto the desk. */
 .windowStage {
   position: relative;
   z-index: 1;

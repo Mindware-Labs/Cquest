@@ -18,7 +18,6 @@ import {
 import styles from "./Confirmation.module.css";
 import buttons from "./buttons.module.css";
 
-// Map a stored answer back to its human label(s) for the recap.
 function toLabels(question: ResolvedQuestion, answer: string | string[]): string {
   const values = Array.isArray(answer) ? answer : [answer];
   return values
@@ -30,9 +29,6 @@ function toLabels(question: ResolvedQuestion, answer: string | string[]): string
     .join(", ");
 }
 
-// The recap shown on success: service first, then every choice answered
-// (free-text notes are left out — too long for a chip row). Resolved against
-// the viewer's current language, which is the same one they submitted in.
 function summarize(submission: QuoteSubmission, lang: Locale) {
   const rows: { label: string; value: string }[] = [];
   for (const raw of QUESTIONNAIRES[submission.service].questions) {
@@ -73,9 +69,6 @@ export default function Confirmation({
   const rows = summarize(submission, lang);
   const name = ((submission.contact.name as string) ?? "").split(" ")[0];
 
-  // The button that submitted the form unmounts with the form itself, which
-  // drops focus to <body> — a keyboard user is left at the top of the document
-  // with no idea anything happened. Move focus onto the confirmation instead.
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();

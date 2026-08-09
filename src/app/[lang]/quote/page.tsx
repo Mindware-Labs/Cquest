@@ -27,10 +27,6 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-// Service pages deep-link in with ?servicio=<id> (also accepts ?service=). In
-// Next 16 `searchParams` is async, so the page awaits it and hands the resolved
-// service to the client experience as a prop — no client-side useSearchParams,
-// so no Suspense boundary is needed.
 export default async function QuotePage({
   searchParams,
 }: {
@@ -43,18 +39,14 @@ export default async function QuotePage({
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   return (
     <>
-      {/* Scoped to this page only — the quote form is the one action worth the
-          extra request. `render=` loads v3 in "invisible" mode: no widget, no
-          checkbox, execute() is called per-submit from QuoteWizard. */}
+
       {recaptchaSiteKey && (
         <>
           <Script
             src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
             strategy="afterInteractive"
           />
-          {/* Keeps the floating badge scoped to this page — the script itself
-              cannot be unloaded on navigation, so the badge is revealed only
-              while this is mounted. */}
+
           <RecaptchaBadge />
         </>
       )}

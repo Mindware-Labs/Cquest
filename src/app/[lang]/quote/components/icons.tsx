@@ -1,6 +1,3 @@
-// Small monoline glyphs shared across the wizard. Inherit `currentColor` and a
-// 24×24 box like ServiceIcon, so they sit on the same optical grid.
-
 export function Check({ className }: { className?: string }) {
   return (
     <svg

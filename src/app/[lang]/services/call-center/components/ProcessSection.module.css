@@ -14,8 +14,6 @@
   padding-top: clamp(1.5rem, 2.2vw, 1.85rem);
 }
 
-/* Scrubbed to the section's scroll progress — the timeline literally draws
-   itself as you read down it, left to right. */
 .processLine {
   position: absolute;
   top: clamp(1.5rem, 2.2vw, 1.85rem);
@@ -34,7 +32,6 @@
   padding-right: 1.5rem;
 }
 
-/* The empty socket, always present on the line. */
 .processList li::before {
   content: "";
   position: absolute;
@@ -48,9 +45,6 @@
   transform: translate(-0.2rem, -50%);
 }
 
-/* The light that fills the socket — blooms in as the step reveals, so each
-   node reads as switching on when the drawing line reaches it. Positioned
-   with offsets (no CSS transform) so Framer owns the scale/opacity cleanly. */
 .processNode {
   position: absolute;
   top: -0.275rem;
@@ -86,9 +80,6 @@
   text-wrap: balance;
 }
 
-/* 22ch inside a ~16rem column produced three- and four-word lines with hard
-   rags. The column is the real constraint here, so the measure just needs to
-   stop the copy short of the next step's node. */
 .processList p {
   max-width: 26ch;
   margin-top: 0.6rem;

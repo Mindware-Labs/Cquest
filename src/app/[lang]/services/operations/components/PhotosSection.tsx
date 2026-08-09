@@ -45,9 +45,7 @@ export default function PhotosSection({ reduced }: { reduced: boolean }) {
               className={styles.photoFrame}
               variants={softRiseVariants}
             >
-              {/* Frame sharpens in (its CSS keeps the hover lift); inside,
-                  the crop wipes open while the photo settles from a slight
-                  overscale — the grid's stagger offsets the two reveals. */}
+
               <motion.div className={styles.photoReveal} variants={mediaRevealVariants}>
                 <motion.div className={styles.photoZoom} variants={mediaSettleVariants}>
                   <Image

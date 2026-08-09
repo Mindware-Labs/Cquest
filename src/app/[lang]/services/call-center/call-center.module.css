@@ -6,19 +6,11 @@
   --cc-stone: color-mix(in srgb, var(--brand-gris) 78%, white);
   --cc-charcoal: #1b2226;
   --cc-rule: color-mix(in srgb, var(--foreground) 14%, transparent);
-  /* Hairline used *inside* surfaces (card edges, block dividers) — lighter
-     than --cc-rule, which separates whole rows in the capability index. */
+
   --cc-hairline: color-mix(in srgb, var(--foreground) 9%, transparent);
 
-  /* The page's light surface. Cooler than the site-wide warm --background so
-     it sits under the celeste accent without going muddy; it was pasted as a
-     literal into four files before living here. */
   --cc-surface: #fbfcfc;
 
-  /* Two-step radius scale. The page's voice is editorial-sharp — hairline
-     rules, uppercase micro-labels, square-cut CTAs — so corners stay near
-     zero: --cc-radius for controls and callouts, --cc-radius-card for the
-     larger surfaces that need just enough softening to read as raised. */
   --cc-radius: 2px;
   --cc-radius-card: 4px;
 
@@ -27,12 +19,6 @@
   overflow: clip;
 }
 
-/* Anchor offset for every in-page jump on this page — the hero's "Explore
-   capabilities" and the client dialog's "#contact" CTA. Each section carried
-   scroll-margin-top: 2rem, but the navbar is fixed and 5.5rem tall (logo
-   h-12 + py-5), so a jump parked the target's heading 3.5rem underneath it.
-   Declared once here rather than five times, sized to the nav plus a little
-   air above the heading. */
 .page section[id] {
   scroll-margin-top: 7rem;
 }

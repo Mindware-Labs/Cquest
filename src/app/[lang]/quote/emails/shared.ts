@@ -10,15 +10,7 @@ import {
   type QuoteSubmission,
 } from "../data";
 
-// This is Center Quest's own internal sales-notification email — for RD
-// staff, not the prospect — so it stays fixed-Spanish regardless of which
-// language the prospect used on the site. See submitQuote.ts's own note.
 export const EMAIL_LANG = "es" as const;
-
-/* ── Email design system (server-only helpers) ────────────────────────────
-   Table-based, inline-styled, self-contained — the way email clients want it.
-   A shared branded shell (wordmark header, service-tinted accent, footer) wraps
-   each message; brand colours and sharp 2px geometry echo the site. */
 
 export const C = {
   ink: "#0a1116",
@@ -45,7 +37,6 @@ export function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-// Map a stored answer back to its human label(s).
 export function answerText(
   question: Question,
   answer: Answers[string] | undefined,
@@ -75,9 +66,7 @@ export function contactRows(submission: QuoteSubmission): Row[] {
 
 export function detailRows(submission: QuoteSubmission): Row[] {
   return QUESTIONNAIRES[submission.service].questions
-    // A conditional question the prospect never saw has no answer to report,
-    // and a row reading "Which other language? —" would read to sales as a
-    // question that was asked and ducked.
+
     .filter((question) => isRevealed(question, submission.details))
     .map((question) => ({
       label: resolveQuestion(question, EMAIL_LANG).label,

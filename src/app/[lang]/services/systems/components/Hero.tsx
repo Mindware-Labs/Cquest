@@ -48,10 +48,7 @@ function WindowDots() {
 export default function Hero({ reduced }: { reduced: boolean }) {
   const { dict, lang } = useI18n();
   const t = COPY[lang];
-  // The product window arrives tilted in perspective and flattens as the
-  // page scrolls — the deliverable settling onto the desk. Transforms are
-  // owned by these MotionValues; the entrance variants only touch
-  // opacity/filter so the two never fight over the same channel.
+
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,

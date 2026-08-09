@@ -1,5 +1,3 @@
-/* ── Base — reset, document defaults, smooth scroll, a11y plumbing ────── */
-
 *,
 *::before,
 *::after {
@@ -9,11 +7,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  /* The route curtain locks Lenis while it is closed, and Lenis's own
-     `.lenis-stopped` host style is `overflow: hidden` — which would retract
-     the classic scrollbar and shift the whole page sideways mid-wipe. A
-     reserved gutter makes that lock invisible. No-op wherever scrollbars
-     already overlay the content. */
+
   scrollbar-gutter: stable;
 }
 
@@ -26,10 +20,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Lenis smooth scroll ─────────────────────────────────
-   Recommended host styles: while Lenis drives the wheel it needs native
-   CSS smooth-scrolling out of the way (it eases anchors itself), and
-   fixed-height html would fight its measurements. */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -47,8 +37,7 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* ── Skip link for accessibility ─────────────────────── */
-
+/* Salto al contenido: visible solo al recibir foco. */
 .skip-link {
   position: absolute;
   left: 1rem;
@@ -67,8 +56,6 @@ html.lenis body {
   transform: translateY(0);
 }
 
-/* ── Pointer-fine utilities ───────────────────────────── */
-
 .pointer-fine-only {
   display: none;
 }
@@ -79,8 +66,7 @@ html.lenis body {
   }
 }
 
-/* ── Reduced-motion safety net ───────────────────────── */
-
+/* Sin movimiento: nada de scroll suave ni de animaciones de página. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -93,29 +79,8 @@ html.lenis body {
   }
 }
 
-/* ── Cross-route handoff ─────────────────────────────────
-   ONE transition system, deliberately. This used to run React's
-   <ViewTransition name="page"> alongside the curtain below, and the two
-   fought each other: view-transition pseudo-elements are painted in the TOP
-   LAYER, above every normal-flow element regardless of z-index. So the
-   snapshot of the outgoing route — captured at its old scroll offset — was
-   drawn OVER the curtain and kept cross-fading for ~440ms after the URL
-   changed, while the curtain started opening two frames after commit. The
-   wipe peeled back onto that stale snapshot: a phantom fast-scroll of the
-   previous page before the real one appeared, worst when leaving the sticky
-   services track, where the old offset is furthest from the new one.
-
-   The curtain wins the argument because it does what a view transition
-   structurally cannot: cover the screen BEFORE the URL changes, so scroll
-   reset, streamed layout and mount-time animations all happen unseen.
-   Re-adding <ViewTransition> (or next.config's experimental.viewTransition)
-   brings the phantom straight back. */
-
-/* Back/forward is the only navigation that bypasses the curtain — the browser
-   commits it before we ever see a click — so the incoming route gets a short
-   fade of its own instead of a hard cut. Opacity only: a transform on
-   #main-content would turn it into a containing block for every fixed
-   descendant on the page. */
+/* Llegada sin telón (redirect, push programático, reduced motion): la ruta ya
+   está comprometida, así que un fundido corto en vez de un corte seco. */
 html[data-route-arrive] #main-content {
   animation: cq-page-arrive 360ms var(--ease-out) both;
 }
@@ -126,25 +91,8 @@ html[data-route-arrive] #main-content {
   }
 }
 
-/* Full-route handoff — ONE blade, ONE pass. It enters from the left, holds
-   only for as long as the route needs to arrive (two frames on a prefetched
-   hop), and carries straight on out the right: the wipe never reverses, so
-   what you see is a single sweep with a different page behind it. An earlier
-   version ran two staggered planes, and a second edge chasing the first read
-   as the curtain passing twice.
-
-   Geometry, all in viewport units (the blade is `width: 120%`, so 100% of its
-   own width = 120vw):
-     parked   translateX(-118%) → ink at [-141.6, -21.6], fringe ends at 0
-     covered  translateX( -15%) → ink at [ -18.0, 102.0], viewport sealed
-     gone     translateX( 100%) → ink at [ 120.0, 240.0]
-   The two legs are 123.6vw and 138vw — near enough to equal that matched
-   durations keep the blade at one constant speed across the pause, which is
-   what makes the two legs read as a single gesture.
-
-   It translates rather than scaleX. Under the old scaleX the 1px light edge
-   was scaled along with the plane — a fraction of a pixel wide for most of
-   the wipe, so the detail never actually read. */
+/* El telón de ruta: una hoja que barre la pantalla entre navegaciones.
+   Lo único que transiciona es el panel; su transitionend dirige las dos patas. */
 .cq-route-curtain {
   position: fixed;
   inset: 0;
@@ -153,8 +101,6 @@ html[data-route-arrive] #main-content {
   overflow: hidden;
 }
 
-/* Swallows clicks for the whole handoff, so an impatient second click can't
-   land on content that is already on its way out. */
 .cq-route-curtain:not([data-phase="idle"]) {
   pointer-events: auto;
 }
@@ -164,8 +110,7 @@ html[data-route-arrive] #main-content {
   inset-block: 0;
   left: 0;
   width: 120%;
-  /* Ink, but not a flat black rectangle — a petroleo bloom behind the leading
-     edge keeps the covered state feeling like a lit surface. */
+
   background:
     radial-gradient(
       130% 96% at 8% 50%,
@@ -173,9 +118,7 @@ html[data-route-arrive] #main-content {
       transparent 64%
     ),
     var(--ink);
-  /* Parked off to the left, and — critically — with no transition in the idle
-     state, so returning to idle re-arms the blade instantly instead of
-     sweeping it backwards across the screen. */
+
   transform: translate3d(-118%, 0, 0);
   transition: transform 0s;
 }
@@ -184,10 +127,6 @@ html[data-route-arrive] #main-content {
   will-change: transform;
 }
 
-/* Leading fringe — a hard 1px of light against the ink, then a celeste haze
-   thinning out ahead of it. This is what the old second plane was for; folded
-   into the blade itself it gives the same depth without a second edge. It sits
-   outside the ink's right side, so it is off screen for the whole reveal. */
 .cq-route-curtain-panel::after {
   content: "";
   position: absolute;
@@ -203,10 +142,6 @@ html[data-route-arrive] #main-content {
   );
 }
 
-/* Trailing wake — the mirror image, outside the ink's left side and therefore
-   only ever on screen during the reveal, where it drags a thinning celeste
-   haze off the newly uncovered page. Softer than the leading fringe: this one
-   is the follow-through, not the announcement. */
 .cq-route-curtain-panel::before {
   content: "";
   position: absolute;
@@ -222,11 +157,6 @@ html[data-route-arrive] #main-content {
   );
 }
 
-/* The two legs of the single pass. The curves are halves of one ease-in-out:
-   the entry moves on the first frame and keeps building, ending fast; the exit
-   picks up at that same speed and unwinds long. Symmetric ease-out curves on
-   both legs would instead decelerate to a standstill in the middle, which is
-   exactly what would make one pass look like two. */
 .cq-route-curtain[data-phase="covering"] .cq-route-curtain-panel {
   transform: translate3d(-15%, 0, 0);
   transition: transform 520ms cubic-bezier(0.3, 0.12, 0.72, 0.38);
@@ -242,9 +172,6 @@ html[data-route-arrive] #main-content {
   transition: transform 640ms cubic-bezier(0.2, 0.62, 0.16, 1);
 }
 
-/* Shown only if the route is genuinely slow to arrive. The 380ms delay means
-   a prefetched navigation — nearly all of them — never reveals it, so there
-   is no spinner flash on a fast hop. */
 .cq-route-curtain-mark {
   position: absolute;
   left: 50%;
@@ -285,18 +212,6 @@ html[data-route-arrive] #main-content {
   }
 }
 
-/* ── reCAPTCHA badge ─────────────────────────────────────
-   The v3 script appends its floating badge to <body> and never removes it,
-   and `next/script` does not unload scripts on unmount — so navigating away
-   from the quote form used to leave the badge pinned over every page after
-   it, hero included. Hidden by default; the quote page opts back in by
-   setting `data-recaptcha` on <html> for as long as it is mounted (see
-   app/[lang]/quote/RecaptchaBadge.tsx).
-
-   `visibility` rather than `display` so the badge keeps its layout box and
-   Google's own positioning maths stays valid, and it is transitioned along
-   with opacity so the flip to hidden waits for the fade instead of snapping
-   out from under it. */
 .grecaptcha-badge {
   visibility: hidden;
   opacity: 0;
@@ -312,12 +227,10 @@ html[data-recaptcha="on"] .grecaptcha-badge {
   pointer-events: auto;
 }
 
-
 ::selection {
   background: color-mix(in srgb, var(--brand-celeste) 30%, transparent);
   color: var(--foreground);
 }
-
 
 :focus-visible {
   outline: 2px solid var(--brand-petroleo);

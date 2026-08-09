@@ -41,11 +41,6 @@ export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
 
-  /* The section's celeste corner wash used to be baked straight into the
-     background — the one About band that moved nothing on scroll, closing
-     the page's whole narrative on a frozen note next to StorySection's own
-     scrubbed aura one band up. Same device, verbatim: a parallaxed light
-     behind the content, too faint to notice as an effect on its own. */
   useIsomorphicLayoutEffect(() => {
     if (reduced || !sectionRef.current) return;
 

@@ -1,6 +1,3 @@
-/* Width-constraint utility shared by every section's outer wrapper. Compose
-   it alongside a component's own layout class, e.g.
-   `className={`${container.container} ${styles.heroGrid}`}`. */
 .container {
   width: min(100% - 2.5rem, 84rem);
   margin-inline: auto;

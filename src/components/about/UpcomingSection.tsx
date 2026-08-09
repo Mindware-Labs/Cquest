@@ -12,10 +12,6 @@ const TAG = {
   es: "En desarrollo",
 };
 
-/* A section that exists as a PLACE, not yet as content — the same philosophy
-   as the team page's placeholder chart: visibly unfinished on purpose, so it
-   reserves its seat in the page and nobody mistakes it for a shipped design.
-   When the real section is built, this component simply gets swapped out. */
 export default function UpcomingSection({
   id,
   title,

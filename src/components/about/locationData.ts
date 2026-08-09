@@ -7,22 +7,17 @@ export const HQ = {
   zoom: 17,
 } as const;
 
-/**
- * Cinematic intro: the globe spins horizontally (longitude only, bearing stays
- * north-up) and the zoom rides in on the tail of that spin, landing on the HQ pin.
- */
 export const MAP_INTRO = {
-  /** Degrees west of the HQ the globe starts at — the camera travels east (left to right). */
   startLngOffset: -88,
-  /** Degrees still to travel when the fly-in takes over from the free spin. */
+
   handoffLngOffset: -46,
   spinZoom: 1.5,
   spinDuration: 2600,
   flyDuration: 4200,
-  /** Peak zoom of the fly path — keeps the flight from pulling back off the globe. */
+
   flyMinZoom: 1.5,
   holdBeforeSpin: 420,
-  /** Below this zoom the pin covers too much ground to point at anything, so it hides. */
+
   pinRevealZoom: 8,
 } as const;
 

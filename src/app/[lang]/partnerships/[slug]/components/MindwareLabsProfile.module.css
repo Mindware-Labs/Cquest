@@ -1,7 +1,3 @@
-/* Mindware Labs partner profile — a black, purple, symbiote-veined page.
-   Deliberately off the Center Quest palette (DISENIO.md's celeste/petroleo):
-   this profile is Mindware Labs' own identity, sampled from their logo
-   (#522566), not Center Quest's. */
 .page {
   --mw-ink: #08050e;
   --mw-purple: #522566;
@@ -23,7 +19,6 @@
   pointer-events: none;
 }
 
-/* ── Hero ─────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
   z-index: 1;
@@ -55,11 +50,7 @@
   display: block;
   width: 100%;
   height: auto;
-  /* The transparent-background mark ships in Mindware Labs' own deep
-     purple — legible on white, but it sinks into this near-black page at
-     the same contrast the brand logo does elsewhere on dark surfaces.
-     Filtered white so it reads as a mark first; the field around it
-     carries the purple instead. */
+
   filter: brightness(0) invert(1);
 }
 
@@ -126,7 +117,6 @@
   }
 }
 
-/* ── Content sections ────────────────────────────────────────────────── */
 .section {
   position: relative;
   z-index: 1;
@@ -138,9 +128,7 @@
   margin-inline: auto;
   border: 1px solid rgba(157, 92, 224, 0.22);
   border-radius: 4px;
-  /* A wash of Mindware's own brand purple over the dark glass, rather than
-     a neutral tint — so the card reads as this profile's material even
-     where the field behind it has grown sparse. */
+
   background:
     linear-gradient(
       color-mix(in srgb, var(--mw-purple) 20%, transparent),
@@ -167,7 +155,6 @@
   text-wrap: pretty;
 }
 
-/* ── Connect ──────────────────────────────────────────────────────────── */
 .connect {
   text-align: center;
 }

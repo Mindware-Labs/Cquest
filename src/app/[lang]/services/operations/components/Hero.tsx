@@ -37,9 +37,7 @@ const COPY = {
 export default function Hero({ reduced }: { reduced: boolean }) {
   const { dict, lang } = useI18n();
   const t = COPY[lang];
-  // Hero departure with depth — as the page scrolls, the copy lifts away and
-  // dissolves while the scope card trails at a slower rate, so leaving the
-  // hero reads as two planes separating rather than one block scrolling by.
+
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
@@ -96,8 +94,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             </a>
           </motion.div>
         </motion.div>
-        {/* softRise (opacity/blur only) keeps the transform channel free for
-            the scroll-linked metaY — variant and MotionValue never fight. */}
+
         <motion.aside
           className={styles.heroMeta}
           variants={softRiseVariants}

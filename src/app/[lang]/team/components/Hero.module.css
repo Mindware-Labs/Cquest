@@ -164,11 +164,7 @@
   width: clamp(3.6rem, 4.4vw, 4.1rem);
   height: auto;
   object-fit: contain;
-  /* logo.png is the petroleo-on-transparent lockup — legible on the white
-     page chrome everywhere else it's used, but it nearly disappears into
-     this card's near-black background at that same contrast. Inverted to
-     white it reads the same way the rest of the site's dark surfaces
-     (Navbar, HeroNav) already render it. */
+
   filter: brightness(0) invert(1);
 }
 

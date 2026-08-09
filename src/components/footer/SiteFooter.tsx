@@ -13,75 +13,28 @@ import { CQ_EASE, gsap } from "@/lib/gsap";
 import { BRAND_LINE, CONTACT, COPY, getBaseLinks, getServiceRows } from "./data";
 import styles from "./SiteFooter.module.css";
 
-/* ── Site footer ──────────────────────────────────────────
-   The hero opens the site as a lit dark stage; the services sheet is lifted
-   white over it. This closes the loop on the same stage — the hero's own
-   field gradient, its grain tile, its accent hairline, its button — so the
-   page reads as bottoming out where it began rather than ending on an
-   unrelated dark band.
-
-   What it dropped, and why:
-     • The Sectors column. Its five labels all resolved to the same
-       /#sectors anchor: link-shaped decoration, not navigation.
-     • The Company column. Four of its links now sit inline in the closing
-       row, where they cost one line instead of a quarter of the footer.
-     • The pill CTA with its lone darkening wash. It is the hero's button
-       now, shared from ui/QuestCta rather than re-approximated here.
-     • The oversized logo. The closing statement carries the brand weight;
-       the wordmark sits above it at signature scale.
-
-   Structurally: one statement + one action on the left, a directory of the
-   three business lines and the three ways to reach us on the right, and a
-   single closing rule. Rows and hairlines rather than cards — the three
-   business lines are a list, and boxing them would say otherwise. */
-
 export default function SiteFooter() {
   const { lang, dict } = useI18n();
   const t = COPY[lang];
   const reduced = useReducedMotion() ?? false;
   const pathname = useLocalizedPathname();
-  // Hidden via the `hidden` attribute rather than skipping the render
-  // (`return null`): this component mounts once in the locale layout and
-  // survives every client-side route change, so its GSAP reveal effect only
-  // ever runs once, against the refs from that first render. Unmounting the
-  // <footer> here would leave those refs null forever and the reveal would
-  // never wire up on a later route that DOES want the footer.
+
+  /* Algunas rutas cierran con su propio bloque de contacto y no quieren un
+     segundo cierre encima. */
   const footerHidden = (NO_FOOTER_PAGES as readonly string[]).includes(pathname);
 
   const footerRef = useRef<HTMLElement>(null);
   const ruleRef = useRef<HTMLSpanElement>(null);
   const statementRef = useRef<HTMLHeadingElement>(null);
 
-  /* The footer's one orchestrated beat, and the hero's gesture verbatim: the
-     rule draws along its length, then the statement's words lift from behind
-     their own clip edges, then the directory sharpens out of blur behind it.
-     Three cues on one timeline, not three independent reveals — a page's last
-     block should land, not perform.
-
-     All GSAP `fromTo`, and no `whileInView` variants, on purpose: fromTo
-     writes the from-state in JS before paint (hence the layout effect), so a
-     run where the script never executes ships a fully visible footer rather
-     than a blank one. Variants would have serialised opacity: 0 into the
-     HTML and depended on hydration to undo it.
-
-     Played from an IntersectionObserver rather than a ScrollTrigger, and
-     that distinction is the whole bug fix. This footer lives in the locale
-     layout, outside <main>, so it mounts once and survives every client-side
-     route change. A ScrollTrigger caches its start as a pixel offset at
-     creation time, and nothing here refreshed it on navigation: land on a
-     page without scrolling to the bottom, move to a shorter one, and the
-     cached start now sits past that page's maximum scroll. It can never be
-     reached, the tween never fires, and the from-state stays written — a
-     footer showing its logo, its button and its base row over an empty
-     middle. An observer caches nothing; the browser evaluates it against
-     live layout, so it stays correct across route changes, late-loading
-     content and any page height. */
   useIsomorphicLayoutEffect(() => {
     const footer = footerRef.current;
     if (reduced || !footer || !statementRef.current) return;
 
     let observer: IntersectionObserver | undefined;
 
+    /* gsap.context para que el cleanup revierta todo de una: este bloque monta
+     y desmonta con la ruta. */
     const ctx = gsap.context(() => {
       const reveal = gsap.timeline({ paused: true });
 
@@ -93,10 +46,7 @@ export default function SiteFooter() {
           { yPercent: 0, duration: 1.05, ease: CQ_EASE, stagger: 0.055 },
           0.12,
         )
-        /* The services motion language's `softRiseVariants`, in GSAP: opacity
-           plus a focus-pull out of blur, no y-rise. The two blocks own CSS
-           hover transitions on their rows, and presence — never a flat fade —
-           is how everything else on this site arrives. */
+
         .fromTo(
           footer.querySelectorAll(`.${styles.block}`),
           { autoAlpha: 0, filter: "blur(10px)" },
@@ -104,11 +54,6 @@ export default function SiteFooter() {
           0.26,
         );
 
-      // -12% on the bottom edge is the old `start: "top 88%"` expressed as a
-      // shrunken root: the reveal begins when the footer's top crosses 88% of
-      // the viewport. The observer fires its first callback on observe(), so a
-      // page that loads already scrolled to the bottom reveals immediately
-      // instead of waiting for a scroll event that never comes.
       observer = new IntersectionObserver(
         (entries) => {
           if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -131,11 +76,7 @@ export default function SiteFooter() {
 
   return (
     <footer ref={footerRef} className={styles.footer} hidden={footerHidden}>
-      {/* The hero's field, reprised: static grain over the gradient, a corner
-          falloff so it reads as a lit stage rather than a flat rectangle of
-          colour, and one celeste bloom in the corner that carries the
-          statement — the same single light source, seen once more on the way
-          out. */}
+
       <span aria-hidden className={styles.glow} />
       <span aria-hidden className={`cq-field-grain ${styles.grain}`} />
       <span aria-hidden className={styles.vignette} />
@@ -148,14 +89,7 @@ export default function SiteFooter() {
               aria-label={dict.nav.homeLinkAriaLabel}
               className={styles.brandLink}
             >
-              {/* Height-constrained, width auto. logo.png ships at 692×512
-                  (4x its 1.35:1 display ratio) so it stays crisp at retina
-                  DPRs; at 2.25rem it has pixels to spare on any display.
-                  Whitened with the same `brightness(0) invert(1)` pair
-                  Navbar and HeroNav use on this exact PNG — brightness(0)
-                  crushes every colour to black, invert(1) flips that to
-                  pure white, which is why it works regardless of the
-                  logo's own colours and why the order matters. */}
+
               <Image
                 src="/logo.png"
                 alt="Center Quest"
@@ -167,17 +101,10 @@ export default function SiteFooter() {
 
             <span aria-hidden ref={ruleRef} className={`cq-hero-rule ${styles.rule}`} />
 
-            {/* Two deliberate lines, each word in its own clipping box. The
-                padding/negative-margin pair on .word gives descenders
-                somewhere to live so the mask never shaves a "p" or a "y". */}
             <h2 ref={statementRef} className={styles.statement}>
               {BRAND_LINE[lang].map((line, lineIndex) => (
                 <span key={line} className={styles.statementLine}>
                   {line.split(" ").map((word, wordIndex) => (
-                    // The space is a sibling of the clipping box, never inside it:
-                    // a trailing space within an `overflow: hidden` inline-block is
-                    // collapsed away, and a non-breaking one would stop the
-                    // statement wrapping at all on a narrow screen.
                     <span key={`${lineIndex}-${wordIndex}-${word}`}>
                       <span className={styles.word}>
                         <span>{word}</span>
@@ -217,9 +144,7 @@ export default function SiteFooter() {
 
             <div className={styles.block}>
               <h3 className={styles.blockHeading}>{t.headings.contact}</h3>
-              {/* A description list, not a link list: these are labelled
-                  facts, each one also actionable (call, email, or — since
-                  LocationSection moved to its own /location page — visit). */}
+
               <dl className={styles.contactList}>
                 <dt>{t.phoneLabel}</dt>
                 <dd>
@@ -230,12 +155,7 @@ export default function SiteFooter() {
                   <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
                 </dd>
                 <dt>{t.locationLabel}</dt>
-                {/* <address> is the semantic element for the contact details
-                    of its nearest section — screen readers announce it as
-                    such. Its browser default is italic, reset in the
-                    stylesheet. The link lives INSIDE it (not the reverse):
-                    an <a> wrapping an <address> is valid but unusual, while
-                    a link inside an address is the textbook pattern. */}
+
                 <dd>
                   <address className={styles.address}>
                     <LocalizedLink href="/location">
@@ -267,7 +187,6 @@ export default function SiteFooter() {
   );
 }
 
-/* The hero CTA's glyph, at readout scale — the site has one chevron. */
 function Chevron() {
   return (
     <svg

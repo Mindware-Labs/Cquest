@@ -1,10 +1,3 @@
-/* ── Selected work — the proof gallery. Replaceable, clearly-labeled media
-   slots: a deliberate "in curation" wall now, real published case studies the
-   moment a screenshot + fields are added (see the Work type). A light section
-   on purpose — it breaks the dark commitments→contact run and sets the shipped
-   product apart from the dark synthetic previews further up. Resting plates are
-   flat and editorial; they lift only on hover, so nothing reads as a ghost
-   card. */
 .workSection {
   position: relative;
   padding-block: clamp(5rem, 8vw, 7.5rem);
@@ -75,8 +68,6 @@
   border-right: 1px solid var(--border);
 }
 
-/* Reveal layers for the screenshot: outer carries the clip-path wipe, inner
-   the settle-from-overscale — both animated by WorkSection.tsx. */
 .workReveal,
 .workZoom {
   position: absolute;
@@ -131,7 +122,6 @@
   text-transform: uppercase;
 }
 
-/* Registration ticks — the media as a precise, reserved plate (featured only). */
 .workTick {
   position: absolute;
   width: 0.7rem;
@@ -158,7 +148,6 @@
   padding: clamp(1.5rem, 2.6vw, 2.5rem);
 }
 
-/* Anchor the outcome to the bottom of the stretched caption column. */
 .workFeatured .workOutcome { margin-top: auto; }
 
 .workTags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -247,7 +236,6 @@
   color: var(--muted);
 }
 
-/* Click affordance — the plate is a link to its case-study subpage. */
 .workCta {
   display: inline-flex;
   align-items: center;

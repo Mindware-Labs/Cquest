@@ -4,9 +4,7 @@
 
   position: relative;
   display: grid;
-  /* The gutter is its own track, not a `gap` — that gives the connector a
-     real box to live in, so the beam and the port it plugs into are one
-     element instead of two independently-positioned guesses. */
+
   grid-template-columns: minmax(18rem, 0.82fr) var(--board-gap) minmax(0, 1.18fr);
   width: 100%;
   margin: clamp(1.75rem, 2.5vw, 2.25rem) 0 0;
@@ -49,9 +47,7 @@
   font-size: 1.5rem;
   font-weight: 500;
   letter-spacing: -0.04em;
-  /* Full-strength, not a 46%-transparent mix: the mix read as a soft brand
-     tint but only cleared ~1.9:1 against --ab-base, well under the 3:1 large
-     -text floor. Solid petroleo keeps the same tint while clearing ~5.1:1. */
+
   color: var(--ab-petroleo);
 }
 
@@ -130,12 +126,6 @@
     transform 260ms var(--ease-out);
 }
 
-/* Same clip-path wedge as .connectorArrow below, at row scale — the row's
-   "port" and the gutter's "plug" used to be built from unrelated geometry
-   (a stem-and-corner chevron vs. a solid gradient triangle) despite being
-   the same physical part in the control-board metaphor. `currentColor`
-   keeps every existing hover/active/focus rule below working unchanged —
-   only the shape construction changes. */
 .sectorArrow::before {
   content: "";
   position: absolute;
@@ -178,11 +168,6 @@
   outline-offset: -2px;
 }
 
-/* ── Connector ─────────────────────────────────────────────
-   A single notch, not a wire: it lives in the gutter track itself (not
-   clipped by either neighbor) and its tip always touches the panel's edge
-   exactly at the active row's height — geometry doing the pointing instead
-   of a glowing line-and-port pair. */
 .connector {
   position: relative;
   height: var(--board-height);
@@ -207,11 +192,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  /* min-, not a fixed height: the real per-sector, per-locale copy (data.ts)
-     varies enough that a hard 29rem risked silently clipping the longer
-     combinations against `overflow: hidden` below, with no scrollbar to
-     reveal it. Letting the panel grow when it needs to is the same fix the
-     ≤64rem breakpoint already uses. */
+
   min-height: var(--board-height);
   padding: clamp(1.5rem, 2vw, 2rem);
   overflow: hidden;
@@ -220,10 +201,7 @@
   background: var(--ab-deep);
   color: var(--ab-raised);
   outline: none;
-  /* Shared "quiet register" tint for this panel's secondary uppercase
-     labels — tinted from the surface's own celeste rather than a flat
-     white-alpha (which reads grey on this ink), the same technique
-     MetricsSection's .metricList dt already uses on this same --ab-deep. */
+
   --detail-muted: color-mix(in srgb, var(--ab-celeste) 26%, rgba(255, 255, 255, 0.82));
 }
 
@@ -254,11 +232,6 @@
 }
 
 .detail:focus-visible {
-  /* Inset, not outset: a positive offset draws the ring outside the panel's
-     own border, onto the light page background behind it — where celeste
-     clears only ~2:1. DESIGN.md's own rule ("los oscuros usan celeste") and
-     .sectorButton's inset ring right above this file both put the ring on
-     the surface it's meant for; this one was the odd one out. */
   outline: 2px solid var(--ab-celeste);
   outline-offset: -3px;
 }
@@ -335,11 +308,6 @@
   white-space: nowrap;
 }
 
-/* The panel's one real payload — "what the operation must handle" — used to
-   be the only content group here with no framing rule: .detailTopline,
-   .services and .standard all get a border; this fell through the cracks.
-   Same border-invert/padding-top the other two already use, so it reads as
-   a third instrument in that cadence instead of a stray paragraph. */
 .demand {
   margin-top: clamp(1.35rem, 2vw, 1.65rem);
   padding-top: clamp(1rem, 1.5vw, 1.25rem);
@@ -351,14 +319,6 @@
   color: var(--detail-muted);
 }
 
-/* The connector's whole job is to point at the active row and "plug into"
-   this panel (--port-offset, .connectorArrow below) — but nothing marked
-   where that signal actually lands. This chevron is the arrow's own
-   gradient + clip-path, reused at label scale, so the panel's one moving
-   part visibly arrives at the one sentence it exists to deliver — and the
-   label's own tint steps up to .protocolLabel's full-strength celeste
-   (services' label stays at --detail-muted), so the reading order
-   protocol → demand → services is explicit rather than flat. */
 .demand .detailLabel {
   color: color-mix(in srgb, var(--ab-celeste) 88%, white);
 }
@@ -421,12 +381,6 @@
   border-right: 0;
 }
 
-/* This is the panel's RESTING state — what a visitor sees before ever
-   touching the selector (see StorySection.tsx's own note on why this
-   replaced the old pull quote). It was sized and tinted like a footnote,
-   tied with .services li for the dimmest text in the panel — recalibrated
-   here to actually read as the considered default statement it's meant to
-   be, still a clear step under --detail-muted's label register. */
 .standard {
   margin: clamp(1rem, 1.5vw, 1.25rem) 0 0;
   padding-top: 0.75rem;
@@ -559,10 +513,6 @@
   }
 
   .detailHeading h3 {
-    /* Floor raised from 1rem: below ~359px it could drop to or under
-       .demand p's fixed 1.12rem at the same font-weight, letting the body
-       sentence outrank the sector name it introduces. 1.25rem keeps the
-       heading ahead of it at every width this query covers. */
     font-size: clamp(1.25rem, 5vw, 1.4rem);
   }
 

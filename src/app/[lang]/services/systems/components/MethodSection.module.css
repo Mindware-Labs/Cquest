@@ -3,8 +3,6 @@
   background: var(--background);
 }
 
-/* ── Method — full-width numbered rows whose top hairline draws in as each
-   step reveals; the ghost number carries the sequence. */
 .methodList {
   margin-top: clamp(2rem, 3.5vw, 3rem);
 }

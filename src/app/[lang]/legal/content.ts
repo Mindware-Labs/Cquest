@@ -1,14 +1,5 @@
 import type { Locale } from "@/i18n/config";
 
-/* ── Legal content model ──────────────────────────────────
-   Same shape the quote wizard uses for its questionnaires (content as data,
-   `Record<Locale, ...>` everywhere so a missing translation is a compile
-   error, not a silent gap): both /legal/terms and /legal/privacy are one
-   `LegalDoc` each, rendered by the single LegalPage component. A `block` is
-   either a paragraph or a bullet list, in the order they should read — kept
-   as a list rather than fixed "intro/list/outro" slots so a section can carry
-   as many of either as it actually needs. */
-
 export type LegalBlock =
   | { type: "p"; text: Record<Locale, string> }
   | { type: "list"; items: Record<Locale, readonly string[]> };
@@ -34,12 +25,6 @@ const list = (es: readonly string[], en: readonly string[]): LegalBlock => ({
 
 const UPDATED: Record<Locale, string> = { es: "8 de agosto de 2026", en: "August 8, 2026" };
 
-/* ── Privacy Policy ──────────────────────────────────────────────────────
-   Grounded in what this site actually does today, not the aspirational
-   requirements doc: the quote form (submitQuote.ts) has no database or CRM
-   behind it — it only emails the submission via Resend to the sales inbox —
-   and Google Analytics only loads when NEXT_PUBLIC_GA_ID is set
-   ([lang]/layout.tsx). Update this file if either of those changes. */
 export const PRIVACY: LegalDoc = {
   title: { es: "Política de Privacidad", en: "Privacy Policy" },
   updated: UPDATED,
@@ -230,7 +215,6 @@ export const PRIVACY: LegalDoc = {
   ],
 };
 
-/* ── Terms & Conditions ───────────────────────────────────────────────── */
 export const TERMS: LegalDoc = {
   title: { es: "Términos y Condiciones", en: "Terms and Conditions" },
   updated: UPDATED,

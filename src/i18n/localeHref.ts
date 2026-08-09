@@ -4,11 +4,6 @@ function isAlreadyPrefixed(path: string): boolean {
   return locales.some((locale) => path === `/${locale}` || path.startsWith(`/${locale}/`));
 }
 
-// Prefixes an internal absolute href with the active locale — "/" -> "/es",
-// "/quote?servicio=bpo" -> "/es/quote?servicio=bpo",
-// "/#services" -> "/es#services". Leaves external links, mailto/tel, bare
-// in-page anchors, and already-prefixed hrefs untouched (idempotent, so it's
-// safe to call on a value that might already be localized).
 export function localeHref(lang: Locale, href: string): string {
   if (/^(https?:|mailto:|tel:|#)/.test(href)) return href;
 

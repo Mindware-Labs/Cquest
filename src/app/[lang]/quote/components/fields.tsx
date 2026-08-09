@@ -5,11 +5,6 @@ import type { ResolvedChoice as Choice, ResolvedQuestion as Question } from "../
 import styles from "./fields.module.css";
 import { Alert } from "./icons";
 
-/* ── Choice group (single / multi) ────────────────────────
-   Built on native radio/checkbox inputs kept visually hidden but focusable:
-   the label IS the card. That buys real keyboard semantics (arrow-key roving
-   for radios, space to toggle) and screen-reader grouping for free, while the
-   selected/focus styling lives entirely in CSS via :has(). */
 export function OptionGroup({
   question,
   value,
@@ -83,8 +78,6 @@ export function OptionGroup({
   );
 }
 
-/* ── Text-like field (text / email / tel / textarea) ────── */
-
 const AUTOCOMPLETE: Record<string, string> = {
   name: "name",
   company: "organization",
@@ -92,10 +85,6 @@ const AUTOCOMPLETE: Record<string, string> = {
   phone: "tel",
 };
 
-// Auto-punctuate a phone number as it's typed: digits group into 809-000-0000,
-// with an optional +1 country code kept in front (North American / Dominican
-// numbering plan). Non-digits the user types are ignored — the dashes appear on
-// their own.
 function formatPhone(raw: string): string {
   let digits = raw.replace(/\D/g, "");
   let prefix = "";

@@ -1,27 +1,9 @@
-/* ── Why Us — a fanned stack, not a spinning drum ────────────────────────
-   Four plaques each animate independently to one of four fixed depth slots
-   — front, left, right, back — via Motion's x/y/z/rotateY/scale/opacity (see
-   WhyUsSection.tsx's SLOT_FRONT/RIGHT/LEFT/BACK). Nothing here animates a
-   filter or a background colour — this section follows the same
-   transform+opacity-only discipline the rest of the site enforces (see
-   ServicesCarousel.tsx's long note on why `filter: blur()` was banned); the
-   material differences below (data-slot, box-shadow) are discrete, CSS-only
-   state swaps, never part of that animated set.
-
-   Depth is read in the SURFACE too, not just in Motion's opacity: side and
-   back plaques carry their own darker, less-tinted material (`[data-slot]`
-   below), and the front plaque alone gets a lit bevel — a top highlight, a
-   bottom deepening line, and a brand-tinted shadow — so it reads as the
-   chosen object among four real ones, not a bigger flat cutout. */
-
 .whyUsSection {
   position: relative;
   overflow: clip;
   scroll-margin-top: 5rem;
   padding-block: clamp(4.5rem, 8vw, 7.5rem);
-  /* Same dark material as MetricsSection two bands up (--ab-deep, plus the
-     identical 118° top-left wash) — one recurring dark chapter, not a third
-     invented mood. */
+
   background:
     linear-gradient(
       118deg,
@@ -40,14 +22,6 @@
   background: linear-gradient(90deg, transparent, var(--ab-rule-invert), transparent);
 }
 
-/* The one background addition this section gets — a quiet hairline lattice,
-   the exact technique MetricsSection's own .fieldGrid uses two bands up
-   (same 3.4rem tile, same line-lattice construction), toned a touch quieter
-   since this band already stacks a diagonal wash, a vignette and grain on
-   top of it. Reads as "the same measured backdrop, continued" rather than a
-   second, competing decoration — deliberately not a dot-matrix or any other
-   invented pattern. Static background-image + static mask-image only, so it
-   costs one paint and nothing per frame. */
 .fieldGrid {
   position: absolute;
   inset: -12% 0;
@@ -61,8 +35,6 @@
   -webkit-mask-image: radial-gradient(112% 84% at 50% 40%, transparent 44%, #000 78%, transparent 100%);
 }
 
-/* Corner falloff — the drum is this section's one deliberate GESTURE; the
-   backdrop stays quiet on purpose (see the file-level note above). */
 .vignette {
   position: absolute;
   inset: 0;
@@ -81,12 +53,6 @@
   z-index: 1;
 }
 
-/* ── Header — same anatomy as SectionIntro (rule, eyebrow, heading, lead)
-   but hand-rolled in white: SectionIntro's h2/p hard-code the LIGHT-surface
-   foreground/text-tertiary tokens, so reusing it as-is on a dark band would
-   render near-invisible dark-on-dark text. MetricsSection hit the same
-   constraint and solved it the same way — a local header block instead of
-   the shared component. */
 .header {
   display: flex;
   flex-direction: column;
@@ -124,11 +90,9 @@
   margin-top: 0.85rem;
   font-size: 0.95rem;
   line-height: 1.7;
-  /* Matches .face p exactly — same job, same surface, one value. */
+
   color: rgba(255, 255, 255, 0.7);
 }
-
-/* ── The stage ────────────────────────────────────────────────────────── */
 
 .stageWrap {
   margin-top: clamp(2.75rem, 6vw, 4.5rem);
@@ -146,8 +110,7 @@
   padding-block: 1.5rem;
   perspective: 1900px;
   perspective-origin: 50% 50%;
-  /* The stage, not <body>, owns keyboard focus for the carousel — see the
-     ARIA carousel pattern this markup follows in the component. */
+
   outline-offset: 6px;
 }
 
@@ -170,42 +133,23 @@
   left: 50%;
   width: var(--plaque-w);
   height: var(--plaque-h);
-  /* Centres the slot WITHOUT spending the transform property on it — Motion
-     writes x/y/z/rotate/scale straight into `transform` for this element
-     (see the component's `animate` prop), so the anchor offset has to live
-     in layout (negative margins) instead of a hand-authored
-     `translate(-50%,-50%)` that Motion's own transform would either
-     overwrite or be overwritten by. */
+
   margin: calc(var(--plaque-h) / -2) 0 0 calc(var(--plaque-w) / -2);
   display: flex;
   flex-direction: column;
-  /* Split rather than one clamp() reused on all four sides — that shorthand
-     default gives the numeral, title and body identical breathing room
-     everywhere, which is exactly what makes a card read as a generic
-     evenly-padded box. More headroom above the numeral (a stamped-mark
-     feel), tighter sides so the body's line length feels considered, less
-     below than above. */
+
   padding: clamp(1.7rem, 2.5vw, 2.25rem) clamp(1.4rem, 2.3vw, 2rem) clamp(1.6rem, 2.3vw, 2.05rem);
   border: 1px solid var(--ab-rule-invert);
   border-radius: 2px;
   background: color-mix(in srgb, var(--ab-petroleo) 22%, var(--ab-deep));
-  /* A quiet top-edge catch-light on every plaque, active or not — the base
-     coat under the active card's fuller bevel below. Cheap and static: one
-     more line in a box-shadow list a browser already has to resolve. */
+
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  /* Guards a transition this codebase has otherwise banned (see
-     ServicesCarousel's long note on why `filter: blur()` was removed):
-     none of x/y/z/rotate/scale/opacity above are filter, so this never
-     re-rasterises the plaque — it only ever composites. Still worth being
-     explicit that no property here or added later should reach for filter. */
+
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
-/* Depth in the MATERIAL, not just Motion's opacity: each step back from
-   front is a step darker and less tinted, so the receding plaques read as
-   real objects sitting further away, not the same flat cutout scaled down. */
 .face[data-slot="side"] {
   background: color-mix(in srgb, var(--ab-petroleo) 14%, var(--ab-deep));
   border-color: color-mix(in srgb, white 10%, transparent);
@@ -216,10 +160,6 @@
   border-color: color-mix(in srgb, white 6%, transparent);
 }
 
-/* A side/back plaque is a real click target (see onSelect in the component)
-   with nothing but a cursor to say so until now — a quiet border brighten on
-   a discrete hover state, CSS-transitioned, never part of Motion's animated
-   set. */
 .face:not([data-active]):hover {
   border-color: color-mix(in srgb, var(--ab-celeste) 38%, var(--ab-rule-invert));
   transition: border-color 220ms var(--ease-out);
@@ -228,11 +168,7 @@
 .face[data-active] {
   cursor: default;
   border-color: color-mix(in srgb, var(--ab-celeste) 55%, transparent);
-  /* The base top highlight, carried further: a brighter catch-light, a
-     bottom-edge deepening line completing the bevel, the existing celeste
-     ring, and a drop shadow retinted from flat black to the brand's own
-     petroleo — the one shadow in the file that used to be a generic
-     rgba(0,0,0,0.6) default now reads as this section's material. */
+
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -1px 0 rgba(0, 0, 0, 0.35),
@@ -240,10 +176,6 @@
     0 24px 48px -28px color-mix(in srgb, var(--ab-petroleo) 70%, black);
 }
 
-/* The one card the copy itself calls the real differentiator (in-house
-   engineering) gets the one material mark verde is spent on — a single
-   hairline reusing .whyUsSection::before's own top-rule device, not a
-   second invented accent. */
 .face[data-accent="verde"]::before {
   content: "";
   position: absolute;
@@ -256,17 +188,11 @@
   font-variant-numeric: tabular-nums;
   font-size: clamp(1.25rem, 2.6vw, 1.5rem);
   font-weight: 200;
-  /* Negative, matching MetricsSection's own <dd> figures — the same
-     "engraved instrument readout" register this numeral is meant to share;
-     it was tracking the opposite direction (+0.01em) before. */
+
   letter-spacing: -0.015em;
   color: color-mix(in srgb, var(--ab-celeste) 70%, white);
 }
 
-/* The numeral's terminating mark — the small tick a stamped instrument
-   readout needs to not read as a bare page number. currentColor means it
-   inherits whichever tint .faceIndex already resolved to, celeste or (via
-   the rule below) verde, with no second selector to keep in sync. */
 .faceIndex::after {
   content: "";
   display: block;
@@ -281,9 +207,6 @@
   color: color-mix(in srgb, var(--ab-verde) 74%, white);
 }
 
-/* Numeral→title tighter than title→body (was the other way round): the
-   index now binds to the title as its own kicker, and the body reads as its
-   own paragraph below — the grouping a reader actually expects. */
 .face h3 {
   margin-top: 0.6rem;
   font-family: var(--font-heading), sans-serif;
@@ -300,8 +223,6 @@
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.7);
 }
-
-/* ── The dial — tick rail, pause toggle, running index ───────────────── */
 
 .rail {
   margin-top: clamp(2rem, 4vw, 3rem);
@@ -326,9 +247,6 @@
   place-items: center;
 }
 
-/* The track — a plain dash at rest, same as before. A real element rather
-   than a pseudo-element now, because the active tick needs a genuine child
-   node for the countdown fill (below) to animate inside. */
 .tickTrack {
   position: relative;
   overflow: hidden;
@@ -345,9 +263,7 @@
 
 .tick[data-active] .tickTrack {
   width: 1.4rem;
-  /* A dim, static track shows which tick is active even while paused (no
-     fill rendered then — see the `counting` check in the component); the
-     fill layered on top carries full celeste once it's actually counting. */
+
   background: color-mix(in srgb, var(--ab-celeste) 32%, transparent);
 }
 
@@ -396,21 +312,13 @@
   font-variant-numeric: tabular-nums;
   font-size: 0.7rem;
   font-weight: 600;
-  /* Matches .eyebrow's tracking exactly — same role, same size/weight, so
-     the two quiet-caps registers on this section now agree instead of
-     drifting by a few thousandths of an em. */
+
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  /* Flat white at 0.42 alpha on --ab-deep sat close to the 4.5:1 AA floor
-     for text this small. Tinted with a touch of celeste rather than simply
-     brighter — the same "quiet but not flat-grey" move MetricsSection's own
-     dt labels make. */
+
   color: color-mix(in srgb, var(--ab-celeste) 18%, rgba(255, 255, 255, 0.56));
 }
 
-/* ── Reduced motion: a different layout, not a slower version of this one.
-   No perspective, no drum, no autoplay — every reason sits fully legible at
-   once. */
 .staticGrid {
   margin: clamp(2.75rem, 6vw, 4.5rem) 0 0;
   padding: 0;
@@ -427,17 +335,11 @@
   display: flex;
   flex-direction: column;
   padding: clamp(1.65rem, 2.5vw, 2.15rem) clamp(1.4rem, 2.3vw, 1.9rem) clamp(1.5rem, 2.2vw, 1.95rem);
-  /* Was plain --ab-deep — a visibly thinner material than the animated
-     cards' own 22%-mix resting state, so reduced-motion readers saw a
-     noticeably less crafted section. Pitched just under the animated FRONT
-     card's mix, fitting since no card here is "chosen". */
+
   background: color-mix(in srgb, var(--ab-petroleo) 18%, var(--ab-deep));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Same verde hairline the animated stage's front card can carry — this is
-   the static fallback, so it's unconditional rather than gated on an active
-   state. */
 .staticCard[data-accent="verde"]::before {
   content: "";
   position: absolute;
@@ -450,7 +352,6 @@
   font-size: 1.3rem;
 }
 
-/* Same numeral→title / title→body inversion as .face above. */
 .staticCard h3 {
   margin-top: 0.55rem;
   font-family: var(--font-heading), sans-serif;
@@ -473,13 +374,6 @@
   }
 }
 
-/* Same breakpoint the rest of this area treats as "mobile" (see
-   PartnershipsSection/LocationSection). The side cards' offset is already a
-   PERCENTAGE of --plaque-w (see the component's SLOT_RIGHT/SLOT_LEFT), so it
-   stays proportional automatically as --plaque-w shrinks here — only the
-   card's own footprint needs a smaller floor on narrow viewports.
-   `overflow: clip` on the section is the backstop for whatever a specific
-   device still can't fit. */
 @media (max-width: 42rem) {
   .stage {
     --plaque-w: clamp(11.5rem, 62vw, 14rem);

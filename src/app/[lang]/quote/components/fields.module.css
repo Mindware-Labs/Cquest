@@ -1,8 +1,3 @@
-/* ── Form primitives — choice groups and text-like fields ─
-   Shared by StepDetails (questions) and StepContact (contact form). The
-   service tint (--svc) and the error red (--error) inherit from the wizard
-   card these always render inside. */
-
 .group {
   border: 0;
   margin: 0;
@@ -33,8 +28,6 @@
   color: var(--error);
 }
 
-/* Choices as compact chips that wrap — dense, minimal, and much shorter than a
-   stack of full-width option cards. */
 .optionGrid {
   display: flex;
   flex-wrap: wrap;
@@ -115,8 +108,6 @@
   color: var(--svc);
 }
 
-/* ── Text-like fields (text / email / tel / textarea) ──── */
-
 .field {
   display: flex;
   flex-direction: column;
@@ -149,9 +140,6 @@
     box-shadow 0.2s var(--ease-out);
 }
 
-/* iOS Safari zooms the whole page in whenever a focused input's text is under
-   16px — 0.92rem is 14.7px, so every tap on a field on an iPhone yanked the
-   layout. 16px exactly on touch pointers is the documented threshold. */
 @media (pointer: coarse) {
   .input {
     font-size: 16px;
@@ -163,9 +151,6 @@
   opacity: 0.55;
 }
 
-/* Browser autofill paints its own background straight over the field, which
-   knocked these out of the card's surface palette (and out of contrast on the
-   error state). The inset shadow is the only way to repaint it. */
 .input:-webkit-autofill,
 .input:-webkit-autofill:hover,
 .input:-webkit-autofill:focus {
@@ -190,8 +175,6 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 20%, transparent);
 }
 
-/* Error feedback: a small alert glyph + message that eases in just below the
-   field, so a correction reads as guidance rather than a slap. */
 .fieldError {
   display: flex;
   align-items: center;

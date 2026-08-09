@@ -7,10 +7,8 @@ import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { INTRO_TAIL_MS, SCENE, sceneAt } from "./animation";
 import styles from "./QuestBotScene.module.css";
 
-/* Human typing rhythm. A fixed 58ms metronome reads as a machine printing a
-   string; real typing clusters and then breathes at word boundaries. The
-   jitter is generated in an effect, so it never runs during SSR and can't
-   cause a hydration mismatch. */
+/* Ritmo humano: un metrónomo fijo se lee como una máquina imprimiendo una
+   cadena. El jitter se genera en un efecto, nunca en SSR (hidratación). */
 const CHAR_MIN_MS = 38;
 const CHAR_JITTER_MS = 54;
 const WORD_PAUSE_MS = 155;
@@ -34,101 +32,67 @@ export default function QuestBotScene({
   pinnedQuestionIndex = null,
 }: {
   reduced: boolean;
-  /** False when the hero is off-screen or the tab is hidden — parks the loops. */
+
   ambient: boolean;
-  /**
-   * Fired once, a beat after the mascot lands its last keystroke — the real
-   * end of the intro. The keystroke delays are jittered, so the duration
-   * cannot be predicted from the score; the scene has to report it.
-   */
+
   onIntroDone?: () => void;
-  /** Returns the whole hero to act one before a user-requested replay. */
+
   onReplayStart?: () => void;
-  /**
-   * Set from outside (HeroImage, on hover of a Services nav link) to swap
-   * the bubble to that service's question in dict.hero.questions. `null`
-   * — the default, and wherever it returns to on mouse-leave — shows
-   * questions[0], the mascot's own fixed opening line.
-   */
+
   pinnedQuestionIndex?: number | null;
 }) {
   const { dict } = useI18n();
   const questions = dict.hero.questions;
   const [runId, setRunId] = useState(0);
-  /* True once the mascot has finished assembling. Only then does it start
-     tracking the pointer — a gaze that fights the roll-in reads as a glitch. */
+
+  /* Solo al terminar de montarse empieza a seguir el puntero: una mirada que
+     pelea con la entrada se lee como un glitch. */
   const [settled, setSettled] = useState(false);
-  /* True from the last keystroke: the mascot has said its line and is now
-     waiting. The CSS reads it as `data-said` — the caret switches from
-     burning solid (typing) to breathing (waiting) and the halo takes one
-     quiet swell, so the INTRO_TAIL beat reads as the mascot handing the
-     stage over rather than as dead air. */
+
   const [said, setSaid] = useState(false);
   const [replayReady, setReplayReady] = useState(false);
-  /* True once the speech bubble has popped, which is when its link becomes
-     real. Tracked separately from `settled` because the bubble arrives at
-     2.85s and the assembly only finishes at 3.4s — half a second in which an
-     invisible link would already be tabbable. */
+
+  /* Aparte de `settled`: la burbuja llega a 2.85s y el montaje acaba a 3.4s —
+     medio segundo con un link invisible ya tabulable. */
   const [sayReady, setSayReady] = useState(false);
-  /* Whether the mascot itself is still in frame — see the observer below. */
+
   const [inFrame, setInFrame] = useState(true);
-  /* True once the opening line (questions[0]) has settled — the signal for
-     the ongoing "terminal chatter" effect further down to take over. Never
-     true under reduced motion: that reader gets the opening line and
-     nothing else moves again. */
+
   const [cycling, setCycling] = useState(false);
-  /* Which question is CURRENTLY on screen (fully or mid-type/erase) — drives
-     the bubble's accessible name. Deliberately not read back by the typing
-     loops themselves; they track that in `lastIndexRef` below, since a ref
-     survives an effect re-run (e.g. the mascot pausing and resuming) without
-     the stale-closure problem a plain variable would have. */
+
   const [displayIndex, setDisplayIndex] = useState(0);
   const lastIndexRef = useRef(0);
-  /* Set by the sync effect below from the `pinnedQuestionIndex` prop, and
-     read by the cycle effect's own `settle` — kept as a ref because the
-     cycle effect must not restart (and cancel its in-flight timer) on every
-     hover change. */
+
+  /* Ref y no estado: el loop del ciclo no debe reiniciarse (ni cancelar su
+     timer en vuelo) en cada cambio de hover. */
   const pinnedRef = useRef<number | null>(pinnedQuestionIndex);
-  /* The cycle effect installs these so the sync effect (or anything else)
-     can reach into a running loop without restarting it. No-ops before the
-     loop exists and after it tears down. */
+
   const jumpToRef = useRef<(index: number) => void>(() => {});
   const resumeRef = useRef<() => void>(() => {});
   const stageRef = useRef<HTMLDivElement>(null);
   const typedLineRef = useRef<HTMLSpanElement>(null);
   const startedRef = useRef(false);
-  /* Held in a ref so a new callback identity from the parent can't restart
-     the typing effect — and so replaying the mascot never re-fires it. */
+
   const introDoneRef = useRef(onIntroDone);
   useEffect(() => {
     introDoneRef.current = onIntroDone;
   }, [onIntroDone]);
 
-  /* ── Pointer gaze ──────────────────────────────────────────────────────
-     Normalised -1..1 across the stage, run through a soft, slightly
-     under-damped spring so the mascot's attention *drifts* to the cursor
-     rather than snapping to it. Springs (not tweens) because the pointer is
-     a continuous, interruptible input: velocity has to carry across a change
-     of direction, which a fixed-duration transition cannot do. */
+  /* Mirada: springs y no tweens porque el puntero es una entrada continua e
+     interrumpible — la velocidad tiene que sobrevivir a un cambio de dirección. */
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
   const gazeSpring = { stiffness: 110, damping: 20, mass: 0.9 } as const;
   const smoothX = useSpring(pointerX, gazeSpring);
   const smoothY = useSpring(pointerY, gazeSpring);
-  /* Two depths, so the head leads and the body follows — the mascot reads as
-     an object with mass instead of a decal sliding around. Values are SVG
-     user units (viewBox is 1240 wide), so they scale with the stage. */
+
+  /* Dos profundidades: la cabeza va delante y el cuerpo detrás, para que la
+     mascota se lea como un objeto con masa y no como una calca deslizándose. */
   const gazeX = useTransform(smoothX, [-1, 1], [-9, 9]);
   const gazeY = useTransform(smoothY, [-1, 1], [-6, 6]);
   const leanX = useTransform(smoothX, [-1, 1], [-4.5, 4.5]);
   const leanY = useTransform(smoothY, [-1, 1], [-2.5, 2.5]);
 
-  /* ── Acknowledgement ───────────────────────────────────────────────────
-     The bubble is the mascot's own ask, so pointing at it (or landing
-     keyboard focus on it) earns a response: the eye dilates ~6% on a
-     spring. Its own motion group, deliberately — `.core` is animated by
-     coreLean/coreScan in CSS, and a scale written to the same element
-     would lose that argument. */
   const dilate = useMotionValue(1);
   const dilateSpring = useSpring(dilate, { stiffness: 260, damping: 22 });
 
@@ -151,21 +115,6 @@ export default function QuestBotScene({
     beginRun();
   }, [beginRun, onReplayStart, replayReady]);
 
-  /* One observer does both jobs: kick off the first run when the mascot is a
-     quarter of the way into view, and report the moment it leaves the frame
-     entirely so the idle loops can park.
-
-     That second job used to be the hero's, via the `ambient` prop, and the
-     hero's own threshold is necessarily a compromise for the whole section —
-     it retires a quarter-viewport past the fold, which is roughly 15vh of
-     scrolling AFTER the mascot itself has cleared the top of the window. The
-     loops it gates are the one genuinely main-thread thing in the hero:
-     `coreScan`, `idle`, `lensPulse` and `haloBreathe` are transform/opacity
-     animations on SVG groups, which the compositor cannot take, so every one
-     of those frames re-paints the whole mascot — and they were being spent
-     mid-descent, on the exact frames the services sheet is arriving. The
-     mascot's own box is the honest threshold, and it costs one observer we
-     were already paying for. */
   useEffect(() => {
     const node = stageRef.current;
     if (!node || !("IntersectionObserver" in window)) {
@@ -176,9 +125,7 @@ export default function QuestBotScene({
     const io = new IntersectionObserver(
       ([entry]) => {
         setInFrame(entry.isIntersecting);
-        /* `isIntersecting` now answers the 0 threshold, so the start beat has
-           to read the ratio itself. A hair under 0.25: the callback reports
-           the ratio at the crossing, which lands a fraction either side. */
+
         if (entry.intersectionRatio >= 0.24 && !startedRef.current) beginRun();
       },
       { threshold: [0, 0.25] },
@@ -187,13 +134,8 @@ export default function QuestBotScene({
     return () => io.disconnect();
   }, [beginRun]);
 
-  /* The mascot is alive only when the hero says so AND it is on screen. */
   const alive = ambient && inFrame;
 
-  /* Arm the bubble's link when the bubble appears, and hand the mascot over
-     to the pointer once the assembly has resolved. Under reduced motion the
-     scene is already assembled and the bubble already visible, so the link is
-     live immediately and there is no gaze to wait for. */
   useEffect(() => {
     if (runId === 0) return;
     const timers: number[] = [];
@@ -208,22 +150,14 @@ export default function QuestBotScene({
   }, [runId, reduced]);
 
   useEffect(() => {
-    /* `ambient` gates this as well as the CSS loops. The gaze used to keep a
-       window-level pointermove listener — and the two springs behind it —
-       alive for the life of the page once the mascot had settled, tracking a
-       cursor across sections the mascot could no longer see. */
     if (!settled || reduced || !alive) return;
     const node = stageRef.current;
     if (!node) return;
-    /* Touch devices have no hovering pointer to track, and a stray tap would
-       leave the mascot staring off into a corner. */
+
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-    /* Measuring the stage on every pointermove would force a synchronous
-       layout dozens of times a second. Instead the rect is cached and only
-       re-read when scroll or resize has invalidated it, and the whole read
-       happens inside one rAF — so at most one measurement per frame, and
-       none at all while the pointer is still. */
+    /* Medir en cada pointermove forzaría un layout síncrono decenas de veces
+       por segundo. El rect se cachea y solo se relee dentro de un rAF. */
     let frame = 0;
     let stale = true;
     let rect: DOMRect | null = null;
@@ -259,8 +193,6 @@ export default function QuestBotScene({
       pointerY.set(0);
     };
 
-    /* Listening on the window (not the stage) means the mascot notices the
-       cursor approaching from across the hero, before it arrives. */
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("scroll", invalidate, { passive: true });
     window.addEventListener("resize", invalidate, { passive: true });
@@ -281,10 +213,6 @@ export default function QuestBotScene({
 
     const timers: number[] = [];
 
-    /* Reduced motion has no intro to wait out — release the page at once,
-       and no ongoing chatter after it: `cycling` stays false, so the mascot
-       says its one line and holds it, same as any other settled state under
-       this preference. */
     if (reduced) {
       timers.push(
         window.setTimeout(() => {
@@ -305,41 +233,23 @@ export default function QuestBotScene({
         timers.push(window.setTimeout(() => type(i + 1), keystrokeDelay(line[i - 1] ?? "")));
         return;
       }
-      /* Last keystroke has landed. This is the end of act one. `said` flips
-         NOW, not after the tail — the tail is the beat the caret spends
-         breathing and the halo spends swelling (see the module CSS). */
+
       setSaid(true);
       timers.push(
         window.setTimeout(() => {
           setReplayReady(true);
           introDoneRef.current?.();
-          /* Hands off to the ongoing cycle effect below. Its own first
-             move is a HOLD, not a retype — this line is already on screen
-             and stays exactly where act one left it. */
+
           setCycling(true);
         }, INTRO_TAIL_MS),
       );
     };
-    /* type(0) writes the empty string first, so the line clears on the exact
-       frame typing begins rather than eagerly during this render. */
+
     timers.push(window.setTimeout(() => type(0), sceneAt(SCENE.type)));
 
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [runId, reduced, questions]);
 
-  /* ── Ongoing terminal chatter ──────────────────────────────────────────
-     Erase, pause, type the next question, wrap back to [0] after the last
-     — forever, for as long as the mascot is `alive`. A separate effect from
-     the intro above on purpose: that one is locked to the mascot's own CSS
-     build via `sceneAt`, and this loop has no score to hit — it runs at its
-     own pace and, like every other ambient loop in this file, restarts
-     clean rather than resuming mid-character when it is paused and
-     re-armed (see the redraw at the top of the effect below).
-
-     Hovering a Services link pins the bubble to that service's question —
-     see the sync effect right after this comment — and un-pinning resumes
-     the cycle from there rather than jumping back to wherever it would have
-     been had the hover never happened. */
   useEffect(() => {
     pinnedRef.current = pinnedQuestionIndex;
     if (pinnedQuestionIndex !== null) jumpToRef.current(pinnedQuestionIndex);
@@ -353,10 +263,8 @@ export default function QuestBotScene({
     let timer = 0;
     let shown = lastIndexRef.current;
 
-    /* A pause (ambient false, or a replay) may have left the DOM mid-erase
-       or mid-type from a previous instance of this effect. Redraw the last
-       known-good question in full before doing anything else, so the loop
-       always resumes from a state it actually recognises. */
+    /* Una pausa pudo dejar el DOM a medio borrar o a medio teclear. Se redibuja
+       la última pregunta buena antes de nada, para reanudar desde algo conocido. */
     if (typedLineRef.current) typedLineRef.current.textContent = questions[shown];
 
     const ERASE_MS = 26;
@@ -399,10 +307,6 @@ export default function QuestBotScene({
       eraseThen(() => typeQuestion((shown + 1) % questions.length));
     };
 
-    /* The natural end of a hold. Does nothing while a hover is pinning the
-       bubble — `pinnedRef`'s own sync effect is what moves things along
-       from here, either by jumping to a new pin or by calling `resumeRef`
-       once the pointer leaves. */
     const settle = () => {
       if (disposed || pinnedRef.current !== null) return;
       advance();
@@ -441,11 +345,7 @@ export default function QuestBotScene({
         data-ambient={alive ? "on" : "off"}
         data-said={said ? "true" : "false"}
       >
-        {/* viewBox height trimmed from 470 to 432. The lowest thing the scene
-            ever draws is the ground flash at its widest — absolute y ≈ 410 —
-            so the old box carried 60 units of pure emptiness under the mascot
-            that the layout then had to sit around. 432 keeps ~22 units of
-            headroom. `.say` compensates via its `top` %; see the module CSS. */}
+
         <svg
           className={styles.svgScene}
           viewBox="-40 0 1200 432"
@@ -539,7 +439,7 @@ export default function QuestBotScene({
 
                 <g className={styles.idle}>
                   <g className={styles.bob}>
-                    {/* Body lean — the slower of the two gaze depths. */}
+
                     <motion.g style={{ x: leanX, y: leanY }}>
                       <circle className={styles.halo} cx="0" cy="0" r="132" fill="url(#qbHalo)" opacity="0" />
 
@@ -571,9 +471,6 @@ export default function QuestBotScene({
                         pointerEvents="none"
                       />
 
-                      {/* Eye — leads the body, so the head arrives first.
-                          The inner group carries the bubble-hover dilation;
-                          see the `dilate` motion value above. */}
                       <motion.g style={{ x: gazeX, y: gazeY }}>
                         <motion.g
                           className={styles.coreDilate}
@@ -595,24 +492,13 @@ export default function QuestBotScene({
           </g>
         </svg>
 
-        {/* The bubble is the mascot's ask, so it doubles as the route to the
-            form that answers it. A real link, not a click handler: it has to
-            survive middle-click, "open in new tab" and keyboard traversal.
-            `inert` until the bubble has actually popped — before that it is a
-            fully-transparent link lying across the mascot, which is exactly
-            the sort of thing a keyboard user tabs into and cannot see. */}
         <div className={styles.say}>
           <LocalizedLink
             href="/quote"
             aria-label={`${questions[displayIndex]} ${dict.hero.sayCtaSuffix}`}
             className={styles.sayBox}
             inert={!sayReady}
-            /* The mascot acknowledges attention on its own ask. Hover needs
-               no gaze aim — the window pointermove already has the cursor at
-               the bubble — but keyboard focus has no cursor, so it aims the
-               gaze springs up-right at the bubble by hand: parity of
-               attention for non-pointer users. `inert` above blocks all of
-               this until the bubble has actually popped. */
+
             onPointerEnter={() => {
               if (!reduced && settled) dilate.set(1.06);
             }}
@@ -629,13 +515,7 @@ export default function QuestBotScene({
               pointerY.set(0);
             }}
           >
-            {/* aria-hidden: the accessible name comes from the label above.
-                Mid-typing this line is a fragment ("dame tu mi"), which is
-                worse than useless read aloud. */}
-            {/* The dot is the live half of the status line and the label is
-                the stated half — a presence light the way an agent console
-                shows one. Decorative: the whole bubble's accessible name
-                comes from the `aria-label` on the link above. */}
+
             <div aria-hidden className={styles.sayEyebrow}>
               <span className={styles.presence} />
               {dict.hero.onlineLabel}
@@ -648,10 +528,8 @@ export default function QuestBotScene({
         </div>
       </div>
 
-      {/* The mascot itself is decorative and aria-hidden, so its click-to-replay
-          was unreachable by keyboard and invisible to assistive tech. This is
-          the real control; the click on the SVG survives as a redundant
-          shortcut for people who discover it. */}
+      {/* La mascota es decorativa (aria-hidden), así que su click-para-repetir
+          era inalcanzable por teclado. Este es el control real. */}
       <button
         type="button"
         onClick={replay}

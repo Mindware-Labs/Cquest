@@ -9,11 +9,6 @@ import shell from "./step.module.css";
 import styles from "./StepDetails.module.css";
 import { Field, OptionGroup } from "./fields";
 
-/* Step 2 — the service-specific questions, rendered straight from the
-   questionnaire model so this component never needs to know which service it's
-   showing. Choice questions become OptionGroups; free-text becomes a Field. The
-   `errors` map is Zod's verdict (keyed by question id), shown once the prospect
-   has tried to advance. */
 export default function StepDetails({
   questionnaire,
   answers,
@@ -39,11 +34,7 @@ export default function StepDetails({
 
       <div className={styles.questions}>
         {questionnaire.questions
-          // Follow-ups are not siblings of the questions they hang off — they
-          // are rendered INSIDE the block below, so the stack's gap belongs to
-          // the pair as a whole. Left in the flow they would sit in the gap
-          // themselves, and a wrapper collapsing from `auto` to 0 would drag
-          // the rest of the form up by a full gap the instant it opened.
+
           .filter((question) => !question.revealedBy)
           .map((question) => {
             const message = showErrors ? errors[question.id] : undefined;
@@ -91,23 +82,6 @@ export default function StepDetails({
   );
 }
 
-/* The open/close itself. Height to `auto` rather than a fixed value, because
-   the panel's height depends on its label, its field and whether an error is
-   showing beneath it — all of which can change while it is open.
-
-   The two halves are deliberately asymmetric. Opening is longer and eases out
-   long, so the field arrives and settles; closing is brisk and gets out of the
-   way, because by then the prospect has already moved on. Matched durations
-   would make dismissing it feel reluctant.
-
-   Opacity trails the height on the way in, so the panel reads as making room
-   and *then* filling it, rather than as text sliding out of a crack.
-
-   Focus is deliberately NOT moved here. Ticking a checkbox and having the
-   caret jump elsewhere is a change of context on input: it would strand a
-   keyboard user who ticked "Other" and still meant to tick "English". The
-   panel opens directly below, in the service tint, and is the very next stop
-   in tab order — the affordance does not need to grab. */
 function Reveal({
   open,
   reduced,

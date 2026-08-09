@@ -1,9 +1,3 @@
-/* The overlay itself is the scroll container — not the panel inside it.
-   A dialog with its own clipped overflow reads as a widget bolted onto the
-   page; scrolling the full-viewport overlay instead reads as scrolling the
-   page, and it sidesteps the flex/grid-centering-plus-overflow bug where
-   content taller than the viewport gets clipped above an unreachable
-   scrollTop of 0. */
 .clientOverlay {
   position: fixed;
   inset: 0;
@@ -25,17 +19,10 @@
   overflow: hidden;
 }
 
-/* Focused programmatically on open (tabIndex=-1) so its aria-labelledby is
-   announced — no visible ring needed, the card's own appearance already
-   signals it's active. */
 .clientDialog:focus {
   outline: none;
 }
 
-/* The dialog's own scroll container — capped by the panel's max-height, so a
-   long "provides" write-up scrolls internally instead of stretching the
-   panel past the viewport (and past .dialogClose, which sits outside this
-   wrapper so it never scrolls out of reach). */
 .dialogScroll {
   max-height: min(85vh, 42rem);
   overflow-y: auto;
@@ -43,11 +30,6 @@
   padding: clamp(1.85rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem) clamp(1.75rem, 4vw, 2.25rem);
 }
 
-/* right is inset further than top: at 0.6rem it sat flush against the
-   card's edge, the same spot where .dialogScroll's native scrollbar renders
-   once "provides" copy runs long enough to scroll — the browser draws that
-   scrollbar on top of the button. 1.4rem clears a full-width classic
-   scrollbar (~17px) so the two never overlap, scrolling or not. */
 .dialogClose {
   position: absolute;
   top: 0.6rem;
@@ -94,24 +76,17 @@
   width: 4.75rem;
   height: 4.75rem;
   padding: 0.65rem;
-  /* No plate and no border — the logo sits directly on the dialog. Purely a
-     sizing box now; see the call-center dialog for the note. */
+
   background: transparent;
   border-radius: var(--sy-radius-card);
 }
 
-/* Wordmark logos (wide, short) drown in a square frame — most of it renders
-   as empty tinted background around a thin strip of logo. Give them a frame
-   shaped like their own aspect ratio instead, matching the same data-size
-   convention the logo wall already uses (see ClientsSection.module.css). */
 .dialogLogoFrame[data-size="wide"] {
   width: 8rem;
   height: 3.5rem;
   padding: 0.35rem 0.6rem;
 }
 
-/* The file already carries a generous canvas margin — the frame's own padding
-   on top of it would inset the mark twice. */
 .dialogLogoFrame[data-size="padded"] {
   width: 8rem;
   height: 4.75rem;
@@ -155,10 +130,6 @@
   line-height: 1.6;
 }
 
-/* An attribution, not a UI row — set the way a caption sits under a pull
-   quote: flush right, quietly italic, no boxed-in divider. Alignment and
-   type alone mark it as tertiary, so it doesn't need a rule or a label chip
-   to separate it from the body copy above. */
 .dialogCite {
   display: flex;
   align-items: baseline;
@@ -186,9 +157,6 @@
   transition: color 200ms var(--ease-out);
 }
 
-/* Underline draws in on hover, left to right — the same directional beat as
-   every other hairline rule on this page (dialogRule, dialogDivider,
-   SectionIntro), just triggered by hover instead of entrance. */
 .dialogCiteLink::after {
   content: "";
   position: absolute;

@@ -228,15 +228,6 @@ export const PROCESS: ReadonlyArray<{ title: Record<Locale, string>; description
   },
 ];
 
-/* `size` is an *optical* class, not a scale factor — the four source files
-   have nothing in common geometrically (a tall portrait mark, a small lockup
-   floating in a square canvas of baked-in whitespace, a 2.4:1 wordmark, and
-   an opaque coloured tile), so each needs its own frame to carry the same
-   visual weight in the wall. See ClientsSection.module.css.
-     (default) — mark roughly as tall as it is wide, transparent
-     padded    — art sits inside its own generous canvas margin
-     wide      — landscape wordmark; gains presence from width, not height
-     tile      — opaque background baked into the file; framed as a tile */
 export const CLIENT_LOGOS = [
   {
     name: "Altice",

@@ -183,9 +183,6 @@ export const SLAS: ReadonlyArray<{ label: Record<Locale, string>; value: Record<
   },
 ];
 
-/* Facility photography. Lives here with the rest of the page's content rather
-   than inline in PhotosSection, so swapping a photo or its caption doesn't
-   mean opening a component. */
 export const PHOTOS: ReadonlyArray<{ title: Record<Locale, string>; src: string }> = [
   {
     title: { en: "Back-office team at work", es: "Equipo de back office en acción" },

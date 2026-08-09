@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* Global styles, split by concern:
-   - styles/tokens.css   brand palette, surfaces, type ramp, motion curves
-   - styles/base.css     reset, document defaults, Lenis, a11y plumbing
-   - styles/site.css     site-wide ornaments (progress bar, CTA geometry, hero)
-   - styles/carousel.css services carousel sheet + living backdrops */
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 @import "./styles/site.css";

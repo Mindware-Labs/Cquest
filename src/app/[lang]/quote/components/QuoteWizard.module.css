@@ -1,14 +1,3 @@
-/* ── Quote wizard ─────────────────────────────────────────
-   One card holds the whole assistant: a progress rail, a sliding step panel and
-   a footer with Back / Continue. The active service's colour flows in through
-   --svc / --svc-glow (set inline on .wizard), so rail, selections, focus rings
-   and buttons all re-tint to the chosen line. Error red is the only literal
-   colour — there's no brand token for it.
-
-   Tuned to sit inside one viewport per step: sharp 2px corners (matching the
-   system's button geometry), compact chrome, chip-style choices, and a
-   two-column question grid on desktop so Step 2 never needs a scroll. */
-
 .wizard {
   --error: #c0392b;
   position: relative;
@@ -23,7 +12,6 @@
     0 8px 22px -20px color-mix(in srgb, var(--ink) 36%, transparent);
 }
 
-/* Service-tinted hairline along the very top edge. */
 .wizard::before {
   content: "";
   position: absolute;
@@ -33,12 +21,10 @@
   transition: background 0.4s var(--ease-out);
 }
 
-
 .body {
   position: relative;
   min-height: clamp(11rem, 22vh, 14rem);
 }
-
 
 .footer {
   display: flex;

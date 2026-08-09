@@ -37,10 +37,6 @@ const COPY = {
   },
 };
 
-// Two independent renderings share the same data: a horizontal rack of
-// expanding slats above `lg` (mouse-driven, hover glides between them), and
-// a plain vertical accordion below it (each discipline opens in place on
-// tap — no hover state to fake, no fixed max-height to guess at).
 export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -71,8 +67,6 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const slatRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Arrow keys move between the discipline spines (APG accordion pattern:
-  // Tab reaches each header, arrows travel the set, Home/End jump to ends).
   const handleSlatKey = (
     event: ReactKeyboardEvent<HTMLButtonElement>,
     index: number,

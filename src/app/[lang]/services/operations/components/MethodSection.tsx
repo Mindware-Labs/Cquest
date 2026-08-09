@@ -35,8 +35,7 @@ const COPY = {
 export default function MethodSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
-  // The method spine draws itself downward, spring-smoothed so it trails the
-  // scroll like a needle, not a scrubber.
+
   const spineRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: spineProgress } = useScroll({
     target: spineRef,

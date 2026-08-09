@@ -7,20 +7,12 @@
   --sy-stone: color-mix(in srgb, var(--brand-gris) 78%, white);
   --sy-charcoal: #1b2226;
   --sy-rule: color-mix(in srgb, var(--foreground) 14%, transparent);
-  /* Hairline used *inside* surfaces (card edges, block dividers) — lighter
-     than --sy-rule, which separates whole rows. */
+
   --sy-hairline: color-mix(in srgb, var(--foreground) 9%, transparent);
 
-  /* The page's light surface and card fill, previously literals in this file,
-     ClientsSection, WorkSection, Footer and the dialog. */
   --sy-surface: #fbfcfc;
   --sy-card: #fff;
 
-  /* Radius scale. Two structural steps, as on the other two service pages:
-     --sy-radius for controls, chips and callouts, --sy-radius-card for raised
-     plates. The third is semantic, not decorative — the product window and the
-     preview frames are *browser chrome*, so they keep a real window's corner
-     and must stay equal to each other. */
   --sy-radius: 2px;
   --sy-radius-card: 4px;
   --sy-radius-window: 0.85rem;
@@ -30,12 +22,6 @@
   overflow: clip;
 }
 
-/* Anchor offset for every in-page jump on this page — the hero's "see what we
-   build" CTA and the client dialog's "#contact" CTA. Each section carried
-   scroll-margin-top: 2rem, but the navbar is fixed and 5.5rem tall (logo
-   h-12 + py-5), so a jump parked the target's heading 3.5rem underneath it.
-   Declared once here rather than once per section, sized to the nav plus a
-   little air above the heading. */
 .page section[id] {
   scroll-margin-top: 7rem;
 }

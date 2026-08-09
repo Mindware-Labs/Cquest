@@ -24,10 +24,6 @@ import {
 } from "./components/ScreenPreview";
 import styles from "./work.module.css";
 
-/* ── Case-study content ───────────────────────────────────
-   A published Systems case study, presented generically (no client brand).
-   Every claim maps to what the system actually does — nothing invented. */
-
 type Bi = Record<Locale, string>;
 
 const META: { label: Bi; value: Bi }[] = [
@@ -325,8 +321,6 @@ const PAGE_COPY = {
   },
 };
 
-/* Monoline glyphs for the architecture nodes (viewBox 0 0 24 24, currentColor
-   stroke) — a window, a proxy relay, API braces, a datastore cylinder. */
 const FLOW_ICON: Record<FlowIconName, ReactNode> = {
   browser: (
     <>
@@ -363,9 +357,6 @@ function FlowGlyph({ name }: { name: FlowIconName }) {
   );
 }
 
-/* Small accent rule + kicker + heading — the section-opening beat every
-   block below shares, echoing SectionIntro's rule-then-title grammar at a
-   narrower, single-column scale suited to a long-form case study. */
 function SectionHead({ label, title, reduced }: { label: string; title: string; reduced: boolean }) {
   return (
     <motion.div
@@ -397,7 +388,6 @@ export default function WorkCaseStudy() {
           {t.back}
         </LocalizedLink>
 
-        {/* ── Header — editorial masthead: title block + spec sheet ── */}
         <motion.header
           className={styles.head}
           initial={reduced ? false : "hidden"}
@@ -428,7 +418,6 @@ export default function WorkCaseStudy() {
 
         <ContactCenterScreen reduced={reduced} />
 
-        {/* ── Challenge / solution ── */}
         <motion.section
           className={styles.section}
           initial={reduced ? false : "hidden"}
@@ -454,7 +443,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── How it works, step by step ── */}
         <section className={styles.section}>
           <SectionHead label={t.howItWorksLabel} title={t.howItWorksTitle} reduced={reduced} />
           <ol className={styles.steps}>
@@ -482,7 +470,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── Architecture ── */}
         <section className={styles.section}>
           <SectionHead label={t.architectureLabel} title={t.architectureTitle} reduced={reduced} />
           <motion.div
@@ -524,7 +511,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── Real-time & integrations ── */}
         <section className={styles.section}>
           <SectionHead label={t.realtimeLabel} title={t.realtimeTitle} reduced={reduced} />
           <motion.div
@@ -546,7 +532,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── Technology ── */}
         <section className={styles.section}>
           <SectionHead label={t.technologyLabel} title={t.technologyTitle} reduced={reduced} />
           <motion.table
@@ -585,7 +570,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── Security ── */}
         <section className={styles.section}>
           <SectionHead label={t.securityLabel} title={t.securityTitle} reduced={reduced} />
           <motion.table
@@ -620,7 +604,6 @@ export default function WorkCaseStudy() {
 
         <div className={styles.divider} />
 
-        {/* ── Scope ── */}
         <section className={styles.section}>
           <SectionHead label={t.managesLabel} title={t.managesTitle} reduced={reduced} />
           <motion.ul
@@ -636,7 +619,6 @@ export default function WorkCaseStudy() {
           </motion.ul>
         </section>
 
-        {/* ── Screenshot gallery ── */}
         <section className={styles.section}>
           <SectionHead label={t.systemLabel} title={t.systemTitle} reduced={reduced} />
           <div className={styles.gallery}>
@@ -645,7 +627,6 @@ export default function WorkCaseStudy() {
           </div>
         </section>
 
-        {/* ── CTA ── */}
         <motion.section
           className={styles.closing}
           initial={reduced ? false : "hidden"}

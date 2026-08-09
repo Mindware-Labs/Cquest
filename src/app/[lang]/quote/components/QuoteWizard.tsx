@@ -32,16 +32,9 @@ import { Alert, Arrow } from "./icons";
 type Status = "form" | "submitting" | "done";
 
 const RECAPTCHA_ACTION = "submit_quote";
-// grecaptcha.execute() itself doesn't time out — if the script never loaded
-// (blocked, ad-blocker, network hiccup) it would hang forever. Race it
-// against a timeout instead: no token just means this submission relies on
-// the honeypot/timing checks alone server-side, not a lost lead.
+
 const RECAPTCHA_TIMEOUT_MS = 4000;
 
-// Best-effort: resolves with a token when reCAPTCHA is available, or
-// `undefined` when the site key isn't configured, the script hasn't loaded,
-// or it times out. Never rejects — a missing token must not block a real
-// prospect from submitting.
 function getRecaptchaToken(): Promise<string | undefined> {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   if (typeof window === "undefined" || !siteKey || !window.grecaptcha) {
@@ -68,11 +61,9 @@ export default function QuoteWizard({
   reduced,
 }: {
   initialService: ServiceId | null;
-  /** From the page's own `?step=` read — same seam as `initialService`, so a
-   *  refresh or a copied mid-flow link lands back where the prospect was
-   *  instead of resetting to Step 1. */
+
   initialStep?: number;
-  /** Defaults to the shared `submitQuote` seam; override for tests/embeds. */
+
   onSubmit?: (submission: QuoteSubmission) => Promise<void>;
   reduced: boolean;
 }) {
@@ -90,10 +81,7 @@ export default function QuoteWizard({
   const [focusAttempt, setFocusAttempt] = useState(0);
   const [honeypot, setHoneypot] = useState("");
   const stepPanelRef = useRef<HTMLDivElement>(null);
-  // Anti-spam without a reCAPTCHA key: captured once after mount (an effect,
-  // not render — Date.now() during render is impure/unstable), sent with the
-  // submission so submitQuote can reject anything faster than a real prospect
-  // could plausibly complete all 3 steps.
+
   const mountedAtRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     mountedAtRef.current = Date.now();
@@ -104,9 +92,6 @@ export default function QuoteWizard({
   const accent = getService(service);
   const stepLabel = (index: 0 | 1 | 2) => STEPS[index].copy[lang].label;
 
-  // Keep the URL in sync with where the prospect actually is — so a refresh
-  // or a copied link doesn't drop them back to Step 1. replaceState (not the
-  // router) so this never adds a history entry or triggers a navigation.
   useEffect(() => {
     if (!service) return;
     const params = new URLSearchParams(window.location.search);
@@ -115,9 +100,6 @@ export default function QuoteWizard({
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   }, [service, step]);
 
-  // Step 2 (Details) is validated with Zod, off a schema built from the active
-  // service's questionnaire — one source of truth for the gate and the field
-  // errors surfaced under each question.
   const detailsResult = useMemo(
     () =>
       questionnaire ? detailsSchema(questionnaire, lang).safeParse(details) : null,
@@ -132,8 +114,6 @@ export default function QuoteWizard({
     [detailsResult],
   );
 
-  // Step 3 (Contact) runs through its own Zod schema — required + real email and
-  // phone format checks — so gating and field feedback share one verdict.
   const contactResult = useMemo(
     () => contactSchema(lang).safeParse(contact),
     [lang, contact],
@@ -144,7 +124,6 @@ export default function QuoteWizard({
     [contactResult],
   );
 
-  // Per-step gate: what has to be true before "Continue" moves on.
   const canAdvance = useMemo(() => {
     if (step === 0) return service !== null;
     if (step === 1) return detailsResult?.success ?? false;
@@ -154,7 +133,6 @@ export default function QuoteWizard({
   const selectService = useCallback(
     (id: ServiceId) => {
       setService((previous) => {
-        // Switching lines invalidates the previous line's answers.
         if (previous !== id) setDetails({});
         return id;
       });
@@ -166,11 +144,7 @@ export default function QuoteWizard({
     (id: string, value: string | string[]) => {
       setDetails((previous) => {
         const next = { ...previous, [id]: value };
-        /* Answers to conditional questions are dropped the moment their
-           condition stops holding. Untick "Other" and whatever was typed into
-           "which one?" goes with it — otherwise it survives invisibly in
-           state and rides along to the sales inbox as an answer to a question
-           the prospect withdrew. */
+
         for (const question of questionnaire?.questions ?? []) {
           if (question.revealedBy && !isRevealed(question, next)) {
             delete next[question.id];
@@ -206,9 +180,6 @@ export default function QuoteWizard({
       });
       setStatus("done");
     } catch {
-      // Keep the prospect's answers intact so they can retry, but surface the
-      // failure — silently dropping back to the form left the prospect with
-      // no idea whether it was sent or whether retrying is worth it.
       setStatus("form");
       setSubmitFailed(true);
     }
@@ -217,9 +188,7 @@ export default function QuoteWizard({
   const goNext = useCallback(() => {
     if (!canAdvance) {
       setShowErrors(true);
-      // A counter, not a re-trigger off showErrors itself — showErrors may
-      // already be true from a prior blocked attempt, and state setters that
-      // don't change the value don't re-fire effects.
+
       setFocusAttempt((n) => n + 1);
       return;
     }
@@ -234,12 +203,10 @@ export default function QuoteWizard({
     setFurthest((f) => Math.max(f, next));
   }, [canAdvance, step, submit]);
 
-  // Both the Continue/Send button and Enter-in-a-field route through here.
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      // `status`, not the `submitting` alias — that's declared further down,
-      // and a dep array is evaluated during render.
+
       if (status === "submitting") return;
       goNext();
     },
@@ -274,11 +241,6 @@ export default function QuoteWizard({
     setStatus("form");
   }, []);
 
-  // A blocked "Continue" surfaces field errors but otherwise does nothing
-  // visible if the invalid field is off-screen — the prospect has no way to
-  // find it. Move focus to it directly, same as a native form's first-error
-  // behavior. OptionGroup marks its <fieldset> invalid (not itself
-  // focusable), so fall through to the first input inside it.
   useEffect(() => {
     if (focusAttempt === 0) return;
     const container = stepPanelRef.current;
@@ -316,9 +278,6 @@ export default function QuoteWizard({
 
   const submitting = status === "submitting";
 
-  // One shared announcement for every silent state change in the wizard —
-  // step transitions, a blocked "Continue", and the submit/confirm handoff —
-  // so screen-reader users get the same feedback a sighted prospect sees.
   const liveMessage =
     status === "submitting"
       ? dict.wizard.sending
@@ -362,17 +321,10 @@ export default function QuoteWizard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* A real <form>, not a <div> of buttons: without it, pressing
-                Enter in any field did nothing at all — the single most common
-                way people submit a form. `noValidate` hands validation to Zod
-                so the browser's own bubbles never pre-empt our messages. */}
+
             <form onSubmit={handleSubmit} noValidate>
               <ProgressRail current={step} furthest={furthest} onJump={jumpTo} />
 
-              {/* Honeypot — real prospects never see or reach this field
-                  (offscreen, untabbable, unannounced); bots that fill every
-                  input blind still find it. A non-empty value on submit makes
-                  submitQuote drop the lead silently instead of sending it. */}
               <input
                 type="text"
                 name="company_website"
@@ -440,10 +392,7 @@ export default function QuoteWizard({
                       {dict.wizard.back}
                     </button>
                   )}
-                  {/* type="submit" is what makes Enter-in-a-field work — the
-                      browser's implicit submission fires the form's first
-                      submit button. Still not `disabled` when invalid, so a
-                      press reveals what's missing instead of going dead. */}
+
                   <button
                     type="submit"
                     className={buttons.primaryBtn}

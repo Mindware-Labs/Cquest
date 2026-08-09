@@ -1,4 +1,3 @@
-/* ── Media band — the full-bleed operations-floor photo that overlaps the hero. */
 .bandWrap {
   position: relative;
   z-index: 1;
@@ -14,8 +13,6 @@
   will-change: transform;
 }
 
-/* Reveal layers: the outer wrapper carries the clip-path wipe, the inner one
-   the settle-from-overscale — both animated by MediaBand.tsx. */
 .bandReveal,
 .bandZoom {
   position: absolute;

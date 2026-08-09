@@ -1,7 +1,5 @@
 import type { Choice, Question } from "./types";
 
-/* ── Step 3 — contact ───────────────────────────────────── */
-
 export const CONTACT_FIELDS: readonly Question[] = [
   {
     id: "name",
@@ -46,7 +44,6 @@ export const CONTACT_METHODS: readonly Choice[] = [
   { value: "phone", icon: "phone", copy: { en: { label: "Phone" }, es: { label: "Teléfono" } } },
   { value: "whatsapp", icon: "messages", copy: { en: { label: "WhatsApp" }, es: { label: "WhatsApp" } } },
 ];
-
 
 export const STEPS = [
   { id: "service", copy: { en: { label: "Service" }, es: { label: "Servicio" } } },

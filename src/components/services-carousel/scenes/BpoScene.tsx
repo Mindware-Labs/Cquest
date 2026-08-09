@@ -2,17 +2,12 @@
 
 import type { CSSProperties } from "react";
 
-/* BPO's throughput field: a marching lattice frames the reading column while
-   data streams run in safe bands at the very top and bottom — volume made
-   visible, never across the text. */
 export default function BpoScene() {
   return (
     <>
-      {/* Volume, ordered: the marching lattice frames the field (its
-          mask keeps the whole reading column dot-free). */}
+
       <div className="cq-v2-lattice" />
-      {/* Data streams confined to safe bands at the very top and
-          bottom — throughput made visible, never across the text. */}
+
       <span className="cq-v2-stream top-[7%]" />
       <span
         className="cq-v2-stream top-[13%]"

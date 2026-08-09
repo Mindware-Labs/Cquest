@@ -13,9 +13,6 @@ import styles from "./call-center.module.css";
 export default function CallCenterDetail() {
   const reduced = useReducedMotion() ?? false;
 
-  // The page's always-on status pulses (hero live-dot, metric dots) hold
-  // their breath while the tab is hidden — same visibilitychange pattern as
-  // ServicesCarousel's data-ambient-active, CSS pauses via [data-ambient-active="false"].
   const tabVisible = useTabVisibility();
 
   return (

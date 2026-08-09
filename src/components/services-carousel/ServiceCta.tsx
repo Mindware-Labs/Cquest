@@ -6,13 +6,8 @@ import type { Service } from "@/components/services/data";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 
-/* Next's Link with motion capabilities, so the CTA can share the hero's
-   magnetic pointer-follow and spring press states. */
 const MotionLink = motion.create(LocalizedLink);
 
-/* The hero's primary-CTA language on the slide's action: rectangular 2px
-   radius, celeste field, white wipe on hover, chevron nudge, magnetic
-   pointer-follow with critically-damped springs. */
 export default function ServiceCta({ service }: { service: Service }) {
   const { dict, lang } = useI18n();
   const { ref, style, onMouseEnter, onMouseMove, onMouseLeave } =
@@ -43,7 +38,6 @@ export default function ServiceCta({ service }: { service: Service }) {
   );
 }
 
-/* Same glyph the hero's CTAs use. */
 function Chevron() {
   return (
     <svg

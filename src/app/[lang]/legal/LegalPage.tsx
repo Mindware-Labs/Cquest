@@ -2,11 +2,6 @@ import type { Locale } from "@/i18n/config";
 import container from "@/components/services/Container.module.css";
 import type { LegalDoc } from "./content";
 
-/* Static, unanimated on purpose — unlike the rest of the site, a legal
-   document is read, not performed: a visitor arriving here wants to find a
-   clause fast, not watch it cascade in. `pt-32` alone clears the fixed
-   Navbar (88px) with room to spare; these pages carry no hero, so unlike a
-   service page there's nothing else to push the reader's eye down first. */
 export default function LegalPage({ doc, lang }: { doc: LegalDoc; lang: Locale }) {
   const updatedLabel = lang === "es" ? "Última actualización" : "Last updated";
 

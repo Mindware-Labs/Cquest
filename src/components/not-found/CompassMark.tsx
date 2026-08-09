@@ -3,14 +3,12 @@
 import { motion } from "motion/react";
 import { NEEDLE_WOBBLE_TRANSITION, needleVariants, PING_TRANSITION, ringVariants, tickVariants } from "./animation";
 
-// 12 minor ticks + 4 cardinal ticks, evenly spaced — generated rather than
-// hand-listed so the count can't drift out of sync with 360/n.
 const MINOR_TICKS = Array.from({ length: 12 }, (_, i) => i * 30).filter((deg) => deg % 90 !== 0);
 const CARDINAL_TICKS = [0, 90, 180, 270];
 
 function tickLine(deg: number, outer: number, inner: number) {
   const rad = (deg * Math.PI) / 180;
-  // 0deg = North = straight up, matching a real compass face.
+
   const x1 = 100 + outer * Math.sin(rad);
   const y1 = 100 - outer * Math.cos(rad);
   const x2 = 100 + inner * Math.sin(rad);
@@ -18,15 +16,6 @@ function tickLine(deg: number, outer: number, inner: number) {
   return { x1, y1, x2, y2 };
 }
 
-/**
- * The 404 scene's centerpiece: a compass that never finds North. Built in
- * the same monoline vocabulary as ServiceIcon (stroke-only, round caps,
- * currentColor) but at illustration scale rather than icon scale.
- *
- * `ambient` gates the two loops that would otherwise run forever off-screen
- * or with a hidden tab — the needle's drift and the radar ping — mirroring
- * the pause contract HeroImage and ServicesCarousel already use.
- */
 export default function CompassMark({ reduced, ambient }: { reduced: boolean; ambient: boolean }) {
   return (
     <svg
@@ -35,8 +24,7 @@ export default function CompassMark({ reduced, ambient }: { reduced: boolean; am
       className="h-40 w-40 sm:h-48 sm:w-48"
       fill="none"
     >
-      {/* Two radar pings, offset in phase, breathing outward from center and
-          fading — a search that keeps sweeping and keeps coming up empty. */}
+
       {!reduced && ambient && (
         <>
           <motion.circle
@@ -103,9 +91,6 @@ export default function CompassMark({ reduced, ambient }: { reduced: boolean; am
         })}
       </motion.g>
 
-      {/* Needle — a two-tone kite, pivoting from the exact center. The outer
-          group commits to a heading with a real spring; the inner group then
-          keeps softly hunting for North on top of that, never fully at rest. */}
       <motion.g
         initial={reduced ? false : "hidden"}
         animate="visible"

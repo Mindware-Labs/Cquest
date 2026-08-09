@@ -3,8 +3,6 @@
   background: var(--background);
 }
 
-/* ── Method — sticky intro on the left, a vertical spine on the right that
-   draws itself downward as the steps are read. */
 .methodGrid {
   display: grid;
   grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
@@ -12,8 +10,6 @@
   align-items: start;
 }
 
-/* 6rem left 8px of daylight under an 88px navbar — the pinned heading read as
-   stuck to the chrome rather than parked below it. */
 .railIntro {
   position: sticky;
   top: var(--bp-sticky-top);
@@ -74,9 +70,6 @@
   flex-direction: column;
 }
 
-/* Named endpoints — the drawn line travels from "Handover" to "Steady
-   state", making the heading's journey literal. Markers ride the line;
-   labels align to the step titles. */
 .spineEnd {
   position: relative;
   display: flex;
@@ -129,8 +122,6 @@
   background: var(--bp-rule);
 }
 
-/* Scrubbed to the section's scroll — the spine literally draws itself
-   downward, spring-smoothed so it trails the read like a needle. */
 .spineLine {
   background: linear-gradient(180deg, var(--bp-teal), color-mix(in srgb, var(--bp-lime) 65%, var(--bp-teal)));
   transform-origin: top center;
@@ -147,7 +138,6 @@
   position: relative;
 }
 
-/* Empty socket on the spine, always present. */
 .spineStep::before {
   content: "";
   position: absolute;
@@ -161,8 +151,6 @@
   translate: -0.2rem 0;
 }
 
-/* The lit core that fills the socket as the drawing line reaches it —
-   a small teal-to-lime station light with a soft halo. */
 .spineNode {
   position: absolute;
   left: calc(-2.75rem - 0.2rem);
@@ -208,8 +196,6 @@
   text-wrap: pretty;
 }
 
-/* Reading a step lifts its station light and warms its index — a quiet
-   invitation, not a control. */
 .spineStep:hover .spineNumber {
   color: var(--bp-teal);
 }

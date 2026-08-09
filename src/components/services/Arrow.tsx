@@ -1,11 +1,5 @@
 import styles from "./Arrow.module.css";
 
-/**
- * Shared across every service page. `className` merges onto the base arrow
- * class so a caller can apply its own context-specific tweak (an active/hover
- * shift, hiding it on mobile) without reaching into this component's own
- * CSS-Modules-hashed class from another file.
- */
 export default function Arrow({
   direction = "right",
   className,

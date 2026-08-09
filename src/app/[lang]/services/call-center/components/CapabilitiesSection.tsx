@@ -12,9 +12,6 @@ import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { CALL_CENTER, CAPABILITY_DETAIL, CAPABILITY_META, CHANNEL_ICON } from "../data";
 import styles from "./CapabilitiesSection.module.css";
 
-// The description promises exactly what the panel now shows. It used to end
-// on "...and the benefit it creates for the client", which stopped being true
-// the moment the client-benefit block was taken out of these cards.
 const COPY = {
   en: {
     title: <>Capabilities built around<br />the conversation</>,
@@ -34,18 +31,10 @@ const COPY = {
   },
 };
 
-/* Step 2 of the quote wizard, with Call Center already chosen — the same
-   `?servicio=` contract the navbar builds its CTA from. There is no
-   per-capability parameter; the wizard resolves services, not capabilities. */
 const QUOTE_HREF = "/quote?servicio=call-center";
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-// Two independent renderings share the same data, same as DesktopNav /
-// MobileNav: a tab strip + shared detail panel above `md` (mouse-driven,
-// scanning many titles at once reads fine as tabs), and a plain vertical
-// accordion below it (each capability opens in place — no separate panel to
-// reconcile with, no horizontal strip to discover by scrolling).
 export default function CapabilitiesSection({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
@@ -80,8 +69,6 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
   const activeTabId = `capability-tab-${activeIndex}`;
   const capabilityTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // ARIA APG Tabs pattern: arrow keys move focus AND selection (roving
-  // tabindex — only the active tab sits in the normal Tab order).
   const handleCapabilityKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
     const count = CALL_CENTER.details.length;
     let nextIndex: number | null = null;
@@ -123,10 +110,7 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
               onClick={() => setActiveId(item.id)}
               onKeyDown={(event) => handleCapabilityKeyDown(event, index)}
             >
-              {/* The active highlight is one shared element that glides from
-                  tab to tab (layoutId), instead of switching on and off in
-                  place. Under reduced motion it renders without the id and
-                  simply appears. */}
+
               {selected && (
                 <motion.span
                   aria-hidden
@@ -144,9 +128,7 @@ function DesktopCapabilities({ reduced }: { reduced: boolean }) {
       <motion.div id="capability-panel" role="tabpanel" tabIndex={0} aria-labelledby={activeTabId} className={styles.capabilityPanel} variants={focusRiseVariants}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={active.id} className={styles.panelSheet} initial={reduced ? false : { opacity: 0, x: 18, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={reduced ? undefined : { opacity: 0, x: -12, filter: "blur(3px)" }} transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}>
-            {/* The panel slides in as one sheet, but its blocks land on a
-                cascade — heading first, then description, spec, closing row —
-                so a tab switch reads as content settling, not swapping. */}
+
             {[
               <div key="heading" className={styles.capabilityHeading}>
                 <span className={styles.capabilityIcon}><ServiceIcon name={activeMeta.icon} /></span>

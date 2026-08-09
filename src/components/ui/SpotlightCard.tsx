@@ -3,21 +3,6 @@
 import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
 import styles from "./SpotlightCard.module.css";
 
-/**
- * Magic UI-style "spotlight card": a soft glow that tracks the cursor across
- * the card surface via CSS custom properties, updated on the client with a
- * plain pointermove handler (no extra animation library — GSAP owns
- * scroll-driven motion elsewhere in About, this is a pointer-driven effect).
- * Skips the glow entirely under reduced motion, matching the rest of About's
- * reduced-motion contract.
- *
- * Measuring follows `useMagnetic`: the card's box is read once when the
- * pointer arrives and reused, and the custom-property writes are collapsed
- * into one rAF. A `getBoundingClientRect` per pointermove is a forced
- * synchronous layout, and these cards sit in a list of four — every one of
- * them was flushing layout on every move event. Scroll and resize drop the
- * cached box, and only while the pointer is actually on the card.
- */
 export default function SpotlightCard({
   children,
   className,

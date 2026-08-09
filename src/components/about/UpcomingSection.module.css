@@ -1,9 +1,3 @@
-/* ── Upcoming section placeholder ─────────────────────────────────────────
-   Deliberately quiet: a heading that claims the section's place in the page,
-   and a dashed panel that says out loud it isn't built yet. Dashed, because
-   a solid card would read as a design that shipped — the same reasoning as
-   the team page's empty portrait frames. */
-
 .upcomingSection {
   position: relative;
   scroll-margin-top: 5rem;
@@ -61,8 +55,6 @@
   color: var(--ab-petroleo);
 }
 
-/* A steady marker, not a pulsing one — "in development" is a fact about the
-   page, not an alert. */
 .tag::before {
   content: "";
   width: 0.4rem;

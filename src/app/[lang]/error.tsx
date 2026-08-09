@@ -1,4 +1,4 @@
-"use client"; // Error boundaries must be Client Components
+"use client";
 
 import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
@@ -22,8 +22,6 @@ const COPY = {
   },
 };
 
-// This segment's own layout.tsx (and the I18nProvider it mounts) sits above
-// what error.js wraps, so it stays mounted here — useI18n is safe to call.
 export default function Error({
   error,
   unstable_retry,

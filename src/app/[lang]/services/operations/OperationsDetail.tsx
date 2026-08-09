@@ -14,9 +14,6 @@ import styles from "./operations.module.css";
 export default function OperationsDetail() {
   const reduced = useReducedMotion() ?? false;
 
-  // The SLA band's always-on status pulse holds its breath while the tab is
-  // hidden — same visibilitychange plumbing the call-center page already
-  // used for its status dots; this page was still pulsing in the background.
   const tabVisible = useTabVisibility();
 
   return (

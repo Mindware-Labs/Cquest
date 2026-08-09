@@ -23,10 +23,7 @@
     radial-gradient(closest-side at 18% 50%, color-mix(in srgb, var(--ab-petroleo) 10%, transparent), transparent 70%),
     radial-gradient(closest-side at 50% 50%, color-mix(in srgb, var(--ab-celeste) 12%, transparent), transparent 70%),
     radial-gradient(closest-side at 82% 50%, color-mix(in srgb, var(--ab-verde) 10%, transparent), transparent 70%);
-  /* `opacity`, not `transform` — pillarsAuraDrift below animates opacity and
-     nothing else, so hinting transform reserved a standing layer for a
-     property that never changes on this element, for the life of the page,
-     for a 62rem × 26rem triple gradient. */
+
   will-change: opacity;
   animation: pillarsAuraDrift 18s ease-in-out infinite;
 }
@@ -57,15 +54,6 @@
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
 }
 
-/* The drop wrapper. `height: 100%` is what keeps the card's own `height: 100%`
-   meaningful — a percentage resolves against the wrapper, not against the grid
-   track, so without this the three cards stop matching heights.
-
-   `will-change: transform` is deliberate and narrow: this element is animated
-   by a spring, which settles over a variable number of frames rather than a
-   fixed duration, so promoting it once up front is cheaper than letting the
-   compositor re-decide mid-flight. It is on the wrapper, which paints nothing,
-   rather than on the card, which paints a border and a shadow. */
 .pillarDrop {
   height: 100%;
   will-change: transform;
@@ -113,8 +101,7 @@
 
 .pillarCard:hover .pillarIcon {
   scale: 1.08;
-  /* A soft ring bloom, not a spin or a bounce — the "brillo" the icon gets
-     on hover, restrained to match the rest of the section's hover language. */
+
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--pillar-accent, var(--ab-celeste)) 16%, transparent);
 }
 

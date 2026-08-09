@@ -45,19 +45,12 @@ const COPY = {
   },
 };
 
-// Media slot for a work plate: a real screenshot once `image` is set, or a
-// labeled, reserved placeholder until then. Featured plates carry a 16:9 frame
-// with registration ticks; supporting plates a quieter 16:10.
 function WorkMedia({ work, featured = false }: { work: Work; featured?: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
   return (
     <div className={styles.workMedia} data-featured={featured || undefined}>
       {work.image ? (
-        /* The screenshot is revealed inside its frame — the crop wipes open
-           upward while the shot settles from a slight overscale. Variants
-           inherit the plate's hidden/visible labels, so the reveal rides the
-           gallery's own entrance. */
         <motion.div className={styles.workReveal} variants={mediaRevealVariants}>
           <motion.div className={styles.workZoom} variants={mediaSettleVariants}>
             <Image

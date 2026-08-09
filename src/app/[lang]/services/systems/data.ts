@@ -143,25 +143,17 @@ export const COMMITMENTS: ReadonlyArray<{ title: Record<Locale, string>; descrip
   },
 ];
 
-/* ── Selected work ─────────────────────────────────────────
-   The proof gallery. Each slot is a clickable plate that opens its own case-
-   study subpage (`href`). Only `build` / `icon` / `href` are required: an entry
-   with no `image`/`title` renders as a labeled, reserved slot. To publish a
-   real case study, fill its fields, drop a WebP in `public/apps/`, and flesh
-   out its subpage — the same slot becomes a live card, no layout change. Add
-   more entries and the gallery reflows on its own; the first `featured` entry
-   is the flagship plate. */
 export type Work = {
-  build: Record<Locale, string>;               // system-type tag, e.g. "CRM"
-  icon: ServiceIconName;                        // mirrors the capability icons
-  href: string;                                 // its case-study subpage
+  build: Record<Locale, string>;
+  icon: ServiceIconName;
+  href: string;
   featured?: boolean;
-  title?: Record<Locale, string>;               // published: the system's name
-  sector?: Record<Locale, string>;              // published: the sector it serves
-  summary?: Record<Locale, string>;             // published: challenge → system, one line
-  outcome?: { value: Record<Locale, string>; label: Record<Locale, string> }; // published: the number it moved
-  image?: string;                               // published: "/apps/<file>.webp"
-  alt?: Record<Locale, string>;                 // published: describe the screenshot
+  title?: Record<Locale, string>;
+  sector?: Record<Locale, string>;
+  summary?: Record<Locale, string>;
+  outcome?: { value: Record<Locale, string>; label: Record<Locale, string> };
+  image?: string;
+  alt?: Record<Locale, string>;
 };
 
 export const WORKS: readonly Work[] = [
@@ -204,19 +196,6 @@ export const HERO_LINES: Record<Locale, ReadonlyArray<{ text: string; strong: bo
   ],
 };
 
-/* ── Clients we've built for ───────────────────────────────
-   Real operations running a system we designed and built — the systems-
-   specific slice of what each account gets from Center Quest. Some of these
-   clients also appear on the Call Center clients page with a different
-   `provides` write-up (their call-center scope, not their systems scope). */
-/* `size` is an *optical* class, not a scale factor — these five files have
-   nothing in common geometrically (a 2.4:1 wordmark, a small lockup floating
-   in a square canvas of baked-in whitespace, a 5:1 wordmark, and two squarish
-   marks with modest margins), so each needs its own frame to carry the same
-   visual weight in the wall. See ClientsSection.module.css.
-     (default) — squarish mark, modest canvas margin
-     padded    — art sits inside a generous canvas margin
-     wide      — landscape wordmark; gains presence from width, not height */
 export const CLIENT_LOGOS = [
   {
     name: "Rig Hut",

@@ -6,10 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
 import { ACCENT_CTA_PAGES, DARK_HERO_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
-// The same width utility every service page's sections use. Imported rather
-// than re-expressed in Tailwind so the bar's logo and CTA land on exactly the
-// page grid's outer edges — approximating it is what left the nav's contents
-// inset ~7rem from the content below it.
+
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { useSectionSpy } from "@/hooks/useSectionSpy";
@@ -32,13 +29,6 @@ export default function Navbar() {
     onMouseLeave,
   } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
-  // "Scrolled" flips the nav to its light chrome — but on a page with a dark
-  // hero, flipping on the first pixel of scroll puts dark/near-invisible
-  // text over a background that's still dark. Track the hero itself instead:
-  // stay in the dark-hero look until it has actually scrolled out from under
-  // the fixed navbar, then switch. Pages without a `[data-hero-boundary]`
-  // (nothing currently renders Navbar outside /services/*, but this keeps it
-  // safe if one ever does) fall back to a plain scroll-position threshold.
   useEffect(() => {
     const heroEl = document.querySelector<HTMLElement>("[data-hero-boundary]");
 
@@ -58,23 +48,16 @@ export default function Navbar() {
   }, [pathname]);
 
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
-  // Every service page has a dark hero, but not every dark hero is a service
-  // page — see the two lists in navigation/data.ts. `inverse` follows the
-  // hero; the quote deep-link below follows the service.
+
   const inverse = (DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open;
-  // Mindware Labs runs its own purple identity, not Center Quest's celeste —
-  // see the comment on ACCENT_CTA_PAGES.
+
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
   const navLinks = getServiceNavLinks(dict, lang)[pathname] ?? getNavLinks(dict, lang);
-  // The quote CTA opens the dedicated /quote form — on a service page it
-  // deep-links with that service preselected (Step 2). Left un-prefixed here;
-  // MotionLink/LocalizedLink resolves the locale itself.
+
   const quoteHref = serviceDetailPage
     ? `/quote?servicio=${pathname.split("/").pop()}`
     : "/quote";
-  // On a service page the nav *is* the page's section index, so it should say
-  // where you are, not just where you can go. The marker in DesktopNav rides
-  // this; off a service page there are no in-page anchors and it stays null.
+
   const activeHref = useSectionSpy(
     navLinks.map((link) => link.href),
     NAV_HEIGHT_PX,
@@ -85,18 +68,13 @@ export default function Navbar() {
       initial={reduced ? false : { opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: NAV_EASE_OUT }}
-      // backdrop-filter belongs in the transition list too: without it the
-      // glass snapped on while the colour behind it was still easing.
+
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled || open
           ? "border-b border-border/70 bg-background/80 shadow-[0_1px_12px_rgba(15,32,40,0.04)] backdrop-blur-xl"
           : inverse
-            ? // Pure transparency lets the hero's own headline slide up and
-              // visually collide with the nav links while it scrolls past —
-              // a blurred top-down scrim keeps the nav readable without
-              // looking like solid chrome. The blur (not just the darkening)
-              // is what keeps scrolling hero text from reading as a sharp
-              // overlap with the nav's own labels.
+            ?
+
               "border-b border-white/12 bg-gradient-to-b from-black/55 via-black/20 to-transparent backdrop-blur-md"
             : "border-b border-transparent bg-transparent"
       }`}
@@ -132,9 +110,8 @@ export default function Navbar() {
             className={`cq-rect-cta group/cta relative hidden items-center overflow-hidden px-6 py-3 shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-[background-color,color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 md:inline-flex ${
               inverse
                 ? accentCta
-                  ? // Mindware Labs' own bright purple — #9d5ce0 on black text
-                    // holds ~5:1 contrast, the same margin bg-celeste/text-ink
-                    // holds elsewhere.
+                  ?
+
                     "bg-[#9d5ce0] text-black focus-visible:outline-[#9d5ce0]"
                   : "bg-celeste text-ink focus-visible:outline-celeste"
                 : "bg-petroleo text-white focus-visible:outline-petroleo"

@@ -1,15 +1,3 @@
-/* The edge fade is NOT a `mask-image` any more — it is composited into the
-   bitmap itself (see the mask gradients in HeroReactiveGrid.tsx).
-
-   A CSS mask on this element was quietly expensive for a reason that has
-   nothing to do with the canvas: the hero's parallax scales the plane this
-   sits in from 1 to 1.07 across the scroll. A composited layer that changes
-   scale gets re-rasterised so it does not go soft, and re-rasterising a
-   masked layer means re-applying a two-layer intersect mask over a full
-   viewport — repeatedly, all the way down the hero. Baked into the canvas
-   the layer is a plain texture the compositor can scale for free, and the
-   fade costs two alpha-multiply fills only on the frames the grid is
-   actually redrawn (i.e. while the pointer is moving over it). */
 .canvas {
   position: absolute;
   inset: 0;

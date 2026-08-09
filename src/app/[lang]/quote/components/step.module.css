@@ -1,7 +1,3 @@
-/* ── Step shell — the head every wizard step shares (eyebrow · title · lead).
-   Imported by StepService, StepDetails and StepContact alongside their own
-   step-specific modules. */
-
 .step {
   display: block;
 }

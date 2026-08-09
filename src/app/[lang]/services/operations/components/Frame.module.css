@@ -1,6 +1,3 @@
-/* Photo-placeholder frame furniture shared by the media band and the photo
-   grid: the caption stack and the corner crop marks that make the frame read
-   as "a photo goes exactly here". */
 .frameLabel {
   display: flex;
   flex-direction: column;

@@ -1,22 +1,11 @@
 import type { Variants } from "motion/react";
 import { EASE_OUT } from "@/components/services/motion";
 
-/**
- * Bespoke beats for the compass illustration and its text block — the
- * per-line reveal itself runs on the shared `focusRiseVariants` /
- * `ruleXVariants` from services/motion.ts. These exist here because nothing
- * else on the site drops a weighted needle or breathes a search ring, so
- * there is no shared vocabulary to reuse for those, and the text needs a
- * later `delayChildren` than the default `groupVariants` gives it — it
- * waits for the compass to have mostly drawn itself in first. */
-
-/** Text block stagger — starts once the compass's ring/ticks have landed. */
 export const textGroupVariants: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12, delayChildren: 0.75 } },
 };
 
-/** Outer ring + tick marks draw themselves in before the needle commits. */
 export const ringVariants: Variants = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: {
@@ -35,12 +24,6 @@ export const tickVariants: Variants = {
   },
 };
 
-/**
- * The needle doesn't settle on North — that's the whole joke. It swings past
- * a plausible heading with a real spring (weight, one small overshoot), then
- * `NEEDLE_DRIFT` takes over: a slow, linear, never-resting sway, because a
- * compass that can't find its bearing shouldn't ever look fully at rest.
- */
 export const needleVariants: Variants = {
   hidden: { rotate: -146, opacity: 0 },
   visible: {
@@ -50,11 +33,6 @@ export const needleVariants: Variants = {
   },
 };
 
-/**
- * Applied to a *child* of the needle group, so its small back-and-forth adds
- * on top of the parent's spring-settled rotation instead of replacing it —
- * both pivot around the same 100,100 center, so the two compose cleanly.
- */
 export const NEEDLE_WOBBLE_TRANSITION = {
   duration: 9,
   ease: "easeInOut" as const,
@@ -63,7 +41,6 @@ export const NEEDLE_WOBBLE_TRANSITION = {
   delay: 1.7,
 };
 
-/** Radar ping — a search sweep that never finds anything, so it repeats. */
 export const PING_TRANSITION = {
   duration: 2.6,
   ease: "easeOut" as const,

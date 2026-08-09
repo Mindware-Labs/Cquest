@@ -11,7 +11,6 @@ import {
   type Row,
 } from "./shared";
 
-/* The internal sales notification — the critical email of the pair. */
 export function buildSalesEmail(submission: QuoteSubmission): {
   subject: string;
   html: string;

@@ -59,9 +59,7 @@ function HeroMedia({ mediaY, mediaScale, alt }: { mediaY: MotionValue<string>; m
 export default function Hero({ reduced }: { reduced: boolean }) {
   const { dict, lang } = useI18n();
   const t = COPY[lang];
-  // Hero parallax departure — the media zooms and drifts on its own axis while
-  // the copy lifts away and dissolves, so leaving the hero reads as depth, not
-  // a scroll past a static banner.
+
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
@@ -94,10 +92,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             <LocalizedLink href="/quote?servicio=call-center" className={styles.primaryCta}>{dict.hero.primaryCta} <Arrow /></LocalizedLink>
             <a href="#capabilities" className={styles.secondaryCta}>{t.exploreCapabilities} <Arrow direction="down" /></a>
           </motion.div>
-          {/* A real list. This was a <div> carrying an aria-label, and a
-              label on a generic element is simply dropped — assistive tech
-              never announced "Page highlights" at all, and the three words
-              arrived as loose text with no relationship to each other. */}
+
           <motion.ul className={styles.heroSignal} aria-label={t.pageHighlights} variants={focusRiseVariants}>
             {t.signals.map((signal) => <li key={signal}>{signal}</li>)}
           </motion.ul>

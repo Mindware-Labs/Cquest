@@ -3,16 +3,6 @@ import { motion } from "motion/react";
 import { groupVariants, focusRiseVariants, ruleXVariants, ruleYVariants, stepVariants, VIEWPORT } from "./motion";
 import styles from "./SectionIntro.module.css";
 
-/**
- * Shared section heading (hairline rule + title + optional description) used
- * across every service page. `accentColor` feeds the rule's color via a CSS
- * custom property instead of a hard-coded token, so each page can pass its
- * own brand accent (e.g. `"var(--cc-sky)"`) without this component coupling
- * to any one page's token names.
- *
- * `rule` defaults to true — every existing consumer keeps its hairline. Pass
- * `rule={false}` for a heading that should carry no accent mark above it.
- */
 export default function SectionIntro({
   title,
   description,
@@ -32,10 +22,7 @@ export default function SectionIntro({
     <motion.div
       className={styles.sectionIntro}
       data-compact={compact || undefined}
-      /* Title-only intros were still laid out on the two-column grid, leaving
-         the right half of the row empty and the heading squeezed into a
-         measure it wasn't sized for. Flagged so the CSS can drop to one
-         column and give the title a proper display measure. */
+
       data-solo={!description || undefined}
       style={accentColor ? ({ "--section-intro-accent": accentColor } as CSSProperties) : undefined}
       initial={reduced ? false : "hidden"}

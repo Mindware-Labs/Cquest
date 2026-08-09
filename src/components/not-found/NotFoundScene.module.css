@@ -1,7 +1,3 @@
-/* ── 404 scene ────────────────────────────────────────────
-   Reprises the hero's "lit stage" logic (field + vignette + grain) but in
-   the light register every non-hero page runs on, since Navbar renders
-   un-inverted here — see Navbar.tsx's `inverse` gate. */
 .scene {
   position: relative;
   isolation: isolate;
@@ -33,9 +29,6 @@
   pointer-events: none;
 }
 
-/* The oversized "404" ghosting the whole composition — editorial texture,
-   not a second copy of the eyebrow. Clipped to the section so it can never
-   force horizontal scroll on narrow viewports. */
 .ghostNumeral {
   position: absolute;
   z-index: 0;

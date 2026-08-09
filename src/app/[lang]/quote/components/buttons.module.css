@@ -1,5 +1,3 @@
-/* ── Buttons (shared by wizard + confirmation) ─────────── */
-
 .primaryBtn {
   display: inline-flex;
   align-items: center;
@@ -42,7 +40,6 @@
   transform: none;
 }
 
-/* Not-yet-valid: muted, but still clickable so a click reveals what's missing. */
 .primaryBtn[data-inactive] {
   background: color-mix(in srgb, var(--svc) 22%, var(--surface-sunken));
   border-color: transparent;

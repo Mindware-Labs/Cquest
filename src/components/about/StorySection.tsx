@@ -9,28 +9,6 @@ import SectorsBeam from "./SectorsBeam";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./StorySection.module.css";
 
-/* ── What this section says, and where it says it ────────────────────────
-   This used to be prose left, diagram right: two paragraphs and a pull
-   quote in one column, the figure in the other, and the sector's own detail
-   opening in a reserved band UNDERNEATH the figure. Three problems, one
-   cause — the argument was being made twice.
-
-     • The first paragraph listed the five sectors by name. The diagram names
-       all five, on screen, permanently. It has been dropped; nothing was
-       lost that the figure was not already saying better.
-     • The second paragraph IS the argument — one discipline, five different
-       SLAs — so it moves up beside the heading as the section's lead, where
-       a claim of that size belongs.
-     • The pull quote moves into the detail panel as its resting state (see
-       SectorsBeam). It was a conclusion floating beside the evidence; it is
-       now the panel's answer until you ask about a specific sector, which
-       gives the panel something true to hold at rest and gives the quote a
-       job instead of a box.
-
-   What the space bought is the whole point. The figure and its detail now
-   sit side by side in one row, and the section fits in a viewport — you
-   click a sector and the answer is already on screen, rather than a screen
-   below the thing you clicked. */
 const COPY = {
   en: {
     heading: ["Five sectors.", "One operational discipline."],
@@ -80,10 +58,7 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
         </span>
       )}
       <div className={container.container}>
-        {/* No accent rule — this is the first heading after the carousel and
-            reads better opening straight on the type. With the lead beside it
-            the intro is one row rather than a column of prose, which is where
-            the vertical budget for the split below comes from. */}
+
         <SectionIntro
           title={
             <>

@@ -16,15 +16,6 @@ import { STEPS } from "./data";
 import { Arrow } from "./components/icons";
 import styles from "./QuoteContact.module.css";
 
-/* The closing #contact band on each service page: a balanced two-column block in
-   the same editorial language as the Metrics section it sits near. A big-statement
-   heading (with a celeste tick, like Metrics) on the left; an action card built
-   from the site's own card idiom — hairline border, celeste top-accent, numbered
-   rows echoing the capability index — on the right. Its button opens the dedicated
-   /quote form with this service pre-selected (Step 2); the full step-by-step
-   wizard lives there, not inline. currentColor carries the neutrals so the block
-   reads on each service's dark ink; --brand-celeste carries the accent. */
-
 const rowVariants: Variants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_OUT } },

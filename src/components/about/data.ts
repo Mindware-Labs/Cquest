@@ -1,12 +1,6 @@
 import type { Locale } from "@/i18n/config";
 import type { ServiceIconName } from "@/components/services/data";
 
-// Real headcount figures provided by the client; kept as a structured table
-// (not hard-coded inline in JSX) so an admin/config layer can later swap
-// them without touching component code, per the "animated metrics...
-// editable without touching code" requirement. Years/clients/systems/
-// interactions remain placeholder scale until the client supplies exact
-// figures for those.
 export const ABOUT_METRICS: ReadonlyArray<{
   id: string;
   value: number;
@@ -19,9 +13,6 @@ export const ABOUT_METRICS: ReadonlyArray<{
   { id: "years", value: 8, suffix: "+", label: { en: "Years of experience", es: "Años de experiencia" } },
 ];
 
-// Real team composition beyond the two headline counts above — used by
-// TeamSection, not the count-up metrics grid (these are categories, not a
-// single number to animate).
 export const TEAM_SPECIALTIES: Record<Locale, readonly string[]> = {
   en: ["Quality", "Sales", "Finance", "Process automation", "SEO", "Marketing"],
   es: ["Calidad", "Ventas", "Finanzas", "Automatización de procesos", "SEO", "Marketing"],
@@ -37,12 +28,6 @@ export const TEAM_HR_NOTE: Record<Locale, string> = {
   es: "Un departamento especial de RRHH dedicado a la búsqueda y reclutamiento del personal detrás de cada operación.",
 };
 
-/* `focus` describes what the SECTOR demands of an operation, and `services`
-   names which of Center Quest's own declared service lines answer it. Both
-   are deliberately claim-free: no volumes, no results, no client names. The
-   requirements doc is explicit that metrics, case studies and testimonials
-   arrive from the client, so nothing here invents them — when those numbers
-   exist they belong in this table, next to the copy they qualify. */
 export const ABOUT_SECTORS: ReadonlyArray<{
   id: string;
   icon: ServiceIconName;
@@ -116,10 +101,3 @@ export const ABOUT_SECTORS: ReadonlyArray<{
     },
   },
 ];
-
-/* NOTE — general clients wall (home "Clients who trust Center Quest"): not
-   built yet, and its placeholder section was removed from AboutSection by
-   client request. When it gets built, derive its roster as the union of the
-   two per-service CLIENT_LOGOS lists (call-center wins the dedupe for Rig
-   Hut / Paso Rápido — its `provides` write-ups cover both sides of those
-   engagements). See git history for a working implementation. */

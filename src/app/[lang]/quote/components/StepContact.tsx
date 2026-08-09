@@ -14,10 +14,6 @@ import shell from "./step.module.css";
 import styles from "./StepContact.module.css";
 import { Field, OptionGroup } from "./fields";
 
-// "Best way to reach you" — modelled as a normal single-choice question so it
-// renders through the same OptionGroup as everything else. Its own label
-// isn't in CONTACT_FIELDS (it's synthesized here, not a real contact field),
-// so it carries its own copy block rather than reusing the dictionary.
 const PREFERRED: Question = {
   id: "preferred",
   kind: "single",
@@ -28,13 +24,6 @@ const PREFERRED: Question = {
   },
 };
 
-/* Step 3 — contact details. Requirements §3.2 asks for name, company, email and
-   phone; we add an optional preferred-channel so the follow-up (email or
-   WhatsApp) matches how the prospect wants to be reached.
-
-   Errors come pre-computed from the Zod contact schema. A field reveals its
-   error once it's been visited (blurred) or once the prospect tries to advance,
-   so validation feels responsive without scolding half-typed fields. */
 export default function StepContact({
   answers,
   onChange,

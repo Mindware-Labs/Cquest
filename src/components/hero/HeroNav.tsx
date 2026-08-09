@@ -16,10 +16,9 @@ export default function HeroNav({
   onServiceHover,
 }: {
   reduced: boolean;
-  /** False during act one, while the mascot has the stage to itself. */
+
   revealed: boolean;
-  /** Forwarded straight to DesktopNav's `onChildHover` — see there and
-   *  SERVICE_QUESTION_INDEX in ./animation for what it drives. */
+
   onServiceHover?: (href: string | null) => void;
 }) {
   const { dict, lang } = useI18n();
@@ -34,19 +33,13 @@ export default function HeroNav({
   } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
   return (
-    /* Variant labels, not a transition of its own. The bar used to animate
-       as one element, so the mark, the links and the CTA all arrived on the
-       same frame — three unrelated objects moving identically, which the eye
-       resolves as one rectangle sliding down rather than as a page framing
-       itself. It now only PROPAGATES the label; each cell below carries its
-       own beat (REVEAL.navStep). The retreat is inside chromeRise's `hidden`
-       variant — shorter and accelerating, not the entrance played back. */
+    /* Solo PROPAGA la etiqueta de variante; cada celda de abajo lleva su beat.
+       Antes la barra animaba como un bloque y se leía como un rectángulo. */
     <motion.div
       initial={reduced ? false : "hidden"}
       animate={revealed ? "visible" : "hidden"}
-      /* Hidden means hidden: while it's invisible the chrome must also be
-         untabbable and unclickable, or there's an invisible menu button
-         sitting over the mascot waiting to be hit. */
+
+      /* Oculto es oculto: mientras no se ve, tampoco se tabula ni se pulsa. */
       inert={!revealed}
       className="relative z-20"
     >
@@ -55,21 +48,12 @@ export default function HeroNav({
           variants={chromeRise(REVEAL.nav)}
           href="/"
           aria-label={dict.nav.homeLinkAriaLabel}
-          /* From lg the mark starts on the copy's left edge — same
-             `--hero-inset` the composition's cell uses as padding, on top of
-             the identical container padding this row and that plane both
-             carry. The right-hand column below mirrors this exact scale
-             (ml-1/sm:ml-2/lg:hero-inset ↔ mr-1/sm:mr-2/lg:hero-inset) so the
-             mark, the copy and the CTA all sit the same distance from their
-             own edge. The nudge below lg is the mobile row's own
-             composition and has nothing to do with the copy, which is
-             full-width and flush down there. */
+
+          /* Desde lg la marca arranca en el mismo --hero-inset que usa el copy,
+             y la columna derecha espeja la escala: los tres a la misma distancia. */
           className="ml-1 shrink-0 justify-self-start sm:ml-2 lg:ml-[var(--hero-inset)]"
         >
-          {/* The real mark, not the placeholder compass — always rendered
-              white, the same brightness(0)/invert(1) pair Navbar and
-              SiteFooter use on this exact PNG, since the hero stage under
-              it is always dark. */}
+
           <Image
             src="/logo.png"
             alt="Center Quest"
@@ -96,12 +80,7 @@ export default function HeroNav({
           variants={chromeRise(REVEAL.nav + 2 * REVEAL.navStep)}
           className="mr-1 flex items-center justify-self-end gap-4 sm:mr-2 lg:mr-[var(--hero-inset)]"
         >
-          {/* Desktop-only — the mobile sidebar below is passed the same
-              label so the two stay in sync rather than drifting the way a
-              default-vs-override pair eventually does. Styled to match
-              Navbar's "inverse" contact pill exactly, hardcoded rather than
-              threaded through a prop: unlike Navbar, this bar never scrolls
-              onto a light background, so it never needs the other variant. */}
+
           <MotionLink
             ref={ctaRef}
             href="/quote"

@@ -5,9 +5,6 @@ import { STEPS } from "../data";
 import styles from "./ProgressRail.module.css";
 import { Check } from "./icons";
 
-/* The step indicator: three numbered nodes joined by a track that fills as the
-   prospect advances. Completed steps stay reachable (jump back to edit an
-   answer); upcoming steps are locked until their gate is passed. */
 export default function ProgressRail({
   current,
   furthest,

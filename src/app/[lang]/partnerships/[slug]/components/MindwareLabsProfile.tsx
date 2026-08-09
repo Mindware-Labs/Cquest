@@ -10,9 +10,6 @@ import { useI18n } from "@/i18n/I18nProvider";
 import VenomField from "./VenomField";
 import styles from "./MindwareLabsProfile.module.css";
 
-/* Left blank on purpose — no confirmed Instagram/LinkedIn handle for
-   Mindware Labs exists yet. Filling either in with a guessed URL would be
-   worse than the disabled state below: a live-looking link nobody checked. */
 const SOCIAL_LINKS = {
   instagram: "",
   linkedin: "",
@@ -69,14 +66,6 @@ export default function MindwareLabsProfile() {
   const t = COPY[lang];
 
   return (
-    // The boundary the Navbar watches to decide when to leave its
-    // transparent/white "inverse" chrome — set on the whole page, not just
-    // the hero band. Every OTHER dark-hero page is a dark band over a white
-    // sheet, so the navbar's light "scrolled" chrome is meant to take over
-    // once the reader scrolls past the dark part. This page is black end to
-    // end, so that handoff has nothing to hand off to until the page itself
-    // is done — scoping the boundary to just `.hero` flipped the navbar
-    // white a few hundred pixels in, over pure black.
     <div data-hero-boundary className={styles.page}>
       <Particles
         className={styles.ambientField}
@@ -105,7 +94,6 @@ export default function MindwareLabsProfile() {
 
         <p className={styles.lead}>{t.lead}</p>
         <span className={styles.status}>{t.status}</span>
-
 
       </header>
 
