@@ -120,7 +120,9 @@ export default function MindwareLabsProfile() {
                 height={1171}
                 sizes="(max-width: 832px) 320px, 320px"
                 className={styles.mediaLogo}
-                priority
+                /* Sin priority: quedó bajo el pliegue al pasar el hero a texto
+                   solo, y precargarlo compite con el LCP real. */
+                loading="lazy"
               />
             </motion.div>
 
