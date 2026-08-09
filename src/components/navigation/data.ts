@@ -135,6 +135,23 @@ export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<strin
 
     "/legal/terms": getLegalNavLinks(dict, lang),
     "/legal/privacy": getLegalNavLinks(dict, lang),
+
+    "/location": [
+      {
+        label: dict.hero.navLinks.services,
+        href: "/#services",
+        children: SERVICES.map((service) => ({
+          label: service.label[lang],
+          href: service.href,
+          description: service.strapline[lang],
+          icon: SERVICE_ICON[service.id],
+        })),
+      },
+      { label: dict.hero.navLinks.team, href: "/#metrics" },
+      { label: dict.hero.navLinks.sectors, href: "/#sectors" },
+      { label: dict.hero.navLinks.whyUs, href: "/#why-us" },
+      { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
+    ],
   };
 }
 
