@@ -35,9 +35,9 @@ export const dictionary: Dictionary = {
     replayLabel: "Repetir la animación",
     navLinks: {
       services: "Servicios",
-      team: "Nuestro equipo",
+      team: "Equipo",
       sectors: "Sectores",
-      whyUs: "Por qué nosotros",
+      whyUs: "Nosotros",
       partnerships: "Partnerships",
     },
 
