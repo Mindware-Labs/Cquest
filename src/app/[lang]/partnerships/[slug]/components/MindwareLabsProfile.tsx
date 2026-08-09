@@ -1,12 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useReducedMotion } from "motion/react";
-import Arrow from "@/components/services/Arrow";
+import { motion, useReducedMotion } from "motion/react";
 import container from "@/components/services/Container.module.css";
+import {
+  focusRiseVariants,
+  groupVariants,
+  heroCurtainVariants,
+  heroLinesVariants,
+  settleVariants,
+  VIEWPORT,
+} from "@/components/services/motion";
 import { Particles } from "@/components/ui/particles";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { useI18n } from "@/i18n/I18nProvider";
+import BrainVisual from "./BrainVisual";
 import VenomField from "./VenomField";
 import styles from "./MindwareLabsProfile.module.css";
 
@@ -74,40 +81,88 @@ export default function MindwareLabsProfile() {
       />
       <VenomField reduced={reduced} className={styles.venomField} />
 
-      <header className={styles.hero}>
-        <span className={styles.eyebrow}>{t.eyebrow}</span>
-
-        <span className={styles.logoWrap}>
-          <Image
-            src="/mindware-labs/logo_transparent_background.png"
-            alt="Mindware Labs"
-            width={3400}
-            height={1171}
-            sizes="(max-width: 672px) 256px, 352px"
-            className={styles.logoImage}
-            priority
-          />
-        </span>
-
-        <p className={styles.lead}>{t.lead}</p>
-      </header>
+      {/* Misma gramática que el h1 del home: cada línea sube tras su máscara. */}
+      <motion.header
+        className={styles.hero}
+        initial={reduced ? false : "hidden"}
+        animate={reduced ? undefined : "visible"}
+        variants={heroLinesVariants}
+      >
+        <h1 className={styles.lead}>
+          {t.lead.split(" ").reduce<string[][]>((lines, word, index) => {
+            const target = Math.floor(index / 6);
+            (lines[target] ??= []).push(word);
+            return lines;
+          }, []).map((words, index) => (
+            <span key={index} className={styles.leadLine}>
+              <motion.span className={styles.leadLineInner} variants={heroCurtainVariants}>
+                {words.join(" ")}
+              </motion.span>
+            </span>
+          ))}
+        </h1>
+      </motion.header>
 
       <section className={styles.section}>
-        <div className={`${container.container} ${styles.card}`}>
-          <h2 className={styles.sectionHeading}>{t.about.heading}</h2>
-          <p className={styles.sectionBody}>{t.about.body}</p>
+        <div className={container.container}>
+          <motion.div
+            className={styles.grid}
+            initial={reduced ? false : "hidden"}
+            whileInView={reduced ? undefined : "visible"}
+            viewport={VIEWPORT}
+            variants={groupVariants}
+          >
+            <motion.div className={styles.mediaCell} variants={focusRiseVariants}>
+              <Image
+                src="/mindware-labs/logo_transparent_background.png"
+                alt="Mindware Labs"
+                width={3400}
+                height={1171}
+                sizes="(max-width: 832px) 320px, 320px"
+                className={styles.mediaLogo}
+                priority
+              />
+            </motion.div>
+
+            <motion.div className={styles.card} variants={focusRiseVariants}>
+              <h2 className={styles.sectionHeading}>{t.about.heading}</h2>
+              <p className={styles.sectionBody}>{t.about.body}</p>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       <section className={styles.section}>
-        <div className={`${container.container} ${styles.card}`}>
-          <h2 className={styles.sectionHeading}>{t.collab.heading}</h2>
-          <p className={styles.sectionBody}>{t.collab.body}</p>
+        <div className={container.container}>
+          <motion.div
+            className={styles.grid}
+            initial={reduced ? false : "hidden"}
+            whileInView={reduced ? undefined : "visible"}
+            viewport={VIEWPORT}
+            variants={groupVariants}
+          >
+            <motion.div className={styles.card} variants={focusRiseVariants}>
+              <h2 className={styles.sectionHeading}>{t.collab.heading}</h2>
+              <p className={styles.sectionBody}>{t.collab.body}</p>
+            </motion.div>
+
+            {/* El cerebro no sube: se revela. Un canvas WebGL desplazándose
+                mientras carga se ve como un salto, no como una entrada. */}
+            <motion.div className={styles.brainCell} variants={settleVariants}>
+              <BrainVisual reduced={reduced} />
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       <section className={`${styles.section} ${styles.connect}`}>
-        <div className={container.container}>
+        <motion.div
+          className={container.container}
+          initial={reduced ? false : "hidden"}
+          whileInView={reduced ? undefined : "visible"}
+          viewport={VIEWPORT}
+          variants={settleVariants}
+        >
           <h2 className={styles.connectHeading}>{t.connect.heading}</h2>
 
           <div className={styles.socialRow}>
@@ -146,12 +201,7 @@ export default function MindwareLabsProfile() {
             </a>
           </div>
           <p className={styles.connectNote}>{SOCIAL_LINKS.email}</p>
-
-          <LocalizedLink href="/#partnerships" className={styles.backLink}>
-            {t.back}
-            <Arrow />
-          </LocalizedLink>
-        </div>
+        </motion.div>
       </section>
     </div>
   );

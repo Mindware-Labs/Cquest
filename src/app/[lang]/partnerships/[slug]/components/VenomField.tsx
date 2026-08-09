@@ -164,12 +164,17 @@ export default function VenomField({ reduced, className }: { reduced: boolean; c
         context.strokeStyle = branch.bright ? PALETTE.lineBright : PALETTE.line;
         context.globalAlpha = alpha * (branch.bright ? 0.85 : 0.6);
 
+        /* Nada de shadowBlur: es de lo más caro en canvas 2D y acá se pagaba a
+           pantalla completa, cada cuadro. El brillo se finge con un segundo
+           trazo ancho y translúcido, que cuesta una fracción. */
         if (branch.bright) {
-          context.shadowColor = PALETTE.lineBright;
-          context.shadowBlur = 10;
+          context.save();
+          context.lineWidth = 4.5;
+          context.globalAlpha = alpha * 0.16;
+          context.stroke();
+          context.restore();
         }
         context.stroke();
-        context.shadowBlur = 0;
 
         for (let i = 1; i <= lastIndex; i++) {
           const w = wobbleFor(i);
@@ -181,19 +186,26 @@ export default function VenomField({ reduced, className }: { reduced: boolean; c
 
           context.globalAlpha = alpha * 0.9;
           context.fillStyle = isTip ? PALETTE.nodeCore : PALETTE.node;
-          if (branch.bright || isTip) {
-            context.shadowColor = PALETTE.nodeCore;
-            context.shadowBlur = branch.bright ? 8 : 4;
-          }
           context.beginPath();
           context.arc(px, py, radius, 0, Math.PI * 2);
           context.fill();
-          context.shadowBlur = 0;
+
+          /* Aureola barata para las puntas: un arco extra a baja opacidad. */
+          if (isTip) {
+            context.globalAlpha = alpha * 0.2;
+            context.beginPath();
+            context.arc(px, py, radius * 2.6, 0, Math.PI * 2);
+            context.fill();
+          }
         }
       }
 
       context.globalAlpha = 1;
     };
+
+    /* Campo decorativo de fondo: a 30 fps se ve igual y cuesta la mitad. */
+    const FRAME_INTERVAL = 1 / 30;
+    let sinceDraw = 0;
 
     const loop = (now: number) => {
       if (disposed) return;
@@ -202,7 +214,12 @@ export default function VenomField({ reduced, className }: { reduced: boolean; c
       start = now;
 
       smoothProgress.value += (targetProgress.value - smoothProgress.value) * 0.06;
-      draw((frame += dt));
+      frame += dt;
+      sinceDraw += dt;
+      if (sinceDraw >= FRAME_INTERVAL) {
+        sinceDraw = 0;
+        draw(frame);
+      }
 
       requestedRef.current = document.visibilityState === "visible" ? requestAnimationFrame(loop) : 0;
     };

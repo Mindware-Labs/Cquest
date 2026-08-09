@@ -2,14 +2,12 @@
 
 import { useRef } from "react";
 import { motion } from "motion/react";
-import Image from "next/image";
-import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import SectionIntro from "@/components/services/SectionIntro";
 import { groupVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { useI18n } from "@/i18n/I18nProvider";
 import { gsap } from "@/lib/gsap";
+import AllianceBridge from "./AllianceBridge";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import { PARTNER_SLOTS } from "./partnershipsData";
 import styles from "./PartnershipsSection.module.css";
@@ -93,40 +91,16 @@ export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
             <span>{t.directory}</span>
           </motion.div>
 
-          <motion.ul className={styles.partnerList} variants={groupVariants}>
-            {PARTNER_SLOTS.map((partner) => (
-              <motion.li key={partner.slug} variants={stepVariants}>
-                <LocalizedLink
-                  href={`/partnerships/${partner.slug}`}
-                  prefetch={false}
-                  className={styles.partnerRow}
-                  aria-label={`${t.viewProfile}: ${partner.name[lang]}`}
-                >
-                  <span className={styles.logoFrame}>
-                    <Image
-                      src={partner.logo.src}
-                      alt={`${partner.name[lang]} logo`}
-                      width={partner.logo.width}
-                      height={partner.logo.height}
-                      sizes="(max-width: 672px) 144px, 184px"
-                      className={styles.logoImage}
-                    />
-                  </span>
-
-                  <span className={styles.identity}>
-                    <span className={styles.companyName}>{partner.name[lang]}</span>
-                  </span>
-
-                  <span className={styles.description}>{t.description}</span>
-
-                  <span className={styles.profileAction}>
-                    {t.viewProfile}
-                    <Arrow className={styles.rowArrow} />
-                  </span>
-                </LocalizedLink>
-              </motion.li>
-            ))}
-          </motion.ul>
+          {PARTNER_SLOTS.map((partner) => (
+            <motion.div key={partner.slug} variants={stepVariants}>
+              <AllianceBridge
+                reduced={reduced}
+                href={`/partnerships/${partner.slug}`}
+                name={partner.name[lang]}
+                action={t.viewProfile}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>

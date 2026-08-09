@@ -33,33 +33,27 @@
   text-align: center;
 }
 
-.eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--mw-purple-glow);
-  opacity: 0.85;
-}
-
-.logoWrap {
-  width: min(90%, 22rem);
-}
-
-.logoImage {
-  display: block;
-  width: 100%;
-  height: auto;
-
-  filter: brightness(0) invert(1);
-}
-
 .lead {
-  max-width: 34rem;
-  font-size: clamp(1rem, 1.1vw + 0.7rem, 1.15rem);
-  line-height: 1.65;
-  color: rgba(242, 236, 251, 0.72);
-  text-wrap: pretty;
+  max-width: 46rem;
+  margin: 0;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.65rem, 1rem + 2.6vw, 3.1rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+  color: #f2ecfb;
+  text-wrap: balance;
+}
+
+/* Máscara por línea: el contenedor recorta, el interior sube desde abajo. */
+.leadLine {
+  display: block;
+  overflow: hidden;
+}
+
+.leadLineInner {
+  display: block;
+  will-change: transform;
 }
 
 .section {
@@ -68,20 +62,65 @@
   padding-block: clamp(3rem, 7vw, 5rem);
 }
 
-.card {
-  max-width: 44rem;
+/* Dos filas de dos columnas. Las celdas quedan bajas a propósito: el fondo
+   ambiental tiene que respirar entre ellas al scrollear. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  max-width: 64rem;
   margin-inline: auto;
+}
+
+.mediaCell {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.mediaLogo {
+  display: block;
+  width: min(100%, 20rem);
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.brainCell {
+  position: relative;
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+  aspect-ratio: 1;
+}
+
+@media (max-width: 52rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* En una columna el orden lógico manda: media arriba, texto debajo. */
+  .grid > * {
+    grid-column: 1;
+  }
+}
+
+.card {
   border: 1px solid rgba(157, 92, 224, 0.22);
   border-radius: 4px;
 
+  /* Sin backdrop-filter: desenfocar el fondo de dos tarjetas grandes obliga a
+     recomponerlas en cada cuadro del scroll. Sobre un fondo casi negro el
+     resultado es indistinguible de una capa opaca. */
   background:
     linear-gradient(
-      color-mix(in srgb, var(--mw-purple) 20%, transparent),
-      color-mix(in srgb, var(--mw-purple) 20%, transparent)
+      color-mix(in srgb, var(--mw-purple) 22%, transparent),
+      color-mix(in srgb, var(--mw-purple) 22%, transparent)
     ),
-    rgba(10, 6, 16, 0.55);
-  backdrop-filter: blur(18px);
-  padding: clamp(1.75rem, 5vw, 3rem);
+    rgba(10, 6, 16, 0.92);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
 }
 
 .sectionHeading {
@@ -166,30 +205,9 @@
   color: rgba(242, 236, 251, 0.62);
 }
 
-.backLink {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 3rem;
-  color: var(--mw-purple-glow);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.backLink:focus-visible {
-  outline: 2px solid var(--mw-purple-bright);
-  outline-offset: 4px;
-}
-
 @media (max-width: 42rem) {
   .hero {
     padding-block: 7.5rem 3rem;
   }
 
-  .logoWrap {
-    width: min(85%, 16rem);
-  }
 }

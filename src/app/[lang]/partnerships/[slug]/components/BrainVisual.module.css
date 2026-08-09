@@ -1,0 +1,81 @@
+/* Envoltorio del doc: halo suave detrás y dos aros concéntricos girando en
+   sentidos opuestos. */
+.visual {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.halo {
+  position: absolute;
+  inset: -1rem;
+  border-radius: 9999px;
+  background: rgb(173 116 195 / 0.3);
+  filter: blur(64px);
+  animation: haloPulse 7s ease-in-out infinite;
+}
+
+.ringOuter,
+.ringInner {
+  position: absolute;
+  border-radius: 9999px;
+}
+
+.ringOuter {
+  inset: 1rem;
+  border: 1px dashed rgb(255 255 255 / 0.08);
+  animation: spin 60s linear infinite;
+}
+
+.ringInner {
+  inset: 4rem;
+  border: 1px solid rgb(255 255 255 / 0.05);
+  animation: spin 90s linear infinite reverse;
+}
+
+/* El <Canvas> se dimensiona a su padre: si este no tiene alto, no pinta nada. */
+.canvasLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+@keyframes haloPulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 52rem) {
+  .ringInner {
+    inset: 3rem;
+  }
+}
+
+.visual[data-static="true"] .halo,
+.visual[data-static="true"] .ringOuter,
+.visual[data-static="true"] .ringInner {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual {
+    transition: none;
+  }
+
+  .halo,
+  .ringOuter,
+  .ringInner {
+    animation: none;
+  }
+}
