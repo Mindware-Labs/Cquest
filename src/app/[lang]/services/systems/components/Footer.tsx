@@ -16,6 +16,7 @@ export default function Footer() {
           alt="Center Quest"
           width={692}
           height={512}
+          sizes="54px"
           className={styles.footerLogo}
         />
       </LocalizedLink>

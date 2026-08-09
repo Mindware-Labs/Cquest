@@ -71,105 +71,10 @@ export const Particles: React.FC<ParticlesProps> = ({
   const initCanvasRef = useRef<() => void>(() => {})
   const onMouseMoveRef = useRef<() => void>(() => {})
   const animateRef = useRef<() => void>(() => {})
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      context.current = canvasRef.current.getContext("2d")
-    }
-    initCanvasRef.current()
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
-    let onScreen = false
-    let tabVisible = document.visibilityState === "visible"
-
-    const loop = () => {
-      animateRef.current()
-      rafID.current = window.requestAnimationFrame(loop)
-    }
-
-    const park = () => {
-      if (rafID.current != null) {
-        window.cancelAnimationFrame(rafID.current)
-        rafID.current = null
-      }
-    }
-
-    const sync = () => {
-      if (reducedMotion.matches) {
-        park()
-        return
-      }
-      if (onScreen && tabVisible) {
-        if (rafID.current == null) rafID.current = window.requestAnimationFrame(loop)
-      } else {
-        park()
-      }
-    }
-
-    const handleMouseMove = (event: MouseEvent) => {
-      mousePosition.current.x = event.clientX
-      mousePosition.current.y = event.clientY
-      onMouseMoveRef.current()
-    }
-
-    const handleResize = () => {
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current)
-      }
-      resizeTimeout.current = setTimeout(() => {
-        initCanvasRef.current()
-      }, 200)
-    }
-
-    const handlePreferenceChange = () => {
-      initCanvasRef.current()
-      sync()
-    }
-
-    const handleVisibilityChange = () => {
-      tabVisible = document.visibilityState === "visible"
-      sync()
-    }
-
-    const observer =
-      typeof IntersectionObserver !== "undefined"
-        ? new IntersectionObserver(
-            ([entry]) => {
-              onScreen = entry.isIntersecting
-              sync()
-            },
-            { threshold: 0 },
-          )
-        : null
-
-    if (observer && canvasContainerRef.current) {
-      observer.observe(canvasContainerRef.current)
-    } else {
-      onScreen = true
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    window.addEventListener("resize", handleResize)
-    document.addEventListener("visibilitychange", handleVisibilityChange)
-    reducedMotion.addEventListener("change", handlePreferenceChange)
-    sync()
-
-    return () => {
-      park()
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current)
-      }
-      observer?.disconnect()
-      window.removeEventListener("mousemove", handleMouseMove)
-      window.removeEventListener("resize", handleResize)
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
-      reducedMotion.removeEventListener("change", handlePreferenceChange)
-    }
-  }, [color])
-
-  useEffect(() => {
-    initCanvasRef.current()
-  }, [refresh])
+  /* El rect del canvas se cachea y solo se relee tras un scroll o un resize:
+     medirlo en cada frame es una lectura de layout que puede forzar reflow si
+     otra animación de la página ya ensució el árbol. */
+  const rectRef = useRef<DOMRect | null>(null)
 
   const initCanvas = () => {
     resizeCanvas()
@@ -186,7 +91,10 @@ export const Particles: React.FC<ParticlesProps> = ({
 
   const onMouseMove = () => {
     if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect()
+      if (!rectRef.current) {
+        rectRef.current = canvasRef.current.getBoundingClientRect()
+      }
+      const rect = rectRef.current
       const { w, h } = canvasSize.current
       const x = mousePosition.current.x - rect.left - w / 2
       const y = mousePosition.current.y - rect.top - h / 2
@@ -242,7 +150,10 @@ export const Particles: React.FC<ParticlesProps> = ({
     }
   }
 
-  const rgb = hexToRgb(color)
+  /* Los canales se serializan una vez y no una por círculo y frame: con 40
+     partículas a 60fps eran 2.400 `join` por segundo para producir siempre la
+     misma cadena. */
+  const rgbChannels = hexToRgb(color).join(", ")
 
   const drawCircle = (circle: Circle, update = false) => {
     if (context.current) {
@@ -250,7 +161,7 @@ export const Particles: React.FC<ParticlesProps> = ({
       context.current.translate(translateX, translateY)
       context.current.beginPath()
       context.current.arc(x, y, size, 0, 2 * Math.PI)
-      context.current.fillStyle = `rgba(${rgb.join(", ")}, ${alpha})`
+      context.current.fillStyle = `rgba(${rgbChannels}, ${alpha})`
       context.current.fill()
       context.current.setTransform(dpr, 0, 0, dpr, 0, 0)
 
@@ -337,9 +248,126 @@ export const Particles: React.FC<ParticlesProps> = ({
     })
   }
 
-  initCanvasRef.current = initCanvas
-  onMouseMoveRef.current = onMouseMove
-  animateRef.current = animate
+  /* Los efectos van DESPUÉS de las funciones que invocan, no antes. Publicar
+     los refs durante el render es lo que prohíbe react-hooks/refs, y hacerlo
+     en un efecto declarado más arriba dejaba las funciones en zona muerta.
+     Este publica primero por orden de declaración, así que el de montaje ya
+     encuentra los refs puestos. */
+  useEffect(() => {
+    initCanvasRef.current = initCanvas
+    onMouseMoveRef.current = onMouseMove
+    animateRef.current = animate
+  })
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      context.current = canvasRef.current.getContext("2d")
+    }
+    initCanvasRef.current()
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    let onScreen = false
+    let tabVisible = document.visibilityState === "visible"
+
+    /* La lectura del puntero se hace UNA vez por frame, dentro del rAF, en vez
+       de una por evento de mousemove: un ratón entrega cientos de eventos por
+       segundo y de todos ellos solo se dibuja el último. Aparcado el loop
+       tampoco se paga, que es justo cuando no hay nada que dibujar. */
+    const loop = () => {
+      onMouseMoveRef.current()
+      animateRef.current()
+      rafID.current = window.requestAnimationFrame(loop)
+    }
+
+    const invalidateRect = () => {
+      rectRef.current = null
+    }
+
+    const park = () => {
+      if (rafID.current != null) {
+        window.cancelAnimationFrame(rafID.current)
+        rafID.current = null
+      }
+    }
+
+    const sync = () => {
+      if (reducedMotion.matches) {
+        park()
+        return
+      }
+      if (onScreen && tabVisible) {
+        if (rafID.current == null) rafID.current = window.requestAnimationFrame(loop)
+      } else {
+        park()
+      }
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      mousePosition.current.x = event.clientX
+      mousePosition.current.y = event.clientY
+    }
+
+    const handleResize = () => {
+      invalidateRect()
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current)
+      }
+      resizeTimeout.current = setTimeout(() => {
+        initCanvasRef.current()
+      }, 200)
+    }
+
+    const handlePreferenceChange = () => {
+      initCanvasRef.current()
+      sync()
+    }
+
+    const handleVisibilityChange = () => {
+      tabVisible = document.visibilityState === "visible"
+      sync()
+    }
+
+    const observer =
+      typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            ([entry]) => {
+              onScreen = entry.isIntersecting
+              sync()
+            },
+            { threshold: 0 },
+          )
+        : null
+
+    if (observer && canvasContainerRef.current) {
+      observer.observe(canvasContainerRef.current)
+    } else {
+      onScreen = true
+    }
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true })
+    window.addEventListener("resize", handleResize, { passive: true })
+    window.addEventListener("scroll", invalidateRect, { passive: true })
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    reducedMotion.addEventListener("change", handlePreferenceChange)
+    sync()
+
+    return () => {
+      park()
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current)
+      }
+      observer?.disconnect()
+      window.removeEventListener("mousemove", handleMouseMove)
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("scroll", invalidateRect)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      reducedMotion.removeEventListener("change", handlePreferenceChange)
+    }
+  }, [color])
+
+  useEffect(() => {
+    initCanvasRef.current()
+  }, [refresh])
 
   return (
     <div

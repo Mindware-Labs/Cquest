@@ -90,6 +90,7 @@ export default function Navbar() {
             width={692}
             height={512}
             preload
+            sizes="76px"
             className={`h-14 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />
         </LocalizedLink>

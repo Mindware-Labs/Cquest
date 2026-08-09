@@ -36,6 +36,7 @@ export interface Dictionary {
       services: string;
       team: string;
       sectors: string;
+      whyUs: string;
       partnerships: string;
     };
 
@@ -51,6 +52,9 @@ export interface Dictionary {
     businessLinePrefix: string;
     chooseServiceAriaLabel: string;
     explorePrefix: string;
+
+    /* Solo el registro de móvil: el carrusel de desktop no lleva rótulo. */
+    linesEyebrow: string;
   };
   wizard: {
     ariaLabel: string;

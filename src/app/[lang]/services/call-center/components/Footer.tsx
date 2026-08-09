@@ -10,7 +10,7 @@ export default function Footer() {
   const { dict } = useI18n();
   return (
     <footer className={`${container.container} ${styles.footer}`}>
-      <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel}><Image src="/logo.png" alt="Center Quest" width={692} height={512} className={styles.footerLogo} /></LocalizedLink>
+      <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel}><Image src="/logo.png" alt="Center Quest" width={692} height={512} sizes="54px" className={styles.footerLogo} /></LocalizedLink>
       <p>{dict.footer.tagline}</p>
       <LocalizedLink href="/#services">{dict.footer.backToServices}</LocalizedLink>
     </footer>

@@ -95,6 +95,7 @@ export default function SiteFooter() {
                 alt="Center Quest"
                 width={692}
                 height={512}
+                sizes="92px"
                 className={styles.brandLogo}
               />
             </LocalizedLink>

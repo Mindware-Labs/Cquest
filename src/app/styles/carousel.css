@@ -1,4 +1,6 @@
-.cq-carousel-track {
+/* Sube la sección bajo el faldón del hero. Va en el envoltorio y no en la
+   pista porque en móvil quien se asoma bajo el hero es el registro. */
+.cq-services {
   margin-top: calc(-1 * var(--curtain));
   scroll-margin-top: calc(-1 * var(--curtain));
 }

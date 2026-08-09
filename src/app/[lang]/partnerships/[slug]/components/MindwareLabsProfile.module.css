@@ -62,61 +62,6 @@
   text-wrap: pretty;
 }
 
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(242, 236, 251, 0.55);
-}
-
-.status::before {
-  content: "";
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: var(--mw-purple-bright);
-  box-shadow: 0 0 8px var(--mw-purple-bright);
-}
-
-.scrollCue {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 1.5rem;
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(242, 236, 251, 0.4);
-}
-
-.scrollCue svg {
-  width: 0.9rem;
-  height: 0.9rem;
-  animation: mw-scroll-bob 1.8s var(--ease-in-out-strong, ease-in-out) infinite;
-}
-
-@keyframes mw-scroll-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scrollCue svg {
-    animation: none;
-  }
-}
-
 .section {
   position: relative;
   z-index: 1;
@@ -213,10 +158,12 @@
   outline-offset: 3px;
 }
 
+/* Era un aviso ("perfiles próximamente") y ahora lleva la dirección real:
+   a 0.42 de opacidad un correo que alguien va a copiar no se lee. */
 .connectNote {
   margin-top: 1rem;
-  font-size: 0.72rem;
-  color: rgba(242, 236, 251, 0.42);
+  font-size: 0.8rem;
+  color: rgba(242, 236, 251, 0.62);
 }
 
 .backLink {

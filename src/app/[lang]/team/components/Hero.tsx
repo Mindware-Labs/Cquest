@@ -66,6 +66,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
                 alt="Center Quest"
                 width={692}
                 height={512}
+                sizes="66px"
                 className={styles.mapLogo}
               />
               <span>{t.mapMeta}</span>

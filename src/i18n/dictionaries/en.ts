@@ -37,6 +37,7 @@ export const dictionary: Dictionary = {
       services: "Services",
       team: "Our team",
       sectors: "Sectors",
+      whyUs: "Why us",
       partnerships: "Partnerships",
     },
     questions: [
@@ -58,6 +59,7 @@ export const dictionary: Dictionary = {
     businessLinePrefix: "Business line",
     chooseServiceAriaLabel: "Choose service",
     explorePrefix: "Explore",
+    linesEyebrow: "Three business lines",
   },
   wizard: {
     ariaLabel: "Quote request",

@@ -60,6 +60,10 @@ export default function HeroNav({
             width={692}
             height={512}
             preload
+            /* Se pinta a 65-76px de ancho. Sin `sizes`, next/image emite un
+               srcset 1x/2x sobre los 692 del original y un móvil se baja 1384px
+               de logo para una marca de 76. */
+            sizes="76px"
             className="h-12 w-auto brightness-0 invert sm:h-14"
           />
         </MotionLink>

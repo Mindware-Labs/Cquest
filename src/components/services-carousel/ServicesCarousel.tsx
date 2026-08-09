@@ -16,6 +16,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { format } from "@/i18n/format";
 import CapabilityTags from "./CapabilityTags";
 import ServiceCta from "./ServiceCta";
+import ServicesRoster from "./ServicesRoster";
 import SlideBackdrop from "./SlideBackdrop";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
@@ -85,7 +86,22 @@ const stageItemVariants: Variants = {
   },
 };
 
+/* Las tres líneas de negocio se cuentan de dos maneras distintas, no de una
+   adaptada. En móvil, un registro que se lee scrolleando (ServicesRoster); de
+   md en adelante, este carrusel con la pista fijada. Los dos están en el DOM y
+   se turnan por CSS: resolver el breakpoint en JS obliga a renderizar uno en el
+   servidor y cambiarlo al montar, que es un salto a la vista. El que sobra va
+   con `display: none`, así que no ocupa layout ni dispara sus observers. */
 export default function ServicesCarousel() {
+  return (
+    <div id="services" className="cq-services">
+      <ServicesRoster />
+      <ServicesTrack />
+    </div>
+  );
+}
+
+function ServicesTrack() {
   const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
 
@@ -207,11 +223,10 @@ export default function ServicesCarousel() {
   return (
     <section
       ref={sectionRef}
-      id="services"
       aria-roledescription="carousel"
       aria-label={dict.carousel.ariaLabel}
       style={{ height: `${TRACK_DVH}dvh` } as CSSProperties}
-      className="cq-carousel-track relative w-full"
+      className="relative hidden w-full md:block"
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") paginate(1);
         if (event.key === "ArrowLeft") paginate(-1);

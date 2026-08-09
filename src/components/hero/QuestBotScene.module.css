@@ -827,7 +827,12 @@
    la composición de desktop. */
 @media (max-width: 760px) and (min-height: 561px) {
   .stage {
-    --qb-stage-w-m: min(180%, 88svh);
+    /* El % manda en pantallas altas y el svh en las bajas, y el alto de la
+       escena es 0.36 de este ancho: a 88svh la mascota ocupaba ~32svh dentro
+       de una fila de 50svh y el resto se leía como sala vacía. Los dos brazos
+       suben a la par (205/100 ≈ 180/88) para que no cambie cuál de ellos
+       manda en cada tamaño de pantalla. */
+    --qb-stage-w-m: min(205%, 100svh);
     width: var(--qb-stage-w-m);
     max-width: none;
     margin-inline: calc((100% - var(--qb-stage-w-m)) / 2);

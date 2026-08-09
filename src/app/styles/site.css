@@ -43,6 +43,32 @@
   }
 }
 
+/* El brazo min-height deja fuera al apaisado, que usa la composición de
+   desktop — misma guarda que la escala móvil de QuestBotScene. */
+@media (max-width: 767.98px) and (min-height: 561px) {
+  /* El copy se APOYA en el borde inferior de su mitad en vez de flotar
+     centrado en ella. Centrados los dos, cada bloque se guardaba su holgura
+     por dentro y las dos se sumaban en el medio: ese era el hueco entre el
+     lead y la burbuja. Anclado abajo, el aire se va bajo el nav y sobre el
+     telón, que es donde no se lee como un agujero.
+
+     La fila de la escena NO se toca: sigue siendo la mitad exacta de la banda
+     y la mascota centrada en ella, así que su centro se queda en el 75% del
+     que --hero-key-y (74%) cuelga la lámpara, el horizonte y la máscara de
+     HeroReactiveGrid. */
+  .cq-hero-copy {
+    align-self: end;
+  }
+
+  /* Una oración por bloque. En el mismo flujo, `balance` buscaba tres líneas
+     parejas y para conseguirlas subía "While" al final de la segunda: el corte
+     caía a mitad de frase en vez de en el punto. Cada oración reparte ahora
+     sus propias líneas. */
+  .cq-hero-clause {
+    display: block;
+  }
+}
+
 /* El segundo brazo es la guarda de móvil apaisado: esos viewports usan la
    composición de desktop. Misma lista en el h1, la viñeta y QuestBotScene. */
 @media (min-width: 1024px),

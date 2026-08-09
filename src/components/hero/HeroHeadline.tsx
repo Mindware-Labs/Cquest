@@ -25,6 +25,23 @@ export default function HeroHeadline({
   const boundary = words.findIndex((word) => word.endsWith("."));
   const tiered = boundary !== -1 && boundary < words.length - 1;
 
+  /* `i` es el índice GLOBAL en la frase, no el de la oración: es lo que lee
+     wordVariants para escalonar la ola, y reiniciarlo en cada oración haría
+     que la segunda arrancara a la vez que la primera. */
+  const renderWord = (word: string, i: number) => (
+    <Fragment key={`${word}-${i}`}>
+      <span
+        aria-hidden
+        className={tiered && i > boundary ? "cq-word cq-word-soft" : "cq-word"}
+      >
+        <motion.span variants={wordVariants} custom={i}>
+          {word}
+        </motion.span>
+      </span>
+      {i < words.length - 1 ? " " : null}
+    </Fragment>
+  );
+
   return (
     <motion.h1
       aria-label={text}
@@ -32,19 +49,24 @@ export default function HeroHeadline({
       animate={revealed ? "visible" : "hidden"}
       className={`cq-hero-h1 text-white ${className}`}
     >
-      {words.map((word, i) => (
-        <Fragment key={`${word}-${i}`}>
-          <span
-            aria-hidden
-            className={tiered && i > boundary ? "cq-word cq-word-soft" : "cq-word"}
-          >
-            <motion.span variants={wordVariants} custom={i}>
-              {word}
-            </motion.span>
+      {/* Envoltura por oración. En línea no cambia nada — los dos períodos
+          siguen fluyendo como un párrafo y `balance` reparte los cortes entre
+          ellos. En móvil, .cq-hero-clause pasa a bloque y el corte cae en el
+          punto en vez de a mitad de la segunda frase. */}
+      {tiered ? (
+        <>
+          <span className="cq-hero-clause">
+            {words.slice(0, boundary + 1).map((word, i) => renderWord(word, i))}
           </span>
-          {i < words.length - 1 ? " " : null}
-        </Fragment>
-      ))}
+          <span className="cq-hero-clause">
+            {words
+              .slice(boundary + 1)
+              .map((word, i) => renderWord(word, boundary + 1 + i))}
+          </span>
+        </>
+      ) : (
+        words.map((word, i) => renderWord(word, i))
+      )}
     </motion.h1>
   );
 }

@@ -72,6 +72,7 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
     },
     { label: dict.hero.navLinks.team, href: "#metrics" },
     { label: dict.hero.navLinks.sectors, href: "#sectors" },
+    { label: dict.hero.navLinks.whyUs, href: "#why-us" },
     { label: dict.hero.navLinks.partnerships, href: "#partnerships" },
   ];
 }

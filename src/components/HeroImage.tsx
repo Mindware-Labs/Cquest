@@ -194,7 +194,7 @@ export default function HeroImage() {
           animate={revealed ? "visible" : "hidden"}
           /* Sin inert: el h1 de dentro es el único encabezado de la página y
              un lector de pantalla tiene que encontrarlo ya en el acto uno. */
-          className="row-start-1 ps-[var(--hero-inset)] lg:col-start-1 lg:row-start-1"
+          className="cq-hero-copy row-start-1 ps-[var(--hero-inset)] lg:col-start-1 lg:row-start-1"
         >
           <motion.div aria-hidden variants={ruleVariants} className="cq-hero-rule" />
 

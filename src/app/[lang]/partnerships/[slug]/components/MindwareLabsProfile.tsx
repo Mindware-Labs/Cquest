@@ -11,16 +11,15 @@ import VenomField from "./VenomField";
 import styles from "./MindwareLabsProfile.module.css";
 
 const SOCIAL_LINKS = {
-  instagram: "",
-  linkedin: "",
+  instagram: "https://www.instagram.com/labsmindware/",
+  linkedin: "https://www.linkedin.com/company/mindwarelabs/",
+  email: "labsmindware@gmail.com",
 };
 
 const COPY = {
   en: {
     eyebrow: "Partnership",
-    status: "Content in development",
     lead: "A software engineering team building the systems behind Center Quest's operations.",
-    scrollCue: "Scroll",
     about: {
       heading: "What Mindware Labs does",
       body: "Full-cycle software engineering: analysis and design, development, testing, deployment and maintenance of the systems themselves. Plus technical consulting and audits, so the team can either build from scratch or review what is already running in production.",
@@ -31,17 +30,15 @@ const COPY = {
     },
     connect: {
       heading: "Connect",
-      note: "Social profiles coming soon.",
       instagram: "Instagram",
       linkedin: "LinkedIn",
+      email: "Email",
     },
     back: "Back to partnerships",
   },
   es: {
     eyebrow: "Alianza",
-    status: "Contenido en desarrollo",
     lead: "Un equipo de ingeniería de software que construye los sistemas detrás de las operaciones de Center Quest.",
-    scrollCue: "Scroll",
     about: {
       heading: "Qué hace Mindware Labs",
       body: "Ingeniería de software de ciclo completo: análisis y diseño, desarrollo, pruebas, implementación y mantenimiento de los sistemas. A eso se suman consultoría y auditoría técnica, para entrar tanto a construir desde cero como a revisar lo que ya está en producción.",
@@ -52,9 +49,9 @@ const COPY = {
     },
     connect: {
       heading: "Conecta",
-      note: "Perfiles sociales próximamente.",
       instagram: "Instagram",
       linkedin: "LinkedIn",
+      email: "Correo",
     },
     back: "Volver a partnerships",
   },
@@ -93,8 +90,6 @@ export default function MindwareLabsProfile() {
         </span>
 
         <p className={styles.lead}>{t.lead}</p>
-        <span className={styles.status}>{t.status}</span>
-
       </header>
 
       <section className={styles.section}>
@@ -138,8 +133,19 @@ export default function MindwareLabsProfile() {
               <LinkedInIcon />
               {t.connect.linkedin}
             </a>
+            {/* mailto no abre pestaña: target="_blank" deja una en blanco detrás
+                del cliente de correo. */}
+            <a
+              href={SOCIAL_LINKS.email ? `mailto:${SOCIAL_LINKS.email}` : undefined}
+              data-disabled={SOCIAL_LINKS.email ? undefined : "true"}
+              aria-disabled={SOCIAL_LINKS.email ? undefined : true}
+              className={styles.socialLink}
+            >
+              <MailIcon />
+              {t.connect.email}
+            </a>
           </div>
-          <p className={styles.connectNote}>{t.connect.note}</p>
+          <p className={styles.connectNote}>{SOCIAL_LINKS.email}</p>
 
           <LocalizedLink href="/#partnerships" className={styles.backLink}>
             {t.back}
@@ -169,6 +175,15 @@ function LinkedInIcon() {
       <circle cx="7.6" cy="7.3" r="0.6" fill="currentColor" stroke="none" />
       <path d="M11.6 16.4v-4.2c0-1.3.9-2.1 2.1-2.1 1.2 0 1.9.8 1.9 2.1v4.2" />
       <line x1="11.6" y1="10.2" x2="11.6" y2="16.4" />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M4.4 7.2 12 12.6l7.6-5.4" />
     </svg>
   );
 }

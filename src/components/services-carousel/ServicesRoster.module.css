@@ -1,0 +1,174 @@
+/* El registro. La versión de móvil de las tres líneas de negocio: se lee
+   scrolleando, no navegando. Sin pista fijada, sin swipe, sin escenas de fondo
+   y sin un solo loop infinito — todo eso vive en el carrusel de desktop. */
+.roster {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(4rem, 13vw, 5.5rem) clamp(4.5rem, 15vw, 6.5rem);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.list {
+  position: relative;
+  margin-top: clamp(2.5rem, 9vw, 3.25rem);
+  padding-left: 1.5rem;
+  list-style: none;
+}
+
+/* El raíl. Una sola línea recorre las tres entradas de arriba abajo: lo que la
+   marca vende es un solo responsable, no tres proveedores, y aquí eso es
+   estructura y no una frase. Queda neutro por delante del scroll y cada línea
+   reclama su tramo al entrar. */
+.list::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.entry {
+  position: relative;
+  padding-block: clamp(2.75rem, 10vw, 3.5rem);
+}
+
+.entry:first-child {
+  padding-top: 0;
+}
+
+.entry:last-child {
+  padding-bottom: 0;
+}
+
+/* El tramo de esta línea, encima del raíl. Plano y no degradado: es 1px, un
+   fundido ahí no se ve y solo ensucia el único adorno de la sección. */
+.spine {
+  position: absolute;
+  inset-block: 0;
+  left: -1.5rem;
+  width: 1px;
+  transform-origin: top center;
+  background: color-mix(in srgb, var(--svc) 55%, transparent);
+}
+
+/* Peso 300 y tracking positivo. El resto del sitio pone esta fuente en 500/600;
+   en display grande y ligera es donde la geométrica redonda se lee elegante en
+   vez de compacta, y apretarla cerraría los contadores (ver .cq-hero-h1). */
+.name {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 300;
+  font-size: clamp(2.3rem, 12.5vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: 0.012em;
+  color: var(--foreground);
+}
+
+.claim {
+  margin-top: 0.85rem;
+  max-width: 19ch;
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.08rem, 4.4vw, 1.28rem);
+  line-height: 1.42;
+  color: var(--text-tertiary);
+  text-wrap: balance;
+}
+
+/* El manifiesto: los servicios de la línea, corridos. No son etiquetas ni
+   tarjetas — son la prueba de la profundidad de cada línea, y que una tenga
+   seis y otra cuatro es información, no un desajuste que haya que emparejar. */
+.manifest {
+  margin-top: 1.55rem;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 2.05;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.manifest li {
+  display: inline;
+}
+
+/* Separador sin texto: un `content: "·"` lo cantan algunos lectores de pantalla
+   entre cada servicio. El punto se dibuja, no se escribe. */
+.manifest li + li::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 0.62em 0.18em;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--svc) 62%, transparent);
+  vertical-align: middle;
+}
+
+.link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--svc) 32%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  /* 70/30 hacia la tinta, no el acento crudo: en 10px el #4b98b1 de Sistemas
+     se queda en 3.1:1 sobre esta hoja. Mezclado pasa de 5:1, y las tres líneas
+     siguen distinguiéndose entre sí. */
+  color: color-mix(in srgb, var(--svc) 70%, var(--foreground));
+  transition: border-color 320ms var(--ease-out);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--svc);
+  outline-offset: 5px;
+}
+
+.link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: none;
+  transition: transform 380ms var(--ease-out);
+}
+
+/* El feedback lo dan el filete y la flecha; el texto no cambia de color, que
+   es lo único que podría bajar del contraste que acaba de ganar. */
+.link:active {
+  border-color: color-mix(in srgb, var(--svc) 75%, transparent);
+}
+
+.link:active svg {
+  transform: translateX(3px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    border-color: color-mix(in srgb, var(--svc) 75%, transparent);
+  }
+
+  .link:hover svg {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link svg {
+    transition: none;
+  }
+}
