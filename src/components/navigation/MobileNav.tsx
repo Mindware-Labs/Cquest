@@ -7,9 +7,20 @@ type MobileNavProps = {
   onClose: () => void;
   links: readonly NavLink[];
   ctaHref?: string;
+
+  /* Lo decide la página, no el componente: sobre una página oscura entera un
+     panel blanco es el mismo salto de superficie que la barra clara. */
+  theme?: "light" | "dark";
 };
 
-export default function MobileNav({ open, reduced, onClose, links, ctaHref = "#" }: MobileNavProps) {
+export default function MobileNav({
+  open,
+  reduced,
+  onClose,
+  links,
+  ctaHref = "#",
+  theme = "light",
+}: MobileNavProps) {
   return (
     <MobileSidebar
       id="mobile-menu"
@@ -18,7 +29,7 @@ export default function MobileNav({ open, reduced, onClose, links, ctaHref = "#"
       onClose={onClose}
       links={links}
       ctaHref={ctaHref}
-      theme="light"
+      theme={theme}
     />
   );
 }

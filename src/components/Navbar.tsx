@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { ACCENT_CTA_PAGES, DARK_HERO_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+import { ACCENT_CTA_PAGES, DARK_HERO_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
 
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
@@ -49,7 +49,12 @@ export default function Navbar() {
 
   const serviceDetailPage = (SERVICE_DETAIL_PAGES as readonly string[]).includes(pathname);
 
-  const inverse = (DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open;
+  const darkPage = (DARK_PAGES as readonly string[]).includes(pathname);
+
+  /* En una página oscura entera el modo inverso no se apaga nunca: no hay un
+     punto del scroll en el que debajo haya contenido claro. */
+  const inverse =
+    darkPage || ((DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open);
 
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
   const navLinks = getServiceNavLinks(dict, lang)[pathname] ?? getNavLinks(dict, lang);
@@ -71,7 +76,11 @@ export default function Navbar() {
 
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled || open
-          ? "border-b border-border/70 bg-background/80 shadow-[0_1px_12px_rgba(15,32,40,0.04)] backdrop-blur-xl"
+          ? darkPage
+            ?
+
+              "border-b border-white/12 bg-ink/85 shadow-[0_1px_12px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+            : "border-b border-border/70 bg-background/80 shadow-[0_1px_12px_rgba(15,32,40,0.04)] backdrop-blur-xl"
           : inverse
             ?
 
@@ -144,7 +153,14 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      <MobileNav open={open} reduced={reduced} onClose={() => setOpen(false)} links={navLinks} ctaHref={quoteHref} />
+      <MobileNav
+        open={open}
+        reduced={reduced}
+        onClose={() => setOpen(false)}
+        links={navLinks}
+        ctaHref={quoteHref}
+        theme={darkPage ? "dark" : "light"}
+      />
     </motion.header>
   );
 }

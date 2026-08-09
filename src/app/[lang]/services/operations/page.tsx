@@ -3,6 +3,8 @@ import OperationsDetail from "./OperationsDetail";
 import type { Locale } from "@/i18n/config";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
+import JsonLd from "@/components/JsonLd";
+import { servicePageGraph } from "@/lib/schema";
 
 const TITLE: Record<Locale, string> = {
   en: "Operations (BPO) | Center Quest",
@@ -24,24 +26,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-const SERVICE_JSON_LD = (lang: Locale) => ({
-  "@context": "https://schema.org",
-  "@type": "Service",
-  serviceType: "Business Process Outsourcing",
-  name: TITLE[lang],
-  description: DESCRIPTION[lang],
-  provider: { "@type": "Organization", name: "Center Quest" },
-  areaServed: "Dominican Republic",
-});
-
 export default async function OperationsPage({ params }: { params: Promise<{ lang: string }> }) {
   const lang = await resolveLang(params);
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICE_JSON_LD(lang)) }}
-      />
+      <JsonLd data={servicePageGraph("bpo", lang)} />
       <OperationsDetail />
     </>
   );

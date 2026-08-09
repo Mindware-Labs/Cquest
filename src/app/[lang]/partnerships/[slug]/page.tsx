@@ -5,6 +5,7 @@ import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import { PARTNER_SLOTS } from "@/components/about/partnershipsData";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
 import MindwareLabsProfile from "./components/MindwareLabsProfile";
 import styles from "./partnership.module.css";
@@ -52,10 +53,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const partner = PARTNER_SLOTS.find((entry) => entry.slug === slug);
 
+  /* Sin esto la página hereda el `alternates` del layout, que apunta a la raíz:
+     un perfil indexable declarándose canónico hacia la home es una invitación
+     a que Google lo descarte y no lo indexe nunca. */
+  const alternates = localeAlternates(lang, `/partnerships/${slug}`);
+
   if (partner && CUSTOM_PROFILES[slug]) {
     return {
       title: MINDWARE_META[lang].title,
       description: MINDWARE_META[lang].description,
+      alternates,
+      openGraph: {
+        title: MINDWARE_META[lang].title,
+        description: MINDWARE_META[lang].description,
+        type: "website",
+      },
       robots: { index: true, follow: true },
     };
   }
@@ -65,6 +77,7 @@ export async function generateMetadata({
   return {
     title,
     description: COPY[lang].note,
+    alternates,
     robots: { index: false, follow: true },
   };
 }

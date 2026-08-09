@@ -25,6 +25,12 @@ export const DARK_HERO_PAGES = [
   "/location",
 ] as const;
 
+/* Oscuras de arriba abajo, no solo en el hero. La distinción importa al bajar
+   la barra: DARK_HERO_PAGES tienen contenido claro debajo y la hoja clara les
+   da el contraste que necesitan, pero aquí debajo sigue habiendo fondo oscuro
+   y virar a blanco parte la página en dos. */
+export const DARK_PAGES = ["/location"] as const;
+
 export const ACCENT_CTA_PAGES = ["/partnerships/mindware-labs"] as const;
 
 export const NO_FOOTER_PAGES = ["/partnerships/mindware-labs"] as const;

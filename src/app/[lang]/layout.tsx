@@ -5,7 +5,9 @@ import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import RouteTransition from "@/components/RouteTransition";
 import SiteFooter from "@/components/footer/SiteFooter";
-import { CONTACT, brandLine } from "@/components/footer/data";
+import { brandLine } from "@/components/footer/data";
+import JsonLd from "@/components/JsonLd";
+import { SITE_URL, graph, organizationNode, websiteNode } from "@/lib/schema";
 import SmoothScroll from "@/components/SmoothScroll";
 import { locales, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/getDictionary";
@@ -26,27 +28,7 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
   es: "Center Quest es un aliado de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas, con SLAs claros y ajustados a cómo funciona tu operación.",
 };
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
-
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-
-/* Solo campos que existen de verdad. Sin sameAs: no hay perfiles sociales
-   confirmados y una URL adivinada es peor que ninguna. */
-const ORGANIZATION_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Center Quest",
-  url: SITE_URL,
-  logo: `${SITE_URL}/logo.png`,
-  email: CONTACT.email,
-  telephone: CONTACT.phoneHref,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: CONTACT.street,
-    addressLocality: CONTACT.city,
-    addressCountry: CONTACT.countryCode,
-  },
-};
 
 const SITE_TITLE: Record<Locale, string> = {
   en: "Center Quest — Call Center, Operations & Systems Development",
@@ -109,10 +91,9 @@ export default async function RootLayout({
       className={`${josefin.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
-        />
+        {/* El negocio y el sitio, con @id estables: el resto de páginas cuelgan
+            sus nodos de estos dos por referencia en vez de repetirlos. */}
+        <JsonLd data={graph(organizationNode(lang), websiteNode(lang))} />
         <I18nProvider dict={dict} lang={lang}>
 
           <a href="#main-content" className="skip-link">
