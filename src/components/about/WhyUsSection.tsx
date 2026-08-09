@@ -109,7 +109,9 @@ function WhyCardFace({
       data-accent={card.accent}
       data-active={isActive || undefined}
 
-      data-slot={isActive ? "front" : relative === 2 ? "back" : "side"}
+      /* Izquierda y derecha por separado, no un genérico "side": el velo de las
+         tarjetas que se van es direccional y necesita saber hacia dónde giran. */
+      data-slot={relative === 0 ? "front" : relative === 1 ? "right" : relative === -1 ? "left" : "back"}
       aria-hidden={!isActive}
       style={{ zIndex: slot.zIndex }}
       animate={{ x: slot.x, y: slot.y, z: slot.z, rotateY: slot.rotateY, scale: slot.scale, opacity: slot.opacity }}
@@ -194,6 +196,9 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
   return (
     <section id="why-us" ref={sectionRef} className={styles.whyUsSection}>
 
+      {/* Orden de pintura: luz de consola, cuadrícula sobre ella, encuadre y
+          grano. Todas se centran en --why-stage-x/y (WhyUsSection.module.css). */}
+      <div aria-hidden className={styles.stageGlow} />
       <div aria-hidden className={styles.fieldGrid} />
       <div aria-hidden className={styles.vignette} />
       <div aria-hidden className={`${styles.grain} cq-noise`} />
