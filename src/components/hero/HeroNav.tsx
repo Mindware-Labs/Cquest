@@ -6,7 +6,7 @@ import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { EASE_IN_EXPO, EASE_OUT, REVEAL, getHeroNavLinks } from "./animation";
+import { EASE_OUT, REVEAL, chromeRise, getHeroNavLinks } from "./animation";
 
 const MotionLink = motion.create(LocalizedLink);
 
@@ -34,16 +34,16 @@ export default function HeroNav({
   } = useMagnetic<HTMLAnchorElement>(0.25, 2);
 
   return (
+    /* Variant labels, not a transition of its own. The bar used to animate
+       as one element, so the mark, the links and the CTA all arrived on the
+       same frame — three unrelated objects moving identically, which the eye
+       resolves as one rectangle sliding down rather than as a page framing
+       itself. It now only PROPAGATES the label; each cell below carries its
+       own beat (REVEAL.navStep). The retreat is inside chromeRise's `hidden`
+       variant — shorter and accelerating, not the entrance played back. */
     <motion.div
-      initial={reduced ? false : { opacity: 0, y: -14 }}
-      animate={revealed ? { opacity: 1, y: 0 } : { opacity: 0, y: -14 }}
-      /* The retreat (a replay returning the hero to act one) is its own
-         gesture: shorter and accelerating, not the entrance played back. */
-      transition={
-        revealed
-          ? { duration: 0.7, ease: EASE_OUT, delay: REVEAL.nav }
-          : { duration: 0.35, ease: EASE_IN_EXPO }
-      }
+      initial={reduced ? false : "hidden"}
+      animate={revealed ? "visible" : "hidden"}
       /* Hidden means hidden: while it's invisible the chrome must also be
          untabbable and unclickable, or there's an invisible menu button
          sitting over the mascot waiting to be hit. */
@@ -51,7 +51,8 @@ export default function HeroNav({
       className="relative z-20"
     >
       <div className="grid w-full grid-cols-2 items-center px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5 md:grid-cols-3 lg:px-8 xl:px-10">
-        <LocalizedLink
+        <MotionLink
+          variants={chromeRise(REVEAL.nav)}
           href="/"
           aria-label={dict.nav.homeLinkAriaLabel}
           /* From lg the mark starts on the copy's left edge — same
@@ -77,18 +78,24 @@ export default function HeroNav({
             preload
             className="h-12 w-auto brightness-0 invert sm:h-14"
           />
-        </LocalizedLink>
+        </MotionLink>
 
-        <div className="hidden justify-self-center md:flex">
+        <motion.div
+          variants={chromeRise(REVEAL.nav + REVEAL.navStep)}
+          className="hidden justify-self-center md:flex"
+        >
           <DesktopNav
             reduced={reduced}
             inverse
             links={heroNavLinks}
             onChildHover={onServiceHover}
           />
-        </div>
+        </motion.div>
 
-        <div className="mr-1 flex items-center justify-self-end gap-4 sm:mr-2 lg:mr-[var(--hero-inset)]">
+        <motion.div
+          variants={chromeRise(REVEAL.nav + 2 * REVEAL.navStep)}
+          className="mr-1 flex items-center justify-self-end gap-4 sm:mr-2 lg:mr-[var(--hero-inset)]"
+        >
           {/* Desktop-only — the mobile sidebar below is passed the same
               label so the two stay in sync rather than drifting the way a
               default-vs-override pair eventually does. Styled to match
@@ -131,7 +138,7 @@ export default function HeroNav({
               className="absolute h-px w-4 bg-white"
             />
           </button>
-        </div>
+        </motion.div>
       </div>
 
       <MobileSidebar

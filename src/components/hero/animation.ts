@@ -48,6 +48,20 @@ export const BEAT = {
 export const REVEAL = {
   /** Chrome first — it frames everything that follows. */
   nav: 0,
+  /**
+   * Per-cell offset inside the chrome row: mark, then links, then the CTA.
+   * The bar used to arrive as one block, which is the one moment in the
+   * whole intro where three unrelated objects moved on the same frame —
+   * and three things moving identically read as one rectangle sliding in,
+   * not as a page assembling. 80ms is under the ~100ms at which the eye
+   * starts counting events, so it lands as a single gesture with direction
+   * (left to right, the way the frame is read) rather than as three.
+   *
+   * The last cell therefore starts at 0.16 — the same frame the first
+   * headline word clears its mask. Chrome finishes framing exactly as the
+   * statement begins, which is the hierarchy this cascade is for.
+   */
+  navStep: 0.08,
   /** Accent hairline draws left→right, opening the copy block. */
   rule: 0.1,
   /** First headline word clears its mask. */
@@ -183,6 +197,33 @@ export const wordVariants: Variants = {
     },
   }),
 };
+
+/**
+ * The chrome row's three cells — mark, links, CTA — each on its own beat.
+ *
+ * Deliberately NOT `rise()` below: that one carries a 6px blur, which is the
+ * right treatment for a block of copy materialising and the wrong one for
+ * small tracked type. A blur on 11px letterforms reads as a focus error, and
+ * it costs a filter pass on three elements at the exact moment seven word
+ * masks and the field's bloom are already in flight. Chrome drops in from
+ * above and lands — nothing else.
+ *
+ * Negative `y`, matching where the bar lives: it arrives from its own edge.
+ */
+export function chromeRise(delay: number): Variants {
+  return {
+    hidden: {
+      opacity: 0,
+      y: -12,
+      transition: { duration: 0.32, ease: EASE_IN_EXPO },
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.72, ease: EASE_OUT, delay },
+    },
+  };
+}
 
 /** Generic rise used by the lead and the CTA. Blur stays ≤8px (Safari cost). */
 export function rise(delay: number, distance = 18): Variants {

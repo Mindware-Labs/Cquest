@@ -157,25 +157,111 @@
       the rest.
 
    The 118deg petroleo corner wash that used to live here now belongs to
-   .cq-hero-ambience below: it is act two's light, not the room's. */
+   .cq-hero-ambience below: it is act two's light, not the room's.
+
+   The key pool has likewise moved OUT of this element's background stack
+   and onto its ::after — see the ignition block below. Two lights painted
+   into one background list can only ever arrive together; they are two
+   different events and needed two layers to be two events. */
 .cq-hero-field {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(
-      38% 32% at var(--hero-key-x) var(--hero-key-y),
-      color-mix(in srgb, var(--brand-petroleo) 14%, transparent),
-      color-mix(in srgb, var(--brand-petroleo) 6%, transparent) 55%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      #050d12 0%,
-      #08131b 34%,
-      #0b1a23 55%,
-      #081019 78%,
-      #04080c 100%
-    );
+  background: linear-gradient(
+    180deg,
+    #050d12 0%,
+    #08131b 34%,
+    #0b1a23 55%,
+    #081019 78%,
+    #04080c 100%
+  );
+}
+
+/* ── Act zero: the stage lights itself ───────────────────
+   The one second of this page the reader is most certainly looking at used
+   to be the one second with nothing authored in it: the finished field
+   painted on frame one and then waited. This is the room coming up, and
+   every number in it is answering the mascot's own score (the beat sheet at
+   the top of QuestBotScene.module.css) rather than being a nice duration.
+
+     0.00  the room fades up — 820ms, so it is essentially there while the
+           mascot is still crossing the frame and never reads as a load
+     0.00  the camera settles out of 1.035 over 2.8s. Long and shallow on
+           purpose: 3.5% of scale spread over nearly three seconds is under
+           the rate at which motion is seen as motion, so it is felt as a
+           frame coming to rest rather than watched as a zoom
+     0.26  the key pool blooms open FROM the mascot's mark (the transform
+           origin is --hero-key-x/y, the mark itself), finishing at ~1.96s
+     1.89  the mascot lands on that mark
+
+   That last pair is the whole point. The comment above already claimed the
+   stage lights its mark before the actor arrives; now it does it where the
+   reader can see it, and it finishes on the frame the actor arrives. The
+   light was waiting — and you can watch it wait.
+
+   Both layers hold their FINAL values here, with the transitions; the
+   pre-ignition state is the [data-stage="dark"] block below, which is what
+   the server renders and what gets one committed frame before the flip. */
+.cq-hero-field {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 820ms var(--ease-out-expo),
+    transform 2800ms var(--ease-out-expo);
+}
+
+.cq-hero-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Petroleo, never cyan, and 14% is still the ceiling — see the field's own
+     note above. Nothing about the light changed; only when it arrives. */
+  background: radial-gradient(
+    38% 32% at var(--hero-key-x) var(--hero-key-y),
+    color-mix(in srgb, var(--brand-petroleo) 14%, transparent),
+    color-mix(in srgb, var(--brand-petroleo) 6%, transparent) 55%,
+    transparent 100%
+  );
+  /* The pool grows out of the mark rather than out of the element's middle.
+     Scaling a radial from the centre of a full-viewport box moves the light
+     across the stage; scaling it from its own centre of brightness opens it
+     in place, which is what a lamp does. */
+  transform-origin: var(--hero-key-x) var(--hero-key-y);
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 1700ms var(--ease-out-expo) 260ms,
+    transform 2400ms var(--ease-out-expo) 260ms;
+}
+
+/* The vignette arrives with the light, not before it. Corner falloff over a
+   field that is itself still fading up is falloff from nothing to nothing —
+   what it reads as, brought up on its own slightly slower curve, is the
+   frame closing in as the room gains a floor. */
+.cq-hero-vignette {
+  opacity: 1;
+  transition: opacity 1500ms var(--ease-out) 180ms;
+}
+
+/* ── The committed first frame ───────────────────────────
+   Server-rendered, and it must survive one paint before HeroImage's rAF
+   flips the attribute — a transition with no committed start value simply
+   does not run. Everything here is the pre-ignition state: black room, no
+   key light, no frame. `bg-ink` on the section is what the reader actually
+   sees for that frame, which is the same near-black the field's own top
+   stop resolves to, so the fade-up starts from a matched colour rather than
+   from a visible cut. */
+.cq-hero[data-stage="dark"] .cq-hero-field {
+  opacity: 0;
+  transform: scale(1.035);
+}
+
+.cq-hero[data-stage="dark"] .cq-hero-field::after {
+  opacity: 0;
+  transform: scale(0.82);
+}
+
+.cq-hero[data-stage="dark"] .cq-hero-vignette {
+  opacity: 0;
 }
 
 /* ── Hero parallax planes ────────────────────────────────
@@ -325,6 +411,42 @@
   }
 }
 
+/* ── Act two: the room opens ─────────────────────────────
+   The reveal was, until now, entirely a foreground event — chrome, a rule,
+   seven word masks and a lead, all arriving over a field that did not move.
+   The one thing the field DID do (the ambience layer's fade, above) is a
+   flat opacity ramp on a corner wash, which the eye reads as "something got
+   brighter", not as an answer.
+
+   These two are the answer. The key pool — a tight, theatrical spot on the
+   mascot's mark for the whole of act one — widens by 16% from that same
+   mark, so the light that belonged to the mascot spreads left across the
+   copy column as the copy arrives. And the vignette, which spent act one
+   pulling the frame in around one lit object, releases 14% of its ink so
+   the frame opens with it.
+
+   Both are the house lights coming up on a stage that had one lamp. Neither
+   is visible as an event on its own — the pool moves 16% over two seconds
+   and the vignette's release is a seventh of a value already under 80% —
+   and that is the requirement, not a compromise: the reader must be looking
+   at the headline, and feel the room grow. The delay puts both behind the
+   nav and the rule, on the ambience's own beat, so the sequence stays
+   structure → light.
+
+   Cost: one transform and one opacity on two layers that are already
+   composited inside the parallax plane. Nothing repaints. */
+.cq-hero[data-revealed="true"] .cq-hero-field::after {
+  transform: scale(1.16);
+  transition:
+    opacity 1700ms var(--ease-out-expo),
+    transform 2000ms var(--ease-out-expo) 200ms;
+}
+
+.cq-hero[data-revealed="true"] .cq-hero-vignette {
+  opacity: 0.86;
+  transition: opacity 1400ms var(--ease-out-expo) 200ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Both attribute states restated at their own specificity — the bare
      class alone would lose to [data-revealed="false"]'s 0-2-0 and leave
@@ -334,6 +456,27 @@
   .cq-hero-ambience[data-revealed="false"] {
     transition-duration: 0ms;
     transition-delay: 0ms;
+  }
+
+  /* Act zero and act two, collapsed to their end state. Not `duration: 0`
+     — that still runs the ignition, just instantly, which is a one-frame
+     flash of a black room and then a cut. This reader gets the finished
+     field on frame one, exactly as before any of this existed.
+
+     Every selector above is restated here at its own specificity (the
+     [data-stage] and [data-revealed] arms outrank a bare class), and this
+     block sits after all of them, so source order settles the ties. */
+  .cq-hero-field,
+  .cq-hero-field::after,
+  .cq-hero-vignette,
+  .cq-hero[data-stage="dark"] .cq-hero-field,
+  .cq-hero[data-stage="dark"] .cq-hero-field::after,
+  .cq-hero[data-stage="dark"] .cq-hero-vignette,
+  .cq-hero[data-revealed="true"] .cq-hero-field::after,
+  .cq-hero[data-revealed="true"] .cq-hero-vignette {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
@@ -457,12 +600,71 @@
   height: 1px;
   width: clamp(3.5rem, 9vw, 6rem);
   transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, #fff 45%, var(--brand-celeste)),
-    var(--brand-celeste) 24%,
-    color-mix(in srgb, var(--brand-celeste) 0%, transparent)
-  );
+  /* Two layers: the spark, then the hairline itself. The hairline is exactly
+     what it always was; the spark is a compact highlight parked off the left
+     edge, which is invisible until the reveal animates it across. */
+  background-image:
+    linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, #fff 88%, var(--brand-celeste)),
+      transparent
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, #fff 45%, var(--brand-celeste)),
+      var(--brand-celeste) 24%,
+      color-mix(in srgb, var(--brand-celeste) 0%, transparent)
+    );
+  background-repeat: no-repeat;
+  background-size: 46% 100%, 100% 100%;
+  /* -150% of the free space (54% of the width) puts the spark's right edge
+     at -0.35× the width — clear of the element, so nothing shows at rest or
+     after the pass. */
+  background-position: -150% 0, 0 0;
+}
+
+/* ── The rule ignites ────────────────────────────────────
+   The hairline already draws from its left terminus, and the gradient
+   already puts a near-white head there so the draw reveals the hot end
+   first — the note above calls that "the light igniting the line". It was
+   a still image of ignition: the head is painted at the left and stays
+   painted at the left, and what actually travels is the element's own
+   scaleX edge.
+
+   This is the light itself moving. A compact highlight runs the length of
+   the rule while the rule is drawing (draw: 0.1s + 1s; spark: 0.16s +
+   1.35s), so it emerges from the same terminus the draw starts at, rides
+   the growing line — the background is scaled with the element, so the
+   spark is genuinely IN the line rather than sliding over it — and runs off
+   the far end as the line finishes. One gesture, two things saying it.
+
+   `background-position` and not a child element: a child would be squashed
+   by the parent's scaleX(0→1) into a smear, and counter-scaling it needs a
+   number CSS cannot know. It costs a repaint of a 1px × 6rem box for 1.35
+   seconds, once.
+
+   `both` parks it at 260%, off the right edge — so the resting state after
+   the pass is the plain hairline, identical to the base rule. On a replay
+   the attribute drops, the animation is removed and the spark is back at
+   its start position, ready to run again. */
+.cq-hero[data-revealed="true"] .cq-hero-rule {
+  animation: cq-rule-spark 1.35s var(--ease-out-expo) 0.16s both;
+}
+
+@keyframes cq-rule-spark {
+  from {
+    background-position: -150% 0, 0 0;
+  }
+  to {
+    background-position: 260% 0, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-hero[data-revealed="true"] .cq-hero-rule {
+    animation: none;
+  }
 }
 
 /* ── Hero lead ───────────────────────────────────────────

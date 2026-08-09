@@ -49,6 +49,30 @@ export default function HeroImage() {
   const [revealed, setRevealed] = useState(false);
   const reveal = useCallback(() => setRevealed(true), []);
   const restartIntro = useCallback(() => setRevealed(false), []);
+  /* ── Act ZERO: the room ────────────────────────────────────────────────
+     The hero used to paint its finished field on frame one — full key
+     light, full vignette, a dark rectangle that was simply THERE — and
+     then a mascot rolled across it. The first second of the page, the one
+     the reader is most certainly looking at, was the only second with
+     nothing authored in it.
+
+     This is the stage lighting itself before the actor arrives: the room
+     fades up, the camera settles out of a hair of scale, and the key pool
+     blooms open on the mascot's mark. The timings live in site.css and are
+     tuned so the pool finishes on the frame the mascot lands on it
+     (BEAT.scene + SCENE.roll ≈ 1.9s) — the light was waiting for it, and
+     you can see it was waiting.
+
+     One rAF, not an immediate flip: the dark state has to be COMMITTED for
+     a frame or the transition has no start value to run from and the whole
+     ignition is skipped. Same clock as everything else in the hero (the
+     mascot's own `beginRun`, the copy's Motion cascade) — all of it starts
+     in a mount effect, so the room and its actor share a t0. */
+  const [lit, setLit] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setLit(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -174,6 +198,16 @@ export default function HeroImage() {
          to stop, not for the loops to park. See the observers above. */
       data-onscreen={onScreen ? "true" : "false"}
       data-parallax={parallaxLive ? "true" : "false"}
+      /* Act zero's gate — see the rAF above and the ignition block in
+         site.css. */
+      data-stage={lit ? "lit" : "dark"}
+      /* The same flag the copy's Motion cascade runs on, published to CSS so
+         the FIELD can answer the reveal too: act two is not just chrome and
+         type arriving, it's the room opening up around them. Read by the key
+         pool, the vignette and the accent rule's spark in site.css — the
+         ambience layer below keeps its own copy because it is nested inside
+         the parallax plane and reads it as a direct parent. */
+      data-revealed={revealed ? "true" : "false"}
       className="cq-hero relative isolate flex min-h-svh scroll-mt-20 flex-col overflow-hidden bg-ink text-white"
     >
       <motion.div
