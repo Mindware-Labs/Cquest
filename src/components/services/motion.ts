@@ -13,6 +13,38 @@ export const focusRiseVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE_OUT } },
 };
 
+/* Las cuatro salas tras el carrusel entraban con la MISMA subida, y repetida
+   cuatro veces es un metrónomo: posarse, montarse, afirmar, cerrar. */
+
+/* Posarse. Sin desplazamiento: viene justo detrás del carrusel, que es el
+   momento interactivo grande, y aquí toca aterrizar y no volver a actuar. */
+export const settleVariants: Variants = {
+  hidden: { opacity: 0, filter: "blur(8px)" },
+  visible: {
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 1.05, ease: EASE_OUT },
+  },
+};
+
+/* Cerrar. Solo opacidad, y más lenta: la última sala no se presenta. */
+export const closeVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 1.15, ease: EASE_OUT } },
+};
+
+/* Afirmar. Máscara por línea, la misma gramática que el h1 del hero — las dos
+   únicas veces que la página afirma algo en vez de enumerarlo. */
+export const lineMaskGroupVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
+};
+
+export const lineMaskVariants: Variants = {
+  hidden: { y: "112%" },
+  visible: { y: "0%", transition: { duration: 1.05, ease: EASE_OUT } },
+};
+
 export const softRiseVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.85, ease: EASE_OUT } },

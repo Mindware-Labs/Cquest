@@ -1,7 +1,13 @@
 import type { CSSProperties, ReactNode } from "react";
 import { motion } from "motion/react";
-import { groupVariants, focusRiseVariants, ruleXVariants, ruleYVariants, stepVariants, VIEWPORT } from "./motion";
+import { closeVariants, groupVariants, focusRiseVariants, ruleXVariants, ruleYVariants, settleVariants, stepVariants, VIEWPORT } from "./motion";
 import styles from "./SectionIntro.module.css";
+
+const ENTRANCES = {
+  rise: focusRiseVariants,
+  settle: settleVariants,
+  close: closeVariants,
+} as const;
 
 export default function SectionIntro({
   title,
@@ -10,6 +16,7 @@ export default function SectionIntro({
   reduced,
   accentColor,
   rule = true,
+  entrance = "rise",
 }: {
   title: ReactNode;
   description?: string;
@@ -17,7 +24,12 @@ export default function SectionIntro({
   reduced: boolean;
   accentColor?: string;
   rule?: boolean;
+  /** Cuál de las cuatro entradas del bloque About usa esta sección. Por
+   *  defecto la de siempre, así que ninguna otra página cambia. */
+  entrance?: keyof typeof ENTRANCES;
 }) {
+  const copyVariants = ENTRANCES[entrance];
+
   return (
     <motion.div
       className={styles.sectionIntro}
@@ -34,9 +46,9 @@ export default function SectionIntro({
         {rule && (
           <motion.span className={styles.sectionIntroRule} aria-hidden variants={compact ? ruleYVariants : ruleXVariants} />
         )}
-        <motion.h2 variants={focusRiseVariants}>{title}</motion.h2>
+        <motion.h2 variants={copyVariants}>{title}</motion.h2>
       </motion.div>
-      {description && <motion.p variants={focusRiseVariants}>{description}</motion.p>}
+      {description && <motion.p variants={copyVariants}>{description}</motion.p>}
     </motion.div>
   );
 }

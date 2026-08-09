@@ -72,6 +72,29 @@
   pointer-events: none;
 }
 
+/* La sala se enciende al entrar. La textura no: el grano es la constante del
+   cuarto y lo que sube es la luz — misma gramática que el hero. */
+.field,
+.vignette {
+  opacity: 1;
+  transition: opacity 1200ms var(--ease-out-expo);
+}
+
+.metricsSection[data-lit="false"] .field,
+.metricsSection[data-lit="false"] .vignette {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field,
+  .vignette,
+  .metricsSection[data-lit="false"] .field,
+  .metricsSection[data-lit="false"] .vignette {
+    opacity: 1;
+    transition: none;
+  }
+}
+
 .lede {
   display: grid;
 

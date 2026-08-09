@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState, type RefObject } from "react";
 
 export const REVEAL_DURATION = 0.9;
 
@@ -21,3 +21,40 @@ export const CURTAIN = {
 } as const;
 
 export const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+/* Enciende una sala al entrar y no la vuelve a apagar: al volver hacia arriba
+   la luz ya está puesta, que es lo que se espera de un cuarto ya visitado. */
+export function useEnteredOnce(
+  ref: RefObject<HTMLElement | null>,
+  { rootMargin = "-12% 0px -12% 0px", enabled = true } = {},
+): boolean {
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    if (!enabled || entered) return;
+    const node = ref.current;
+    if (!node) return;
+
+    /* Sin soporte, encender en el frame siguiente. Un setState en el cuerpo
+       del efecto encadena renders; en un callback no. */
+    /* `typeof` y no `in window`: el `in` estrecha `window` a `never` en la
+       rama negativa y ahí ya no se puede llamar a nada. */
+    if (typeof IntersectionObserver === "undefined") {
+      const frame = window.requestAnimationFrame(() => setEntered(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setEntered(true);
+      },
+      { rootMargin, threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ref, rootMargin, enabled, entered]);
+
+  /* Deshabilitado equivale a encendido, y sin pasar por estado: ni un frame a
+     oscuras ni un render de más para quien pidió no ver movimiento. */
+  return entered || !enabled;
+}

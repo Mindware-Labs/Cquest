@@ -1,13 +1,26 @@
+/* El tablero es UN objeto con dos bahías: el selector y la pantalla. Antes eran
+   dos piezas sueltas — una lista transparente al lado de un panel iluminado. */
 .controlBoard {
   --board-gap: clamp(2rem, 4vw, 3.75rem);
+  /* 3.5rem de cabecera + 5 filas de 5.1rem. Es la geometría de la que sale
+     --port-offset en el TSX: cambiar una obliga a cambiar la otra. */
   --board-height: 29rem;
+  --board-pad: clamp(0.85rem, 1.4vw, 1.25rem);
 
   position: relative;
   display: grid;
-
   grid-template-columns: minmax(18rem, 0.82fr) var(--board-gap) minmax(0, 1.18fr);
   width: 100%;
   margin: clamp(1.75rem, 2.5vw, 2.25rem) 0 0;
+  padding: var(--board-pad);
+  border: 1px solid color-mix(in srgb, var(--ab-petroleo) 18%, transparent);
+  border-radius: 2px;
+  background: var(--ab-raised);
+  /* Contacto corto y ambiente muy difusa: el tablero se apoya en la página,
+     no flota sobre ella. */
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ab-petroleo) 10%, transparent),
+    0 28px 56px -40px color-mix(in srgb, var(--ab-petroleo) 55%, transparent);
 }
 
 .selector {
@@ -15,8 +28,6 @@
   grid-template-rows: 3.5rem minmax(0, 1fr);
   min-width: 0;
   height: var(--board-height);
-  border-top: 1px solid var(--ab-rule);
-  border-bottom: 1px solid var(--ab-rule);
 }
 
 .selectorHeader {
@@ -47,13 +58,21 @@
   font-size: 1.5rem;
   font-weight: 500;
   letter-spacing: -0.04em;
-
   color: var(--ab-petroleo);
+}
+
+/* Ahora es esta la fila estirable del selector, no .sectorList: display grid
+   con un solo hijo para que la lista siga llenando el alto disponible. */
+.sectorStrip {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
 }
 
 .sectorList {
   display: grid;
   grid-template-rows: repeat(5, minmax(0, 1fr));
+  min-width: 0;
   min-height: 0;
 }
 
@@ -61,7 +80,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr) 2rem;
+  grid-template-columns: 2.75rem minmax(0, 1fr) 2rem;
   align-items: center;
   gap: 1rem;
   width: 100%;
@@ -80,6 +99,22 @@
   border-bottom: 0;
 }
 
+/* Lavado de hover que entra por la izquierda, en el sentido en que se lee la
+   fila y en el que apunta su flecha. */
+.sectorButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ab-petroleo) 7%, transparent),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+
 .activeSurface {
   position: absolute;
   inset: 0;
@@ -87,22 +122,35 @@
   background: color-mix(in srgb, var(--ab-celeste) 14%, var(--ab-raised));
 }
 
+/* La barra de estado viaja CON la superficie compartida, no con el botón: así
+   se desliza entre filas en vez de encenderse y apagarse en su sitio. */
+.activeSurface::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--ab-petroleo), var(--ab-celeste));
+}
+
+/* Sin superficie propia: el icono se dibuja directamente sobre la fila y el
+   estado lo lleva el color, no una placa que compite con la superficie activa. */
 .sectorIcon {
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   color: color-mix(in srgb, var(--ab-petroleo) 64%, transparent);
   transition:
     color 200ms var(--ease-out),
     transform 260ms var(--ease-out);
 }
 
+/* El trazo baja al crecer el glifo: a 2rem, 1.55 de stroke pesa de más. */
 .sectorIcon svg {
-  width: 1.55rem;
-  height: 1.55rem;
-  stroke-width: 1.55;
+  width: 2rem;
+  height: 2rem;
+  stroke-width: 1.4;
 }
 
 .sectorLabel {
@@ -113,6 +161,7 @@
   letter-spacing: -0.018em;
   line-height: 1.25;
   text-wrap: balance;
+  transition: color 200ms var(--ease-out);
 }
 
 .sectorArrow {
@@ -139,6 +188,10 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .sectorButton:hover::before {
+    opacity: 1;
+  }
+
   .sectorButton:hover .sectorIcon,
   .sectorButton:hover .sectorArrow {
     color: var(--ab-petroleo);
@@ -153,12 +206,16 @@
   }
 }
 
-.sectorButton[data-active] .sectorIcon,
-.sectorButton[data-active] .sectorArrow {
+.sectorButton[data-active] .sectorIcon {
+  color: var(--ab-petroleo);
+}
+
+.sectorButton[data-active] .sectorLabel {
   color: var(--ab-petroleo);
 }
 
 .sectorButton[data-active] .sectorArrow {
+  color: var(--ab-petroleo);
   transform: translateX(0.75rem);
 }
 
@@ -168,31 +225,107 @@
   outline-offset: -2px;
 }
 
+/* El haz. Había solo un triángulo suelto animando `top`, que dispara layout en
+   cada frame; esto es la ruta de señal completa. */
 .connector {
   position: relative;
   height: var(--board-height);
   pointer-events: none;
 }
 
-.connectorArrow {
+/* El bus: la vertical de la que salen todas las derivaciones. */
+.connector::before {
+  content: "";
   position: absolute;
-  top: var(--port-offset);
+  top: 0;
+  bottom: 0;
+  left: 34%;
+  width: 1px;
+  background: color-mix(in srgb, var(--ab-petroleo) 22%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* La derivación activa. `transform` y no `top`: la misma animación sin tocar
+   el layout, y el nodo del bus viaja con ella. */
+.connectorBeam {
+  position: absolute;
+  top: 0;
+  left: 34%;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ab-petroleo) 55%, transparent),
+    var(--ab-celeste)
+  );
+  transform: translateY(calc(var(--port-offset) - 0.5px));
+  transition: transform 380ms var(--ease-out);
+}
+
+/* El nodo donde la derivación toca el bus. */
+.connectorBeam::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 999px;
+  background: var(--ab-petroleo);
+  transform: translate(-50%, -50%);
+}
+
+.connectorBeam::after {
+  content: "";
+  position: absolute;
+  top: 50%;
   right: 0;
   width: 0.65rem;
   height: 0.85rem;
-  background: linear-gradient(90deg, var(--ab-petroleo), var(--ab-celeste));
+  background: var(--ab-celeste);
   clip-path: polygon(0 0, 100% 50%, 0 100%);
   transform: translateY(-50%);
-  transition: top 380ms var(--ease-out);
 }
 
+/* Un pulso que recorre la derivación al cambiar de sector: lo que convierte el
+   cambio en un envío y no en dos paneles que se relevan. */
+.connectorPulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #fff 55%, var(--ab-celeste)),
+    transparent
+  );
+  animation: sectorPulse 620ms var(--ease-out) both;
+}
+
+@keyframes sectorPulse {
+  from {
+    transform: translateX(-40%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(300%);
+    opacity: 0;
+  }
+}
+
+/* La pantalla, embutida en el tablero. */
 .detail {
   position: relative;
   isolation: isolate;
   display: flex;
   flex-direction: column;
   min-width: 0;
-
   min-height: var(--board-height);
   padding: clamp(1.5rem, 2vw, 2rem);
   overflow: hidden;
@@ -253,11 +386,36 @@
 }
 
 .liveDot {
+  position: relative;
   width: 0.42rem;
   height: 0.42rem;
   border-radius: 999px;
   background: var(--ab-celeste);
   box-shadow: 0 0 0.85rem color-mix(in srgb, var(--ab-celeste) 80%, transparent);
+}
+
+/* Decía "live" y no estaba viva. Anillo en un pseudo — transform y opacity,
+   así que la compone la GPU y no repinta la fila. */
+.liveDot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  border: 1px solid var(--ab-celeste);
+  opacity: 0;
+  animation: sectorPing 2.8s var(--ease-out) infinite;
+}
+
+@keyframes sectorPing {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.55);
+  }
+  55%,
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
 }
 
 .position {
@@ -297,15 +455,17 @@
   stroke-width: 1.25;
 }
 
+/* Sin `nowrap`: a la medida más estrecha del tablero, "Telecomunicaciones" y
+   "Retail y E-Commerce" iban justas y una tipografía algo más ancha las parte. */
 .detailHeading h3 {
   margin: 0;
   max-width: none;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(1.9rem, 2.6vw, 2.6rem);
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
   font-weight: 500;
   letter-spacing: -0.038em;
-  line-height: 0.98;
-  white-space: nowrap;
+  line-height: 1.02;
+  text-wrap: balance;
 }
 
 .demand {
@@ -364,13 +524,25 @@
 .services li {
   position: relative;
   min-width: 0;
-  padding: 0.65rem 0.75rem 0 0.85rem;
+  padding: 0.85rem 0.75rem 0 0.85rem;
   border-right: 1px solid var(--ab-rule-invert);
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.35;
   color: color-mix(in srgb, var(--ab-celeste) 68%, white);
   text-wrap: balance;
+}
+
+/* Marca de derivación sobre cada celda: la lista deja de ser tres etiquetas y
+   pasa a ser tres salidas colgando de la misma regla. */
+.services li::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 1.15rem;
+  height: 1px;
+  background: var(--ab-celeste);
 }
 
 .services li:first-child {
@@ -413,12 +585,38 @@
   .selector {
     display: block;
     height: auto;
-    border-bottom: 0;
   }
 
   .selectorHeader {
     min-height: 3.75rem;
     padding-inline: 0.25rem;
+  }
+
+  /* La tira desborda a propósito; los degradados de los cantos son la única
+     pista de que hay más sectores fuera de pantalla. */
+  .sectorStrip {
+    position: relative;
+  }
+
+  .sectorStrip::before,
+  .sectorStrip::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 1.75rem;
+    pointer-events: none;
+  }
+
+  .sectorStrip::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--ab-raised), transparent);
+  }
+
+  .sectorStrip::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--ab-raised), transparent);
   }
 
   .sectorList {
@@ -437,7 +635,7 @@
 
   .sectorButton {
     flex: 0 0 auto;
-    grid-template-columns: 2rem max-content;
+    grid-template-columns: 2.25rem max-content;
     gap: 0.65rem;
     width: auto;
     min-height: 3.15rem;
@@ -456,14 +654,18 @@
     box-shadow: inset 0 -2px 0 var(--ab-celeste);
   }
 
+  .activeSurface::before {
+    display: none;
+  }
+
   .sectorIcon {
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .sectorIcon svg {
-    width: 1.3rem;
-    height: 1.3rem;
+    width: 1.6rem;
+    height: 1.6rem;
   }
 
   .sectorLabel {
@@ -541,13 +743,8 @@
   }
 
   .services li::before {
-    content: "";
-    position: absolute;
     top: 50%;
-    left: 0;
     width: 0.32rem;
-    height: 1px;
-    background: var(--ab-celeste);
   }
 
   .services li:first-child {
@@ -565,11 +762,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sectorIcon,
-  .sectorArrow {
+  .sectorArrow,
+  .sectorLabel,
+  .sectorButton::before,
+  .connectorBeam {
     transition: none;
   }
 
-  .connectorArrow {
-    transition: none;
+  .connectorPulse,
+  .liveDot::after {
+    animation: none;
+  }
+
+  .connectorPulse {
+    display: none;
   }
 }

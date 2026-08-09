@@ -23,11 +23,11 @@ const COPY = {
     scrollCue: "Scroll",
     about: {
       heading: "What Mindware Labs does",
-      body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      body: "Full-cycle software engineering: analysis and design, development, testing, deployment and maintenance of the systems themselves. Plus technical consulting and audits, so the team can either build from scratch or review what is already running in production.",
     },
     collab: {
       heading: "Working with Center Quest",
-      body: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      body: "It is the same discipline Center Quest applies in its Systems Development line. We share the method: the CRMs, dashboards and automation that hold up our operations are analyzed, tested and maintained to that same standard — not handed over and abandoned.",
     },
     connect: {
       heading: "Connect",
@@ -44,11 +44,11 @@ const COPY = {
     scrollCue: "Scroll",
     about: {
       heading: "Qué hace Mindware Labs",
-      body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      body: "Ingeniería de software de ciclo completo: análisis y diseño, desarrollo, pruebas, implementación y mantenimiento de los sistemas. A eso se suman consultoría y auditoría técnica, para entrar tanto a construir desde cero como a revisar lo que ya está en producción.",
     },
     collab: {
       heading: "Trabajando con Center Quest",
-      body: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      body: "Es la misma disciplina que Center Quest aplica en su línea de Desarrollo de Sistemas. Compartimos el método: los CRMs, dashboards y automatizaciones que sostienen nuestras operaciones se analizan, se prueban y se mantienen con ese mismo estándar — no se entregan y se abandonan.",
     },
     connect: {
       heading: "Conecta",

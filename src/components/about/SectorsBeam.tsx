@@ -46,6 +46,9 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();
   const t = COPY[lang];
   const [activeIndex, setActiveIndex] = useState(0);
+  /* Se incrementa en cada elección y remonta el pulso del haz para que la
+     animación vuelva a correr. En 0 no se dibuja: nada que responder todavía. */
+  const [pulseKey, setPulseKey] = useState(0);
   const [compact, setCompact] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panelId = useId();
@@ -61,9 +64,14 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
     return () => query.removeEventListener("change", update);
   }, []);
 
+  const select = (index: number) => {
+    setActiveIndex(index);
+    setPulseKey((value) => value + 1);
+  };
+
   const selectAndFocus = (nextIndex: number) => {
     const normalized = (nextIndex + ABOUT_SECTORS.length) % ABOUT_SECTORS.length;
-    setActiveIndex(normalized);
+    select(normalized);
     tabRefs.current[normalized]?.focus();
   };
 
@@ -112,52 +120,60 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
           </span>
         </div>
 
-        <div
-          className={styles.sectorList}
-          role="tablist"
-          aria-orientation={compact ? "horizontal" : "vertical"}
-          aria-label={t.listLabel}
-        >
-          {ABOUT_SECTORS.map((sector, index) => {
-            const selected = index === activeIndex;
+        {/* El envoltorio existe solo para los degradados de canto en móvil: la
+            tira desborda y sin ellos no hay pista de que haya más sectores. */}
+        <div className={styles.sectorStrip}>
+          <div
+            className={styles.sectorList}
+            role="tablist"
+            aria-orientation={compact ? "horizontal" : "vertical"}
+            aria-label={t.listLabel}
+          >
+            {ABOUT_SECTORS.map((sector, index) => {
+              const selected = index === activeIndex;
 
-            return (
-              <button
-                key={sector.id}
-                ref={(node) => {
-                  tabRefs.current[index] = node;
-                }}
-                id={`${tabId}-${sector.id}`}
-                type="button"
-                role="tab"
-                tabIndex={selected ? 0 : -1}
-                aria-selected={selected}
-                aria-controls={panelId}
-                className={styles.sectorButton}
-                data-active={selected || undefined}
-                onClick={() => setActiveIndex(index)}
-                onKeyDown={(event) => handleKeyDown(event, index)}
-              >
-                {selected && (
-                  <motion.span
-                    className={styles.activeSurface}
-                    layoutId="sector-active-surface"
-                    transition={reduced ? { duration: 0 } : SPRING}
-                  />
-                )}
-                <span className={styles.sectorIcon} aria-hidden>
-                  <ServiceIcon name={sector.icon} />
-                </span>
-                <span className={styles.sectorLabel}>{sector.label[lang]}</span>
-                <span className={styles.sectorArrow} aria-hidden />
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={sector.id}
+                  ref={(node) => {
+                    tabRefs.current[index] = node;
+                  }}
+                  id={`${tabId}-${sector.id}`}
+                  type="button"
+                  role="tab"
+                  tabIndex={selected ? 0 : -1}
+                  aria-selected={selected}
+                  aria-controls={panelId}
+                  className={styles.sectorButton}
+                  data-active={selected || undefined}
+                  onClick={() => select(index)}
+                  onKeyDown={(event) => handleKeyDown(event, index)}
+                >
+                  {selected && (
+                    <motion.span
+                      className={styles.activeSurface}
+                      layoutId="sector-active-surface"
+                      transition={reduced ? { duration: 0 } : SPRING}
+                    />
+                  )}
+                  <span className={styles.sectorIcon} aria-hidden>
+                    <ServiceIcon name={sector.icon} />
+                  </span>
+                  <span className={styles.sectorLabel}>{sector.label[lang]}</span>
+                  <span className={styles.sectorArrow} aria-hidden />
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
+      {/* La ruta de señal: el bus vertical lo pinta el ::before de .connector y
+          la derivación activa viaja con transform, no con `top`. */}
       <div className={styles.connector} aria-hidden>
-        <span className={styles.connectorArrow} />
+        <span className={styles.connectorBeam}>
+          {pulseKey > 0 && <span key={pulseKey} className={styles.connectorPulse} />}
+        </span>
       </div>
 
       <section

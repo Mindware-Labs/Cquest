@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import container from "@/components/services/Container.module.css";
-import { EASE_OUT, VIEWPORT, focusRiseVariants, groupVariants, ruleYVariants, softRiseVariants, stepVariants } from "@/components/services/motion";
+import { EASE_OUT, VIEWPORT, focusRiseVariants, groupVariants, lineMaskGroupVariants, lineMaskVariants, ruleYVariants, softRiseVariants, stepVariants } from "@/components/services/motion";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
+import { gsap } from "@/lib/gsap";
+import { SCRUB, useEnteredOnce, useIsomorphicLayoutEffect } from "./motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import styles from "./WhyUsSection.module.css";
@@ -148,6 +150,10 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
   const tabVisible = useTabVisibility();
 
   const sectionRef = useRef<HTMLElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  /* Antes que `inView`, que llega al 25% y es la puerta del autoplay: la luz
+     tiene que estar subiendo cuando la sala todavía está entrando. */
+  const lit = useEnteredOnce(sectionRef, { enabled: !reduced });
   const [inView, setInView] = useState(false);
   const [held, setHeld] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -164,6 +170,31 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  /* Era la única de las cuatro salas con el fondo completamente quieto,
+     mientras las de al lado derivan con el scroll. */
+  useIsomorphicLayoutEffect(() => {
+    if (reduced || !glowRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        glowRef.current,
+        /* ±1.5% y no más: el horizonte vive en esta capa y un recorrido mayor
+           lo desliza respecto al tambor que se apoya en él. */
+        { yPercent: 1.5 },
+        {
+          yPercent: -1.5,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: SCRUB,
+          },
+        },
+      );
+    }, sectionRef);
+    return () => ctx.revert();
+  }, [reduced]);
 
   const advanceTo = useCallback((index: number) => setActiveIndex(index), []);
 
@@ -194,11 +225,16 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
   };
 
   return (
-    <section id="why-us" ref={sectionRef} className={styles.whyUsSection}>
+    <section
+      id="why-us"
+      ref={sectionRef}
+      className={styles.whyUsSection}
+      data-lit={lit ? "true" : "false"}
+    >
 
       {/* Orden de pintura: luz de consola, cuadrícula sobre ella, encuadre y
           grano. Todas se centran en --why-stage-x/y (WhyUsSection.module.css). */}
-      <div aria-hidden className={styles.stageGlow} />
+      <div ref={glowRef} aria-hidden className={styles.stageGlow} />
       <div aria-hidden className={styles.fieldGrid} />
       <div aria-hidden className={styles.vignette} />
       <div aria-hidden className={`${styles.grain} cq-noise`} />
@@ -215,10 +251,14 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
           <motion.span className={styles.eyebrow} variants={focusRiseVariants}>
             {t.eyebrow}
           </motion.span>
-          <motion.h2 variants={focusRiseVariants}>
-            {t.heading[0]}
-            <br />
-            {t.heading[1]}
+          {/* Máscara por línea en vez de la subida genérica: es la otra vez
+              que la página afirma algo, como el h1 del hero. */}
+          <motion.h2 variants={lineMaskGroupVariants}>
+            {t.heading.map((line) => (
+              <span key={line} className={styles.headingLine}>
+                <motion.span variants={lineMaskVariants}>{line}</motion.span>
+              </span>
+            ))}
           </motion.h2>
           <motion.p variants={focusRiseVariants}>{t.lead}</motion.p>
         </motion.div>

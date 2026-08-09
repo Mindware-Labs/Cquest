@@ -4,13 +4,13 @@ import { motion } from "motion/react";
 import { useCallback, useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
-import { EASE_OUT, focusRiseVariants, groupVariants, ruleYVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
+import { EASE_OUT, groupVariants, ruleYVariants, settleVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { gsap } from "@/lib/gsap";
 import { ABOUT_METRICS, TEAM_HR_NOTE } from "./data";
-import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
+import { SCRUB, useEnteredOnce, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./MetricsSection.module.css";
 
 const COPY = {
@@ -39,6 +39,8 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
   const t = COPY[lang];
   const sectionRef = useRef<HTMLElement>(null);
   const fieldRef = useRef<HTMLSpanElement>(null);
+  /* La sala se enciende al entrar en ella en vez de llegar ya iluminada. */
+  const lit = useEnteredOnce(sectionRef, { enabled: !reduced });
 
   useIsomorphicLayoutEffect(() => {
     if (reduced || !fieldRef.current) return;
@@ -62,7 +64,12 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
   }, [reduced]);
 
   return (
-    <section id="metrics" ref={sectionRef} className={styles.metricsSection}>
+    <section
+      id="metrics"
+      ref={sectionRef}
+      className={styles.metricsSection}
+      data-lit={lit ? "true" : "false"}
+    >
 
       <div aria-hidden className={styles.field}>
         <span ref={fieldRef} className={styles.fieldGrid} />
@@ -82,14 +89,14 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
           >
             <motion.div className={styles.metricsHeadingCopy} variants={stepVariants}>
               <motion.span className={styles.metricsRule} aria-hidden variants={ruleYVariants} />
-              <motion.span className={styles.eyebrow} variants={focusRiseVariants}>
+              <motion.span className={styles.eyebrow} variants={settleVariants}>
                 {t.eyebrow}
               </motion.span>
-              <motion.h2 variants={focusRiseVariants}>{t.heading}</motion.h2>
-              <motion.p className={styles.lead} variants={focusRiseVariants}>
+              <motion.h2 variants={settleVariants}>{t.heading}</motion.h2>
+              <motion.p className={styles.lead} variants={settleVariants}>
                 {TEAM_HR_NOTE[lang]}
               </motion.p>
-              <motion.div variants={focusRiseVariants}>
+              <motion.div variants={settleVariants}>
                 <LocalizedLink href="/team" className={styles.cta}>
                   {t.cta} <Arrow />
                 </LocalizedLink>

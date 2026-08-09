@@ -78,6 +78,8 @@ export default function PartnershipsSection({ reduced }: { reduced: boolean }) {
           description={t.lead}
           reduced={reduced}
           accentColor="var(--ab-celeste)"
+          /* Cierra la secuencia: solo opacidad, sin presentarse otra vez. */
+          entrance="close"
         />
 
         <motion.div

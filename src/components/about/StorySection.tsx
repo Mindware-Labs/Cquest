@@ -69,7 +69,9 @@ export default function StorySection({ reduced }: { reduced: boolean }) {
           }
           description={t.lead}
           reduced={reduced}
-          rule={false}
+          /* Con filete como el resto de secciones: era la única que abría sin
+             él. Petróleo por la regla de los dos azules — superficie clara. */
+          accentColor="var(--ab-petroleo)"
         />
         <SectorsBeam reduced={reduced} />
       </div>

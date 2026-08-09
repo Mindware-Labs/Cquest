@@ -138,6 +138,39 @@
   pointer-events: none;
 }
 
+/* La consola se enciende al entrar en la sala, no llega ya encendida. El grano
+   queda fuera: la textura es la constante del cuarto, lo que sube es la luz. */
+.stageGlow,
+.fieldGrid,
+.vignette {
+  opacity: 1;
+  transition: opacity 1300ms var(--ease-out-expo);
+}
+
+.whyUsSection[data-lit="false"] .stageGlow,
+.whyUsSection[data-lit="false"] .fieldGrid,
+.whyUsSection[data-lit="false"] .vignette {
+  opacity: 0;
+}
+
+/* La retícula entra detrás de la luz: primero se enciende la lámpara y después
+   se ve sobre qué está cayendo. */
+.fieldGrid {
+  transition-delay: 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageGlow,
+  .fieldGrid,
+  .vignette,
+  .whyUsSection[data-lit="false"] .stageGlow,
+  .whyUsSection[data-lit="false"] .fieldGrid,
+  .whyUsSection[data-lit="false"] .vignette {
+    opacity: 1;
+    transition: none;
+  }
+}
+
 .inner {
   position: relative;
   z-index: 1;
@@ -174,6 +207,20 @@
   letter-spacing: -0.03em;
   line-height: 1.08;
   color: white;
+}
+
+/* Caja de recorte por línea. El par padding/margin le da sitio a las
+   descendentes para que la máscara no rebane una "p" ni una "y". */
+.headingLine {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.headingLine > span {
+  display: block;
+  will-change: transform;
 }
 
 .header p {

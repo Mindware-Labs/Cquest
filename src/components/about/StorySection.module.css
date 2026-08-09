@@ -2,6 +2,13 @@
   position: relative;
   scroll-margin-top: 5rem;
   padding-block: clamp(3rem, 5vw, 4.5rem);
+
+  /* Dónde se apoya el tablero. Lo leen el campo técnico y el aura. */
+  --sectors-board-y: 64%;
+
+  /* Filete de cierre. La sección solo tenía el de entrada y quedaba abierta
+     por abajo contra la isla oscura que viene después. */
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ab-petroleo) 14%, transparent);
 }
 
 .storySection::before {
@@ -19,6 +26,37 @@
   );
 }
 
+/* Campo técnico: la única sección que es literalmente un instrumento, así que
+   una retícula de medida se gana el sitio en vez de ser textura de relleno. */
+.storySection::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--ab-petroleo) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ab-petroleo) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(to right, color-mix(in srgb, var(--ab-petroleo) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ab-petroleo) 3%, transparent) 1px, transparent 1px);
+  background-position: center;
+  background-size: 14rem 14rem, 14rem 14rem, 3.5rem 3.5rem, 3.5rem 3.5rem;
+  /* Concentrada donde está el tablero y disuelta hacia los bordes: una
+     retícula uniforme de borde a borde es papel pintado, no un plano. */
+  mask-image: radial-gradient(
+    62% 48% at 50% var(--sectors-board-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.42) 56%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    62% 48% at 50% var(--sectors-board-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.42) 56%,
+    transparent 100%
+  );
+}
+
 .storyAura {
   position: absolute;
   inset: 0;
@@ -26,16 +64,20 @@
   pointer-events: none;
 }
 
+/* Ancho y bajo, detrás del tablero: la luz de la sala cayendo sobre la mesa,
+   no un globo de color en una esquina. */
 .storyAuraLight {
   position: absolute;
-  top: 12%;
-  right: -14rem;
-  width: 44rem;
-  height: 30rem;
+  top: calc(var(--sectors-board-y) - 26%);
+  left: 50%;
+  width: min(72rem, 116%);
+  height: 34rem;
+  margin-left: min(-36rem, -58%);
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--ab-celeste) 13%, transparent),
-    transparent 72%
+    color-mix(in srgb, var(--ab-celeste) 14%, transparent),
+    color-mix(in srgb, var(--ab-celeste) 5%, transparent) 52%,
+    transparent 78%
   );
   will-change: transform;
 }
