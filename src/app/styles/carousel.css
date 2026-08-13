@@ -333,8 +333,10 @@
   overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.85rem 0.5rem 0.7rem;
+  gap: 0.55rem;
+  /* Un punto más de cuerpo para que la fila sostenga el ancho nuevo. Sigue
+     siendo una etiqueta: el alto crece 0.2rem, no se vuelve tarjeta. */
+  padding: 0.55rem 0.95rem 0.55rem 0.75rem;
   border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--svc) 32%, transparent);
   background: linear-gradient(180deg,
@@ -385,8 +387,8 @@
 }
 
 .cq-cap svg {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.95rem;
+  height: 0.95rem;
   flex-shrink: 0;
   stroke-width: 1.7;
   color: color-mix(in srgb, var(--svc) 82%, var(--foreground));
@@ -406,6 +408,24 @@
   line-height: 1;
   white-space: nowrap;
   color: color-mix(in srgb, var(--foreground) 74%, transparent);
+}
+
+/* De lg en adelante la fila se abre a todo el bloque, así que la etiqueta gana
+   cuerpo para sostener ese ancho. Debajo mantiene su tamaño compacto: en tablet
+   las cuatro tienen que envolver sin comerse el alto del escenario. */
+@media (min-width: 64rem) {
+  .cq-cap {
+    padding: 0.7rem 1.25rem 0.7rem 1rem;
+  }
+
+  .cq-cap span {
+    font-size: 0.72rem;
+  }
+
+  .cq-cap svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
 }
 
 .cq-carousel-sheet[data-ambient-active="false"] .cq-v2-orb,

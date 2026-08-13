@@ -4,9 +4,9 @@ import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/types";
 
 export const CONTACT = {
-  phone: "(809) 243 1209",
+  phone: "(829) 734 7450",
 
-  phoneHref: "+18092431209",
+  phoneHref: "+18297347450",
   email: "services@ccquest.do",
 
   street: "Paseo de los Periodistas #03, Ens. Miraflores",

@@ -32,7 +32,7 @@ export default function CapabilityTags({
   return (
     <motion.ul
       variants={reduced ? undefined : tagRowVariants}
-      className="mt-9 flex max-w-xl flex-wrap items-center justify-center gap-2 sm:gap-2.5"
+      className="mt-9 flex max-w-xl flex-wrap items-center justify-center gap-2 sm:gap-2.5 md:max-w-2xl lg:mt-12 lg:max-w-none lg:gap-4"
     >
       {service.details.map((detail) => (
         <motion.li

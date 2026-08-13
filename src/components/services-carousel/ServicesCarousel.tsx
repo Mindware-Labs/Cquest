@@ -275,29 +275,29 @@ function ServicesTrack() {
             <motion.div
               style={reduced ? undefined : { y: stageY }}
               variants={reduced ? undefined : stageVariants}
-              className="cq-carousel-scroll-layer relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10"
+              className="cq-carousel-scroll-layer relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10 md:max-w-4xl md:px-12 lg:max-w-5xl lg:px-14 xl:max-w-6xl xl:px-20"
             >
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))]"
+                className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))] lg:text-[0.74rem] lg:tracking-[0.26em]"
               >
                 {dict.carousel.businessLinePrefix} · 0{index + 1}
               </motion.p>
               <motion.h2
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.6rem)] font-semibold leading-[1.04] tracking-[-0.03em]"
+                className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.2rem)] font-semibold leading-[1.04] tracking-[-0.03em] lg:mt-5 lg:text-[clamp(3rem,6.2vw,5rem)] lg:leading-[1.02] lg:tracking-[-0.035em]"
               >
                 {service.label[lang]}
               </motion.h2>
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-4 max-w-[38ch] text-balance font-heading text-[clamp(1.05rem,2vw,1.35rem)] font-medium leading-snug text-foreground/90"
+                className="mt-4 max-w-[42ch] text-balance font-heading text-[clamp(1.05rem,2.2vw,1.4rem)] font-medium leading-snug text-foreground/90 lg:mt-6 lg:max-w-[52ch] lg:text-[clamp(1.4rem,2.4vw,1.8rem)]"
               >
                 {service.shortLabel[lang]}
               </motion.p>
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base"
+                className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base md:max-w-[62ch] lg:mt-7 lg:max-w-[78ch] lg:text-[1.15rem] lg:leading-[1.75]"
               >
                 {service.strapline[lang]} {service.description[lang]}
               </motion.p>

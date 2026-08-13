@@ -42,8 +42,8 @@ export const PRIVACY: LegalDoc = {
           "Center Quest is an operations partner built around three business lines: Call Center, BPO (Business Process Outsourcing) and Systems Development for operations.",
         ),
         p(
-          "Responsable del tratamiento de tus datos: Center Quest, con domicilio en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana. Puedes contactarnos en services@ccquest.do o al (809) 243-1209.",
-          "Data controller: Center Quest, located at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic. You can reach us at services@ccquest.do or (809) 243-1209.",
+          "Responsable del tratamiento de tus datos: Center Quest, con domicilio en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana. Puedes contactarnos en services@ccquest.do o al (829) 734-7450.",
+          "Data controller: Center Quest, located at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic. You can reach us at services@ccquest.do or (829) 734-7450.",
         ),
       ],
     },
@@ -207,8 +207,8 @@ export const PRIVACY: LegalDoc = {
       heading: { es: "Contacto", en: "Contact" },
       blocks: [
         p(
-          "¿Preguntas sobre esta política o sobre tus datos? Escríbenos a services@ccquest.do, llámanos al (809) 243-1209, o visítanos en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana.",
-          "Questions about this policy or your data? Write to us at services@ccquest.do, call us at (809) 243-1209, or visit us at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic.",
+          "¿Preguntas sobre esta política o sobre tus datos? Escríbenos a services@ccquest.do, llámanos al (829) 734-7450, o visítanos en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana.",
+          "Questions about this policy or your data? Write to us at services@ccquest.do, call us at (829) 734-7450, or visit us at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic.",
         ),
       ],
     },
@@ -336,8 +336,8 @@ export const TERMS: LegalDoc = {
       heading: { es: "Contacto", en: "Contact" },
       blocks: [
         p(
-          "¿Preguntas sobre estos Términos? Escríbenos a services@ccquest.do, llámanos al (809) 243-1209, o visítanos en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana.",
-          "Questions about these Terms? Write to us at services@ccquest.do, call us at (809) 243-1209, or visit us at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic.",
+          "¿Preguntas sobre estos Términos? Escríbenos a services@ccquest.do, llámanos al (829) 734-7450, o visítanos en Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, República Dominicana.",
+          "Questions about these Terms? Write to us at services@ccquest.do, call us at (829) 734-7450, or visit us at Paseo de los Periodistas #03, Ens. Miraflores, Santo Domingo, Dominican Republic.",
         ),
       ],
     },
