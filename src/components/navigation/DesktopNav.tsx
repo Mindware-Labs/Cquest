@@ -92,6 +92,10 @@ export default function DesktopNav({
         const isActive = label === activeLabel;
 
         const isMega = Boolean(children?.[0]?.icon);
+        /* Las columnas salen del número de hijos, no de un 3 fijo: al entrar
+           Empleos al menú, tres columnas dejaban la cuarta celda sola con dos
+           huecos al lado. */
+        const megaColumns = children?.length ?? 3;
 
         return (
           <li
@@ -171,18 +175,26 @@ export default function DesktopNav({
                     className={
                       isMega
 
-                        ? `absolute left-1/2 top-full z-10 mt-3 w-[min(38rem,calc(100vw-2.5rem))] -translate-x-1/2 overflow-hidden rounded-[4px] border shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
+                        ? `absolute left-1/2 top-full z-10 mt-3 -translate-x-1/2 overflow-hidden rounded-[4px] border shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
                         : `absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-[4px] border p-2 shadow-[0_20px_40px_-16px_rgba(15,32,40,0.35)] backdrop-blur-xl ${
                             inverse ? "border-white/15 bg-ink/90" : "border-border/60 bg-background/95"
                           }`
                     }
+                    style={
+                      isMega
+                        ? { width: `min(${megaColumns * 12.5}rem, calc(100vw - 2.5rem))` }
+                        : undefined
+                    }
                   >
                     {isMega ? (
                       <>
                         <span aria-hidden className="block h-[2px] w-full bg-gradient-to-r from-petroleo to-celeste" />
-                        <ul className={`grid grid-cols-3 divide-x ${inverse ? "divide-white/12" : "divide-border/60"}`}>
+                        <ul
+                          className={`grid divide-x ${inverse ? "divide-white/12" : "divide-border/60"}`}
+                          style={{ gridTemplateColumns: `repeat(${megaColumns}, minmax(0, 1fr))` }}
+                        >
                           {children.map((child) => (
                             <li key={child.label}>
                               <LocalizedLink

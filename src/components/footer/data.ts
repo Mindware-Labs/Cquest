@@ -35,6 +35,10 @@ export function getBaseLinks(dict: Dictionary, lang: Locale): FooterLink[] {
     .map(({ label, href }) => ({ label, href }));
   return [
     ...navLinks,
+    /* Explícito: Empleos vive dentro del menú Servicios de la barra, y
+       getNavLinks solo expone el primer nivel. Sin esta línea desaparecería
+       del pie sin que nadie lo pidiera. */
+    { label: dict.nav.careers, href: "/careers" },
     { label: t.links.terms, href: "/legal/terms" },
     { label: t.links.privacy, href: "/legal/privacy" },
   ];

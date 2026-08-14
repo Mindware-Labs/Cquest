@@ -34,9 +34,11 @@
   text-wrap: pretty;
 }
 
+/* Cuadrícula 2x2: son CUATRO departamentos. Con tres columnas el cuarto
+   quedaba solo en su fila, con dos celdas vacías al lado. */
 .directory {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   border: 1px solid var(--border);
 }
@@ -60,11 +62,11 @@
   border-bottom: 1px solid var(--border);
 }
 
-.department:nth-child(3n) {
+.department:nth-child(even) {
   border-right: 0;
 }
 
-.department:nth-child(n + 4) {
+.department:nth-child(n + 3) {
   border-bottom: 0;
 }
 
@@ -262,7 +264,7 @@
     border-right: 0;
   }
 
-  .department:nth-child(n + 5) {
+  .department:nth-child(n + 3) {
     border-bottom: 0;
   }
 }

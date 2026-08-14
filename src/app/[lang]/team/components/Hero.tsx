@@ -13,20 +13,20 @@ import styles from "./Hero.module.css";
 
 const COPY = {
   en: {
-    title: ["Six departments.", "One coordinated operation."],
-    lead: "Our team is organized around clear responsibilities, so customer experience, operations, technology, quality and talent move in the same direction.",
+    title: ["Four departments.", "One coordinated operation."],
+    lead: "Our team is organized around clear responsibilities, so operations, technology, people and finance move in the same direction.",
     explore: "Explore the departments",
     talk: "Talk to us",
     mapMeta: "Operating structure",
-    mapStatus: "6 connected departments",
+    mapStatus: "4 connected departments",
   },
   es: {
-    title: ["Seis departamentos.", "Una operación coordinada."],
-    lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que la experiencia del cliente, las operaciones, la tecnología, la calidad y el talento avancen en una misma dirección.",
+    title: ["Cuatro departamentos.", "Una operación coordinada."],
+    lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que las operaciones, la tecnología, la gente y las finanzas avancen en una misma dirección.",
     explore: "Explorar los departamentos",
     talk: "Hablemos",
     mapMeta: "Estructura operativa",
-    mapStatus: "6 departamentos conectados",
+    mapStatus: "4 departamentos conectados",
   },
 };
 

@@ -13,7 +13,7 @@ import styles from "./OrgChart.module.css";
 const COPY = {
   en: {
     heading: "The work behind every operation.",
-    lead: "Each department owns a distinct part of the work. Together, they connect customer experience, process execution, technology, quality and talent into one coordinated operation.",
+    lead: "Each department owns a distinct part of the work. Together, they connect process execution, technology, people and finance into one coordinated operation.",
     listLabel: "Center Quest departments and responsibilities",
     closeTitle: "Build the right operation for your business.",
     closeBody: "Tell us what needs to run. We will help you define the team, process and technology behind it.",
@@ -21,7 +21,7 @@ const COPY = {
   },
   es: {
     heading: "El trabajo detrás de cada operación.",
-    lead: "Cada departamento se responsabiliza de una parte específica del trabajo. Juntos conectan la experiencia del cliente, la ejecución de procesos, la tecnología, la calidad y el talento en una sola operación coordinada.",
+    lead: "Cada departamento se responsabiliza de una parte específica del trabajo. Juntos conectan la ejecución de procesos, la tecnología, la gente y las finanzas en una sola operación coordinada.",
     listLabel: "Departamentos y responsabilidades de Center Quest",
     closeTitle: "Construyamos la operación adecuada para tu negocio.",
     closeBody: "Cuéntanos qué necesita funcionar. Te ayudaremos a definir el equipo, el proceso y la tecnología que lo harán posible.",

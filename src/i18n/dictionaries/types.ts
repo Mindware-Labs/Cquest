@@ -8,6 +8,8 @@ export interface Dictionary {
     services: string;
     sectors: string;
     team: string;
+    careers: string;
+    careersStrapline: string;
     contact: string;
     home: string;
     overview: string;
@@ -21,6 +23,7 @@ export interface Dictionary {
     bpo: { disciplines: string; method: string; slas: string; facilities: string };
     systems: { capabilities: string; method: string; commitments: string; work: string };
     team: { departments: string };
+    careers: { culture: string; openings: string; process: string; faq: string };
   };
   footer: {
     tagline: string;

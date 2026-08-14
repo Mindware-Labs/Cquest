@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  experimental: {
+    /* El formulario de empleos manda un CV por Server Action, y Next limita
+       esos bodies a 1 MB por defecto. CV_MAX_BYTES (careers/data/application.ts)
+       permite 5 MB, y multipart agrega boundaries y headers encima — 6mb deja
+       ese margen sin convertir el endpoint en un sumidero de subidas. */
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   images: {
     qualities: [75, 82],
     formats: ["image/avif", "image/webp"],
