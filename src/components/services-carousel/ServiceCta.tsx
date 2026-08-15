@@ -8,6 +8,8 @@ import { LocalizedLink } from "@/i18n/LocalizedLink";
 
 const MotionLink = motion.create(LocalizedLink);
 
+/* El margen superior ya no vive aquí: lo pone la fila de acciones que contiene
+   al CTA, que desde ahora comparte renglón con el enlace secundario. */
 export default function ServiceCta({ service }: { service: Service }) {
   const { dict, lang } = useI18n();
   const { ref, style, onMouseEnter, onMouseMove, onMouseLeave } =
@@ -24,7 +26,7 @@ export default function ServiceCta({ service }: { service: Service }) {
       whileHover={{ scale: 1.035 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 400, damping: 26 }}
-      className="cq-rect-cta group relative mt-9 inline-flex touch-manipulation items-center gap-3 overflow-hidden bg-celeste py-3 pl-6 pr-[1.375rem] lg:mt-11 lg:py-3.5 lg:pl-8 lg:pr-[1.75rem] text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
+      className="cq-rect-cta group relative inline-flex touch-manipulation items-center gap-3 overflow-hidden bg-celeste py-3 pl-6 pr-[1.375rem] lg:py-3.5 lg:pl-8 lg:pr-[1.75rem] text-foreground shadow-[0_2px_8px_-2px_color-mix(in_srgb,var(--brand-celeste)_40%,transparent)] transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_20px_40px_-10px_color-mix(in_srgb,var(--brand-celeste)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-celeste"
     >
       <span
         aria-hidden

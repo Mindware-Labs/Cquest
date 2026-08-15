@@ -56,6 +56,10 @@ export interface Dictionary {
     chooseServiceAriaLabel: string;
     explorePrefix: string;
 
+    /* Salida secundaria del slide: va a la cotización, no a la página del
+       servicio. Para quien ya sabe qué necesita. */
+    talkToTeam: string;
+
     /* Solo el registro de móvil: el carrusel de desktop no lleva rótulo. */
     linesEyebrow: string;
   };

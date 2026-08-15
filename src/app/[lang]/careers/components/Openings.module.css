@@ -70,13 +70,27 @@
   gap: 0.9rem;
   padding: 1rem 1rem 1rem 1.15rem;
   text-align: left;
+  /* La ficha cambia con el CLIC, no al pasar el puntero, así que la fila tiene
+     que verse pulsable: un botón nativo hereda el cursor de flecha y no invita
+     a nada. */
+  cursor: pointer;
   transition:
     background-color 280ms var(--ease-out),
     color 280ms var(--ease-out);
 }
 
-.item:hover {
-  background: color-mix(in srgb, var(--surface-raised) 65%, transparent);
+/* El hover ya no selecciona, así que tampoco puede parecerse al estado
+   seleccionado: se queda en un realce leve que solo dice "esto se puede
+   pulsar". El fondo lleno y el marcador quedan para la fila activa. */
+.item:hover:not([aria-selected="true"]) {
+  background: color-mix(in srgb, var(--surface-raised) 45%, transparent);
+}
+
+/* Sin `transform`: anime le escribe el suyo en la entrada de la sección, y un
+   segundo dueño deja la fila torcida si el dedo llega antes de que la timeline
+   termine. En móvil esto es la única señal de que el toque llegó. */
+.item:active {
+  background: color-mix(in srgb, var(--brand-celeste) 14%, var(--surface-raised));
 }
 
 .item[aria-selected="true"] {
@@ -278,15 +292,15 @@
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--background);
+  /* El salto lo lleva Motion (`motion.ts`); aquí solo queda el color. */
   transition:
     background-color 240ms var(--ease-out),
-    transform 180ms var(--ease-out);
+    border-color 240ms var(--ease-out);
 }
 
 .detailCta:hover {
   background: var(--brand-petroleo);
   border-color: var(--brand-petroleo);
-  transform: translateY(-2px);
 }
 
 .detailCta:focus-visible {

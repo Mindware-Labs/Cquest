@@ -409,6 +409,14 @@
   transform: rotate(180deg);
 }
 
+/* Al cerrar, el atributo `open` sigue puesto mientras la respuesta colapsa (ver
+   `FaqItem`), así que el chevron se guía por el estado de React: si no, se
+   quedaría girado hasta que terminara la animación de salida. Va DESPUÉS de la
+   regla de arriba — misma especificidad, gana la última. */
+.faqItem[data-open="false"] .faqSummary::after {
+  transform: none;
+}
+
 .faqSummary:hover {
   color: var(--brand-petroleo);
 }

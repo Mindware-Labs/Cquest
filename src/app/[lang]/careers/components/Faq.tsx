@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createTimeline, onScroll, stagger } from "animejs";
+import { AnimatePresence, motion } from "motion/react";
 import container from "@/components/services/Container.module.css";
 import { useI18n } from "@/i18n/I18nProvider";
 import { EASE, useAnimeScope } from "./anime";
@@ -87,7 +88,7 @@ export default function Faq({ reduced }: { reduced: boolean }) {
         .add(`.${styles.head} > *`, { opacity: [0, 1], y: [20, 0], duration: 700, delay: stagger(80) })
         .add(
           `.${styles.faqItem}`,
-          { opacity: [0, 1], y: [14, 0], duration: 480, delay: stagger(55) },
+          { opacity: [0, 1], y: [26, 0], duration: 560, delay: stagger(70) },
           "-=450",
         );
     },
@@ -108,13 +109,83 @@ export default function Faq({ reduced }: { reduced: boolean }) {
             el buscador ve la respuesta en el HTML aunque esté cerrada. */}
         <div className={styles.faq}>
           {ITEMS[lang].map((item) => (
-            <details key={item.q} className={styles.faqItem}>
-              <summary className={styles.faqSummary}>{item.q}</summary>
-              <p className={styles.faqBody}>{item.a}</p>
-            </details>
+            <FaqItem key={item.q} question={item.q} answer={item.a} reduced={reduced} />
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+/* La respuesta ya no aparece de golpe: la altura se abre y el texto sube con
+   ella. El `<details>` sigue siendo real — se abre sin JavaScript, es enfocable
+   por teclado y el buscador ve la respuesta en el HTML aunque esté cerrada — y
+   lo único que se le quita es el salto instantáneo del navegador. */
+function FaqItem({
+  question,
+  answer,
+  reduced,
+}: {
+  question: string;
+  answer: string;
+  reduced: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  /* Al cerrar, el atributo `open` tiene que seguir puesto mientras la respuesta
+     colapsa: si se quita al instante el navegador la esconde y no queda nada
+     que animar. `collapsing` es lo que lo mantiene hasta que la salida acaba. */
+  const [collapsing, setCollapsing] = useState(false);
+
+  if (reduced) {
+    return (
+      <details className={styles.faqItem}>
+        <summary className={styles.faqSummary}>{question}</summary>
+        <p className={styles.faqBody}>{answer}</p>
+      </details>
+    );
+  }
+
+  return (
+    <details className={styles.faqItem} data-open={open} open={open || collapsing}>
+      <summary
+        className={styles.faqSummary}
+        onClick={(event) => {
+          /* El navegador alterna `open` por su cuenta y sin transición: se le
+             quita el control y lo lleva el estado de React. */
+          event.preventDefault();
+          if (open) {
+            setCollapsing(true);
+            setOpen(false);
+            return;
+          }
+          setOpen(true);
+        }}
+      >
+        {question}
+      </summary>
+
+      <AnimatePresence initial={false} onExitComplete={() => setCollapsing(false)}>
+        {open ? (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <motion.p
+              className={styles.faqBody}
+              initial={{ y: -10 }}
+              animate={{ y: 0 }}
+              exit={{ y: -10 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {answer}
+            </motion.p>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </details>
   );
 }

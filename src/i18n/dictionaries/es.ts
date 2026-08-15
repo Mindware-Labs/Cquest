@@ -63,6 +63,7 @@ export const dictionary: Dictionary = {
     businessLinePrefix: "Línea de negocio",
     chooseServiceAriaLabel: "Elegir servicio",
     explorePrefix: "Explorar",
+    talkToTeam: "Hablar con el equipo",
     linesEyebrow: "Tres líneas de negocio",
   },
   wizard: {

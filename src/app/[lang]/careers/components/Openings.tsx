@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { animate, createTimeline, onScroll, stagger } from "animejs";
+import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import ServiceIcon from "@/components/services/ServiceIcon";
@@ -15,7 +16,10 @@ import {
   departmentLabel,
 } from "../data";
 import { EASE, EASE_SNAP, useAnimeScope } from "./anime";
+import { CTA_HOVER, CTA_TAP, CTA_TRANSITION } from "./motion";
 import styles from "./Openings.module.css";
+
+const MotionLink = motion.create(LocalizedLink);
 
 const COPY = {
   en: {
@@ -84,9 +88,10 @@ export default function Openings({ reduced }: { reduced: boolean }) {
        recargar un bloque. */
     animate(detail.current.children, {
       opacity: [0, 1],
-      y: [14, 0],
-      duration: 460,
-      delay: stagger(45),
+      y: [26, 0],
+      x: [10, 0],
+      duration: 520,
+      delay: stagger(55),
       ease: EASE,
     });
   };
@@ -114,13 +119,13 @@ export default function Openings({ reduced }: { reduced: boolean }) {
         .add(`.${styles.head} > *`, { opacity: [0, 1], y: [20, 0], duration: 700, delay: stagger(80) })
         .add(
           `.${styles.item}`,
-          { opacity: [0, 1], x: [-18, 0], duration: 520, delay: stagger(60) },
+          { opacity: [0, 1], x: [-36, 0], duration: 560, delay: stagger(75), ease: EASE_SNAP },
           "-=420",
         )
         .add(
           `.${styles.detail} > *`,
-          { opacity: [0, 1], y: [18, 0], duration: 560, delay: stagger(60) },
-          "-=520",
+          { opacity: [0, 1], y: [28, 0], duration: 620, delay: stagger(70) },
+          "-=560",
         );
     },
     [reduced],
@@ -178,9 +183,6 @@ export default function Openings({ reduced }: { reduced: boolean }) {
                 }}
                 className={styles.item}
                 onClick={() => select(index)}
-                onPointerEnter={(event) => {
-                  if (event.pointerType === "mouse") select(index);
-                }}
               >
                 <span className={styles.itemIcon}>
                   <ServiceIcon name={item.icon} />
@@ -223,9 +225,15 @@ export default function Openings({ reduced }: { reduced: boolean }) {
             </div>
 
             <div className={styles.detailActions}>
-              <LocalizedLink href={`/careers/${position.slug}`} className={styles.detailCta}>
+              <MotionLink
+                href={`/careers/${position.slug}`}
+                className={styles.detailCta}
+                whileHover={reduced ? undefined : CTA_HOVER}
+                whileTap={reduced ? undefined : CTA_TAP}
+                transition={CTA_TRANSITION}
+              >
                 {t.view} <Arrow />
-              </LocalizedLink>
+              </MotionLink>
               <LocalizedLink href="/careers/apply" className={styles.detailGhost}>
                 {t.talent}
               </LocalizedLink>

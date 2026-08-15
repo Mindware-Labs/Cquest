@@ -13,6 +13,7 @@ import {
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import { SERVICES } from "@/components/services/data";
 import { useI18n } from "@/i18n/I18nProvider";
+import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { format } from "@/i18n/format";
 import CapabilityTags from "./CapabilityTags";
 import ServiceCta from "./ServiceCta";
@@ -272,40 +273,65 @@ function ServicesTrack() {
               <SlideBackdrop service={service} active={sceneReady} />
             </motion.div>
 
+            {/* El `pb` no es aire decorativo: reserva la banda donde viven los
+                puntos de paginación. El escenario se centra en la lámina
+                completa, así que sin ese colchón el bloque crece hacia abajo
+                hasta meter el CTA encima de los puntos. */}
             <motion.div
               style={reduced ? undefined : { y: stageY }}
               variants={reduced ? undefined : stageVariants}
-              className="cq-carousel-scroll-layer relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 text-center sm:px-10 md:max-w-4xl md:px-12 lg:max-w-5xl lg:px-14 xl:max-w-6xl xl:px-20"
+              className="cq-carousel-scroll-layer relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pb-20 text-center sm:px-10 md:max-w-4xl md:px-12 lg:max-w-5xl lg:px-14 lg:pb-24 xl:max-w-6xl xl:px-20"
             >
+              {/* La regla a la izquierda del rótulo: ancla el bloque centrado,
+                  que sin ella arranca flotando sobre el fondo. */}
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))] lg:text-[0.74rem] lg:tracking-[0.26em]"
+                className="flex items-center gap-3 text-[0.64rem] font-semibold uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--svc)_62%,var(--foreground))] lg:text-[0.68rem] lg:tracking-[0.24em]"
               >
+                <span
+                  aria-hidden
+                  className="h-px w-9 bg-[color-mix(in_srgb,var(--svc)_70%,transparent)]"
+                />
                 {dict.carousel.businessLinePrefix} · 0{index + 1}
               </motion.p>
               <motion.h2
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-3 font-heading text-[clamp(2.1rem,5vw,3.2rem)] font-semibold leading-[1.04] tracking-[-0.03em] lg:mt-5 lg:text-[clamp(3rem,6.2vw,5rem)] lg:leading-[1.02] lg:tracking-[-0.035em]"
+                className="mt-3 font-heading text-[clamp(1.85rem,4.3vw,2.7rem)] font-semibold leading-[1.04] tracking-[-0.03em] lg:mt-4 lg:text-[clamp(2.5rem,5.2vw,4rem)] lg:leading-[1.02] lg:tracking-[-0.035em]"
               >
                 {service.label[lang]}
               </motion.h2>
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-4 max-w-[42ch] text-balance font-heading text-[clamp(1.05rem,2.2vw,1.4rem)] font-medium leading-snug text-foreground/90 lg:mt-6 lg:max-w-[52ch] lg:text-[clamp(1.4rem,2.4vw,1.8rem)]"
+                className="mt-3 max-w-[42ch] text-balance font-heading text-[clamp(0.98rem,1.9vw,1.2rem)] font-medium leading-snug text-foreground/90 lg:mt-5 lg:max-w-[52ch] lg:text-[clamp(1.2rem,2vw,1.5rem)]"
               >
                 {service.shortLabel[lang]}
               </motion.p>
+              {/* Más angosto que antes (78ch → 62ch) y un punto menos de cuerpo:
+                  el renglón corto se lee de un vistazo, y el alto que suelta es
+                  justo el que necesita la rejilla de capacidades de abajo. */}
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
-                className="mt-5 max-w-[52ch] text-pretty text-[.95rem] leading-relaxed text-[var(--text-secondary)] sm:text-base md:max-w-[62ch] lg:mt-7 lg:max-w-[78ch] lg:text-[1.15rem] lg:leading-[1.75]"
+                className="mt-3.5 max-w-[52ch] text-pretty text-[0.88rem] leading-relaxed text-[var(--text-secondary)] sm:text-[0.92rem] md:max-w-[58ch] lg:mt-5 lg:max-w-[62ch] lg:text-[0.98rem] lg:leading-[1.7]"
               >
                 {service.strapline[lang]} {service.description[lang]}
               </motion.p>
 
               <CapabilityTags service={service} reduced={reduced} />
 
-              <motion.div variants={reduced ? undefined : stageItemVariants}>
+              {/* Dos salidas en el mismo renglón: la que lleva al servicio y la
+                  que lleva a hablar con alguien. Quien ya sabe qué necesita no
+                  tiene que leer la página del servicio para pedir cotización. */}
+              <motion.div
+                variants={reduced ? undefined : stageItemVariants}
+                className="mt-7 flex flex-wrap items-center justify-center gap-x-7 gap-y-4 lg:mt-9"
+              >
                 <ServiceCta service={service} />
+                <LocalizedLink
+                  href="/quote"
+                  className="border-b border-[color-mix(in_srgb,var(--foreground)_18%,transparent)] pb-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)] transition-colors duration-300 hover:border-[var(--svc)] hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-petroleo"
+                >
+                  {dict.carousel.talkToTeam}
+                </LocalizedLink>
               </motion.div>
             </motion.div>
           </motion.article>

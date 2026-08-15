@@ -43,6 +43,24 @@
   align-items: flex-start;
 }
 
+/* La regla y el eyebrow van juntos en una línea: la regla barre primero y el
+   texto entra detrás, así que el bloque se lee como un solo gesto. */
+.eyebrowLine {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Sin `transform` inicial: si nadie anima (movimiento reducido, o sin JS) la
+   regla tiene que estar ya dibujada. anime la arranca desde scaleX(0). */
+.eyebrowRule {
+  width: 2.25rem;
+  height: 1px;
+  flex: 0 0 auto;
+  background: var(--brand-celeste);
+  transform-origin: left center;
+}
+
 .eyebrow {
   font-size: 0.68rem;
   font-weight: 700;
@@ -53,7 +71,7 @@
 
 .headline {
   display: flex;
-  max-width: 15ch;
+  max-width: 18ch;
   flex-direction: column;
   margin-top: 1.15rem;
   font-family: var(--font-heading), sans-serif;
@@ -62,6 +80,16 @@
   letter-spacing: -0.035em;
   line-height: 0.96;
   text-wrap: balance;
+}
+
+/* `splitText` envuelve cada palabra en un span con `overflow: clip` cuya altura
+   es la caja de línea (0.96em). Los glifos sobresalen de esa caja, así que sin
+   este respiro la primera línea pierde ascendentes y descendentes (la `j` de
+   "job", la `p` de "empleo", la coma). El padding agranda solo el área de
+   recorte; el margen negativo lo devuelve al layout. */
+.headline span:has(> [data-word]) {
+  padding-block: 0.16em 0.22em;
+  margin-block: -0.16em -0.22em;
 }
 
 .headline strong {
@@ -101,10 +129,13 @@
   letter-spacing: 0.13em;
   line-height: 1;
   text-transform: uppercase;
+  /* Sin `transform`: el salto y el hundido de estos botones los lleva Motion
+     (ver `motion.ts`). Declararlo también aquí deja dos dueños del mismo valor
+     y la transición se come el muelle. */
   transition:
-    transform 180ms var(--ease-out),
     background-color 240ms var(--ease-out),
     border-color 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out),
     color 240ms var(--ease-out);
 }
 
@@ -116,7 +147,7 @@
 
 .primaryCta:hover {
   background: white;
-  transform: translateY(-2px);
+  box-shadow: 0 18px 42px -20px rgba(116, 195, 213, 0.95);
 }
 
 .secondaryCta {
@@ -127,13 +158,23 @@
 .secondaryCta:hover {
   border-color: rgba(116, 195, 213, 0.7);
   background: rgba(116, 195, 213, 0.08);
-  transform: translateY(-2px);
 }
 
 .primaryCta:focus-visible,
 .secondaryCta:focus-visible {
   outline: 2px solid var(--brand-celeste);
   outline-offset: 4px;
+}
+
+/* Capa que mueve el parallax de scroll. Existe para que GSAP escriba el
+   `transform` AQUÍ y no en `.board`, donde anime.js ya anima el barrido y las
+   filas: un contenedor aparte es lo que mantiene un solo dueño por nodo. */
+.stage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  will-change: transform;
 }
 
 /* Panel del hero. Superficie de cristal sobre la tinta, esquina de 16px y un
