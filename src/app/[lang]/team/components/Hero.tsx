@@ -11,14 +11,14 @@ import styles from "./Hero.module.css";
 
 const COPY = {
   en: {
-    title: ["Four departments.", "One coordinated operation."],
+    title: ["Six departments.", "One coordinated operation."],
     lead: "Our team is organized around clear responsibilities, so operations, technology, people and finance move in the same direction.",
     explore: "Explore the departments",
     talk: "Talk to us",
     peopleLabel: "The people behind the operation — Center Quest team at work.",
   },
   es: {
-    title: ["Cuatro departamentos.", "Una operación coordinada."],
+    title: ["Seis departamentos.", "Una operación coordinada."],
     lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que las operaciones, la tecnología, la gente y las finanzas avancen en una misma dirección.",
     explore: "Explorar los departamentos",
     talk: "Hablemos",
@@ -54,7 +54,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </div>
         </motion.div>
 
-        {/* El mapa de los cuatro departamentos vivía aquí; ahora lo cuenta el
+        {/* El mapa de los departamentos vivía aquí; ahora lo cuenta el
             organigrama de abajo, que es su sitio natural. El hero enseña a la
             gente. */}
         <PhotoDeck reduced={reduced} label={t.peopleLabel} />

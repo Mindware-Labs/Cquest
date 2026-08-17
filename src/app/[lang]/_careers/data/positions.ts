@@ -10,7 +10,7 @@ import type { Position } from "./types";
 export const POSITIONS: readonly Position[] = [
   {
     slug: "agente-de-servicio-al-cliente",
-    department: "operations",
+    department: "customer-experience",
     track: "entry",
     icon: "headset",
     title: { en: "Customer Service Agent", es: "Agente de Servicio al Cliente" },
@@ -41,7 +41,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "agente-de-ventas",
-    department: "operations",
+    department: "customer-experience",
     track: "entry",
     icon: "trend",
     title: { en: "Sales Agent", es: "Agente de Ventas" },
@@ -71,7 +71,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "agente-de-cobros",
-    department: "operations",
+    department: "customer-experience",
     track: "entry",
     icon: "banknote",
     title: { en: "Collections Agent", es: "Agente de Cobros" },
@@ -100,7 +100,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "agente-bilingue",
-    department: "operations",
+    department: "customer-experience",
     track: "entry",
     icon: "messages",
     title: { en: "Bilingual Agent (ES/EN)", es: "Agente Bilingüe (ES/EN)" },
@@ -128,7 +128,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "supervisor-de-operaciones",
-    department: "operations",
+    department: "business-operations",
     track: "professional",
     icon: "workflow",
     title: { en: "Operations Supervisor", es: "Supervisor de Operaciones" },
@@ -157,7 +157,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "analista-de-calidad",
-    department: "operations",
+    department: "quality-assurance",
     track: "professional",
     icon: "clipboard-check",
     title: { en: "Quality Analyst", es: "Analista de Calidad" },
@@ -186,7 +186,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "analista-workforce",
-    department: "operations",
+    department: "business-operations",
     track: "professional",
     icon: "chart",
     title: { en: "Workforce Analyst (WFM)", es: "Analista de Workforce (WFM)" },
@@ -214,7 +214,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "desarrollador-full-stack",
-    department: "technology",
+    department: "technology-innovation",
     track: "professional",
     icon: "code",
     title: { en: "Full Stack Developer", es: "Desarrollador Full Stack" },
@@ -242,7 +242,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "auxiliar-de-contabilidad",
-    department: "accounting",
+    department: "back-office",
     track: "professional",
     icon: "banknote",
     title: { en: "Accounting Assistant", es: "Auxiliar de Contabilidad" },
@@ -272,7 +272,7 @@ export const POSITIONS: readonly Position[] = [
   },
   {
     slug: "especialista-de-reclutamiento",
-    department: "human-resources",
+    department: "human-capital",
     track: "professional",
     icon: "userplus",
     title: { en: "Recruitment Specialist", es: "Especialista de Reclutamiento" },

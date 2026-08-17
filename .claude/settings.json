@@ -7,7 +7,10 @@
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(python shot.py)",
       "Bash(python shot2.py)",
-      "Bash(python shot3.py)"
+      "Bash(python shot3.py)",
+      "Bash(git --no-pager grep -n \"title:\\\\|department:\" 5513f20 -- \"src/app/[lang]/_careers/data/positions.ts\")",
+      "PowerShell(npx next build 2>&1)",
+      "PowerShell(npx tsc --noEmit -p tsconfig.json)"
     ]
   }
 }

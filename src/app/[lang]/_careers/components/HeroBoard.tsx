@@ -9,11 +9,11 @@ import { DEPARTMENTS } from "../../team/data";
 import styles from "./Hero.module.css";
 
 const COPY = {
-  en: { title: "Where we hire", note: "Four departments, one operation" },
-  es: { title: "Dónde contratamos", note: "Cuatro departamentos, una operación" },
+  en: { title: "Where we hire", note: "Six departments, one operation" },
+  es: { title: "Dónde contratamos", note: "Seis departamentos, una operación" },
 };
 
-/* Las CUATRO áreas reales, sin conteos: el panel dice dónde hay trabajo, no
+/* Las SEIS áreas reales, sin conteos: el panel dice dónde hay trabajo, no
    cuánto — el número de vacantes vive en el listado, que es donde se puede
    verificar. El contenido sale de team/data.ts, la misma fuente del
    organigrama, así que un departamento nuevo aparece aquí solo. */
