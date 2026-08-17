@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EASE_OUT } from "@/components/services/motion";
 import styles from "./PhotoDeck.module.css";
@@ -77,6 +78,17 @@ const ENTRANCE_TRANSITION = { duration: 0.95, ease: EASE_OUT } as const;
 const ENTRANCE_DELAY_S = 0.24;
 const ENTRANCE_STAGGER_S = 0.11;
 
+/* Cuánto hay que arrastrar, en anchos del cuadro central, para que la baraja
+   pase de foto. Por debajo de esto la escena vuelve a su sitio: un roce al
+   hacer scroll no tiene que cambiar nada. */
+const DRAG_THRESHOLD = 0.18;
+
+/* El escenario no sigue al dedo uno a uno: acompaña a media máquina y con tope.
+   Un arrastre elástico deja claro que la escena se agarra sin dejar que se
+   despegue del hero. */
+const DRAG_FOLLOW = 0.45;
+const DRAG_MAX = 0.22;
+
 /* Postura de cada puesto. `slot` es la distancia al centro con signo: -1 el de
    la izquierda, 0 el de cara, +1 el de la derecha, ±2 el tramo que no se ve.
    Solo cambian el corrimiento lateral y el tamaño —nada de rotaciones—, así que
@@ -135,6 +147,17 @@ export default function PhotoDeck({
   /* False durante el primer render y true en cuanto el efecto corre: separa la
      puesta en escena del giro normal, que usan curvas distintas. */
   const [entered, setEntered] = useState(false);
+  /* Hacia dónde va el ciclo: +1 el avance de siempre (entra por la izquierda,
+     sale por la derecha) y -1 el que se pide arrastrando al revés. De acá salen
+     los puestos de entrada y salida, porque un cuadro que retrocede tiene que
+     irse por donde vino. */
+  const [direction, setDirection] = useState(1);
+  /* Cuánto se corrió el escenario con el dedo encima, en píxeles ya amortiguados. */
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  /* Dónde empezó el gesto y si ya se decidió que es horizontal. En ref y no en
+     estado: cambia en cada `pointermove` y no pinta nada por sí mismo. */
+  const gesture = useRef<{ id: number; x: number; y: number; axis: "" | "x" | "y" } | null>(null);
 
   const stage = useRef<HTMLDivElement>(null);
   /* Ancho de partida razonable para el render del servidor; el observador lo
@@ -153,7 +176,18 @@ export default function PhotoDeck({
   const cardHeight = cardWidth * CARD_ASPECT;
 
   const advance = useCallback(() => {
+    setDirection(1);
     setOrder((current) => [...current.slice(1), current[0]]);
+  }, []);
+
+  /* El paso al revés: el último de la baraja vuelve al frente de la cola, así
+     que la foto que acababa de salir es la que reaparece. */
+  const retreat = useCallback(() => {
+    setDirection(-1);
+    setOrder((current) => [
+      current[current.length - 1],
+      ...current.slice(0, -1),
+    ]);
   }, []);
 
   /* El cambio de régimen espera a que termine el último cuadro en entrar. Si se
@@ -168,8 +202,11 @@ export default function PhotoDeck({
     return () => clearTimeout(timer);
   }, []);
 
+  /* `dragging` en las dependencias hace dos cosas de una: para el reloj
+     mientras la mano manda y, al soltar, lo vuelve a arrancar desde cero — si
+     no, el avance automático podía caer justo encima del paso manual. */
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || dragging) return;
     let timer: ReturnType<typeof setInterval> | undefined;
 
     const start = () => {
@@ -191,11 +228,70 @@ export default function PhotoDeck({
       stop();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [advance, reduced]);
+  }, [advance, reduced, dragging]);
+
+  const onPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    /* Solo el botón principal: con el secundario se abre el menú del navegador
+       y el gesto quedaría colgado sin su `pointerup`. */
+    if (event.button !== 0) return;
+    gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY, axis: "" };
+  }, []);
+
+  const onPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const start = gesture.current;
+      if (!start || start.id !== event.pointerId) return;
+
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+
+      /* Hasta que el gesto no se define no se roba nada: si el dedo va más
+         hacia abajo que hacia el costado, es scroll y la baraja se aparta. */
+      if (start.axis === "") {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        start.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+        if (start.axis === "x") {
+          /* Capturar el puntero es lo que hace que el gesto siga vivo cuando la
+             mano se sale del escenario a mitad de arrastre. */
+          event.currentTarget.setPointerCapture(event.pointerId);
+          setDragging(true);
+        }
+      }
+      if (start.axis !== "x") return;
+
+      const limit = cardWidth * DRAG_MAX;
+      setDragOffset(Math.max(-limit, Math.min(limit, dx * DRAG_FOLLOW)));
+    },
+    [cardWidth],
+  );
+
+  const endDrag = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const start = gesture.current;
+      gesture.current = null;
+      if (!start || start.id !== event.pointerId) return;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      setDragOffset(0);
+      setDragging(false);
+      if (start.axis !== "x") return;
+
+      const dx = event.clientX - start.x;
+      if (Math.abs(dx) < cardWidth * DRAG_THRESHOLD) return;
+      /* Los cuadros se corren hacia la derecha cuando el ciclo avanza, así que
+         arrastrar en ese sentido es pedir la foto siguiente. */
+      if (dx > 0) advance();
+      else retreat();
+    },
+    [advance, cardWidth, retreat],
+  );
 
   const visible = order.slice(0, VISIBLE);
-  const enterPose = slotPose(-2, cardWidth);
-  const exitPose = slotPose(2, cardWidth);
+  /* Entra por el lado opuesto al que sale, y ambos se dan vuelta cuando el
+     ciclo va marcha atrás. */
+  const enterPose = slotPose(-2 * direction, cardWidth);
+  const exitPose = slotPose(2 * direction, cardWidth);
 
   return (
     <div
@@ -203,12 +299,25 @@ export default function PhotoDeck({
       role="img"
       aria-label={label}
       data-hovered={hovered ? "true" : "false"}
+      data-dragging={dragging ? "true" : "false"}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
     >
       <span aria-hidden className={styles.glow} />
 
-      <div ref={stage} className={styles.stage} style={{ height: Math.round(cardHeight) }}>
+      <div
+        ref={stage}
+        className={styles.stage}
+        data-dragging={dragging ? "true" : "false"}
+        style={{
+          height: Math.round(cardHeight),
+          transform: dragOffset === 0 ? undefined : `translate3d(${dragOffset}px, 0, 0)`,
+        }}
+      >
         {/* `initial` habilitado: es lo que hace que la escena se anime también
             en la carga y no aparezca de golpe bajo un titular que sí entra. */}
         <AnimatePresence>

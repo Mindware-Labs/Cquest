@@ -4,6 +4,17 @@
   position: relative;
   inline-size: min(100%, 40rem);
   margin-inline: auto;
+  /* La escena se agarra: el cursor lo anuncia antes de que nadie lo intente. */
+  cursor: grab;
+  /* Arrastrar de lado mueve la baraja; arrastrar hacia arriba sigue haciendo
+     scroll, que es lo que espera cualquiera en un móvil. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.deck[data-dragging="true"] {
+  cursor: grabbing;
 }
 
 /* Halo del mismo celeste del hero: despega la escena del fondo sin encerrarla
@@ -22,6 +33,15 @@
 .stage {
   position: relative;
 }
+
+/* El arrastre en vivo mueve el escenario entero, no cada cuadro: los cuadros ya
+   tienen su `x` en manos de motion y pelearse con él haría saltar la escena.
+   Sin transición mientras se arrastra —el dedo manda— y con una corta al
+   soltar, que es la que devuelve la escena a su sitio. */
+.stage[data-dragging="false"] {
+  transition: transform 420ms var(--ease-out);
+}
+
 
 /* Cada cuadro se coloca desde el centro del escenario; el ancho, el alto y los
    márgenes de centrado los fija el componente, porque son los mismos números de
@@ -47,6 +67,10 @@
    vive la transición que lo lleva de un valor al otro cuando avanza. */
 .photo {
   object-fit: cover;
+  /* La foto es lo primero que el navegador ofrece arrastrar como archivo; sin
+     esto el gesto se convierte en un drag-and-drop de imagen a mitad de camino. */
+  -webkit-user-drag: none;
+  pointer-events: none;
   /* Atada al avance del aro (ADVANCE_TRANSITION): si el reencuadre dura más que
      el giro, el cuadro ya llegó al centro y sigue acomodando la foto. El zoom
      lateral (SIDE_ZOOM) viaja con la misma curva para que no se note el salto
