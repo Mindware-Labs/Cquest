@@ -54,9 +54,6 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </div>
         </motion.div>
 
-        {/* El mapa de los departamentos vivía aquí; ahora lo cuenta el
-            organigrama de abajo, que es su sitio natural. El hero enseña a la
-            gente. */}
         <PhotoDeck reduced={reduced} label={t.peopleLabel} />
       </div>
     </header>
