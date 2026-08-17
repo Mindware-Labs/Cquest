@@ -11,9 +11,9 @@ export type Department = {
   responsibilities: readonly LocalizedText[];
 };
 
-/* Los SEIS departamentos de Center Quest. Esta es la fuente única: la
-   alimentan el organigrama de /team y el panel de áreas de /careers, así que
-   una vacante no puede pertenecer a un área que la empresa no tiene. */
+/* Los SEIS departamentos reales de Center Quest. Esta es la fuente única:
+   la alimentan el organigrama de /team y el filtro por área de /careers, así
+   que una vacante no puede pertenecer a un área que la empresa no tiene. */
 export const DEPARTMENTS: readonly Department[] = [
   {
     id: "customer-experience",
@@ -27,10 +27,10 @@ export const DEPARTMENTS: readonly Department[] = [
       es: "Experiencia del Cliente",
     },
     responsibilities: [
-      { en: "Customer Support", es: "Soporte al Cliente" },
-      { en: "Contact Center", es: "Centro de Contacto" },
-      { en: "Help Desk", es: "Mesa de Ayuda" },
-      { en: "Complaint Management", es: "Gestión de Reclamos" },
+      { en: "Inbound Customer Support", es: "Soporte Inbound al Cliente" },
+      { en: "Sales & Outbound Campaigns", es: "Ventas y Campañas Outbound" },
+      { en: "Collections & Recovery", es: "Cobros y Recuperación de Cartera" },
+      { en: "Onboarding & Retention", es: "Onboarding y Retención" },
     ],
   },
   {
@@ -45,10 +45,10 @@ export const DEPARTMENTS: readonly Department[] = [
       es: "Operaciones de Negocio",
     },
     responsibilities: [
-      { en: "Operations Management", es: "Gestión Operativa" },
-      { en: "Process Optimization", es: "Optimización de Procesos" },
       { en: "Workforce Management", es: "Gestión de la Fuerza Laboral" },
-      { en: "KPIs & Reporting", es: "KPIs e Informes" },
+      { en: "SLA & Capacity Planning", es: "Planificación de SLAs y Capacidad" },
+      { en: "Operational Reporting", es: "Reportes Operativos" },
+      { en: "Continuous Improvement", es: "Mejora Continua" },
     ],
   },
   {
@@ -59,14 +59,14 @@ export const DEPARTMENTS: readonly Department[] = [
       es: "Departamento de Servicios de Back Office",
     },
     shortLabel: {
-      en: "Back Office Services",
-      es: "Servicios de Back Office",
+      en: "Back Office",
+      es: "Back Office",
     },
     responsibilities: [
-      { en: "Administrative Processing", es: "Procesamiento Administrativo" },
-      { en: "Data Entry", es: "Entrada de Datos" },
-      { en: "Billing Support", es: "Soporte de Facturación" },
+      { en: "Data Processing & Entry", es: "Procesamiento y Captura de Datos" },
       { en: "Document Management", es: "Gestión Documental" },
+      { en: "Billing & Accounts Receivable", es: "Facturación y Cuentas por Cobrar" },
+      { en: "Administrative Support", es: "Soporte Administrativo" },
     ],
   },
   {
@@ -99,10 +99,10 @@ export const DEPARTMENTS: readonly Department[] = [
       es: "Aseguramiento de Calidad",
     },
     responsibilities: [
-      { en: "QA", es: "QA" },
-      { en: "Audits", es: "Auditorías" },
-      { en: "Monitoring", es: "Monitoreo" },
-      { en: "Continuous Improvement", es: "Mejora Continua" },
+      { en: "Call & Interaction Monitoring", es: "Monitoreo de Llamadas e Interacciones" },
+      { en: "Quality Scoring & Calibration", es: "Evaluación y Calibración de Calidad" },
+      { en: "Compliance & Protocols", es: "Cumplimiento y Protocolos" },
+      { en: "Coaching & Feedback", es: "Coaching y Retroalimentación" },
     ],
   },
   {
