@@ -20,7 +20,7 @@ export const SERVICE_DETAIL_PAGES = [
 export const DARK_HERO_PAGES = [
   ...SERVICE_DETAIL_PAGES,
   "/team",
-  "/careers",
+  // "/careers",
   "/partnerships/mindware-labs",
 
   "/location",
@@ -31,14 +31,14 @@ export const DARK_HERO_PAGES = [
    una página por vacante, así que la lista de match exacto no puede
    enumerarlas — y una vacante con el navbar claro sobre su hero oscuro pone
    los links encima de su propio color. */
-const DARK_HERO_TREES = ["/careers/"] as const;
+const DARK_HERO_TREES: readonly string[] = [/* "/careers/" */];
 
 /* True en cualquier página que abra con hero oscuro a sangre completa.
    /careers/apply queda deliberadamente fuera: es un formulario sobre
    superficie clara y conserva el navbar normal. */
 export function isDarkHeroPage(pathname: string): boolean {
   if ((DARK_HERO_PAGES as readonly string[]).includes(pathname)) return true;
-  if (pathname === "/careers/apply") return false;
+  // if (pathname === "/careers/apply") return false;
   return DARK_HERO_TREES.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -65,12 +65,13 @@ export function getServiceChildren(dict: Dictionary, lang: Locale): readonly Nav
       description: service.strapline[lang],
       icon: SERVICE_ICON[service.id],
     })),
-    {
-      label: dict.nav.careers,
-      href: "/careers",
-      description: dict.nav.careersStrapline,
-      icon: "userplus" as ServiceIconName,
-    },
+    // Empleos fuera de esta entrega (ver src/app/[lang]/_careers).
+    // {
+    //   label: dict.nav.careers,
+    //   href: "/careers",
+    //   description: dict.nav.careersStrapline,
+    //   icon: "userplus" as ServiceIconName,
+    // },
   ];
 }
 
@@ -151,13 +152,13 @@ export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<strin
        de careers lo recibe: una vacante (/careers/<slug>) no tiene índice de
        secciones que valga la pena navegar, así que cae en los links sitewide,
        donde "Empleos" es el camino de vuelta al listado. */
-    "/careers": [
-      home,
-      { label: dict.serviceSections.careers.culture, href: "#culture" },
-      { label: dict.serviceSections.careers.openings, href: "#openings" },
-      { label: dict.serviceSections.careers.process, href: "#process" },
-      { label: dict.serviceSections.careers.faq, href: "#faq" },
-    ],
+    // "/careers": [
+    //   home,
+    //   { label: dict.serviceSections.careers.culture, href: "#culture" },
+    //   { label: dict.serviceSections.careers.openings, href: "#openings" },
+    //   { label: dict.serviceSections.careers.process, href: "#process" },
+    //   { label: dict.serviceSections.careers.faq, href: "#faq" },
+    // ],
 
     "/partnerships/mindware-labs": [
       {

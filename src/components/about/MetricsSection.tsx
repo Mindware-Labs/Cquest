@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useCallback, useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
@@ -18,13 +19,13 @@ const COPY = {
     eyebrow: "Our team",
     heading: "The team behind the operation.",
     cta: "Meet the team",
-    photoLabel: "Team photo — coming soon",
+    photoAlt: "The Center Quest team outside the company's Santo Domingo offices.",
   },
   es: {
     eyebrow: "Nuestro equipo",
     heading: "El equipo detrás de la operación.",
     cta: "Conoce al equipo",
-    photoLabel: "Fotografía del equipo — próximamente",
+    photoAlt: "El equipo de Center Quest frente a las oficinas de la empresa en Santo Domingo.",
   },
 };
 
@@ -116,21 +117,19 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
               <span aria-hidden className={styles.photoFrameCorner} data-corner="tr" />
               <span aria-hidden className={styles.photoFrameCorner} data-corner="bl" />
               <span aria-hidden className={styles.photoFrameCorner} data-corner="br" />
-              <svg
-                aria-hidden
-                className={styles.photoFrameIcon}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="4.5" width="18" height="15" rx="1.5" />
-                <circle cx="8.5" cy="10" r="1.75" />
-                <path d="M21 15.5 15.6 10.6a1.6 1.6 0 0 0-2.15.02L6 17" />
-              </svg>
-              <span className={styles.photoFrameLabel}>{t.photoLabel}</span>
+              {/* `sizes` pide deliberadamente más de los 40rem que mide el
+                  marco: sobremuestrear deja el retrato nítido al hacer zoom o
+                  en pantallas de alta densidad, donde el candidato justo se ve
+                  blando. El origen tiene 2528px de ancho, así que hay material
+                  de sobra para servirlo. */}
+              <Image
+                src="/Personal/FotoGrupal.jpg"
+                alt={t.photoAlt}
+                fill
+                quality={92}
+                className={styles.photo}
+                sizes="(max-width: 64rem) 100vw, 60rem"
+              />
             </motion.div>
           </div>
         </div>

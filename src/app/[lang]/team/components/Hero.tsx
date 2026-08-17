@@ -1,14 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
-import ServiceIcon from "@/components/services/ServiceIcon";
 import { EASE_OUT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { DEPARTMENTS } from "../data";
+import PhotoDeck from "./PhotoDeck";
 import styles from "./Hero.module.css";
 
 const COPY = {
@@ -17,16 +15,14 @@ const COPY = {
     lead: "Our team is organized around clear responsibilities, so operations, technology, people and finance move in the same direction.",
     explore: "Explore the departments",
     talk: "Talk to us",
-    mapMeta: "Operating structure",
-    mapStatus: "4 connected departments",
+    peopleLabel: "The people behind the operation — Center Quest team at work.",
   },
   es: {
     title: ["Cuatro departamentos.", "Una operación coordinada."],
     lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que las operaciones, la tecnología, la gente y las finanzas avancen en una misma dirección.",
     explore: "Explorar los departamentos",
     talk: "Hablemos",
-    mapMeta: "Estructura operativa",
-    mapStatus: "4 departamentos conectados",
+    peopleLabel: "La gente detrás de la operación — el equipo de Center Quest en su día a día.",
   },
 };
 
@@ -58,36 +54,10 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </div>
         </motion.div>
 
-        <div className={styles.systemMap} aria-label={t.mapStatus}>
-          <div className={styles.mapHeader}>
-            <span className={styles.mapIdentity}>
-              <Image
-                src="/logo.png"
-                alt="Center Quest"
-                width={692}
-                height={512}
-                sizes="66px"
-                className={styles.mapLogo}
-              />
-              <span>{t.mapMeta}</span>
-            </span>
-            <span className={styles.mapStatus}>
-              <span aria-hidden className={styles.statusDot} />
-              {t.mapStatus}
-            </span>
-          </div>
-
-          <ul className={styles.mapGrid}>
-            {DEPARTMENTS.map((department) => (
-              <li key={department.id} className={styles.mapNode}>
-                <span className={styles.mapIcon}>
-                  <ServiceIcon name={department.icon} />
-                </span>
-                <span>{department.shortLabel[lang]}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* El mapa de los cuatro departamentos vivía aquí; ahora lo cuenta el
+            organigrama de abajo, que es su sitio natural. El hero enseña a la
+            gente. */}
+        <PhotoDeck reduced={reduced} label={t.peopleLabel} />
       </div>
     </header>
   );

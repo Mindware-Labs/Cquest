@@ -1,0 +1,160 @@
+/* La pila no llena su columna: una carta chica rodeada de aire lee como objeto
+   suelto flotando en el hero, que es el efecto buscado. Ancho completo la
+   convertiría otra vez en un panel. */
+/* `inline-size` explícito, no solo `max-inline-size`: los márgenes automáticos
+   anulan el estirado por defecto de un ítem de rejilla, así que con ancho auto
+   la pila se encogía a su contenido y el escenario —que saca su alto de un
+   aspect-ratio— colapsaba a cero. */
+.deck {
+  position: relative;
+  inline-size: min(100%, 26rem);
+  margin-inline: auto;
+}
+
+/* Halo del mismo celeste del hero: despega la pila del fondo sin encerrarla en
+   un marco, que es lo que mataría la sensación de objeto suelto. */
+.glow {
+  position: absolute;
+  inset: -14% -10%;
+  pointer-events: none;
+  background: radial-gradient(56% 54% at 50% 52%, rgba(116, 195, 213, 0.2), transparent 70%);
+}
+
+.stage {
+  position: relative;
+  /* La perspectiva vive en el contenedor, no en las cartas: declarada carta por
+     carta, cada una tendría su propio punto de fuga y la pila se desarma. */
+  /* Perspectiva corta: cuanto menor es el valor, más abre el cono de fuga y más
+     se nota que las cartas vienen hacia la pantalla. A 1400px el recorrido en Z
+     casi no se leía. */
+  perspective: 900px;
+  perspective-origin: 50% 42%;
+  transform-style: preserve-3d;
+  /* El alto lo fija el escenario porque las cartas son absolutas; el 4/3 es la
+     proporción del recorte que reciben los retratos. */
+  aspect-ratio: 4 / 3;
+  /* Aire arriba para las cuatro cartas de fondo, que asoman escalonadas por
+     encima de la frontal, y a la derecha para la que sale de la pila. */
+  margin-block-start: 8.5rem;
+  margin-inline-end: 1.5rem;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(7, 20, 27, 0.85);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.05) inset,
+    0 40px 80px -40px rgba(0, 0, 0, 0.95);
+  /* El eje de giro va en el borde inferior, no en el centro: es lo que hace que
+     la carta bascule como un cangilón de la rueda en vez de girar sobre sí
+     misma como una moneda. */
+  transform-origin: 50% 100%;
+  will-change: transform, opacity, filter;
+}
+
+/* El encuadre lo fija cada carta según su profundidad (ver PhotoDeck.tsx); acá
+   solo vive la transición que lo lleva de un valor al otro cuando la carta
+   avanza un puesto en la rueda. */
+.photo {
+  object-fit: cover;
+  /* Atada al avance de la rueda (ADVANCE_TRANSITION): si el reencuadre dura más
+     que el giro, la carta ya llegó al frente y sigue acomodando la foto. */
+  transition: object-position 520ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo {
+    transition: none;
+  }
+}
+
+/* Velo que integra las fotos con el hero oscuro. Se levanta con el puntero
+   encima: la rueda no se detiene, pero devuelve el color pleno mientras la
+   miran. */
+.sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Casi nada de oscurecido arriba: de las cartas de fondo solo asoma esa
+     franja superior, y ahí el velo las apagaba hasta volverlas losas grises.
+     El peso del velo se va al pie, que es lo que tapa la frontal. */
+  background:
+    linear-gradient(180deg, rgba(7, 17, 22, 0.08) 0%, transparent 30%, rgba(7, 17, 22, 0.58) 100%),
+    linear-gradient(135deg, rgba(116, 195, 213, 0.16), transparent 58%);
+  transition: opacity 480ms var(--ease-out);
+}
+
+.deck[data-hovered="true"] .sheen {
+  opacity: 0.25;
+}
+
+/* Filo interior de un pixel: es lo que hace que la carta se lea como una
+   lámina física y no como una imagen pegada al fondo. */
+.edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 1px rgba(116, 195, 213, 0.12);
+  transition: border-color 480ms var(--ease-out);
+}
+
+.deck[data-hovered="true"] .edge {
+  border-color: rgba(116, 195, 213, 0.45);
+}
+
+.progress {
+  position: relative;
+  block-size: 1px;
+  margin-block-start: 1.75rem;
+  margin-inline-end: 1.5rem;
+  background: rgba(116, 195, 213, 0.16);
+  overflow: hidden;
+}
+
+.progressBar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  inline-size: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(116, 195, 213, 0.35), var(--brand-celeste));
+  animation-name: fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* Escala en vez de `width`: el ancho recalcula layout en cada cuadro, la
+   transformada la resuelve el compositor. */
+@keyframes fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (max-width: 70rem) {
+  .stage {
+    margin-block-start: 4rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .stage {
+    margin-block-start: 2rem;
+    margin-inline-end: 1rem;
+  }
+
+  .progress {
+    margin-inline-end: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen,
+  .edge {
+    transition: none;
+  }
+}
