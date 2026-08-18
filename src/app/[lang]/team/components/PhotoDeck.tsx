@@ -105,12 +105,26 @@ export default function PhotoDeck({
                       /* Faces sit above centre in these frames; the default
                          centre crop cuts foreheads on a portrait tile. */
                       style={{ objectPosition: "center 38%" }}
-                      /* 70rem is where Hero.module.css collapses to one column
-                         and the wall goes full-bleed — three tiles plus gaps
-                         across the viewport is roughly 32vw each. Above it the
-                         wall sits in the 1.22fr column of an 84rem container,
-                         which works out to about 16rem per tile. */
-                      sizes="(max-width: 70rem) 32vw, 16rem"
+                      /* `sizes` describes the width of the DECODED image, not
+                         the width of the tile — and with `object-fit: cover`
+                         those are not the same number. Every source is 3:2
+                         landscape (1186×791) and the tile is 4/5 portrait, so
+                         `cover` matches on HEIGHT and lets the sides hang off
+                         frame: the browser paints the photo at
+                         tile_height × 3/2 = tile_width × 5/4 × 3/2 = tile_width
+                         × 1.875, and only the middle 53% of that is visible.
+
+                         The old values described the tile (16rem / 32vw), so
+                         the browser downloaded a 256px-wide file and then had
+                         to blow it up to ~437px to perform the crop. That 1.7×
+                         upscale is the pixelation — the tiles were never short
+                         of source pixels, they were short of DOWNLOADED ones.
+
+                         So: tile × 1.875. Above 70rem the wall is the 1.14fr
+                         column of an 84rem container ≈ 15rem per tile → 28rem.
+                         Below it the wall goes full-bleed and three tiles plus
+                         gaps are ~31vw each → 58vw. */
+                      sizes="(max-width: 70rem) 58vw, 28rem"
                       /* Only the top row is above the fold on load; the rest
                          can wait rather than compete with the headline. */
                       priority={!isCopy && position === 0}

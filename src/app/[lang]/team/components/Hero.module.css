@@ -27,28 +27,45 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(36rem, 1.22fr);
+  /* El suelo del muro era 36rem. Por debajo de ~76rem de viewport ese suelo
+     dejaba de repartir y le comía ancho a la columna de texto, justo donde el
+     titular en español ya venía apretado. 28rem sigue dando tres tiles
+     legibles y deja que el reparto lo hagan las fracciones. */
+  grid-template-columns: minmax(0, 0.86fr) minmax(28rem, 1.14fr);
   align-items: center;
   gap: clamp(3rem, 5vw, 5rem);
 }
 
 .copy {
+  /* El titular se dimensiona contra ESTA columna, no contra el viewport. Con
+     `vw` el contenedor topaba en 84rem mientras la fuente seguía creciendo:
+     pasados los ~1400px "departamentos." se salía de su columna y se montaba
+     encima del muro de fotos. Con `cqi` el ancho de referencia es el mismo
+     que tiene que caber, así que no puede desbordar por ancha que sea la
+     pantalla. */
+  container-type: inline-size;
   display: flex;
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
 }
 
+/* El 15cqi sale del propio max-width: en Josefin Sans 12ch son ~6.36em, o sea
+   que la caja del titular mide 6.36 × font-size. Para que quepa en la columna
+   hace falta font-size ≤ ancho / 6.36 = 15.7cqi; 15 deja el margen. */
 .headline {
   display: flex;
   flex-direction: column;
   max-width: 12ch;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(3.15rem, 5.2vw, 5.5rem);
+  font-size: clamp(3.15rem, 15cqi, 5.5rem);
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 0.96;
   text-wrap: balance;
+  /* Red de seguridad: ninguna palabra suelta puede invadir el muro de fotos,
+     tampoco en un idioma con palabras más largas que las de estas dos copias. */
+  overflow-wrap: break-word;
 }
 
 .headline strong {
