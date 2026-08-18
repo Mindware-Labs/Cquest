@@ -19,8 +19,6 @@ export default function SiteFooter() {
   const reduced = useReducedMotion() ?? false;
   const pathname = useLocalizedPathname();
 
-  /* Algunas rutas cierran con su propio bloque de contacto y no quieren un
-     segundo cierre encima. */
   const footerHidden = (NO_FOOTER_PAGES as readonly string[]).includes(pathname);
 
   const footerRef = useRef<HTMLElement>(null);
