@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Josefin_Sans } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import "../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import RouteTransition from "@/components/RouteTransition";
@@ -29,6 +29,11 @@ const SITE_DESCRIPTION: Record<Locale, string> = {
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
+/* El ID del contenedor viaja en el HTML servido: no es secreto. Va con default
+   en el código para que el tag no dependa de configurar el entorno en cada
+   despliegue, pero el env manda si hace falta apuntar a otro contenedor. */
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MZVHNCDV";
 
 const SITE_TITLE: Record<Locale, string> = {
   en: "Center Quest — Call Center, Operations & Systems Development",
@@ -90,7 +95,18 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       className={`${josefin.variable} h-full antialiased`}
     >
+      {/* Antes de <body>: el contenedor arranca lo más arriba posible. */}
+      <GoogleTagManager gtmId={GTM_ID} />
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {/* Respaldo sin JS: el paso 2 del instalador de GTM. */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         {/* El negocio y el sitio, con @id estables: el resto de páginas cuelgan
             sus nodos de estos dos por referencia en vez de repetirlos. */}
         <JsonLd data={graph(organizationNode(lang), websiteNode(lang))} />
