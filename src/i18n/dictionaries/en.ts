@@ -10,6 +10,8 @@ export const dictionary: Dictionary = {
     services: "Services",
     sectors: "Sectors",
     team: "Team",
+    careers: "Careers",
+    careersStrapline: "Open positions and talent pool",
     contact: "Contact",
     home: "Home",
     overview: "Overview",
@@ -23,6 +25,7 @@ export const dictionary: Dictionary = {
     bpo: { disciplines: "Disciplines", method: "Method", slas: "SLAs", facilities: "Facilities" },
     systems: { capabilities: "Capabilities", method: "Method", commitments: "Commitments", work: "Work" },
     team: { departments: "Departments" },
+    careers: { culture: "Why CQ", openings: "Openings", process: "Process", faq: "FAQ" },
   },
   footer: {
     tagline: "Call Center · Operations · Systems Development",
@@ -59,6 +62,7 @@ export const dictionary: Dictionary = {
     businessLinePrefix: "Business line",
     chooseServiceAriaLabel: "Choose service",
     explorePrefix: "Explore",
+    talkToTeam: "Talk to the team",
     linesEyebrow: "Three business lines",
   },
   wizard: {

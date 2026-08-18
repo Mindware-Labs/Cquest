@@ -9,7 +9,7 @@ export const ABOUT_METRICS: ReadonlyArray<{
 }> = [
   { id: "agents", value: 200, suffix: "+", label: { en: "Call center operators", es: "Operadores de call center" } },
   { id: "developers", value: 10, suffix: "", label: { en: "Specialized developers", es: "Programadores especializados" } },
-  { id: "clients", value: 10, suffix: "+", label: { en: "Active clients", es: "Clientes activos" } },
+  { id: "languages", value: 5, suffix: "+", label: { en: "Languages", es: "Idiomas" } },
   { id: "years", value: 8, suffix: "+", label: { en: "Years of experience", es: "Años de experiencia" } },
 ];
 

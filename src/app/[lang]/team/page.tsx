@@ -10,8 +10,8 @@ const TITLE: Record<Locale, string> = {
 };
 
 const DESCRIPTION: Record<Locale, string> = {
-  en: "Meet the six specialized departments behind Center Quest's customer experience, business operations, back office, technology, quality and human capital services.",
-  es: "Conoce los seis departamentos especializados detrás de los servicios de experiencia del cliente, operaciones, back office, tecnología, calidad y capital humano de Center Quest.",
+  en: "Meet the six departments behind Center Quest: Customer Experience, Business Operations, Back Office Services, Technology & Innovation, Quality Assurance and Human Capital.",
+  es: "Conoce los seis departamentos de Center Quest: Experiencia del Cliente, Operaciones de Negocio, Servicios de Back Office, Tecnología e Innovación, Aseguramiento de Calidad y Capital Humano.",
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {

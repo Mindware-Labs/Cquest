@@ -1,0 +1,139 @@
+/* ── The wall ────────────────────────────────────────────────────────────
+   Three columns of portraits, deliberately taller than the box that holds
+   them so they run off the top and bottom edges. The overflow is the point:
+   the eye takes the block for a fragment of something larger instead of
+   counting fifteen tiles. */
+/* Taller than the copy beside it, on purpose. At 52vh the band showed barely
+   a row and a half and the block read as six photographs; past roughly 60vh a
+   third row enters and the wall starts reading as a fragment of something that
+   continues past the frame, which is the whole idea.
+
+   The 66vh is bounded by the hero itself: `min-height: 100svh` less its
+   `padding-block` leaves about 77vh of usable band, so the wall grows into the
+   space it already had without pushing the hero taller. */
+.wall {
+  position: relative;
+  height: clamp(26rem, 66vh, 42rem);
+  overflow: hidden;
+}
+
+/* Same celeste as the rest of the hero, sitting behind the tiles so the block
+   lifts off the ink without being boxed in by a frame. */
+.glow {
+  position: absolute;
+  inset: -14% -6%;
+  pointer-events: none;
+  background: radial-gradient(52% 56% at 50% 50%, rgba(116, 195, 213, 0.18), transparent 70%);
+}
+
+.wallInner {
+  position: absolute;
+  /* Bleed past the masked band so the loop below always has tiles arriving
+     from off-frame instead of appearing at the edge. */
+  inset: -16% 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+
+/* Offset like brickwork so the three columns never line up into rows. */
+.wallColumn {
+  min-height: 0;
+}
+
+.wallColumn[data-column="1"] {
+  margin-top: 8%;
+}
+
+.wallColumn[data-column="2"] {
+  margin-top: -5%;
+}
+
+/* ── The loop ────────────────────────────────────────────────────────────
+   The travel used to be `alternate`: the columns ran to one end, stopped, and
+   came back. That stop is exactly what reads as a background animation. This
+   is a true loop instead — the track holds the tile set twice and slides up by
+   precisely one set, at which point the copy is sitting where the original
+   started and the restart is invisible. Linear timing, because any easing puts
+   a slow patch in the middle of a motion that must never appear to breathe.
+
+   `-50%` is only exact because the tiles space themselves with `margin-bottom`
+   rather than flex `gap`: with `gap`, the last tile of a pass carries no
+   trailing space, half a gap goes missing per cycle and the seam drifts. */
+.track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  animation: cq-wall-loop 46s linear infinite;
+}
+
+/* Opposed directions and three durations with no common factor, so the columns
+   never realign into the pattern they started from. */
+.wallColumn[data-column="1"] .track {
+  animation-duration: 58s;
+  animation-direction: reverse;
+}
+
+.wallColumn[data-column="2"] .track {
+  animation-duration: 52s;
+}
+
+@keyframes cq-wall-loop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.wallInner[data-still="true"] .track {
+  animation: none;
+}
+
+/* One frame. Opaque background rather than translucent: these PNGs may carry
+   alpha, and a see-through tile would show the column behind it through the
+   cut-out instead of only at the edges. */
+.tile {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 0.65rem;
+  overflow: hidden;
+  /* 4/5, not 3/4. Every source is a 3:2 landscape frame, and a 3/4 tile threw
+     away half its width to `cover` — the wall was showing 593 of 1186 real
+     pixels, stretched. 4/5 still reads as a portrait column but keeps a
+     noticeably wider slice of each photograph, which is where the apparent
+     sharpness comes from. Going wider still would break the column rhythm. */
+  aspect-ratio: 4 / 5;
+  border-radius: 2px;
+  background: #07141b;
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.05) inset,
+    0 18px 34px -22px rgba(0, 0, 0, 0.85);
+}
+
+/* Barely held back. The earlier saturate(0.9)/brightness(0.94) kept the wall
+   behind the headline, but it did it by dulling the faces — the top mask and
+   the vignette already do that job without touching the photographs. */
+.photo {
+  object-fit: cover;
+  filter: saturate(1.03) contrast(1.04);
+}
+
+/* Below 70rem the wall sits UNDER the copy instead of beside it, so its height
+   is added to the hero rather than absorbed by it. It still grows, but less —
+   past this the CTAs start getting pushed off the first screen. */
+@media (max-width: 70rem) {
+  .wall {
+    height: clamp(19rem, 46vh, 26rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
+}

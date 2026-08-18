@@ -1,32 +1,28 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
-import ServiceIcon from "@/components/services/ServiceIcon";
 import { EASE_OUT } from "@/components/services/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { DEPARTMENTS } from "../data";
+import PhotoDeck from "./PhotoDeck";
 import styles from "./Hero.module.css";
 
 const COPY = {
   en: {
     title: ["Six departments.", "One coordinated operation."],
-    lead: "Our team is organized around clear responsibilities, so customer experience, operations, technology, quality and talent move in the same direction.",
+    lead: "Our team is organized around clear responsibilities, so operations, technology, people and finance move in the same direction.",
     explore: "Explore the departments",
     talk: "Talk to us",
-    mapMeta: "Operating structure",
-    mapStatus: "6 connected departments",
+    peopleLabel: "The people behind the operation — Center Quest team at work.",
   },
   es: {
     title: ["Seis departamentos.", "Una operación coordinada."],
-    lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que la experiencia del cliente, las operaciones, la tecnología, la calidad y el talento avancen en una misma dirección.",
+    lead: "Nuestro equipo está organizado alrededor de responsabilidades claras, para que las operaciones, la tecnología, la gente y las finanzas avancen en una misma dirección.",
     explore: "Explorar los departamentos",
     talk: "Hablemos",
-    mapMeta: "Estructura operativa",
-    mapStatus: "6 departamentos conectados",
+    peopleLabel: "La gente detrás de la operación — el equipo de Center Quest en su día a día.",
   },
 };
 
@@ -58,36 +54,7 @@ export default function Hero({ reduced }: { reduced: boolean }) {
           </div>
         </motion.div>
 
-        <div className={styles.systemMap} aria-label={t.mapStatus}>
-          <div className={styles.mapHeader}>
-            <span className={styles.mapIdentity}>
-              <Image
-                src="/logo.png"
-                alt="Center Quest"
-                width={692}
-                height={512}
-                sizes="66px"
-                className={styles.mapLogo}
-              />
-              <span>{t.mapMeta}</span>
-            </span>
-            <span className={styles.mapStatus}>
-              <span aria-hidden className={styles.statusDot} />
-              {t.mapStatus}
-            </span>
-          </div>
-
-          <ul className={styles.mapGrid}>
-            {DEPARTMENTS.map((department) => (
-              <li key={department.id} className={styles.mapNode}>
-                <span className={styles.mapIcon}>
-                  <ServiceIcon name={department.icon} />
-                </span>
-                <span>{department.shortLabel[lang]}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <PhotoDeck reduced={reduced} label={t.peopleLabel} />
       </div>
     </header>
   );

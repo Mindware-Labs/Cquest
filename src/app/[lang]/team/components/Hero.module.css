@@ -11,13 +11,9 @@
   color: white;
 }
 
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent 0 49.96%, rgba(116, 195, 213, 0.08) 50%, transparent 50.04%);
-}
+/* Sin la vertical del centro: acompañaba al mapa de departamentos, pero con la
+   rueda de fotos partía el hero en dos mitades y lo hacía leer como dos
+   secciones distintas en vez de una. */
 
 .hero::after {
   content: "";
@@ -31,28 +27,45 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(34rem, 1.1fr);
+  /* El suelo del muro era 36rem. Por debajo de ~76rem de viewport ese suelo
+     dejaba de repartir y le comía ancho a la columna de texto, justo donde el
+     titular en español ya venía apretado. 28rem sigue dando tres tiles
+     legibles y deja que el reparto lo hagan las fracciones. */
+  grid-template-columns: minmax(0, 0.86fr) minmax(28rem, 1.14fr);
   align-items: center;
-  gap: clamp(3.5rem, 7vw, 7rem);
+  gap: clamp(3rem, 5vw, 5rem);
 }
 
 .copy {
+  /* El titular se dimensiona contra ESTA columna, no contra el viewport. Con
+     `vw` el contenedor topaba en 84rem mientras la fuente seguía creciendo:
+     pasados los ~1400px "departamentos." se salía de su columna y se montaba
+     encima del muro de fotos. Con `cqi` el ancho de referencia es el mismo
+     que tiene que caber, así que no puede desbordar por ancha que sea la
+     pantalla. */
+  container-type: inline-size;
   display: flex;
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
 }
 
+/* El 15cqi sale del propio max-width: en Josefin Sans 12ch son ~6.36em, o sea
+   que la caja del titular mide 6.36 × font-size. Para que quepa en la columna
+   hace falta font-size ≤ ancho / 6.36 = 15.7cqi; 15 deja el margen. */
 .headline {
   display: flex;
   flex-direction: column;
   max-width: 12ch;
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(3.15rem, 5.2vw, 5.5rem);
+  font-size: clamp(3.15rem, 15cqi, 5.5rem);
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 0.96;
   text-wrap: balance;
+  /* Red de seguridad: ninguna palabra suelta puede invadir el muro de fotos,
+     tampoco en un idioma con palabras más largas que las de estas dos copias. */
+  overflow-wrap: break-word;
 }
 
 .headline strong {
@@ -134,160 +147,6 @@
   outline-offset: 4px;
 }
 
-.systemMap {
-  position: relative;
-  min-width: 0;
-  border-radius: 2px;
-  border: 1px solid rgba(116, 195, 213, 0.16);
-  background: rgba(7, 20, 27, 0.7);
-  box-shadow: 0 30px 70px -48px rgba(116, 195, 213, 0.52);
-}
-
-.mapHeader {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.1rem 1.5rem 1rem;
-  border-bottom: 1px solid rgba(116, 195, 213, 0.14);
-}
-
-.mapIdentity {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mapLogo {
-  width: clamp(3.6rem, 4.4vw, 4.1rem);
-  height: auto;
-  object-fit: contain;
-
-  filter: brightness(0) invert(1);
-}
-
-.mapIdentity > span {
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(240, 248, 250, 0.48);
-}
-
-.mapStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding-top: 0.2rem;
-  font-size: 0.65rem;
-  font-weight: 650;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(220, 244, 248, 0.64);
-}
-
-.statusDot {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 999px;
-  background: var(--brand-celeste);
-  box-shadow: 0 2px 10px rgba(116, 195, 213, 0.7);
-}
-
-.mapGrid {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  padding: 1.4rem 1.5rem 2rem;
-  list-style: none;
-}
-
-.mapGrid::before {
-  content: "";
-  position: absolute;
-  top: 1.2rem;
-  bottom: 1.2rem;
-  left: 50%;
-  width: 1px;
-  background: linear-gradient(transparent, rgba(116, 195, 213, 0.42) 15% 85%, transparent);
-}
-
-.mapNode {
-  position: relative;
-  display: flex;
-  min-height: 5.25rem;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  color: rgba(240, 248, 250, 0.88);
-  font-size: clamp(0.82rem, 1vw, 0.92rem);
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.mapNode:nth-child(odd) {
-  padding-left: 0.25rem;
-  padding-right: 2rem;
-}
-
-.mapNode:nth-child(even) {
-  padding-left: 2rem;
-  padding-right: 0.25rem;
-}
-
-.mapNode::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 1.35rem;
-  height: 1px;
-  background: rgba(116, 195, 213, 0.38);
-}
-
-.mapNode::after {
-  content: "";
-  position: absolute;
-  top: calc(50% - 2px);
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--brand-celeste);
-}
-
-.mapNode:nth-child(odd)::before {
-  right: 0;
-}
-
-.mapNode:nth-child(odd)::after {
-  right: -2px;
-}
-
-.mapNode:nth-child(even)::before {
-  left: 0;
-}
-
-.mapNode:nth-child(even)::after {
-  left: -2px;
-}
-
-.mapIcon {
-  display: grid;
-  width: 2.8rem;
-  height: 2.8rem;
-  flex: 0 0 auto;
-  place-items: center;
-  color: var(--brand-celeste);
-}
-
-.mapIcon svg {
-  width: 1.7rem;
-  height: 1.7rem;
-}
-
 @media (max-width: 70rem) {
   .hero {
     min-height: auto;
@@ -302,9 +161,6 @@
     max-width: 15ch;
   }
 
-  .systemMap {
-    max-width: 48rem;
-  }
 }
 
 @media (max-width: 42rem) {
@@ -330,31 +186,6 @@
     width: 100%;
   }
 
-  .mapHeader {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-
-  .mapGrid {
-    grid-template-columns: 1fr;
-    padding-block: 1.25rem;
-  }
-
-  .mapGrid::before,
-  .mapNode::before,
-  .mapNode::after {
-    display: none;
-  }
-
-  .mapNode:nth-child(n) {
-    min-height: 3.8rem;
-    padding: 0.65rem 0.25rem;
-  }
-
-  .mapNode + .mapNode {
-    border-top: 1px solid rgba(116, 195, 213, 0.12);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

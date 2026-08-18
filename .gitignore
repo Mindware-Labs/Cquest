@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Postulaciones recibidas por /careers (CVs + registros de candidatos).
+# Datos personales — nunca commitear. Ver careers/apply/store.ts (APPLICATIONS_DIR).
+.data/

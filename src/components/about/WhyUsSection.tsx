@@ -66,7 +66,7 @@ const COPY = {
 
 const CARD_COUNT = CARDS.length;
 const TURN_DURATION = 0.9;
-const AUTO_ADVANCE_MS = 5600;
+const AUTO_ADVANCE_MS = 4600;
 const PAD2 = (n: number) => String(n).padStart(2, "0");
 
 type Slot = { x: string; y: string; z: number; rotateY: number; scale: number; opacity: number; zIndex: number };

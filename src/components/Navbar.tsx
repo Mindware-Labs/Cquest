@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { ACCENT_CTA_PAGES, DARK_HERO_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks } from "@/components/navigation/data";
+import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks, isDarkHeroPage } from "@/components/navigation/data";
 
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
@@ -54,7 +54,7 @@ export default function Navbar() {
   /* En una página oscura entera el modo inverso no se apaga nunca: no hay un
      punto del scroll en el que debajo haya contenido claro. */
   const inverse =
-    darkPage || ((DARK_HERO_PAGES as readonly string[]).includes(pathname) && !scrolled && !open);
+    darkPage || (isDarkHeroPage(pathname) && !scrolled && !open);
 
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
   const navLinks = getServiceNavLinks(dict, lang)[pathname] ?? getNavLinks(dict, lang);

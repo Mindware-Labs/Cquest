@@ -1,0 +1,392 @@
+.section {
+  padding-block: clamp(3.5rem, 7vh, 5.5rem);
+  background: var(--surface-sunken);
+}
+
+.head {
+  display: flex;
+  max-width: 58rem;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.title {
+  max-width: 16ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.6vw, 3.1rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.title strong {
+  font-weight: 650;
+  color: var(--brand-petroleo);
+}
+
+.lead {
+  max-width: 54ch;
+  font-size: clamp(0.98rem, 1.1vw, 1.08rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* Explorador: indice a la izquierda, ficha a la derecha. Con seis vacantes cabe
+   en una pantalla, y comparar dos roles cuesta un movimiento del puntero en vez
+   de dos scrolls. */
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+.list {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+}
+
+/* El indicador viaja: un solo elemento que se mueve a la fila activa. */
+.markerBar {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 2px;
+  background: var(--brand-celeste);
+  will-change: transform, height;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1rem 1rem 1.15rem;
+  text-align: left;
+  /* La ficha cambia con el CLIC, no al pasar el puntero, así que la fila tiene
+     que verse pulsable: un botón nativo hereda el cursor de flecha y no invita
+     a nada. */
+  cursor: pointer;
+  transition:
+    background-color 280ms var(--ease-out),
+    color 280ms var(--ease-out);
+}
+
+/* El hover ya no selecciona, así que tampoco puede parecerse al estado
+   seleccionado: se queda en un realce leve que solo dice "esto se puede
+   pulsar". El fondo lleno y el marcador quedan para la fila activa. */
+.item:hover:not([aria-selected="true"]) {
+  background: color-mix(in srgb, var(--surface-raised) 45%, transparent);
+}
+
+/* Sin `transform`: anime le escribe el suyo en la entrada de la sección, y un
+   segundo dueño deja la fila torcida si el dedo llega antes de que la timeline
+   termine. En móvil esto es la única señal de que el toque llegó. */
+.item:active {
+  background: color-mix(in srgb, var(--brand-celeste) 14%, var(--surface-raised));
+}
+
+.item[aria-selected="true"] {
+  background: var(--surface-raised);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: -2px;
+}
+
+.itemIcon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--brand-celeste) 12%, transparent);
+  color: var(--brand-petroleo);
+  transition: background-color 280ms var(--ease-out);
+}
+
+.item[aria-selected="true"] .itemIcon {
+  background: color-mix(in srgb, var(--brand-celeste) 28%, transparent);
+  color: var(--foreground);
+}
+
+.itemIcon svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.itemText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.itemTitle {
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.itemArea {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.itemTrack {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.item[aria-selected="true"] .itemTrack {
+  color: var(--brand-petroleo);
+}
+
+/* --- Ficha --- */
+
+.detail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, var(--surface-raised) 0%, color-mix(in srgb, var(--surface-sunken) 45%, var(--surface-raised)) 100%);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  box-shadow: 0 1px 2px rgba(15, 32, 40, 0.05);
+}
+
+.detail:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.detailArea {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.detailTitle {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--foreground);
+}
+
+.detailSummary {
+  max-width: 56ch;
+  font-size: 0.98rem;
+  line-height: 1.68;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.detailFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+  list-style: none;
+}
+
+.tag,
+.tagTrack {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.tagTrack {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 45%, transparent);
+  background: color-mix(in srgb, var(--brand-petroleo) 8%, transparent);
+  color: var(--brand-petroleo);
+}
+
+.detailBlock {
+  margin-top: 0.35rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border);
+}
+
+.detailBlockTitle {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.detailList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  list-style: none;
+}
+
+.detailList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.detailList li::before {
+  content: "";
+  margin-top: 0.6rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--brand-celeste);
+}
+
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.6rem;
+}
+
+.detailCta {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--foreground);
+  border-radius: 10px;
+  background: var(--foreground);
+  padding: 0.9rem 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--background);
+  /* El salto lo lleva Motion (`motion.ts`); aquí solo queda el color. */
+  transition:
+    background-color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
+}
+
+.detailCta:hover {
+  background: var(--brand-petroleo);
+  border-color: var(--brand-petroleo);
+}
+
+.detailCta:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 4px;
+}
+
+.detailGhost {
+  font-size: 0.82rem;
+  color: var(--brand-petroleo);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.detailGhost:hover {
+  color: var(--foreground);
+}
+
+/* --- Vacio --- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 2.25rem;
+  background: var(--surface-raised);
+}
+
+.emptyTitle {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.emptyBody {
+  max-width: 54ch;
+  font-size: 0.96rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.emptyCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+@media (max-width: 64rem) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 42rem) {
+  .item {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.9rem 0.75rem;
+  }
+
+  .itemTrack {
+    grid-column: 2;
+    font-size: 0.68rem;
+  }
+
+  .detailCta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .itemIcon,
+  .detailCta {
+    transition-duration: 0.01ms;
+  }
+}

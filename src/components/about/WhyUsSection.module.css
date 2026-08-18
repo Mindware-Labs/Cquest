@@ -6,8 +6,10 @@
 
   /* Dónde está la consola. Lo leen la luz, el suelo, el horizonte y la máscara
      de la cuadrícula: mover el tambor es mover este par, no cinco gradientes. */
-  --why-stage-x: 50%;
-  --why-stage-y: 63%;
+  /* El tambor ya no está centrado: vive en la columna derecha, así que la
+     lámpara lo sigue. Sin esto la luz cae sobre el titular y no sobre la placa. */
+  --why-stage-x: 65%;
+  --why-stage-y: 56%;
 
   /* Rampa vertical propia en vez de un campo plano: techo más frío y oscuro,
      banda encendida a la altura del tambor, delantal profundo abajo. */
@@ -171,16 +173,25 @@
   }
 }
 
+/* Dos columnas: el titular sostiene la izquierda mientras el tambor gira a la
+   derecha. Antes ambos se apilaban centrados y sobraba media pantalla vacía. */
 .inner {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
 }
 
 .header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  max-width: 34rem;
+  max-width: 32rem;
+  /* Estático y centrado con el tambor: el titular no debe desplazarse con el
+     scroll, se lee como una afirmación fija junto a las placas. */
+  align-self: center;
 }
 
 .rule {
@@ -192,8 +203,8 @@
 }
 
 .eyebrow {
-  margin-bottom: 0.9rem;
-  font-size: 0.7rem;
+  margin-bottom: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -202,7 +213,7 @@
 
 .header h2 {
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2rem, 3.1vw, 3rem);
+  font-size: clamp(2.25rem, 3.9vw, 3.75rem);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.08;
@@ -224,25 +235,25 @@
 }
 
 .header p {
-  margin-top: 0.85rem;
-  font-size: 0.95rem;
+  margin-top: 1rem;
+  font-size: 1.05rem;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .stageWrap {
-  margin-top: clamp(2.75rem, 6vw, 4.5rem);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .stage {
-  --plaque-w: clamp(13rem, 25vw, 19rem);
-  --plaque-h: clamp(13.5rem, 19vw, 15.5rem);
+  /* Techo del ancho: la columna mide ~48rem y las plazas laterales salen a
+     ±56% de la placa, así que el conjunto ocupa ~1.94 veces este valor. */
+  --plaque-w: clamp(13rem, 23vw, 20rem);
+  --plaque-h: clamp(15rem, 22vw, 17.5rem);
   position: relative;
   width: 100%;
-  max-width: 64rem;
   padding-block: 1.5rem;
   perspective: 1900px;
   perspective-origin: 50% 50%;
@@ -559,7 +570,7 @@
 }
 
 .staticGrid {
-  margin: clamp(2.75rem, 6vw, 4.5rem) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
@@ -613,6 +624,28 @@
   font-size: 0.88rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.72);
+}
+
+/* Por debajo de esto la columna del tambor queda más angosta que la placa con
+   sus dos laterales: se apila y la lámpara vuelve al centro. */
+@media (max-width: 64rem) {
+  .whyUsSection {
+    --why-stage-x: 50%;
+    --why-stage-y: 63%;
+  }
+
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .header {
+    max-width: 34rem;
+  }
+
+  .stage {
+    --plaque-w: clamp(13rem, 25vw, 19rem);
+    max-width: 64rem;
+  }
 }
 
 @media (max-width: 42rem) {

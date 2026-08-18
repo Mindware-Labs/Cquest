@@ -1,0 +1,517 @@
+/* Cromo compartido de las secciones claras de la landing (cultura, proceso,
+   FAQ) más la banda oscura del banco de talento. Una sola hoja porque las tres
+   secciones claras son el MISMO objeto con distinto contenido; duplicar el
+   encabezado en tres módulos es lo que hace que se desincronicen. */
+
+.section {
+  padding-block: clamp(4.5rem, 9vh, 7.5rem);
+  background: var(--background);
+}
+
+.sectionAlt {
+  background: var(--surface-sunken);
+}
+
+.head {
+  display: flex;
+  max-width: 60rem;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.title {
+  max-width: 20ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2rem, 3.6vw, 3.1rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.title strong {
+  font-weight: 650;
+  color: var(--brand-petroleo);
+}
+
+.lead {
+  max-width: 58ch;
+  font-size: clamp(0.98rem, 1.1vw, 1.08rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Cultura --- */
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  list-style: none;
+}
+
+/* Card con regla de acento arriba: el borde superior es lo que se mueve al
+   pasar el puntero — crece de petróleo a celeste — así el hover explica que la
+   tarjeta es una unidad, sin animar la tipografía. */
+.pillar {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.7rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--surface-raised) 0%, color-mix(in srgb, var(--surface-sunken) 45%, var(--surface-raised)) 100%);
+  padding: 1.75rem 1.6rem 1.9rem;
+  box-shadow: 0 1px 2px rgba(15, 32, 40, 0.04);
+  /* El transform lo maneja GSAP (useCardLift): declararlo también aquí crea
+     dos dueños del mismo valor y el salto se pisa con la transición. */
+  transition:
+    border-color 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out);
+}
+
+/* Elemento real y no ::before: anime.js anima nodos del DOM, y la regla
+   superior es justamente lo que se dibuja al entrar la card. */
+.pillarRule {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--brand-petroleo);
+  transform-origin: left center;
+  transition: background-color 420ms var(--ease-out);
+}
+
+.pillar:hover {
+  border-color: color-mix(in srgb, var(--brand-celeste) 50%, var(--border));
+  box-shadow: 0 28px 52px -30px rgba(15, 32, 40, 0.45);
+}
+
+.pillar:hover .pillarRule {
+  background: var(--brand-celeste);
+}
+
+.pillar:hover .pillarIcon {
+  color: var(--brand-celeste);
+  transform: translateY(-2px);
+}
+
+/* Icono suelto, sin caja: la regla superior del pilar ya declara el bloque, y
+   meterlo en un recuadro añade un contenedor que no explica nada. */
+.pillarIcon {
+  display: block;
+  color: var(--brand-petroleo);
+  transition:
+    color 320ms var(--ease-out),
+    transform 320ms var(--ease-out);
+}
+
+.pillarIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.pillarTitle {
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.pillarBody {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Proceso: riel horizontal con una rama por paso --- */
+
+/* Esta sección va centrada: es un diagrama simétrico, y un diagrama alineado a
+   la izquierda con cuatro columnas iguales debajo se lee torcido. */
+.headCentered {
+  margin-inline: auto;
+  align-items: center;
+  text-align: center;
+}
+
+.rail {
+  position: relative;
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  padding-top: var(--branch);
+  --branch: 3.25rem;
+}
+
+/* La línea maestra. Nace en el borde izquierdo del contenedor y llega al
+   derecho: es la que dice "esto es un proceso con principio y fin". */
+.railLine {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste) 65%, transparent);
+  transform-origin: left center;
+}
+
+/* Un punto de luz recorre el riel en bucle: es la señal de que el proceso
+   está vivo y corriendo, no un gráfico impreso. */
+.railPulse {
+  position: absolute;
+  top: -0.3rem;
+  left: 0;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--brand-celeste);
+  box-shadow: 0 0 18px 3px color-mix(in srgb, var(--brand-celeste) 55%, transparent);
+  opacity: 0;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+/* El nodo se apoya SOBRE la línea, en el punto del que cuelga su rama.
+   Se centra con márgenes negativos y NO con translate: anime.js escribe
+   `transform: scale(...)` al animarlo y borraría el centrado. */
+.stepNode {
+  position: absolute;
+  top: calc(var(--branch) * -1);
+  left: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: -0.25rem;
+  margin-left: -0.25rem;
+  border-radius: 999px;
+  background: var(--brand-celeste);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-celeste) 18%, transparent);
+}
+
+/* La rama: baja del riel al cuadro. */
+.stepBranch {
+  position: absolute;
+  top: calc(var(--branch) * -1);
+  left: 50%;
+  width: 1px;
+  height: var(--branch);
+  background: linear-gradient(180deg, var(--brand-celeste), color-mix(in srgb, var(--brand-celeste) 25%, transparent));
+  transform-origin: top center;
+}
+
+.stepBox {
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--surface-raised) 0%, color-mix(in srgb, var(--surface-sunken) 45%, var(--surface-raised)) 100%);
+  padding: 1.5rem 1.5rem 1.65rem;
+  box-shadow: 0 1px 2px rgba(15, 32, 40, 0.04);
+  transition:
+    border-color 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out);
+}
+
+.step:hover .stepBox {
+  border-color: color-mix(in srgb, var(--brand-celeste) 50%, var(--border));
+  box-shadow: 0 28px 52px -30px rgba(15, 32, 40, 0.45);
+}
+
+.stepIndex {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.stepTitle {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--foreground);
+}
+
+.stepBody {
+  font-size: 0.92rem;
+  line-height: 1.62;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.stepMeta {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.stepMeta::before {
+  content: "";
+  width: 1.1rem;
+  height: 1px;
+  background: var(--brand-celeste);
+  transition: width 320ms var(--ease-out);
+}
+
+.step:hover .stepMeta::before {
+  width: 2rem;
+}
+
+/* --- Banco de talento (banda oscura) --- */
+
+.band {
+  padding-block: clamp(4rem, 8vh, 6.5rem);
+  background:
+    radial-gradient(70% 120% at 78% 30%, rgba(116, 195, 213, 0.14), transparent 60%),
+    linear-gradient(140deg, #071116 0%, #0a171e 60%, #081218 100%);
+  color: white;
+}
+
+.bandLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.bandTitle {
+  max-width: 22ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(1.9rem, 3.2vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  /* 1.05 juntaba el "¿" y la tilde de "Envíanos" con la línea de arriba: en
+     español los diacríticos suben por encima de la altura de mayúscula. */
+  line-height: 1.14;
+  text-wrap: balance;
+}
+
+.bandTitle strong {
+  font-weight: 650;
+  color: var(--brand-celeste);
+}
+
+.bandLead {
+  max-width: 52ch;
+  margin-top: 1rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(240, 248, 250, 0.76);
+  text-wrap: pretty;
+}
+
+.bandCta {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 10px;
+  background: var(--brand-celeste);
+  padding: 0.95rem 1.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition:
+    transform 180ms var(--ease-out),
+    background-color 240ms var(--ease-out);
+}
+
+.bandCta:hover {
+  background: white;
+  transform: translateY(-2px);
+}
+
+.bandCta:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 4px;
+}
+
+/* --- FAQ --- */
+
+.faq {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  border-top: 1px solid var(--border);
+}
+
+.faqItem {
+  border-bottom: 1px solid var(--border);
+}
+
+.faqSummary {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.15rem;
+  font-size: clamp(1rem, 1.3vw, 1.1rem);
+  font-weight: 650;
+  color: var(--foreground);
+  list-style: none;
+  transition: color 240ms var(--ease-out);
+}
+
+.faqSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* El mismo chevron del nav, girado al abrir. Un "+" y un "−" tipográficos son
+   dos glifos distintos haciendo de un solo icono, y saltan al alternar. */
+.faqSummary::after {
+  content: "";
+  width: 10px;
+  height: 6px;
+  flex: 0 0 auto;
+  background: var(--brand-petroleo);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 240ms var(--ease-out);
+}
+
+.faqItem[open] .faqSummary::after {
+  transform: rotate(180deg);
+}
+
+/* Al cerrar, el atributo `open` sigue puesto mientras la respuesta colapsa (ver
+   `FaqItem`), así que el chevron se guía por el estado de React: si no, se
+   quedaría girado hasta que terminara la animación de salida. Va DESPUÉS de la
+   regla de arriba — misma especificidad, gana la última. */
+.faqItem[data-open="false"] .faqSummary::after {
+  transform: none;
+}
+
+.faqSummary:hover {
+  color: var(--brand-petroleo);
+}
+
+.faqSummary:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.faqBody {
+  max-width: 68ch;
+  padding-bottom: 1.35rem;
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+@media (max-width: 64rem) {
+  .pillars,
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rail {
+    --branch: 2.5rem;
+  }
+
+  .bandLayout {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 46rem) {
+  .pillars,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  /* El riel gira 90°: la línea baja por el costado y cada rama entra de lado a
+     su cuadro. En una columna, una línea horizontal arriba no conecta nada. */
+  .rail {
+    padding-top: 0;
+    padding-left: 2.25rem;
+  }
+
+  .railPulse {
+    display: none;
+  }
+
+  .railLine {
+    inset: 0 auto 0 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--brand-petroleo), var(--brand-celeste) 65%, transparent);
+    transform-origin: top center;
+  }
+
+  .steps {
+    gap: 1.75rem;
+  }
+
+  .stepNode {
+    top: 1.9rem;
+    left: -2.25rem;
+    margin-left: -0.25rem;
+  }
+
+  .stepBranch {
+    top: 1.9rem;
+    left: -2.25rem;
+    margin-left: 0;
+    width: 2.25rem;
+    height: 1px;
+    margin-top: -0.5px;
+    background: linear-gradient(90deg, var(--brand-celeste), color-mix(in srgb, var(--brand-celeste) 25%, transparent));
+    transform-origin: left center;
+  }
+
+  .bandCta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bandCta,
+  .faqSummary,
+  .faqSummary::after,
+  .pillar,
+  .pillarRule,
+  .pillarIcon,
+  .stepBox,
+  .stepMeta::before {
+    transition-duration: 0.01ms;
+  }
+}

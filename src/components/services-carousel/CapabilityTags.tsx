@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "motion/react";
+import type { CSSProperties } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { Service } from "@/components/services/data";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -21,6 +22,13 @@ const tagVariants: Variants = {
   },
 };
 
+/* Rejilla y no fila de etiquetas: la etiqueta solo cargaba el título, y el
+   ancho del escenario daba de sobra para decir también QUÉ es cada servicio.
+   Ese es el aprovechamiento del espacio — el alto del bloque apenas cambia.
+
+   Tres columnas cuando hay seis capacidades y dos cuando hay cuatro (Sistemas):
+   con tres, la cuarta se quedaría sola en su renglón y la rejilla se lee
+   incompleta. */
 export default function CapabilityTags({
   service,
   reduced,
@@ -29,22 +37,26 @@ export default function CapabilityTags({
   reduced: boolean;
 }) {
   const { lang } = useI18n();
+  const columns = service.details.length % 3 === 0 ? 3 : 2;
+
   return (
     <motion.ul
       variants={reduced ? undefined : tagRowVariants}
-      className="mt-9 flex max-w-xl flex-wrap items-center justify-center gap-2 sm:gap-2.5"
+      style={{ "--svc-cols": columns } as CSSProperties}
+      className="cq-svc-grid mt-7 max-w-xl md:max-w-2xl lg:mt-9 lg:max-w-4xl"
     >
       {service.details.map((detail) => (
+        /* Sin `whileHover` de transform: la celda vive dentro de una rejilla de
+           separadores de 1px, y moverla o escalarla abre una rendija sobre la
+           celda vecina. El estado bajo el puntero lo lleva el fondo (CSS). */
         <motion.li
           key={detail.id}
           variants={reduced ? undefined : tagVariants}
-          whileHover={reduced ? undefined : { y: -3, scale: 1.03 }}
-          transition={{ type: "spring", stiffness: 420, damping: 26 }}
-          title={detail.description[lang]}
-          className="cq-cap"
+          className="cq-svc"
         >
           <ServiceIcon name={detail.icon} />
-          <span>{detail.title[lang]}</span>
+          <b>{detail.title[lang]}</b>
+          <i>{detail.description[lang]}</i>
         </motion.li>
       ))}
     </motion.ul>

@@ -1,8 +1,7 @@
 import type { Variants } from "motion/react";
-import { SERVICE_ICON, SERVICES } from "@/components/services/data";
 import type { Dictionary } from "@/i18n/dictionaries/types";
 import type { Locale } from "@/i18n/config";
-import type { NavLink } from "@/components/navigation/data";
+import { getServiceChildren, type NavLink } from "@/components/navigation/data";
 
 /** ease-out-quint — espeja `--ease-out`. Por defecto para lo que entra. */
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
@@ -63,12 +62,7 @@ export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLin
     {
       label: dict.hero.navLinks.services,
       href: "#services",
-      children: SERVICES.map((service) => ({
-        label: service.label[lang],
-        href: service.href,
-        description: service.strapline[lang],
-        icon: SERVICE_ICON[service.id],
-      })),
+      children: getServiceChildren(dict, lang),
     },
     { label: dict.hero.navLinks.team, href: "#metrics" },
     { label: dict.hero.navLinks.sectors, href: "#sectors" },
