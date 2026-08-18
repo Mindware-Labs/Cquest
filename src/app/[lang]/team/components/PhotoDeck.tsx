@@ -16,7 +16,9 @@ const PHOTOS = [
   "/Personal/FotoEmpleado8.png",
   "/Personal/IMG_0929.JPG",
   "/Personal/IMG_0930.JPG",
-  "/Personal/FotoGrupal.jpg",
+  /* FotoGrupal.jpg stays out on purpose: it is a wide shot of ~40 people, and
+     inside a 4/5 portrait tile the faces come out too small to read next to
+     single-person portraits. It already has its own place in #metrics. */
 ] as const;
 
 /* ── The wall ────────────────────────────────────────────────────────────
@@ -26,30 +28,23 @@ const PHOTOS = [
    That overflow is the whole design. A finite block reads as a countable list
    of people. A wall that leaves the frame in both directions reads as SCALE:
    the eye takes it for a fragment of something much larger, which is the
-   honest impression for an operation of 200+ people shown through eleven
+   honest impression for an operation of 200+ people shown through ten
    photographs. */
 const COLUMNS = 3;
 
-/* Tiles per LOOP, not per column. Each column renders this set twice — see
-   `.track` in the stylesheet — because a seamless loop needs a second copy to
-   scroll into place before the first one has left. */
-const TILES_PER_LOOP = 5;
+/* Every photograph appears exactly once across the wall, so the columns are
+   whatever length the roster divides into — 4/3/3 today, not a fixed five.
+   A fixed tile count would force duplicates the moment it exceeded the roster,
+   which is precisely what a wall of real colleagues cannot afford: the same
+   face twice reads as a stock library, not as a team.
 
-/* Eleven photographs across fifteen tiles means repeats — unavoidable. What is
-   avoidable is a repeat landing next to its twin. Both steps below are coprime
-   with the roster length (eleven is prime, so any step below it works), so
-   walking the roster never short-cycles: neighbours down a column are three
-   apart, neighbours across a row are four apart, and no row or diagonal pairs
-   the same face with itself. */
-const COLUMN_STEP = 4;
-const TILE_STEP = 3;
+   Dealt round-robin rather than sliced into thirds, so photographs that were
+   shot together land in different columns instead of stacking into one. */
+const COLUMN_PHOTOS = Array.from({ length: COLUMNS }, (_, column) =>
+  PHOTOS.filter((_photo, index) => index % COLUMNS === column),
+);
 
-function photoAt(column: number, tile: number) {
-  return PHOTOS[(column * COLUMN_STEP + tile * TILE_STEP) % PHOTOS.length];
-}
-
-/* The cascade would otherwise run to three seconds across fifteen tiles, and
-   the last one would still be arriving after the loop has started moving. */
+/* The cascade would otherwise still be arriving after the loop starts moving. */
 const MAX_STAGGER_STEPS = 7;
 
 export default function PhotoDeck({
@@ -64,23 +59,25 @@ export default function PhotoDeck({
       <span aria-hidden className={styles.glow} />
 
       <div aria-hidden className={styles.wallInner} data-still={reduced}>
-        {Array.from({ length: COLUMNS }, (_, column) => (
+        {COLUMN_PHOTOS.map((photos, column) => (
           <div key={column} className={styles.wallColumn} data-column={column}>
             <div className={styles.track}>
               {/* Two identical passes. The track scrolls exactly one pass and
                   restarts, so the copy is already sitting where the original
-                  was and the seam never shows. */}
-              {Array.from({ length: TILES_PER_LOOP * 2 }, (_, index) => {
-                const tile = index % TILES_PER_LOOP;
-                const isCopy = index >= TILES_PER_LOOP;
+                  was and the seam never shows. The copy is what makes the loop
+                  continuous — it is not a second face on screen, because the
+                  visible band is far shorter than one pass. */}
+              {[...photos, ...photos].map((photo, index) => {
+                const isCopy = index >= photos.length;
+                const position = index % photos.length;
 
                 return (
                   <motion.span
                     key={index}
                     className={styles.tile}
-                    /* Only the first pass performs the entrance. The copy lives
-                       below the fold of the wall on load, so animating it would
-                       spend time on something nobody can see. */
+                    /* Only the first pass performs the entrance. The copy sits
+                       below the wall on load, so animating it would spend time
+                       on something nobody can see. */
                     initial={reduced || isCopy ? false : { opacity: 0, y: 26 }}
                     animate={{ opacity: 1, y: 0 }}
                     /* Diagonal cascade: the wall assembles from the near corner
@@ -91,11 +88,11 @@ export default function PhotoDeck({
                       ease: EASE_OUT,
                       delay:
                         0.28 +
-                        Math.min(column + tile, MAX_STAGGER_STEPS) * 0.045,
+                        Math.min(column + position, MAX_STAGGER_STEPS) * 0.045,
                     }}
                   >
                     <Image
-                      src={photoAt(column, tile)}
+                      src={photo}
                       alt=""
                       fill
                       /* 92, same as the group portrait in #metrics and for the
@@ -114,9 +111,9 @@ export default function PhotoDeck({
                          wall sits in the 1.22fr column of an 84rem container,
                          which works out to about 16rem per tile. */
                       sizes="(max-width: 70rem) 32vw, 16rem"
-                      /* Only the first row is above the fold on load; the rest
+                      /* Only the top row is above the fold on load; the rest
                          can wait rather than compete with the headline. */
-                      priority={!isCopy && tile === 0}
+                      priority={!isCopy && position === 0}
                     />
                   </motion.span>
                 );
