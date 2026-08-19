@@ -170,7 +170,9 @@ export function blogPostingNode(post: BlogPostForSchema, lang: Locale) {
     "@id": `${url}#article`,
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImageUrl,
+    /* post.coverImageUrl es relativa (/api/images/...) — Google/schema.org
+       esperan una URL absoluta en este campo. */
+    image: `${SITE_URL}${post.coverImageUrl}`,
     datePublished: post.publishedAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     articleSection: post.categoryName,

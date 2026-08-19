@@ -31,8 +31,9 @@ model Post {
   slug           String     @unique
   title          String
   excerpt        String
-  content        String
+  content        Json
   coverImageUrl  String
+  coverImageAlt  String
   status         PostStatus @default(DRAFT)
   seoTitle       String?
   seoDescription String?
@@ -45,11 +46,21 @@ model Post {
   author         AdminUser  @relation(fields: [authorId], references: [id])
 }
 
+model Template {
+  id        Int       @id @default(autoincrement())
+  name      String
+  blocks    Json
+  createdAt DateTime  @default(now())
+  authorId  Int
+  author    AdminUser @relation(fields: [authorId], references: [id])
+}
+
 model AdminUser {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
   passwordHash String
   name         String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
   posts        Post[]
+  templates    Template[]
 }
