@@ -24,7 +24,7 @@ const josefin = Josefin_Sans({
 });
 
 const SITE_DESCRIPTION: Record<Locale, string> = {
-  en: "Center Quest is an operations partner: Call Center, Operations (BPO) and Systems Development, run under clear SLAs and shaped around how your operation actually works.",
+  en: "Center Quest is an operations partner: Call Center, BPO and Systems Development, run under clear SLAs and shaped around how your operation actually works.",
   es: "Center Quest es un aliado de operaciones: Call Center, Operaciones (BPO) y Desarrollo de Sistemas, con SLAs claros y ajustados a cómo funciona tu operación.",
 };
 
@@ -36,8 +36,8 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MZVHNCDV";
 
 const SITE_TITLE: Record<Locale, string> = {
-  en: "Center Quest — Call Center, Operations & Systems Development",
-  es: "Center Quest — Call Center, Operaciones y Desarrollo de Sistemas",
+  en: "Center Quest — Call Center, BPO & Systems Development",
+  es: "Center Quest — Call Center, BPO y Desarrollo de Sistemas",
 };
 
 /* Compuesto desde BRAND_LINE en vez de repetirlo: una fuente, tres superficies. */
@@ -75,7 +75,18 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: SITE_DESCRIPTION[lang],
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: OG_TITLE[lang],
+      description: SITE_DESCRIPTION[lang],
+    },
     alternates: localeAlternates(lang, ""),
+    /* Vacío hasta tener una propiedad de Search Console real: un token
+       inventado no verifica nada, y el `undefined` simplemente omite la
+       etiqueta en vez de emitir una vacía. */
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : undefined,
   };
 }
 

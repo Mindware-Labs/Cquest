@@ -98,6 +98,9 @@ export function serviceNode(serviceId: string, lang: Locale) {
     description: `${service.strapline[lang]} ${service.description[lang]}`,
     url: `${SITE_URL}/${lang}${service.href}`,
     provider: { "@id": ORG_ID },
+    /* Sin esto el WebSite del layout es una isla: nada en la página enlaza
+       hacia él, aunque la etiqueta <script> del layout lo declare global. */
+    isPartOf: { "@id": SITE_ID },
     areaServed: [
       { "@type": "Country", name: "Dominican Republic" },
       { "@type": "Country", name: "United States" },
@@ -107,8 +110,9 @@ export function serviceNode(serviceId: string, lang: Locale) {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: service.label[lang],
-      itemListElement: service.details.map((detail) => ({
+      itemListElement: service.details.map((detail, index) => ({
         "@type": "Offer",
+        position: index + 1,
         itemOffered: {
           "@type": "Service",
           name: detail.title[lang],
@@ -147,6 +151,45 @@ export function servicePageGraph(serviceId: string, lang: Locale) {
       { name: "Center Quest", path: "" },
       { name: service.label[lang], path: service.href },
     ]),
+  );
+}
+
+/* Páginas sin una entidad propia que modelar (contacto, equipo, legal): un
+   WebPage/AboutPage/ContactPage mínimo que solo referencia el negocio y el
+   sitio por @id, en vez de dejarlas sin dato estructurado alguno. */
+export function simplePageNode(
+  type: "AboutPage" | "ContactPage" | "WebPage",
+  lang: Locale,
+  path: string,
+  name: string,
+  description: string,
+  extra?: Record<string, unknown>,
+) {
+  return {
+    "@type": type,
+    "@id": `${SITE_URL}/${lang}${path}#webpage`,
+    url: `${SITE_URL}/${lang}${path}`,
+    name,
+    description,
+    inLanguage: lang,
+    isPartOf: { "@id": SITE_ID },
+    about: { "@id": ORG_ID },
+    ...extra,
+  };
+}
+
+export function simplePageGraph(
+  type: "AboutPage" | "ContactPage" | "WebPage",
+  lang: Locale,
+  path: string,
+  name: string,
+  description: string,
+  trail: ReadonlyArray<{ name: string; path: string }>,
+  extra?: Record<string, unknown>,
+) {
+  return graph(
+    simplePageNode(type, lang, path, name, description, extra),
+    breadcrumbNode(lang, trail),
   );
 }
 

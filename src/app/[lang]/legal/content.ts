@@ -24,6 +24,9 @@ const list = (es: readonly string[], en: readonly string[]): LegalBlock => ({
 });
 
 const UPDATED: Record<Locale, string> = { es: "8 de agosto de 2026", en: "August 8, 2026" };
+/* Mismo dato que UPDATED, en ISO 8601: es lo que consume dateModified en el
+   JSON-LD de cada page.tsx. Una sola fuente para las dos representaciones. */
+export const UPDATED_ISO = "2026-08-08";
 
 export const PRIVACY: LegalDoc = {
   title: { es: "Política de Privacidad", en: "Privacy Policy" },

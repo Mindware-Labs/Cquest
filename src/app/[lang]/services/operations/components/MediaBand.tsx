@@ -13,7 +13,10 @@ import { useI18n } from "@/i18n/I18nProvider";
 import FrameTicks from "./FrameTicks";
 import styles from "./MediaBand.module.css";
 
-const ALT = { en: "Operations floor", es: "Piso de operaciones" };
+const ALT = {
+  en: "Center Quest BPO operations floor, agents working back-office stations",
+  es: "Piso de operaciones BPO de Center Quest, agentes trabajando en estaciones de back office",
+};
 
 export default function MediaBand({ reduced }: { reduced: boolean }) {
   const { lang } = useI18n();

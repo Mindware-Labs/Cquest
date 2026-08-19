@@ -14,8 +14,12 @@ export const PARTNER_SLOTS: ReadonlyArray<{
     name: { en: "Mindware Labs", es: "Mindware Labs" },
     logo: {
       src: "/mindware-labs/logo_white_background.jpg",
-      width: 2048,
-      height: 737,
+      /* Dimensiones reales del archivo (verificadas por header binario), no
+         las que llegaron con el asset original: un ratio equivocado hace
+         que next/image calcule el srcset mal, aunque el CSS del frame lo
+         disimule visualmente. */
+      width: 3400,
+      height: 1171,
     },
   },
 ];

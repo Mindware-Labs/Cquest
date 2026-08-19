@@ -6,6 +6,8 @@ import { resolveService } from "./data";
 import type { Locale } from "@/i18n/config";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
+import JsonLd from "@/components/JsonLd";
+import { simplePageGraph } from "@/lib/schema";
 
 const TITLE: Record<Locale, string> = {
   en: "Request a service quote | Center Quest",
@@ -24,21 +26,31 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/quote"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
+    twitter: { card: "summary_large_image", title: TITLE[lang], description: DESCRIPTION[lang] },
   };
 }
 
 export default async function QuotePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ lang: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const initialService = resolveService(params.servicio ?? params.service);
-  const stepParam = Number(Array.isArray(params.step) ? params.step[0] : params.step);
+  const lang = await resolveLang(params);
+  const sp = await searchParams;
+  const initialService = resolveService(sp.servicio ?? sp.service);
+  const stepParam = Number(Array.isArray(sp.step) ? sp.step[0] : sp.step);
   const initialStep = Number.isInteger(stepParam) && stepParam >= 1 && stepParam <= 2 ? stepParam : undefined;
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   return (
     <>
+      <JsonLd
+        data={simplePageGraph("ContactPage", lang, "/quote", TITLE[lang], DESCRIPTION[lang], [
+          { name: "Center Quest", path: "" },
+          { name: TITLE[lang], path: "/quote" },
+        ])}
+      />
 
       {recaptchaSiteKey && (
         <>

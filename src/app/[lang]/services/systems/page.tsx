@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/services/systems"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
+    twitter: { card: "summary_large_image", title: TITLE[lang], description: DESCRIPTION[lang] },
   };
 }
 

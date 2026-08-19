@@ -25,7 +25,10 @@ export function proxy(request: NextRequest) {
   const locale = resolveLocale(request);
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
-  const response = NextResponse.redirect(url);
+  /* 308 (permanente) y no 307: una ruta sin locale siempre resuelve al mismo
+     destino localizado, así que Google puede consolidar las señales de
+     ranking en el canonical sin esperar a que se confirme "temporal". */
+  const response = NextResponse.redirect(url, 308);
   response.cookies.set(LOCALE_COOKIE, locale, { maxAge: COOKIE_MAX_AGE, path: "/", sameSite: "lax" });
   return response;
 }

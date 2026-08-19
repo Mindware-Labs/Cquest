@@ -17,7 +17,10 @@ import BrainVisual from "./BrainVisual";
 import VenomField from "./VenomField";
 import styles from "./MindwareLabsProfile.module.css";
 
-const SOCIAL_LINKS = {
+/* Exportado: page.tsx (server) lo reusa para el nodo Organization del
+   JSON-LD, así el dato estructurado nunca se desincroniza de lo que la
+   página realmente muestra. */
+export const SOCIAL_LINKS = {
   instagram: "https://www.instagram.com/labsmindware/",
   linkedin: "https://www.linkedin.com/company/mindwarelabs/",
   email: "labsmindware@gmail.com",

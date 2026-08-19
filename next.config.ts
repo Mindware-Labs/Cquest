@@ -13,6 +13,20 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
+  /* No son señal de ranking, pero son gratis y refuerzan la confianza que
+     Google sí mide indirectamente (HTTPS, ausencia de mixed content). */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
+    ];
+  },
   images: {
     /* 92 es para la foto grupal de #metrics: es un retrato de grupo con caras
        pequeñas, y a 82 el JPEG de origen ya llega con artefactos propios que

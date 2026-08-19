@@ -7,7 +7,10 @@ import { PARTNER_SLOTS } from "@/components/about/partnershipsData";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { localeAlternates } from "@/i18n/alternates";
 import { resolveLang } from "@/i18n/resolveLangParam";
-import MindwareLabsProfile from "./components/MindwareLabsProfile";
+import type { Locale } from "@/i18n/config";
+import MindwareLabsProfile, { SOCIAL_LINKS } from "./components/MindwareLabsProfile";
+import JsonLd from "@/components/JsonLd";
+import { graph, breadcrumbNode, SITE_URL } from "@/lib/schema";
 import styles from "./partnership.module.css";
 
 const CUSTOM_PROFILES: Record<string, true> = {
@@ -44,6 +47,37 @@ export function generateStaticParams() {
   return PARTNER_SLOTS.map((partner) => ({ slug: partner.slug }));
 }
 
+/* Solo para el perfil real (mindware-labs): un Organization con los datos
+   que la página de verdad muestra (logo, redes, descripción) — nunca para
+   los slots placeholder, que ya van robots:{index:false}. */
+function mindwareLabsGraph(lang: Locale) {
+  const partner = PARTNER_SLOTS.find((entry) => entry.slug === "mindware-labs");
+  if (!partner) return graph();
+
+  const pageUrl = `${SITE_URL}/${lang}/partnerships/mindware-labs`;
+  return graph(
+    {
+      "@type": "Organization",
+      "@id": `${pageUrl}#organization`,
+      name: partner.name[lang],
+      url: pageUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}${partner.logo.src}`,
+        width: partner.logo.width,
+        height: partner.logo.height,
+      },
+      email: SOCIAL_LINKS.email,
+      sameAs: [SOCIAL_LINKS.instagram, SOCIAL_LINKS.linkedin],
+      description: MINDWARE_META[lang].description,
+    },
+    breadcrumbNode(lang, [
+      { name: "Center Quest", path: "" },
+      { name: partner.name[lang], path: "/partnerships/mindware-labs" },
+    ]),
+  );
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -68,6 +102,11 @@ export async function generateMetadata({
         description: MINDWARE_META[lang].description,
         type: "website",
       },
+      twitter: {
+        card: "summary_large_image",
+        title: MINDWARE_META[lang].title,
+        description: MINDWARE_META[lang].description,
+      },
       robots: { index: true, follow: true },
     };
   }
@@ -78,6 +117,7 @@ export async function generateMetadata({
     title,
     description: COPY[lang].note,
     alternates,
+    twitter: { card: "summary_large_image", title, description: COPY[lang].note },
     robots: { index: false, follow: true },
   };
 }
@@ -94,7 +134,12 @@ export default async function PartnershipPlaceholderPage({
   if (!partner) notFound();
 
   if (CUSTOM_PROFILES[slug]) {
-    return <MindwareLabsProfile />;
+    return (
+      <>
+        <JsonLd data={mindwareLabsGraph(lang)} />
+        <MindwareLabsProfile />
+      </>
+    );
   }
 
   const t = COPY[lang];
@@ -110,7 +155,7 @@ export default async function PartnershipPlaceholderPage({
             height={partner.logo.height}
             sizes="(max-width: 672px) 224px, 352px"
             className={styles.logoImage}
-            priority
+            preload
           />
         </div>
 

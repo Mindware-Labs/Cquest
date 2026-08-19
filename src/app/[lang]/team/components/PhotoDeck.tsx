@@ -127,7 +127,7 @@ export default function PhotoDeck({
                       sizes="(max-width: 70rem) 58vw, 28rem"
                       /* Only the top row is above the fold on load; the rest
                          can wait rather than compete with the headline. */
-                      priority={!isCopy && position === 0}
+                      preload={!isCopy && position === 0}
                     />
                   </motion.span>
                 );

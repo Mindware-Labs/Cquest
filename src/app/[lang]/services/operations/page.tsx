@@ -6,9 +6,12 @@ import { resolveLang } from "@/i18n/resolveLangParam";
 import JsonLd from "@/components/JsonLd";
 import { servicePageGraph } from "@/lib/schema";
 
+/* Título ES con "Servicios BPO" en vez de "Operaciones (BPO)": es la keyword
+   objetivo literal del documento de requisitos, y el gloss en inglés solo no
+   la cubre. */
 const TITLE: Record<Locale, string> = {
   en: "Operations (BPO) | Center Quest",
-  es: "Operaciones (BPO) | Center Quest",
+  es: "Servicios BPO (Business Process Outsourcing) | Center Quest",
 };
 
 const DESCRIPTION: Record<Locale, string> = {
@@ -23,6 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     description: DESCRIPTION[lang],
     alternates: localeAlternates(lang, "/services/operations"),
     openGraph: { title: TITLE[lang], description: DESCRIPTION[lang], type: "website" },
+    twitter: { card: "summary_large_image", title: TITLE[lang], description: DESCRIPTION[lang] },
   };
 }
 
