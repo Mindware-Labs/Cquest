@@ -2,11 +2,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
-
-/* TODO(auth): las tres mutaciones de abajo todavía no verifican sesión —
-   Auth.js es la Fase 2 del plan y esta es la Fase 3 adelantada a pedido. Una
-   vez conectadas a un formulario, cada una es un endpoint público: hay que
-   agregar el guard de sesión aquí dentro antes de exponer /admin. */
+import { getCurrentAdminId } from "@/lib/auth";
 
 export type CategoryActionState = { error: string | null };
 
@@ -46,6 +42,8 @@ export async function createCategory(
 ): Promise<CategoryActionState> {
   "use server";
 
+  await getCurrentAdminId();
+
   const parsed = nameSchema.safeParse(formData.get("name"));
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -74,6 +72,8 @@ export async function renameCategory(
   formData: FormData,
 ): Promise<CategoryActionState> {
   "use server";
+
+  await getCurrentAdminId();
 
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id)) {
@@ -108,6 +108,8 @@ export async function deleteCategory(
   formData: FormData,
 ): Promise<CategoryActionState> {
   "use server";
+
+  await getCurrentAdminId();
 
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id)) {

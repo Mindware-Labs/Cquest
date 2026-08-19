@@ -4,16 +4,20 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
 import { getCurrentAdminId } from "@/lib/auth";
 
-/* TODO(auth): create/update/setStatus/delete todavía no verifican sesión —
-   igual que categories.ts, quedan pendientes de Auth.js (Fase 2). */
-
 export type PostActionState = { error: string | null };
 
 const postFieldsSchema = z.object({
   title: z.string().trim().min(4, "El título debe tener al menos 4 caracteres.").max(120, "Máximo 120 caracteres."),
   excerpt: z.string().trim().min(10, "El extracto debe tener al menos 10 caracteres.").max(300, "Máximo 300 caracteres."),
   content: z.string().trim().min(20, "El cuerpo del artículo es muy corto."),
-  coverImageUrl: z.string().trim().url("La portada debe ser una URL válida (ej. la que devuelve Vercel Blob)."),
+  /* Siempre sale de uploadCoverImage() (src/lib/blob.ts): una ruta relativa
+     a /api/images/..., no una URL absoluta — así no queda atada a un dominio
+     fijo entre local, preview y producción. */
+  coverImageUrl: z
+    .string()
+    .trim()
+    .min(1, "Falta la portada.")
+    .startsWith("/api/images/", "La portada debe salir de la subida a Vercel Blob."),
   categoryId: z.coerce.number().int("Categoría inválida."),
   seoTitle: z.string().trim().max(70, "Máximo 70 caracteres.").optional().or(z.literal("")),
   seoDescription: z.string().trim().max(160, "Máximo 160 caracteres.").optional().or(z.literal("")),
@@ -114,6 +118,8 @@ export async function updatePost(
 ): Promise<PostActionState> {
   "use server";
 
+  await getCurrentAdminId();
+
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id)) {
     return { error: "Artículo inválido." };
@@ -167,6 +173,8 @@ export async function setPostStatus(
 ): Promise<PostActionState> {
   "use server";
 
+  await getCurrentAdminId();
+
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id)) {
     return { error: "Artículo inválido." };
@@ -198,6 +206,8 @@ export async function deletePost(
   formData: FormData,
 ): Promise<PostActionState> {
   "use server";
+
+  await getCurrentAdminId();
 
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id)) {
