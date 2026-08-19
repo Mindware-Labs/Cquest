@@ -150,6 +150,52 @@ export function servicePageGraph(serviceId: string, lang: Locale) {
   );
 }
 
+type BlogPostForSchema = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImageUrl: string;
+  publishedAt: Date;
+  updatedAt: Date;
+  categoryName: string;
+};
+
+/* Sin bylines individuales: el blog publica a nombre de Center Quest, no de
+   la persona del equipo que lo redactó, así que author y publisher apuntan
+   al mismo @id de organización del layout en vez de inventar un Person. */
+export function blogPostingNode(post: BlogPostForSchema, lang: Locale) {
+  const url = `${SITE_URL}/${lang}/blog/${post.slug}`;
+  return {
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    headline: post.title,
+    description: post.excerpt,
+    image: post.coverImageUrl,
+    datePublished: post.publishedAt.toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    articleSection: post.categoryName,
+    inLanguage: lang,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+  };
+}
+
+/* El grafo de una página de artículo: el BlogPosting más su lugar en la
+   jerarquía. Mismo patrón que servicePageGraph — vive aquí para no repetirse
+   cuando exista la página real de /blog/[slug]. */
+export function blogPostPageGraph(post: BlogPostForSchema, lang: Locale) {
+  return graph(
+    blogPostingNode(post, lang),
+    breadcrumbNode(lang, [
+      { name: "Center Quest", path: "" },
+      { name: "Blog", path: "/blog" },
+      { name: post.title, path: `/blog/${post.slug}` },
+    ]),
+  );
+}
+
 /* Un único <script> por página. Varios bloques sueltos son válidos, pero el
    grafo deja explícito que todos los nodos son de la misma página. */
 export function graph(...nodes: ReadonlyArray<object | null>) {
