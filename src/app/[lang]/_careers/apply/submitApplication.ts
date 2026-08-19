@@ -110,7 +110,7 @@ export async function submitApplication(form: FormData): Promise<ApplicationResu
   const bytes = new Uint8Array(await cv.arrayBuffer());
 
   const resend = new Resend(apiKey);
-  const from = process.env.RESEND_FROM ?? "Center Quest <onboarding@resend.dev>";
+  const from = process.env.RESEND_FROM ?? "Center Quest <no-reply@cquest.do>";
   const hrInbox = (process.env.RESEND_TO_HR ?? process.env.RESEND_TO ?? "labsmindware@gmail.com")
     .split(",")
     .map((address) => address.trim())

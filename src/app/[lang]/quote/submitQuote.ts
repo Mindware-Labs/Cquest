@@ -56,7 +56,7 @@ export async function submitQuote(submission: QuoteSubmission): Promise<void> {
   }
 
   const resend = new Resend(apiKey);
-  const from = process.env.RESEND_FROM ?? "Center Quest <onboarding@resend.dev>";
+  const from = process.env.RESEND_FROM ?? "Center Quest <no-reply@cquest.do>";
   const salesInbox = (process.env.RESEND_TO ?? "labsmindware@gmail.com")
     .split(",")
     .map((address) => address.trim())
