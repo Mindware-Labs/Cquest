@@ -81,23 +81,39 @@ function lastCommit(paths: readonly string[]): Date | undefined {
    justifica una consulta por cada visita del rastreador. */
 export const revalidate = 3600;
 
+/* Y no se prerenderiza durante el build. Sin esto, Next lo genera al compilar
+   y el despliegue entero falla si la base no está disponible en ese momento
+   — que es justo lo que pasó la primera vez que este archivo consultó
+   Postgres. Un sitemap es contenido, no código: su indisponibilidad
+   momentánea no puede tumbar un deploy. */
+export const dynamic = "force-dynamic";
+
 /* Los artículos publicados, leídos de la base y no del historial de git
    (SEO-1). Dos fuentes distintas en el mismo archivo porque son dos cosas
    distintas: el código versionado y el contenido editorial. */
 async function postEntries(): Promise<MetadataRoute.Sitemap> {
-  const byLocale = await Promise.all(
-    locales.map(async (locale) => {
-      const posts = await getPublishedPosts(locale);
-      return posts.map((post) => ({
-        url: `${SITE_URL}/${locale}/blog/${post.slug}`,
-        lastModified: post.updatedAt,
-        /* Sin `alternates`: un artículo vive en un solo idioma y no tiene
-           traducción. Declarar un clúster hreflang hacia una URL que sirve
-           otro contenido es peor que no declarar ninguno. */
-      }));
-    }),
-  );
-  return byLocale.flat();
+  try {
+    const byLocale = await Promise.all(
+      locales.map(async (locale) => {
+        const posts = await getPublishedPosts(locale);
+        return posts.map((post) => ({
+          url: `${SITE_URL}/${locale}/blog/${post.slug}`,
+          lastModified: post.updatedAt,
+          /* Sin `alternates`: un artículo vive en un solo idioma y no tiene
+             traducción. Declarar un clúster hreflang hacia una URL que sirve
+             otro contenido es peor que no declarar ninguno. */
+        }));
+      }),
+    );
+    return byLocale.flat();
+  } catch (error) {
+    /* Segunda red: si la base falla en tiempo de request, se sirve el sitemap
+       con las rutas estáticas en vez de devolver un 500. Un sitemap incompleto
+       se corrige en la próxima revalidación; uno que no responde le enseña a
+       Google que la URL está rota. */
+    console.error("No se pudieron leer los artículos para el sitemap:", error);
+    return [];
+  }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
