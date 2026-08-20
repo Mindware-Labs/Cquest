@@ -45,7 +45,7 @@ export function TemplateShape({ types }: { types: readonly string[] }) {
         const shape = SHAPE[type] ?? FALLBACK;
         const bar =
           shape.tone === "solid"
-            ? "h-[6px] rounded-[1px] bg-petroleo/40"
+            ? "h-[7px] rounded-[1px] bg-petroleo/60"
             : "h-[3px] rounded-[1px] bg-[var(--brand-gris)]";
 
         return (

@@ -22,9 +22,10 @@ export default function AdminNav() {
   return (
     <nav
       aria-label="Secciones del panel"
-      /* En el riel es una columna; en pantallas chicas se acuesta y se
-         desplaza en horizontal antes que apilarse y comerse la pantalla. */
-      className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible"
+      /* En el riel es una columna; en pantallas chicas se acuesta y envuelve.
+         Nada de desplazamiento horizontal: una sección que queda fuera del
+         borde no existe para quien no adivina que hay que arrastrar. */
+      className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap"
     >
       {LINKS.map(({ href, label, Icon }) => {
         /* "/admin" solo es exacto; el resto marca activo también en sus

@@ -85,12 +85,15 @@
   padding: 0.35rem;
 }
 
+/* Texto en tinta sobre el verde, no blanco: blanco sobre #6aaa00 da 2.6:1 y no
+   llega al mínimo legible. Es además lo que hace el botón primario del sitio
+   público, que también pone texto oscuro sobre su acento. */
 .cq-btn[data-variant="primary"] {
   background: var(--brand-verde);
-  color: #ffffff;
+  color: var(--ink);
 }
 .cq-btn[data-variant="primary"]:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--brand-verde) 86%, var(--ink));
+  background: color-mix(in srgb, var(--brand-verde) 88%, #ffffff);
 }
 
 .cq-btn[data-variant="secondary"] {
@@ -225,6 +228,14 @@
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--text-tertiary);
+}
+
+/* La variante sobre tinta necesita su propia regla y no una utilidad de color:
+   .cq-label y una clase de Tailwind tienen la misma especificidad, y como este
+   archivo se importa después, el color oscuro ganaba y la etiqueta quedaba
+   ilegible sobre el fondo del login. */
+.cq-label-dark {
+  color: var(--panel-rail-text);
 }
 
 /* ---------- Riel de navegación ---------- */
