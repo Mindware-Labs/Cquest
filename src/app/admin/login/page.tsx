@@ -10,23 +10,25 @@ export default async function AdminLoginPage() {
   if (session?.user?.id) redirect("/admin");
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-5 py-16">
-      <div className="w-full max-w-[24rem]">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-petroleo">
-          Center Quest
-        </p>
-        <h1 className="mt-2 font-heading text-[1.7rem] font-semibold leading-tight tracking-[-0.02em] text-foreground">
-          Panel
+    /* Entrada en tinta: el panel empieza acá y se anuncia con la misma
+       superficie oscura del riel, no con una pantalla blanca cualquiera. */
+    <div className="cq-rail flex min-h-screen items-center justify-center px-5 py-16">
+      <div className="w-full max-w-[23rem]">
+        <h1 className="font-heading text-[1.9rem] leading-[1.05] font-semibold tracking-[-0.025em] text-[var(--panel-rail-text-strong)]">
+          Panel editorial
+          <span className="mt-1.5 block text-[0.95rem] font-normal tracking-normal text-[var(--panel-rail-text)]">
+            Center Quest
+          </span>
         </h1>
 
-        <div className="mt-7 rounded-xl border border-border bg-[var(--surface-raised)] p-7">
+        <div className="mt-7 rounded-[4px] border border-[var(--panel-rail-border)] bg-[var(--panel-rail-raised)] p-6">
           <LoginForm action={loginAdmin} />
         </div>
 
         {/* No hay registro público (AD-1): las cuentas se crean por consola con
             prisma/create-admin.ts. Decirlo evita que alguien busque el enlace. */}
-        <p className="mt-5 text-center text-[0.8rem] leading-relaxed text-[var(--text-tertiary)]">
-          El acceso al panel se otorga internamente. No hay registro abierto.
+        <p className="mt-5 text-center text-[0.8rem] leading-relaxed text-[var(--panel-rail-text)]">
+          El acceso se otorga internamente. No hay registro abierto.
         </p>
       </div>
     </div>

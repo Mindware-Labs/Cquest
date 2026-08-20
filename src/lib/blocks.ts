@@ -56,7 +56,10 @@ const imageBlockSchema = z.object({
   ...blockBase,
   type: z.literal("image"),
   src: imageSrcSchema,
-  alt: z.string().trim().max(200),
+  /* Obligatorio, no opcional con aviso: una imagen sin texto alternativo es
+     invisible para un lector de pantalla, y el panel ya promete que sin esto
+     el artículo no se guarda. La validación tiene que sostener esa promesa. */
+  alt: z.string().trim().min(1, "El texto alternativo es obligatorio.").max(200),
   width: dimensionSchema,
   height: dimensionSchema,
   caption: z.string().trim().max(200).optional(),
@@ -66,7 +69,7 @@ const imageBlockSchema = z.object({
 
 const galleryImageSchema = z.object({
   src: imageSrcSchema,
-  alt: z.string().trim().max(200),
+  alt: z.string().trim().min(1, "Cada imagen de la galería necesita texto alternativo.").max(200),
   /* La grilla recorta a una altura común, así que acá las dimensiones no
      deciden el encuadre — se guardan igual para no perder el dato si algún día
      la galería ofrece un modo que respete la proporción original. */

@@ -1,0 +1,368 @@
+/* Sistema visual del panel — se importa SOLO desde src/app/admin/layout.tsx,
+   que es un segundo root layout. Nada de esto llega al sitio público.
+
+   Por qué un archivo y no utilidades sueltas en cada JSX: el panel es modo
+   "operar". Un botón Guardar que se ve distinto en dos pantallas significa que
+   una de las dos está mal, y con las clases repetidas a mano eso pasa siempre.
+   Acá el vocabulario se declara una vez. */
+
+:root {
+  /* Segunda capa neutra: el riel de navegación vive en tinta y el contenido en
+     marfil. La jerarquía se lee antes de leer una sola palabra. */
+  --panel-rail: #0a1116;
+  --panel-rail-raised: #131f27;
+  --panel-rail-border: #22323d;
+  --panel-rail-text: #b9c6cd;
+  --panel-rail-text-strong: #ffffff;
+
+  /* Casi cuadrado, como manda la identidad — no el radio de 16px que usa todo
+     panel genérico. Controles 2px, paneles 4px. */
+  --panel-radius-control: 2px;
+  --panel-radius-panel: 4px;
+
+  /* Una sola escala de elevación. Cada sombra tiene desplazamiento Y difuminado:
+     un halo sin offset es decoración, no profundidad. */
+  --panel-shadow-raised: 0 1px 2px rgb(13 30 41 / 0.06), 0 8px 24px -12px rgb(13 30 41 / 0.18);
+  --panel-shadow-overlay: 0 2px 4px rgb(13 30 41 / 0.08), 0 18px 40px -18px rgb(13 30 41 / 0.3);
+
+  --panel-speed: 170ms;
+}
+
+/* ---------- Superficies ---------- */
+
+.cq-panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius-panel);
+}
+
+/* El encabezado de un panel lleva su propio tono para que la fila de títulos de
+   una tabla no se confunda con la primera fila de datos. */
+.cq-panel-head {
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---------- Controles ---------- */
+
+.cq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: var(--panel-radius-control);
+  padding: 0.55rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--panel-speed) var(--ease-out),
+    border-color var(--panel-speed) var(--ease-out),
+    color var(--panel-speed) var(--ease-out),
+    box-shadow var(--panel-speed) var(--ease-out);
+}
+
+.cq-btn:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.cq-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.cq-btn[data-size="sm"] {
+  padding: 0.38rem 0.65rem;
+  font-size: 0.74rem;
+}
+
+.cq-btn[data-size="icon"] {
+  padding: 0.35rem;
+}
+
+.cq-btn[data-variant="primary"] {
+  background: var(--brand-verde);
+  color: #ffffff;
+}
+.cq-btn[data-variant="primary"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-verde) 86%, var(--ink));
+}
+
+.cq-btn[data-variant="secondary"] {
+  background: var(--brand-petroleo);
+  color: #ffffff;
+}
+.cq-btn[data-variant="secondary"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-petroleo) 86%, var(--ink));
+}
+
+.cq-btn[data-variant="ghost"] {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+.cq-btn[data-variant="ghost"]:hover:not(:disabled) {
+  border-color: var(--brand-petroleo);
+  color: var(--foreground);
+}
+
+.cq-btn[data-variant="quiet"] {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.cq-btn[data-variant="quiet"]:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.cq-btn[data-variant="danger"] {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: #a32020;
+}
+.cq-btn[data-variant="danger"]:hover:not(:disabled) {
+  background: #a32020;
+  border-color: #a32020;
+  color: #ffffff;
+}
+
+/* Confirmación armada: el segundo clic es el que borra, y el botón lo dice. */
+.cq-btn[data-armed="true"] {
+  background: #a32020;
+  border-color: #a32020;
+  color: #ffffff;
+}
+
+/* Botón cuadrado de solo icono para el lienzo del editor: subir, bajar, quitar.
+   Comparte estados con .cq-btn ghost; cambia la caja, no el vocabulario. */
+.cq-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius-control);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color var(--panel-speed) var(--ease-out),
+    color var(--panel-speed) var(--ease-out);
+}
+
+.cq-icon-btn:hover:not(:disabled) {
+  border-color: var(--brand-petroleo);
+  color: var(--foreground);
+}
+
+.cq-icon-btn:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.cq-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.cq-input {
+  width: 100%;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius-control);
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--foreground);
+  transition:
+    border-color var(--panel-speed) var(--ease-out),
+    box-shadow var(--panel-speed) var(--ease-out);
+}
+
+.cq-input::placeholder {
+  /* Tintado desde el propio texto, nunca gris plano: así aguanta el 4.5:1. */
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+.cq-input:focus {
+  outline: none;
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+.cq-input:disabled {
+  background: var(--surface-sunken);
+  cursor: not-allowed;
+}
+
+/* El login vive sobre tinta, así que sus campos no pueden ser los del panel:
+   un input blanco sobre fondo oscuro es un parche, no una variante. */
+.cq-input-dark {
+  background: color-mix(in srgb, var(--panel-rail) 55%, #ffffff 3%);
+  border-color: var(--panel-rail-border);
+  color: var(--panel-rail-text-strong);
+}
+
+.cq-input-dark::placeholder {
+  color: color-mix(in srgb, var(--panel-rail-text) 82%, transparent);
+}
+
+.cq-input-dark:focus {
+  border-color: var(--brand-celeste);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-celeste) 24%, transparent);
+}
+
+.cq-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Riel de navegación ---------- */
+
+.cq-rail {
+  background: var(--panel-rail);
+  color: var(--panel-rail-text);
+}
+
+.cq-rail-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: var(--panel-radius-control);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--panel-rail-text);
+  transition:
+    background-color var(--panel-speed) var(--ease-out),
+    color var(--panel-speed) var(--ease-out);
+}
+
+.cq-rail-link:hover {
+  background: var(--panel-rail-raised);
+  color: var(--panel-rail-text-strong);
+}
+
+.cq-rail-link:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 2px;
+}
+
+.cq-rail-link[aria-current="page"] {
+  background: var(--panel-rail-raised);
+  color: var(--panel-rail-text-strong);
+}
+
+/* La marca de sección activa: una barra celeste que crece desde el centro.
+   Es el único momento animado del riel, y solo informa estado. */
+.cq-rail-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.35rem;
+  inset-inline-start: -0.75rem;
+  width: 2px;
+  background: var(--brand-celeste);
+  animation: cq-rail-mark 260ms var(--ease-out-expo) both;
+}
+
+@keyframes cq-rail-mark {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ---------- Estado ---------- */
+
+.cq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: var(--panel-radius-control);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cq-badge::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.cq-badge[data-tone="published"] {
+  background: color-mix(in srgb, var(--brand-verde) 12%, var(--surface-raised));
+  color: #3f6600;
+}
+
+.cq-badge[data-tone="draft"] {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+
+.cq-badge[data-tone="hidden"] {
+  background: color-mix(in srgb, var(--brand-gris) 45%, var(--surface-raised));
+  color: #5b5148;
+}
+
+/* Fila de datos: el hover no decora, indica que la fila es accionable. */
+.cq-row {
+  transition: background-color var(--panel-speed) var(--ease-out);
+}
+
+.cq-row:hover {
+  background: color-mix(in srgb, var(--surface-sunken) 55%, var(--surface-raised));
+}
+
+/* Barra de proporción — dato real (reparto por categoría), no adorno. */
+.cq-meter {
+  height: 0.3rem;
+  background: var(--surface-sunken);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cq-meter > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--brand-petroleo);
+  border-radius: 999px;
+  transform-origin: left center;
+  /* La proporción llega por variable, no por transform en línea: si el keyframe
+     terminara en scaleX(1) fijo, la animación pisaría el dato. */
+  animation: cq-meter-grow 520ms var(--ease-out-expo) both;
+}
+
+@keyframes cq-meter-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(var(--cq-ratio, 1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-rail-link[aria-current="page"]::before,
+  .cq-meter > span {
+    animation: none;
+  }
+}

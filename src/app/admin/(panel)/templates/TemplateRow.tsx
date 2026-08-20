@@ -1,37 +1,35 @@
 "use client";
 
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import type { TemplateActionState } from "@/lib/templates";
-
-function DeleteButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-md border border-border px-3 py-1.5 text-[0.8rem] font-semibold text-red-700 transition-colors hover:border-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-40"
-    >
-      {pending ? "Eliminando…" : "Eliminar"}
-    </button>
-  );
-}
+import { ConfirmSubmit } from "@/components/admin/ui/Buttons";
+import { Alert } from "@/components/admin/ui/Surface";
+import { TemplateShape } from "@/components/admin/ui/TemplateShape";
 
 export default function TemplateRow({
   template,
   deleteAction,
 }: {
-  template: { id: number; name: string; blockCount: number; authorName: string; createdAt: string };
-  deleteAction: (
-    state: TemplateActionState,
-    formData: FormData,
-  ) => Promise<TemplateActionState>;
+  template: {
+    id: number;
+    name: string;
+    types: string[];
+    blockCount: number;
+    isBroken: boolean;
+    authorName: string;
+    createdAt: string;
+  };
+  deleteAction: (state: TemplateActionState, formData: FormData) => Promise<TemplateActionState>;
 }) {
   const [state, formAction] = useActionState(deleteAction, { error: null });
 
   return (
-    <li className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-4 last:border-b-0">
-      <div>
+    <li className="cq-row flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border px-5 py-4 last:border-b-0">
+      <div className="w-[7.5rem] shrink-0">
+        <TemplateShape types={template.types} />
+      </div>
+
+      <div className="min-w-[11rem] flex-1">
         <p className="text-[0.95rem] font-semibold text-foreground">{template.name}</p>
         <p className="mt-0.5 text-[0.78rem] text-[var(--text-tertiary)]">
           {template.blockCount} {template.blockCount === 1 ? "bloque" : "bloques"} ·{" "}
@@ -39,22 +37,28 @@ export default function TemplateRow({
         </p>
       </div>
 
-      <form
-        action={formAction}
-        onSubmit={(event) => {
-          if (!confirm(`¿Eliminar la plantilla "${template.name}"?`)) {
-            event.preventDefault();
-          }
-        }}
-      >
+      <form action={formAction}>
         <input type="hidden" name="id" value={template.id} />
-        <DeleteButton />
+        <ConfirmSubmit confirmLabel="Confirmar" pendingLabel="Eliminando…">
+          Eliminar
+        </ConfirmSubmit>
       </form>
 
+      {/* Una plantilla guardada con un esquema viejo no se puede usar, y el
+          admin tiene que enterarse acá y no al aplicarla sobre un artículo. */}
+      {template.isBroken && (
+        <div className="w-full">
+          <Alert>
+            Esta plantilla se guardó con una estructura que ya no es válida. Eliminala y volvé a
+            guardarla desde el editor.
+          </Alert>
+        </div>
+      )}
+
       {state.error && (
-        <p role="alert" className="w-full text-[0.82rem] text-red-700">
-          {state.error}
-        </p>
+        <div className="w-full">
+          <Alert>{state.error}</Alert>
+        </div>
       )}
     </li>
   );

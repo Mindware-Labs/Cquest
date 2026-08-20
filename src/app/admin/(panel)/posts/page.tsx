@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { deletePost, getPosts, setPostStatus } from "@/lib/posts";
+import { IconPlus } from "@/components/admin/ui/icons";
+import { EmptyState, PageHeader, Panel } from "@/components/admin/ui/Surface";
 import PostRow from "./PostRow";
 
 /* Fecha para la tabla del admin: corta, con hora, y en la zona de la operación.
@@ -14,35 +16,96 @@ const EDITED_AT = new Intl.DateTimeFormat("es-DO", {
   timeZone: "America/Santo_Domingo",
 });
 
-export default async function AdminPostsPage() {
+const FILTERS = [
+  { key: "todos", label: "Todos" },
+  { key: "borrador", label: "Borradores", status: "DRAFT" },
+  { key: "publicado", label: "Publicados", status: "PUBLISHED" },
+  { key: "oculto", label: "Ocultos", status: "HIDDEN" },
+] as const;
+
+type FilterKey = (typeof FILTERS)[number]["key"];
+
+function isFilterKey(value: string | undefined): value is FilterKey {
+  return FILTERS.some((filter) => filter.key === value);
+}
+
+export default async function AdminPostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ estado?: string }>;
+}) {
+  const { estado } = await searchParams;
   const posts = await getPosts();
 
-  return (
-    <div className="pt-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-heading text-[1.6rem] font-semibold tracking-[-0.02em] text-foreground">
-          Artículos
-        </h1>
-        <Link
-          href="/admin/posts/new"
-          className="rounded-md bg-verde px-4 py-2.5 text-[0.85rem] font-semibold text-white transition-colors hover:bg-verde/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-verde"
-        >
-          Nuevo artículo
-        </Link>
-      </div>
-      <p className="mt-2 max-w-[42rem] text-[0.92rem] leading-relaxed text-[var(--text-secondary)]">
-        Todos los artículos, en cualquier estado. Solo los publicados con fecha
-        alcanzada aparecen en el blog público.
-      </p>
+  /* El filtro vive en la URL y no en estado de cliente: así una pestaña con
+     "solo borradores" se puede compartir, recargar y volver atrás. */
+  const active: FilterKey = isFilterKey(estado) ? estado : "todos";
+  const activeStatus = FILTERS.find((filter) => filter.key === active);
+  const visible =
+    activeStatus && "status" in activeStatus
+      ? posts.filter((post) => post.status === activeStatus.status)
+      : posts;
 
-      <div className="mt-7 rounded-xl border border-border bg-[var(--surface-raised)] px-6">
+  const countFor = (filter: (typeof FILTERS)[number]) =>
+    "status" in filter ? posts.filter((post) => post.status === filter.status).length : posts.length;
+
+  return (
+    <div>
+      <PageHeader
+        title="Artículos"
+        description="Todos los artículos, en cualquier estado. Solo los publicados con fecha alcanzada aparecen en el blog público."
+        actions={
+          <Link href="/admin/posts/new" className="cq-btn" data-variant="primary">
+            <IconPlus size={16} />
+            Nuevo artículo
+          </Link>
+        }
+      />
+
+      <Panel>
+        <div className="cq-panel-head flex flex-wrap items-center gap-1 px-3 py-2">
+          {FILTERS.map((filter) => {
+            const isActive = filter.key === active;
+            return (
+              <Link
+                key={filter.key}
+                href={filter.key === "todos" ? "/admin/posts" : `/admin/posts?estado=${filter.key}`}
+                aria-current={isActive ? "true" : undefined}
+                className={`cq-btn ${isActive ? "" : "border-transparent"}`}
+                data-variant={isActive ? "secondary" : "quiet"}
+                data-size="sm"
+              >
+                {filter.label}
+                <span className={isActive ? "opacity-80" : "opacity-70"}>{countFor(filter)}</span>
+              </Link>
+            );
+          })}
+        </div>
+
         {posts.length === 0 ? (
-          <p className="py-12 text-center text-[0.9rem] text-[var(--text-tertiary)]">
-            Todavía no hay artículos.
-          </p>
+          <EmptyState
+            title="Todavía no hay artículos"
+            hint="Un artículo se arma con bloques: título, párrafos, imágenes, tablas. Podés partir de una plantilla o desde cero."
+            action={
+              <Link href="/admin/posts/new" className="cq-btn" data-variant="primary">
+                <IconPlus size={16} />
+                Escribir el primero
+              </Link>
+            }
+          />
+        ) : visible.length === 0 ? (
+          <EmptyState
+            title="Ningún artículo en este estado"
+            hint="Probá con otro filtro para ver el resto."
+            action={
+              <Link href="/admin/posts" className="cq-btn" data-variant="ghost">
+                Ver todos
+              </Link>
+            }
+          />
         ) : (
           <ul>
-            {posts.map((post) => (
+            {visible.map((post) => (
               <PostRow
                 key={post.id}
                 post={{
@@ -62,7 +125,7 @@ export default async function AdminPostsPage() {
             ))}
           </ul>
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

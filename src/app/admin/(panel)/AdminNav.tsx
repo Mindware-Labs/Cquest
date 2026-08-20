@@ -2,37 +2,44 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  IconArticles,
+  IconCategories,
+  IconHome,
+  IconTemplates,
+} from "@/components/admin/ui/icons";
 
 const LINKS = [
-  { href: "/admin", label: "Inicio" },
-  { href: "/admin/posts", label: "Artículos" },
-  { href: "/admin/categories", label: "Categorías" },
-  { href: "/admin/templates", label: "Plantillas" },
+  { href: "/admin", label: "Inicio", Icon: IconHome },
+  { href: "/admin/posts", label: "Artículos", Icon: IconArticles },
+  { href: "/admin/categories", label: "Categorías", Icon: IconCategories },
+  { href: "/admin/templates", label: "Plantillas", Icon: IconTemplates },
 ] as const;
 
 export default function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Secciones del panel" className="flex gap-1 border-b border-border py-3">
-      {LINKS.map((link) => {
+    <nav
+      aria-label="Secciones del panel"
+      /* En el riel es una columna; en pantallas chicas se acuesta y se
+         desplaza en horizontal antes que apilarse y comerse la pantalla. */
+      className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible"
+    >
+      {LINKS.map(({ href, label, Icon }) => {
         /* "/admin" solo es exacto; el resto marca activo también en sus
            subrutas, para que editar un artículo mantenga iluminada su sección. */
-        const isActive =
-          link.href === "/admin" ? pathname === "/admin" : pathname.startsWith(link.href);
+        const isActive = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
         return (
           <Link
-            key={link.href}
-            href={link.href}
+            key={href}
+            href={href}
             aria-current={isActive ? "page" : undefined}
-            className={`rounded-md px-3 py-1.5 text-[0.85rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo ${
-              isActive
-                ? "bg-petroleo text-white"
-                : "text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-foreground"
-            }`}
+            className="cq-rail-link shrink-0"
           >
-            {link.label}
+            <Icon size={17} className="shrink-0 opacity-90" />
+            {label}
           </Link>
         );
       })}

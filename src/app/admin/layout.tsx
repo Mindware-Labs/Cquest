@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Josefin_Sans } from "next/font/google";
 import "../globals.css";
+/* El vocabulario visual del panel se carga solo acá: el sitio público no lo ve. */
+import "../styles/admin.css";
 
 /* Segundo root layout, hermano de src/app/[lang]/layout.tsx: el panel tiene su
    propio <html> porque no comparte nada del cromo público — ni navbar, ni
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${josefin.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[var(--surface-sunken)]">{children}</body>
+      <body className="min-h-full bg-background text-foreground">{children}</body>
     </html>
   );
 }

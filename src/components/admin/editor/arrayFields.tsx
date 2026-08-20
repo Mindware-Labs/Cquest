@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploadField from "../ImageUploadField";
+import { IconClose } from "@/components/admin/ui/icons";
 import { INPUT_CLASS } from "./fields";
 
 /* Editores para los bloques que guardan listas: lista, tabla y galería. Van
@@ -46,7 +47,7 @@ export function StringListEditor({
               onClick={() => onChange(items.filter((_, i) => i !== index))}
               className={SMALL_BUTTON}
             >
-              ✕
+              <IconClose size={13} />
             </button>
           </li>
         ))}
@@ -112,7 +113,7 @@ export function TableEditor({
               onClick={() => removeColumn(index)}
               className={SMALL_BUTTON}
             >
-              ✕
+              <IconClose size={13} />
             </button>
           </div>
         ))}
@@ -141,7 +142,7 @@ export function TableEditor({
                 onClick={() => onChange({ headers, rows: rows.filter((_, i) => i !== rowIndex) })}
                 className={SMALL_BUTTON}
               >
-                ✕
+                <IconClose size={13} />
               </button>
             </div>
             <div className="mt-2 space-y-1.5">
@@ -214,7 +215,7 @@ export function GalleryEditor({
                 onClick={() => onChange(images.filter((_, i) => i !== index))}
                 className={SMALL_BUTTON}
               >
-                ✕
+                <IconClose size={13} />
               </button>
             </div>
 
@@ -233,6 +234,11 @@ export function GalleryEditor({
               onChange={(event) => patch(index, { alt: event.target.value })}
               className={`${INPUT_CLASS} mt-0`}
             />
+            {image.src && image.alt.trim().length === 0 && (
+              <p className="text-[0.76rem] text-red-700">
+                Obligatorio: sin esto el artículo no se puede guardar.
+              </p>
+            )}
             <input
               type="text"
               value={image.caption ?? ""}

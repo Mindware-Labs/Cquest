@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Block, ColumnSimpleBlock } from "@/lib/blocks";
+import { IconArrowDown, IconArrowUp, IconClose } from "@/components/admin/ui/icons";
 import { COLUMN_TYPES, TYPE_LABEL, type ColumnType } from "./blockFactory";
 import { MOVE_BLOCK_MIME, NEW_BLOCK_MIME } from "./BlockPalette";
 
@@ -10,8 +11,7 @@ import { MOVE_BLOCK_MIME, NEW_BLOCK_MIME } from "./BlockPalette";
    concreta (AD-10), y todo eso con equivalente por teclado (RNF-5) — los
    botones ↑↓ no son un extra, son la ruta accesible del mismo gesto. */
 
-const ICON_BUTTON =
-  "rounded-md border border-border bg-white px-2 py-1 text-[0.8rem] text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-30";
+const ICON_BUTTON = "cq-icon-btn";
 
 /* Una imagen subida sin describir bloquea el guardado (RNF-5, comprobado en
    blockArraySchema). Marcarlo en el lienzo evita que el admin lo descubra
@@ -191,7 +191,7 @@ export default function BlockCanvas({
                     }}
                     className={ICON_BUTTON}
                   >
-                    ↑
+                    <IconArrowUp size={15} />
                   </button>
                   <button
                     type="button"
@@ -203,7 +203,7 @@ export default function BlockCanvas({
                     }}
                     className={ICON_BUTTON}
                   >
-                    ↓
+                    <IconArrowDown size={15} />
                   </button>
                   <button
                     type="button"
@@ -214,7 +214,7 @@ export default function BlockCanvas({
                     }}
                     className={ICON_BUTTON}
                   >
-                    ✕
+                    <IconClose size={15} />
                   </button>
                 </div>
               </div>
@@ -303,7 +303,7 @@ function ColumnsEditor({
                   onClick={() => onMoveInColumn(block.id, columnIndex, childIndex, childIndex - 1)}
                   className={ICON_BUTTON}
                 >
-                  ↑
+                  <IconArrowUp size={14} />
                 </button>
                 <button
                   type="button"
@@ -312,7 +312,7 @@ function ColumnsEditor({
                   onClick={() => onMoveInColumn(block.id, columnIndex, childIndex, childIndex + 1)}
                   className={ICON_BUTTON}
                 >
-                  ↓
+                  <IconArrowDown size={14} />
                 </button>
                 <button
                   type="button"
@@ -320,7 +320,7 @@ function ColumnsEditor({
                   onClick={() => onRemove(child.id)}
                   className={ICON_BUTTON}
                 >
-                  ✕
+                  <IconClose size={14} />
                 </button>
               </li>
             ))}

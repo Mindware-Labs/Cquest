@@ -3,8 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import type { PostActionState } from "@/lib/posts";
+import { ConfirmSubmit, SubmitButton } from "@/components/admin/ui/Buttons";
+import { IconExternal, IconEye, IconEyeOff, IconPencil } from "@/components/admin/ui/icons";
+import { Alert, StatusBadge } from "@/components/admin/ui/Surface";
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
@@ -20,38 +22,6 @@ export type PostRowData = {
   updatedAt: string;
 };
 
-const STATUS_LABEL: Record<PostRowData["status"], string> = {
-  DRAFT: "Borrador",
-  PUBLISHED: "Publicado",
-  HIDDEN: "Oculto",
-};
-
-const STATUS_BADGE: Record<PostRowData["status"], string> = {
-  DRAFT: "bg-[var(--surface-sunken)] text-[var(--text-tertiary)]",
-  PUBLISHED: "bg-verde/12 text-verde",
-  HIDDEN: "bg-gris/40 text-[var(--text-secondary)]",
-};
-
-const GHOST_BUTTON =
-  "rounded-md border border-border px-3 py-1.5 text-[0.8rem] font-semibold text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-40";
-
-function PendingButton({
-  label,
-  pendingLabel,
-  className,
-}: {
-  label: string;
-  pendingLabel: string;
-  className: string;
-}) {
-  const { pending } = useFormStatus();
-  return (
-    <button type="submit" disabled={pending} className={className}>
-      {pending ? pendingLabel : label}
-    </button>
-  );
-}
-
 export default function PostRow({
   post,
   setStatusAction,
@@ -66,67 +36,87 @@ export default function PostRow({
 
   /* Publicado ↔ oculto es el interruptor de visibilidad. Un borrador que nunca
      se publicó no se "oculta": se publica. */
-  const nextStatus = post.status === "PUBLISHED" ? "HIDDEN" : "PUBLISHED";
-  const toggleLabel = post.status === "PUBLISHED" ? "Ocultar" : "Publicar";
+  const isPublished = post.status === "PUBLISHED";
+  const nextStatus = isPublished ? "HIDDEN" : "PUBLISHED";
+  const toggleLabel = isPublished ? "Ocultar" : "Publicar";
 
   return (
-    <li className="flex flex-wrap items-center gap-4 border-b border-border py-4 last:border-b-0">
-      <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-md bg-[var(--surface-sunken)]">
+    <li className="cq-row flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border px-5 py-4 last:border-b-0">
+      <div className="relative h-14 w-[5.25rem] shrink-0 overflow-hidden rounded-[2px] bg-[var(--surface-sunken)] ring-1 ring-border">
         <Image
           src={post.coverImageUrl}
           alt={post.coverImageAlt}
           fill
-          sizes="80px"
+          sizes="84px"
           className="object-cover"
         />
       </div>
 
-      <div className="min-w-[12rem] flex-1">
-        <p className="text-[0.95rem] font-semibold leading-snug text-foreground">{post.title}</p>
-        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.76rem] text-[var(--text-tertiary)]">
-          <span
-            className={`rounded-full px-2 py-0.5 text-[0.68rem] font-semibold uppercase tracking-[0.08em] ${STATUS_BADGE[post.status]}`}
-          >
-            {STATUS_LABEL[post.status]}
-          </span>
+      <div className="min-w-[13rem] flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={post.status} />
+          <p className="text-[0.98rem] leading-snug font-semibold text-foreground">{post.title}</p>
+        </div>
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.78rem] text-[var(--text-tertiary)]">
           <span>{post.categoryName}</span>
+          <span aria-hidden="true">·</span>
           <span className="uppercase">{post.locale}</span>
+          <span aria-hidden="true">·</span>
           <span>Editado {post.updatedAt}</span>
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={`/admin/posts/${post.id}/edit`} className={GHOST_BUTTON}>
+        {isPublished && (
+          <Link
+            href={`/${post.locale}/blog/${post.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="cq-btn"
+            data-variant="quiet"
+            data-size="sm"
+            title="Abrir en el blog público"
+          >
+            <IconExternal size={14} />
+            Ver
+          </Link>
+        )}
+
+        <Link
+          href={`/admin/posts/${post.id}/edit`}
+          className="cq-btn"
+          data-variant="ghost"
+          data-size="sm"
+        >
+          <IconPencil size={14} />
           Editar
         </Link>
 
         <form action={statusFormAction}>
           <input type="hidden" name="id" value={post.id} />
           <input type="hidden" name="status" value={nextStatus} />
-          <PendingButton label={toggleLabel} pendingLabel="Guardando…" className={GHOST_BUTTON} />
+          <SubmitButton
+            variant="ghost"
+            size="sm"
+            pendingLabel="Guardando…"
+            icon={isPublished ? <IconEyeOff size={14} /> : <IconEye size={14} />}
+          >
+            {toggleLabel}
+          </SubmitButton>
         </form>
 
-        <form
-          action={deleteFormAction}
-          onSubmit={(event) => {
-            if (!confirm(`¿Eliminar "${post.title}"? Esta acción no se puede deshacer.`)) {
-              event.preventDefault();
-            }
-          }}
-        >
+        <form action={deleteFormAction}>
           <input type="hidden" name="id" value={post.id} />
-          <PendingButton
-            label="Eliminar"
-            pendingLabel="Eliminando…"
-            className="rounded-md border border-border px-3 py-1.5 text-[0.8rem] font-semibold text-red-700 transition-colors hover:border-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-40"
-          />
+          <ConfirmSubmit confirmLabel="Confirmar" pendingLabel="Eliminando…">
+            Eliminar
+          </ConfirmSubmit>
         </form>
       </div>
 
       {(statusState.error || deleteState.error) && (
-        <p role="alert" className="w-full text-[0.82rem] text-red-700">
-          {statusState.error ?? deleteState.error}
-        </p>
+        <div className="w-full">
+          <Alert>{statusState.error ?? deleteState.error}</Alert>
+        </div>
       )}
     </li>
   );

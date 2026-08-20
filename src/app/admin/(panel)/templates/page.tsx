@@ -1,5 +1,9 @@
+import Link from "next/link";
 import { blockArraySchema } from "@/lib/blocks";
 import { STARTER_TEMPLATES, deleteTemplate, getTemplates } from "@/lib/templates";
+import { IconPlus } from "@/components/admin/ui/icons";
+import { EmptyState, PageHeader, Panel, PanelHead } from "@/components/admin/ui/Surface";
+import { TemplateShape } from "@/components/admin/ui/TemplateShape";
 import TemplateRow from "./TemplateRow";
 
 const CREATED_AT = new Intl.DateTimeFormat("es-DO", {
@@ -13,68 +17,77 @@ export default async function AdminTemplatesPage() {
   const templates = await getTemplates();
 
   return (
-    <div className="pt-10">
-      <h1 className="font-heading text-[1.6rem] font-semibold tracking-[-0.02em] text-foreground">
-        Plantillas
-      </h1>
-      <p className="mt-2 max-w-[42rem] text-[0.92rem] leading-relaxed text-[var(--text-secondary)]">
-        Una plantilla guarda una combinación de bloques como punto de partida.
-        Las guardadas por el equipo están disponibles para todos.
-      </p>
+    <div>
+      <PageHeader
+        title="Plantillas"
+        description="Una plantilla guarda una combinación de bloques como punto de partida. Las guardadas por el equipo están disponibles para todos."
+        actions={
+          <Link href="/admin/posts/new" className="cq-btn" data-variant="ghost">
+            <IconPlus size={16} />
+            Usar una plantilla
+          </Link>
+        }
+      />
 
-      <h2 className="mt-8 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-petroleo">
-        Plantillas base
-      </h2>
-      {/* Viven en código (src/lib/templates.ts), no en la base: por eso se
-          listan pero no se pueden borrar desde acá. */}
-      <ul className="mt-3 rounded-xl border border-border bg-[var(--surface-raised)] px-6">
-        {STARTER_TEMPLATES.map((template) => (
-          <li
-            key={template.id}
-            className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-4 last:border-b-0"
-          >
-            <div>
-              <p className="text-[0.95rem] font-semibold text-foreground">{template.name.es}</p>
-              <p className="mt-0.5 text-[0.78rem] text-[var(--text-tertiary)]">
-                {template.blocks.length} bloques · incluida en el sistema
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="mt-10 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-petroleo">
-        Guardadas por el equipo
-      </h2>
-      <div className="mt-3 rounded-xl border border-border bg-[var(--surface-raised)] px-6">
-        {templates.length === 0 ? (
-          <p className="py-10 text-center text-[0.9rem] leading-relaxed text-[var(--text-tertiary)]">
-            Todavía no hay plantillas guardadas. Se crean desde el editor, con
-            &ldquo;Guardar como plantilla&rdquo;.
-          </p>
-        ) : (
-          <ul>
-            {templates.map((template) => {
-              /* El contador de bloques sale del contenido validado: una
-                 plantilla vieja que ya no encaja se muestra con 0 en vez de
-                 romper la pantalla entera. */
-              const parsed = blockArraySchema.safeParse(template.blocks);
-              return (
-                <TemplateRow
-                  key={template.id}
-                  template={{
-                    id: template.id,
-                    name: template.name,
-                    blockCount: parsed.success ? parsed.data.length : 0,
-                    authorName: template.author.name,
-                    createdAt: CREATED_AT.format(template.createdAt),
-                  }}
-                  deleteAction={deleteTemplate}
-                />
-              );
-            })}
+      <div className="grid gap-5">
+        <Panel>
+          {/* Viven en código (src/lib/templates.ts), no en la base: por eso se
+              listan pero no se pueden borrar desde acá. */}
+          <PanelHead title="Plantillas base" count={STARTER_TEMPLATES.length} />
+          <ul className="grid gap-4 px-5 py-5 sm:grid-cols-2 xl:grid-cols-4">
+            {STARTER_TEMPLATES.map((template) => (
+              <li key={template.id} className="cq-panel p-3">
+                <TemplateShape types={template.blocks.map((block) => block.type)} />
+                <p className="mt-3 text-[0.9rem] leading-snug font-semibold text-foreground">
+                  {template.name.es}
+                </p>
+                <p className="mt-0.5 text-[0.76rem] text-[var(--text-tertiary)]">
+                  {template.blocks.length}{" "}
+                  {template.blocks.length === 1 ? "bloque" : "bloques"} · del sistema
+                </p>
+              </li>
+            ))}
           </ul>
-        )}
+        </Panel>
+
+        <Panel>
+          <PanelHead title="Guardadas por el equipo" count={templates.length} />
+          {templates.length === 0 ? (
+            <EmptyState
+              title="Todavía no hay plantillas del equipo"
+              hint="Se crean desde el editor: armá un artículo con la estructura que repetís y usá «Guardar como plantilla». Queda disponible para todo el equipo."
+              action={
+                <Link href="/admin/posts/new" className="cq-btn" data-variant="ghost">
+                  Ir al editor
+                </Link>
+              }
+            />
+          ) : (
+            <ul>
+              {templates.map((template) => {
+                /* El contador de bloques sale del contenido validado: una
+                   plantilla vieja que ya no encaja se muestra con 0 en vez de
+                   romper la pantalla entera. */
+                const parsed = blockArraySchema.safeParse(template.blocks);
+                return (
+                  <TemplateRow
+                    key={template.id}
+                    template={{
+                      id: template.id,
+                      name: template.name,
+                      types: parsed.success ? parsed.data.map((block) => block.type) : [],
+                      blockCount: parsed.success ? parsed.data.length : 0,
+                      isBroken: !parsed.success,
+                      authorName: template.author.name,
+                      createdAt: CREATED_AT.format(template.createdAt),
+                    }}
+                    deleteAction={deleteTemplate}
+                  />
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
       </div>
     </div>
   );
