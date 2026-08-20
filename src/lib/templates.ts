@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentAdminId } from "@/lib/auth";
@@ -294,6 +295,11 @@ function isForeignKeyConstraintError(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";
 }
 
+function revalidateTemplates(): void {
+  revalidatePath("/admin/templates");
+  revalidatePath("/admin/posts/new");
+}
+
 /** Plantillas guardadas por los admins — lectura simple, sin pasar por Server Action. */
 export async function getTemplates() {
   return prisma.template.findMany({
@@ -343,6 +349,10 @@ export async function createTemplateFromBlocks(
     throw error;
   }
 
+  /* Las plantillas propias quedan disponibles para todo el equipo (AD-16), así
+     que invalidar solo la pantalla propia no alcanza: cualquier admin que esté
+     creando un artículo tiene que verla aparecer. */
+  revalidateTemplates();
   return { error: null };
 }
 
@@ -360,5 +370,7 @@ export async function deleteTemplate(
   }
 
   await prisma.template.delete({ where: { id } });
+
+  revalidateTemplates();
   return { error: null };
 }

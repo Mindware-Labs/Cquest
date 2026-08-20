@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
@@ -26,6 +27,14 @@ function isForeignKeyConstraintError(error: unknown): boolean {
     error instanceof Prisma.PrismaClientKnownRequestError &&
     (error.code === "P2003" || error.code === "P2014")
   );
+}
+
+/* Sin esto la pantalla sigue mostrando la lista cacheada y el admin cree que
+   su cambio no se guardó. El blog público también depende del nombre de la
+   categoría, así que se invalida junto. */
+function revalidateCategories(): void {
+  revalidatePath("/admin/categories");
+  revalidatePath("/[lang]/blog", "page");
 }
 
 /** Lectura simple — la llama directo cualquier Server Component, sin pasar por Server Action. */
@@ -64,6 +73,7 @@ export async function createCategory(
     throw error;
   }
 
+  revalidateCategories();
   return { error: null };
 }
 
@@ -100,6 +110,7 @@ export async function renameCategory(
     throw error;
   }
 
+  revalidateCategories();
   return { error: null };
 }
 
@@ -125,5 +136,6 @@ export async function deleteCategory(
     throw error;
   }
 
+  revalidateCategories();
   return { error: null };
 }

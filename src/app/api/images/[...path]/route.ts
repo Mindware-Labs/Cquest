@@ -14,6 +14,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
     return NextResponse.json({ error: "Imagen no encontrada." }, { status: 404 });
   }
 
+  /* next/image ahora consume esta ruta: pide el original una vez, genera las
+     variantes AVIF/WebP y las cachea. Si el Content-Type no llegara correcto,
+     el optimizador rechazaría el archivo y la imagen no se mostraría — de ahí
+     que blob.ts lo fije explícitamente al subir. */
+
   return new Response(result.stream, {
     headers: {
       "Content-Type": result.blob.contentType,

@@ -23,6 +23,12 @@ const imageSrcSchema = z
     message: "La imagen debe salir de la subida a Vercel Blob.",
   });
 
+/* Dimensiones reales del archivo, medidas en el servidor al subirlo. Son
+   opcionales porque un bloque guardado antes de que existiera este campo sigue
+   siendo válido — el renderer cae a un contenedor de proporción fija cuando
+   faltan, en vez de rechazar el artículo entero. */
+const dimensionSchema = z.number().int().positive().optional();
+
 const blockBase = {
   id: z.string().min(1),
   spacingTop: spacingSchema.default("md"),
@@ -51,6 +57,8 @@ const imageBlockSchema = z.object({
   type: z.literal("image"),
   src: imageSrcSchema,
   alt: z.string().trim().max(200),
+  width: dimensionSchema,
+  height: dimensionSchema,
   caption: z.string().trim().max(200).optional(),
   display: z.enum(["full", "inset"]).default("inset"),
   accent: brandAccentSchema.optional(),
@@ -59,6 +67,11 @@ const imageBlockSchema = z.object({
 const galleryImageSchema = z.object({
   src: imageSrcSchema,
   alt: z.string().trim().max(200),
+  /* La grilla recorta a una altura común, así que acá las dimensiones no
+     deciden el encuadre — se guardan igual para no perder el dato si algún día
+     la galería ofrece un modo que respete la proporción original. */
+  width: dimensionSchema,
+  height: dimensionSchema,
   caption: z.string().trim().max(200).optional(),
 });
 
@@ -161,7 +174,52 @@ export const blockSchema = z.discriminatedUnion("type", [
 ]);
 export type Block = z.infer<typeof blockSchema>;
 
-export const blockArraySchema = z.array(blockSchema).min(1, "El artículo necesita al menos un bloque.");
+/* RNF-5 exige texto alternativo en TODA imagen. No se pone como `min(1)` en
+   el campo `alt` por dos razones: rompería el borrador a medio escribir (una
+   imagen recién agregada todavía no tiene ni archivo ni descripción), y un
+   `.refine()` sobre el objeto lo sacaría del discriminatedUnion.
+
+   Así que la regla es "si hay imagen, hay alt" y se comprueba sobre el
+   arreglo completo, incluidas las imágenes anidadas en columnas. Una imagen
+   sin subir no molesta; una subida sin describir no se publica. */
+function checkAltText(blocks: Block[], ctx: z.RefinementCtx): void {
+  function check(block: Block, path: (string | number)[]): void {
+    if (block.type === "image" && block.src && block.alt.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: [...path, "alt"],
+        message: "Toda imagen necesita texto alternativo.",
+      });
+    }
+
+    if (block.type === "gallery") {
+      block.images.forEach((image, index) => {
+        if (image.src && image.alt.length === 0) {
+          ctx.addIssue({
+            code: "custom",
+            path: [...path, "images", index, "alt"],
+            message: `La imagen ${index + 1} de la galería necesita texto alternativo.`,
+          });
+        }
+      });
+    }
+
+    if (block.type === "columns") {
+      block.columns.forEach((column, columnIndex) => {
+        column.forEach((child, childIndex) => {
+          check(child, [...path, "columns", columnIndex, childIndex]);
+        });
+      });
+    }
+  }
+
+  blocks.forEach((block, index) => check(block, [index]));
+}
+
+export const blockArraySchema = z
+  .array(blockSchema)
+  .min(1, "El artículo necesita al menos un bloque.")
+  .superRefine(checkAltText);
 export type BlockArray = z.infer<typeof blockArraySchema>;
 
 export const BLOCK_TYPES = [

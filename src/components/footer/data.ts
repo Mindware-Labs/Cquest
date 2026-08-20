@@ -35,6 +35,10 @@ export function getBaseLinks(dict: Dictionary, lang: Locale): FooterLink[] {
     .map(({ label, href }) => ({ label, href }));
   return [
     ...navLinks,
+    /* El blog no está en la navegación principal (no compite con las líneas de
+       negocio por la atención de un visitante que viene a cotizar), pero sin
+       un enlace en el pie sería inalcanzable salvo por buscador. */
+    { label: t.links.blog, href: "/blog" },
     { label: t.links.terms, href: "/legal/terms" },
     { label: t.links.privacy, href: "/legal/privacy" },
   ];
@@ -54,6 +58,7 @@ export const COPY = {
   en: {
     headings: { services: "Services", contact: "Contact" },
     links: {
+      blog: "Blog",
       terms: "Terms & conditions",
       privacy: "Privacy policy",
     },
@@ -67,6 +72,7 @@ export const COPY = {
   es: {
     headings: { services: "Servicios", contact: "Contacto" },
     links: {
+      blog: "Blog",
       terms: "Términos y condiciones",
       privacy: "Política de privacidad",
     },

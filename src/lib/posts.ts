@@ -1,6 +1,8 @@
 import { z } from "zod";
-import { Prisma, PostStatus } from "@/generated/prisma/client";
+import { revalidatePath } from "next/cache";
+import { Prisma, PostStatus, PostLocale } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { locales, type Locale } from "@/i18n/config";
 import { slugify } from "@/lib/slug";
 import { getCurrentAdminId } from "@/lib/auth";
 import { blockArraySchema } from "@/lib/blocks";
@@ -40,6 +42,10 @@ const postFieldsSchema = z.object({
     .startsWith("/api/images/", "La portada debe salir de la subida a Vercel Blob."),
   coverImageAlt: z.string().trim().min(1, "Falta el texto alternativo de la portada.").max(200, "Máximo 200 caracteres."),
   categoryId: z.coerce.number().int("Categoría inválida."),
+  /* Un artículo vive en un idioma, no es la traducción de otro: el listado
+     público filtra por acá. Sale del mismo `locales` que el resto del sitio
+     para que agregar un idioma sea un solo cambio. */
+  locale: z.enum(locales).default("es"),
   seoTitle: z.string().trim().max(70, "Máximo 70 caracteres.").optional().or(z.literal("")),
   seoDescription: z.string().trim().max(160, "Máximo 160 caracteres.").optional().or(z.literal("")),
   /* Los dos botones del editor ("Guardar borrador" / "Publicar") mandan esto
@@ -67,6 +73,16 @@ function isForeignKeyConstraintError(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";
 }
 
+/* Un artículo toca cuatro superficies cacheadas: la tabla del admin, el
+   listado público, su propia página y el sitemap. Publicar sin invalidarlas
+   deja el artículo "publicado" en la base pero invisible en el sitio. */
+function revalidatePost(slug?: string): void {
+  revalidatePath("/admin/posts");
+  revalidatePath("/[lang]/blog", "page");
+  if (slug) revalidatePath(`/[lang]/blog/${slug}`, "page");
+  revalidatePath("/sitemap.xml");
+}
+
 /** Listado completo para el panel admin — todos los estados. */
 export async function getPosts() {
   return prisma.post.findMany({
@@ -75,12 +91,40 @@ export async function getPosts() {
   });
 }
 
-/** Lo que ve el blog público: solo publicado y ya en su fecha de publicación. */
-export async function getPublishedPosts() {
+/** Lo que ve el blog público: del idioma pedido, publicado, y ya en su fecha.
+ *  El límite no es paginación — es el techo que evita que /blog crezca sin
+ *  control cuando haya 200 artículos. La paginación real llega si hace falta. */
+export const PUBLIC_POSTS_LIMIT = 60;
+
+export async function getPublishedPosts(locale: Locale, categorySlug?: string) {
   return prisma.post.findMany({
-    where: { status: PostStatus.PUBLISHED, publishedAt: { lte: new Date() } },
+    where: {
+      locale: locale as PostLocale,
+      status: PostStatus.PUBLISHED,
+      publishedAt: { lte: new Date() },
+      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+    },
     orderBy: { publishedAt: "desc" },
+    take: PUBLIC_POSTS_LIMIT,
     include: { category: true },
+  });
+}
+
+/* Solo las categorías que tienen al menos un artículo publicado en este idioma.
+   Ofrecer un filtro que lleva a una lista vacía es peor que no ofrecerlo. */
+export async function getPublishedCategories(locale: Locale) {
+  return prisma.category.findMany({
+    where: {
+      posts: {
+        some: {
+          locale: locale as PostLocale,
+          status: PostStatus.PUBLISHED,
+          publishedAt: { lte: new Date() },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, slug: true },
   });
 }
 
@@ -127,6 +171,7 @@ export async function createPost(
         coverImageUrl: parsed.data.coverImageUrl,
         coverImageAlt: parsed.data.coverImageAlt,
         categoryId: parsed.data.categoryId,
+        locale: parsed.data.locale as PostLocale,
         seoTitle: emptyToUndefined(parsed.data.seoTitle ?? ""),
         seoDescription: emptyToUndefined(parsed.data.seoDescription ?? ""),
         slug,
@@ -135,6 +180,7 @@ export async function createPost(
         authorId,
       },
     });
+    revalidatePost(slug);
     return { error: null, id: created.id };
   } catch (error) {
     if (isUniqueConstraintError(error)) {
@@ -191,6 +237,7 @@ export async function updatePost(
         coverImageUrl: parsed.data.coverImageUrl,
         coverImageAlt: parsed.data.coverImageAlt,
         categoryId: parsed.data.categoryId,
+        locale: parsed.data.locale as PostLocale,
         seoTitle: emptyToUndefined(parsed.data.seoTitle ?? ""),
         seoDescription: emptyToUndefined(parsed.data.seoDescription ?? ""),
         slug,
@@ -198,6 +245,7 @@ export async function updatePost(
         ...(publishedAt ? { publishedAt } : {}),
       },
     });
+    revalidatePost(slug);
     return { error: null, id };
   } catch (error) {
     if (isUniqueConstraintError(error)) {
@@ -233,7 +281,10 @@ export async function setPostStatus(
     return { error: "Estado inválido." };
   }
 
-  const post = await prisma.post.findUnique({ where: { id }, select: { publishedAt: true } });
+  const post = await prisma.post.findUnique({
+    where: { id },
+    select: { publishedAt: true, slug: true },
+  });
   if (!post) {
     return { error: "Artículo inválido." };
   }
@@ -246,6 +297,7 @@ export async function setPostStatus(
     data: { status, ...(publishedAt ? { publishedAt } : {}) },
   });
 
+  revalidatePost(post.slug);
   return { error: null };
 }
 
@@ -262,6 +314,16 @@ export async function deletePost(
     return { error: "Artículo inválido." };
   }
 
+  /* El slug se lee ANTES de borrar: después ya no hay registro del que sacarlo,
+     y la página pública de ese artículo se quedaría cacheada sin nadie que la
+     invalide. */
+  const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
+  if (!post) {
+    return { error: "Artículo inválido." };
+  }
+
   await prisma.post.delete({ where: { id } });
+
+  revalidatePost(post.slug);
   return { error: null };
 }

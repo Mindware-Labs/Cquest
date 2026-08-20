@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import type { MetadataRoute } from "next";
 import { locales, defaultLocale } from "@/i18n/config";
+import { getPublishedPosts } from "@/lib/posts";
 // Careers está fuera del alcance de esta entrega: la sección vive en
 // src/app/[lang]/_careers (carpeta privada, no enrutable). Descomentar este
 // import y las rutas /careers de abajo cuando se vuelva a publicar.
@@ -41,6 +42,9 @@ const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   //   path: `/careers/${position.slug}`,
   //   sources: ["src/app/[lang]/_careers/data/positions.ts"],
   // })),
+  /* El listado sí existe en los dos idiomas (cada uno lista sus propios
+     artículos), así que mantiene su clúster hreflang. Los artículos, no. */
+  { path: "/blog", sources: ["src/app/[lang]/blog", "src/components/blog"] },
   { path: "/quote", sources: ["src/app/[lang]/quote"] },
   {
     path: "/location",
@@ -72,8 +76,32 @@ function lastCommit(paths: readonly string[]): Date | undefined {
   }
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return ROUTES.map(({ path, sources }) => ({
+/* El sitemap ya no es puramente estático: la mitad editorial sale de la base.
+   Se recalcula cada hora en vez de en cada request — publicar un artículo no
+   justifica una consulta por cada visita del rastreador. */
+export const revalidate = 3600;
+
+/* Los artículos publicados, leídos de la base y no del historial de git
+   (SEO-1). Dos fuentes distintas en el mismo archivo porque son dos cosas
+   distintas: el código versionado y el contenido editorial. */
+async function postEntries(): Promise<MetadataRoute.Sitemap> {
+  const byLocale = await Promise.all(
+    locales.map(async (locale) => {
+      const posts = await getPublishedPosts(locale);
+      return posts.map((post) => ({
+        url: `${SITE_URL}/${locale}/blog/${post.slug}`,
+        lastModified: post.updatedAt,
+        /* Sin `alternates`: un artículo vive en un solo idioma y no tiene
+           traducción. Declarar un clúster hreflang hacia una URL que sirve
+           otro contenido es peor que no declarar ninguno. */
+      }));
+    }),
+  );
+  return byLocale.flat();
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticEntries = ROUTES.map(({ path, sources }) => ({
     url: `${SITE_URL}/${defaultLocale}${path}`,
     lastModified: lastCommit(sources),
     alternates: {
@@ -85,6 +113,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     },
   }));
+
+  return [...staticEntries, ...(await postEntries())];
 }
 
 /* Sin `priority` ni `changefreq`: Google confirmó hace años que los ignora por

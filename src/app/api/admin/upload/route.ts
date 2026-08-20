@@ -19,8 +19,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const url = await uploadCoverImage(file);
-    return NextResponse.json({ url });
+    /* Devuelve url + dimensiones: el editor las guarda en el bloque para que
+       next/image pueda reservar el espacio antes de que la imagen llegue. */
+    const uploaded = await uploadCoverImage(file);
+    return NextResponse.json(uploaded);
   } catch (error) {
     if (error instanceof UploadValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });

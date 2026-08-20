@@ -31,9 +31,13 @@ export function proxy(request: NextRequest) {
 }
 
 /* El matcher excluye assets y rutas internas: redirigir un .png a /es/... lo
-   rompe, y el coste por request de pasar por aquí no es cero. */
+   rompe, y el coste por request de pasar por aquí no es cero.
+
+   `admin` está excluido por la misma razón que `api`: el panel no es contenido
+   localizado, vive fuera del sistema de idiomas. Sin esta exclusión, /admin se
+   redirige a /es/admin — que no existe — y termina en el catch-all. */
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|.*\\..*).*)",
+    "/((?!api|admin|_next/static|_next/image|.*\\..*).*)",
   ],
 };

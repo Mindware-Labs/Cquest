@@ -18,6 +18,15 @@ enum PostStatus {
   HIDDEN
 }
 
+/// Un artículo vive en un solo idioma; no es una traducción de otro. El blog
+/// público filtra por este campo, así que /es/blog y /en/blog listan conjuntos
+/// distintos en vez de repetir el mismo contenido bajo dos URLs.
+/// Nombrado PostLocale y no Locale para no chocar con el tipo Locale de i18n.
+enum PostLocale {
+  es
+  en
+}
+
 model Category {
   id        Int      @id @default(autoincrement())
   name      String
@@ -35,6 +44,7 @@ model Post {
   coverImageUrl  String
   coverImageAlt  String
   status         PostStatus @default(DRAFT)
+  locale         PostLocale @default(es)
   seoTitle       String?
   seoDescription String?
   publishedAt    DateTime?
@@ -44,6 +54,10 @@ model Post {
   category       Category   @relation(fields: [categoryId], references: [id])
   authorId       Int
   author         AdminUser  @relation(fields: [authorId], references: [id])
+
+  /// La consulta exacta del listado público: idioma + publicado + fecha ya
+  /// alcanzada, ordenado por publishedAt.
+  @@index([locale, status, publishedAt])
 }
 
 model Template {
