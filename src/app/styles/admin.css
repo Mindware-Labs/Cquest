@@ -15,10 +15,14 @@
   --panel-rail-text: #b9c6cd;
   --panel-rail-text-strong: #ffffff;
 
-  /* Casi cuadrado, como manda la identidad — no el radio de 16px que usa todo
-     panel genérico. Controles 2px, paneles 4px. */
-  --panel-radius-control: 2px;
-  --panel-radius-panel: 4px;
+  /* Un radio con presencia, pero corto de la píldora: 8px en controles y 12px en
+     paneles. El 2px anterior no leía como decisión, leía como default de
+     navegador — y el 16px que usa todo panel genérico borra el carácter.
+
+     Un solo token para TODOS los controles a propósito: si el input se redondea
+     y el botón de al lado no, el formulario se ve roto, no se ve moderno. */
+  --panel-radius-control: 8px;
+  --panel-radius-panel: 12px;
 
   /* Una sola escala de elevación. Cada sombra tiene desplazamiento Y difuminado:
      un halo sin offset es decoración, no profundidad. */
@@ -134,6 +138,19 @@
   color: #ffffff;
 }
 
+/* Éxito. Va después de las variantes para ganarles sin subir especificidad, y
+   cancela el atenuado de :disabled — el botón queda inerte a propósito mientras
+   navega, pero tiene que verse encendido: es la confirmación, no un control
+   apagado. */
+.cq-btn[data-state="ok"],
+.cq-btn[data-state="ok"]:disabled {
+  background: var(--brand-verde);
+  border-color: var(--brand-verde);
+  color: var(--ink);
+  opacity: 1;
+  cursor: default;
+}
+
 /* Confirmación armada: el segundo clic es el que borra, y el botón lo dice. */
 .cq-btn[data-armed="true"] {
   background: #a32020;
@@ -173,18 +190,36 @@
   opacity: 0.35;
 }
 
+/* El campo va HUNDIDO, no al mismo tono que el panel que lo contiene. Antes
+   input y panel compartían --surface-raised: el campo sólo existía por su borde
+   de 1px, y eso es lo que lo hacía ver plano. Un hueco se lee como "acá se
+   escribe" antes de leer la etiqueta. La sombra interior de un pelo remata la
+   profundidad sin convertirlo en un relieve de los 2000. */
 .cq-input {
   width: 100%;
-  background: var(--surface-raised);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
   border-radius: var(--panel-radius-control);
-  padding: 0.55rem 0.7rem;
+  padding: 0.65rem 0.85rem;
   font: inherit;
   font-size: 0.88rem;
+  /* Interlínea ABSOLUTA, no un múltiplo: la contraseña usa una tipografía más
+     chica para sus discos, y con line-height relativo ese campo mediría menos
+     alto que el email. Dos campos apilados de distinta altura se ven como un
+     error de maquetado. */
+  line-height: 1.35rem;
   color: var(--foreground);
+  box-shadow: inset 0 1px 2px rgb(13 30 41 / 0.05);
   transition:
+    background-color var(--panel-speed) var(--ease-out),
     border-color var(--panel-speed) var(--ease-out),
     box-shadow var(--panel-speed) var(--ease-out);
+}
+
+/* Lo que faltaba de verdad: el campo era inerte hasta que lo clickeabas. Un
+   control que no responde al mouse se siente muerto aunque esté bien dibujado. */
+.cq-input:hover:not(:disabled):not(:focus) {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 40%, var(--border));
 }
 
 .cq-input::placeholder {
@@ -193,32 +228,149 @@
   opacity: 1;
 }
 
+/* El foco NO toca el relleno: el campo enfocado tiene que ser el mismo campo,
+   sólo señalado. Mover el fondo hace que el ojo lea "esto cambió" en vez de
+   "estás acá", y encima obliga a que autocompletado y pegado repliquen ese
+   segundo color para no delatarse. El borde y el anillo alcanzan. */
 .cq-input:focus {
   outline: none;
   border-color: var(--brand-petroleo);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+  box-shadow:
+    inset 0 1px 2px rgb(13 30 41 / 0.05),
+    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
 }
 
+/* Deshabilitado pierde la profundidad: si conservara el hueco seguiría
+   invitando a escribir en un campo que no acepta nada. */
 .cq-input:disabled {
-  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--surface-sunken) 55%, var(--surface-raised));
+  box-shadow: none;
+  color: var(--text-tertiary);
   cursor: not-allowed;
 }
 
-/* El login vive sobre tinta, así que sus campos no pueden ser los del panel:
-   un input blanco sobre fondo oscuro es un parche, no una variante. */
-.cq-input-dark {
-  background: color-mix(in srgb, var(--panel-rail) 55%, #ffffff 3%);
-  border-color: var(--panel-rail-border);
-  color: var(--panel-rail-text-strong);
+/* Campo del login: relleno en vez de blanco sobre blanco, radio generoso y aire
+   suficiente para un icono adelante. Es una variante y no un cambio a .cq-input
+   a secas: el panel es una herramienta densa —tablas, filas, formularios de
+   muchos campos— y ahí un campo de 48px de alto cuesta pantalla. En la puerta
+   hay dos campos y sobra espacio, así que se puede pagar. */
+.cq-field {
+  background: var(--surface-sunken);
+  border-color: transparent;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem 0.55rem 2.45rem;
 }
 
-.cq-input-dark::placeholder {
-  color: color-mix(in srgb, var(--panel-rail-text) 82%, transparent);
+.cq-field:focus {
+  border-color: var(--brand-petroleo);
 }
 
-.cq-input-dark:focus {
-  border-color: var(--brand-celeste);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-celeste) 24%, transparent);
+/* El icono de adelante NO cambia de color con el foco: si acompañara al borde,
+   dos cosas cambiarían a la vez y el ojo no sabría cuál mirar. */
+.cq-field-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Campo enmascarado. Discos chicos y bien separados: el peso lo pone el aire
+   entre ellos, no el tamaño de cada uno. Un disco grande grita y compite con el
+   email de arriba; uno chico con tracking se sigue contando de un vistazo —lo
+   único que se puede hacer con una contraseña que no se ve— sin levantar la voz.
+
+   `-webkit-text-security` fija el glifo en disco donde el motor lo soporta; sin
+   él el campo sigue enmascarado igual por ser type="password", así que es mejora
+   progresiva y no un requisito.
+
+   Sólo aplica enmascarado: al revelar, el valor vuelve a la métrica normal
+   porque una contraseña visible se lee como texto, no como cuentas. */
+.cq-input-mask {
+  -webkit-text-security: disc;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+}
+
+/* El placeholder de este campo son discos literales —el navegador no enmascara
+   placeholders—, así que hereda a propósito la métrica de arriba: los puntos
+   vacíos y los escritos tienen que ocupar exactamente el mismo lugar, o el campo
+   salta al escribir la primera tecla.
+
+   Lo que SÍ los separa es el valor: el placeholder es tenue y el contenido real
+   va a plena tinta. Esa diferencia es la que evita leer un campo vacío como un
+   campo ya completado por el gestor de contraseñas. */
+.cq-input-mask::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+/* Autocompletado del navegador. Chrome y Safari pintan un fondo propio —blanco
+   o amarillo— por encima del `background` del input, y ninguna regla de
+   `background` lo tapa. La única forma de ganarle es rellenar la caja con una
+   sombra interior sólida del color que corresponde, y forzar el color del texto
+   con -webkit-text-fill-color, que también es de mayor prioridad que `color`.
+   La transición larga es el truco conocido para que el amarillo no se vea ni un
+   fotograma antes de que la sombra se aplique. */
+.cq-input:-webkit-autofill,
+.cq-input:-webkit-autofill:hover,
+.cq-input:-webkit-autofill:focus,
+.cq-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
+  -webkit-text-fill-color: var(--foreground);
+  caret-color: var(--foreground);
+  transition: background-color 100000s ease-in-out 0s;
+}
+
+/* El foco tiene que seguir viéndose aunque el valor venga del autocompletado:
+   sin esto la sombra de arriba pisa el anillo de foco y el campo activo queda
+   indistinguible del otro. */
+.cq-input:-webkit-autofill:focus {
+  -webkit-box-shadow:
+    0 0 0 100px var(--surface-sunken) inset,
+    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+/* El campo del login es relleno, así que su autocompletado tiene que rellenarse
+   con ESE color: si hereda el blanco de la regla de arriba, un campo traído del
+   gestor de contraseñas se ve más claro que el de al lado. */
+.cq-field:-webkit-autofill,
+.cq-field:-webkit-autofill:hover,
+.cq-field:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
+}
+
+/* Mismo relleno que en reposo. Esta regla quedó con --surface-raised de cuando
+   el foco aclaraba el campo; ahora el foco sólo mueve borde y anillo, así que
+   pintar blanco acá era el único lugar del formulario donde el campo cambiaba de
+   color solo. */
+.cq-field:-webkit-autofill:focus {
+  -webkit-box-shadow:
+    0 0 0 100px var(--surface-sunken) inset,
+    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+/* Selector estándar, en bloques aparte a propósito: mezclarlo con
+   `-webkit-autofill` en una misma lista hace que un motor que no entienda uno de
+   los dos descarte la regla entera. Firefox pinta su propio fondo y sólo
+   responde a `:autofill`. */
+.cq-input:autofill,
+.cq-field:autofill {
+  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
+  box-shadow: 0 0 0 100px var(--surface-sunken) inset;
+  -webkit-text-fill-color: var(--foreground);
+  caret-color: var(--foreground);
+}
+
+.cq-input:autofill:focus,
+.cq-field:autofill:focus {
+  -webkit-box-shadow:
+    0 0 0 100px var(--surface-sunken) inset,
+    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+  box-shadow:
+    0 0 0 100px var(--surface-sunken) inset,
+    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
 }
 
 .cq-label {
@@ -228,14 +380,6 @@
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--text-tertiary);
-}
-
-/* La variante sobre tinta necesita su propia regla y no una utilidad de color:
-   .cq-label y una clase de Tailwind tienen la misma especificidad, y como este
-   archivo se importa después, el color oscuro ganaba y la etiqueta quedaba
-   ilegible sobre el fondo del login. */
-.cq-label-dark {
-  color: var(--panel-rail-text);
 }
 
 /* ---------- Riel de navegación ---------- */
@@ -294,6 +438,54 @@
   to {
     transform: scaleY(1);
   }
+}
+
+/* ---------- Riel colapsado ----------
+
+   Con el riel angosto, cada fila pasa a ser un cuadrado con el icono centrado.
+   Se resuelve por ATRIBUTO en el contenedor y no con condicionales en cada JSX:
+   el estado del riel es uno solo, y repartirlo en diez ternarios de className es
+   como se llega a que una fila se centre y la de al lado no. */
+
+.cq-rail[data-collapsed="true"] .cq-rail-link {
+  justify-content: center;
+  padding-inline: 0;
+  /* El gap tiene que irse con la etiqueta: si queda, separa al icono de una
+     etiqueta de ancho cero y lo deja descentrado medio gap a la izquierda. */
+  gap: 0;
+}
+
+/* La barra de activo colgaba del padding lateral que acabamos de sacar: pegada
+   al canto del riel se vería cortada, así que colapsado se dibuja como un aro
+   alrededor del cuadrado, que es la misma información sin depender del margen. */
+.cq-rail[data-collapsed="true"] .cq-rail-link[aria-current="page"]::before {
+  inset: 0;
+  inset-inline-start: 0;
+  width: auto;
+  border: 1px solid color-mix(in srgb, var(--brand-celeste) 55%, transparent);
+  border-radius: var(--panel-radius-control);
+  background: transparent;
+  animation: none;
+}
+
+/* Encabezado de grupo. Existe para que "Contenido" y "Sistema" no se lean como
+   una lista larga y plana de seis enlaces. Colapsado no hay dónde escribirlo:
+   se reemplaza por una línea, que separa igual sin ocupar una fila entera. */
+.cq-rail-group {
+  padding: 0 0.75rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--panel-rail-text) 75%, transparent);
+}
+
+.cq-rail[data-collapsed="true"] .cq-rail-group {
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: var(--panel-rail-border);
 }
 
 /* ---------- Estado ---------- */

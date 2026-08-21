@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SidebarGroupLabel, SidebarLink } from "@/components/ui/sidebar";
 import {
   IconArticles,
   IconCategories,
@@ -9,41 +9,47 @@ import {
   IconTemplates,
 } from "@/components/admin/ui/icons";
 
-const LINKS = [
-  { href: "/admin", label: "Inicio", Icon: IconHome },
-  { href: "/admin/posts", label: "Artículos", Icon: IconArticles },
-  { href: "/admin/categories", label: "Categorías", Icon: IconCategories },
-  { href: "/admin/templates", label: "Plantillas", Icon: IconTemplates },
+/* Dos grupos y no una lista de cuatro: "Inicio" es a dónde se vuelve, y los
+   otros tres son las cosas que se editan. Con cuatro enlaces la diferencia es
+   chica; el día que sean ocho, ya está el lugar donde ponerlos. */
+const GROUPS = [
+  {
+    title: "General",
+    links: [{ href: "/admin", label: "Inicio", Icon: IconHome }],
+  },
+  {
+    title: "Contenido",
+    links: [
+      { href: "/admin/posts", label: "Artículos", Icon: IconArticles },
+      { href: "/admin/categories", label: "Categorías", Icon: IconCategories },
+      { href: "/admin/templates", label: "Plantillas", Icon: IconTemplates },
+    ],
+  },
 ] as const;
 
 export default function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      aria-label="Secciones del panel"
-      /* En el riel es una columna; en pantallas chicas se acuesta y envuelve.
-         Nada de desplazamiento horizontal: una sección que queda fuera del
-         borde no existe para quien no adivina que hay que arrastrar. */
-      className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap"
-    >
-      {LINKS.map(({ href, label, Icon }) => {
-        /* "/admin" solo es exacto; el resto marca activo también en sus
-           subrutas, para que editar un artículo mantenga iluminada su sección. */
-        const isActive = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    <nav aria-label="Secciones del panel" className="flex flex-col gap-5">
+      {GROUPS.map((group) => (
+        <div key={group.title} className="flex flex-col gap-1.5">
+          <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
 
-        return (
-          <Link
-            key={href}
-            href={href}
-            aria-current={isActive ? "page" : undefined}
-            className="cq-rail-link shrink-0"
-          >
-            <Icon size={17} className="shrink-0 opacity-90" />
-            {label}
-          </Link>
-        );
-      })}
+          <div className="flex flex-col gap-1">
+            {group.links.map(({ href, label, Icon }) => (
+              <SidebarLink
+                key={href}
+                /* "/admin" solo es exacto; el resto marca activo también en sus
+                   subrutas, para que editar un artículo mantenga iluminada su
+                   sección. */
+                active={href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)}
+                link={{ href, label, icon: <Icon size={17} /> }}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }

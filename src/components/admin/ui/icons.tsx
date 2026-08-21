@@ -114,6 +114,55 @@ export function IconEyeOff(props: IconProps) {
   );
 }
 
+/* Panel lateral: el rectángulo de la pantalla con la columna del riel marcada.
+   Es la convención que ya usan editores y paneles para "plegar la barra", y se
+   entiende sin leer nada — una flecha sola no dice QUÉ se pliega. */
+export function IconPanelLeft(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9.5 4v16" />
+    </Icon>
+  );
+}
+
+export function IconDots(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="5.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18.5" r="1.1" fill="currentColor" stroke="none" />
+    </Icon>
+  );
+}
+
+export function IconMail(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3.5 7 8.5 6 8.5-6" />
+    </Icon>
+  );
+}
+
+export function IconLock(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="2" />
+      <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" />
+    </Icon>
+  );
+}
+
+export function IconArrowRight(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.5 12h15" />
+      <path d="m13.5 6 6 6-6 6" />
+    </Icon>
+  );
+}
+
 export function IconArrowUp(props: IconProps) {
   return (
     <Icon {...props}>
@@ -136,6 +185,23 @@ export function IconClose(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M6 6 18 18M18 6 6 18" />
+    </Icon>
+  );
+}
+
+export function IconCapsLock(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 4.5 5 12h3.5v4h7v-4H19L12 4.5Z" />
+      <path d="M8.5 19.5h7" />
+    </Icon>
+  );
+}
+
+export function IconMenu(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
     </Icon>
   );
 }
