@@ -189,6 +189,23 @@ export function IconClose(props: IconProps) {
   );
 }
 
+export function IconSearch(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m15.8 15.8 4 4" />
+    </Icon>
+  );
+}
+
+export function IconChevronDown(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m6.5 9.5 5.5 5.5 5.5-5.5" />
+    </Icon>
+  );
+}
+
 export function IconCapsLock(props: IconProps) {
   return (
     <Icon {...props}>

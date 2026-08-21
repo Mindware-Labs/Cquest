@@ -3,6 +3,8 @@ import { Josefin_Sans } from "next/font/google";
 import "../globals.css";
 /* El vocabulario visual del panel se carga solo acá: el sitio público no lo ve. */
 import "../styles/admin.css";
+import { getDictionary } from "@/i18n/getDictionary";
+import { I18nProvider } from "@/i18n/I18nProvider";
 
 /* Segundo root layout, hermano de src/app/[lang]/layout.tsx: el panel tiene su
    propio <html> porque no comparte nada del cromo público — ni navbar, ni
@@ -22,10 +24,19 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
+/* El panel no es multiidioma, pero la vista previa del editor reutiliza los
+   bloques públicos (BlockRenderer -> CtaBlock -> LocalizedLink), y esos exigen
+   el contexto de i18n. Lo fijamos en español, el idioma del panel. */
+export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
+  const dict = await getDictionary("es");
+
   return (
     <html lang="es" className={`${josefin.variable} h-full antialiased`}>
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-full bg-background text-foreground">
+        <I18nProvider dict={dict} lang="es">
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   );
 }

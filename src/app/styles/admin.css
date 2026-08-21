@@ -7,13 +7,20 @@
    Acá el vocabulario se declara una vez. */
 
 :root {
-  /* Segunda capa neutra: el riel de navegación vive en tinta y el contenido en
-     marfil. La jerarquía se lee antes de leer una sola palabra. */
-  --panel-rail: #0a1116;
-  --panel-rail-raised: #131f27;
-  --panel-rail-border: #22323d;
-  --panel-rail-text: #b9c6cd;
-  --panel-rail-text-strong: #ffffff;
+  /* El riel es BLANCO y el trabajo va sobre marfil (#f8f7f4). La jerarquía se
+     invirtió respecto de la versión en tinta: antes la navegación era la capa
+     oscura, ahora es la capa más clara de la pantalla y el contenido queda un
+     escalón por debajo. Sigue habiendo dos capas —que es lo que hace que se vea
+     dónde estás sin leer una palabra—, sólo que ordenadas al revés.
+
+     Los tokens se mantienen con el mismo nombre a propósito: son ROLES (fondo,
+     elevado, borde, texto, texto fuerte), no colores. Cambiar el valor acá
+     repinta el riel entero sin tocar un solo componente. */
+  --panel-rail: #ffffff;
+  --panel-rail-raised: var(--surface-sunken);
+  --panel-rail-border: var(--border);
+  --panel-rail-text: var(--text-secondary);
+  --panel-rail-text-strong: var(--foreground);
 
   /* Un radio con presencia, pero corto de la píldora: 8px en controles y 12px en
      paneles. El 2px anterior no leía como decisión, leía como default de
@@ -136,19 +143,6 @@
   background: #a32020;
   border-color: #a32020;
   color: #ffffff;
-}
-
-/* Éxito. Va después de las variantes para ganarles sin subir especificidad, y
-   cancela el atenuado de :disabled — el botón queda inerte a propósito mientras
-   navega, pero tiene que verse encendido: es la confirmación, no un control
-   apagado. */
-.cq-btn[data-state="ok"],
-.cq-btn[data-state="ok"]:disabled {
-  background: var(--brand-verde);
-  border-color: var(--brand-verde);
-  color: var(--ink);
-  opacity: 1;
-  cursor: default;
 }
 
 /* Confirmación armada: el segundo clic es el que borra, y el botón lo dice. */
@@ -382,21 +376,234 @@
   color: var(--text-tertiary);
 }
 
+/* ---------- Barra superior ----------
+
+   Blanca y pegada arriba, con una sola línea de 1px abajo. No lleva sombra: el
+   contenido se desplaza POR DEBAJO y una sombra permanente se leería como una
+   segunda superficie flotando sobre todo el panel. La línea alcanza para
+   separar, y no miente sobre la profundidad. */
+
+.cq-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 640px) {
+  .cq-topbar {
+    padding: 0 2rem;
+  }
+}
+
+/* Control cuadrado de la barra: el mismo alto que el resto de la fila, para que
+   los iconos de los extremos se alineen entre sí y con la miga del medio. */
+.cq-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--panel-radius-control);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--panel-speed) var(--ease-out),
+    color var(--panel-speed) var(--ease-out);
+}
+
+.cq-topbar-btn:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.cq-topbar-btn:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* Disparador de la cuenta, al extremo derecho de la barra.
+
+   Se dibuja como CONTROL y no como texto con un avatar al lado. Un bloque de
+   identidad sin caja se lee como información —algo que el panel te muestra— y
+   nadie le hace clic a la información. El borde y el relleno son lo que dice
+   "esto se toca" antes de que nadie pase el mouse por encima.
+
+   Los tres estados son distintos entre sí a propósito: reposo con borde tenue,
+   hover con borde de marca, y abierto sostenido en ese mismo borde. Que el
+   abierto NO vuelva al reposo es lo que evita el menú huérfano: se ve de dónde
+   salió el panel que está flotando. */
+.cq-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  max-width: 13rem;
+  padding: 0.28rem 0.5rem 0.28rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--panel-speed) var(--ease-out),
+    border-color var(--panel-speed) var(--ease-out),
+    color var(--panel-speed) var(--ease-out);
+}
+
+.cq-account:hover,
+.cq-account[data-open="true"] {
+  background: var(--surface-sunken);
+  border-color: var(--brand-petroleo);
+  color: var(--foreground);
+}
+
+.cq-account:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* El galón gira al abrir. Es la señal más barata de que ese control tiene algo
+   guardado abajo, y la única que sigue funcionando cuando el menú queda fuera de
+   la vista. */
+.cq-account-caret {
+  flex-shrink: 0;
+  transition: transform var(--panel-speed) var(--ease-out);
+}
+
+.cq-account[data-open="true"] .cq-account-caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-account-caret {
+    transition: none;
+  }
+}
+
+/* ---------- Esqueletos de carga ----------
+
+   Cada pantalla del panel abre con `await` contra la base. Sin esqueleto, ese
+   tiempo es una pantalla en blanco y el que opera no sabe si el panel está
+   cargando o si se rompió.
+
+   Un esqueleto y no un spinner centrado: el esqueleto ya dibuja la FORMA de lo
+   que viene, así que cuando llegan los datos nada se mueve de lugar. Un spinner
+   informa que algo pasa y después reacomoda la página entera.
+
+   El barrido va en `transform` sobre un pseudo-elemento, no en `background-
+   position`: animar la posición de un degradado repinta la caja en cada cuadro y
+   con veinte filas a la vez eso se nota. */
+.cq-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+}
+
+.cq-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--surface-raised) 70%, transparent),
+    transparent
+  );
+  animation: cq-skeleton-sweep 1.4s var(--ease-out) infinite;
+}
+
+@keyframes cq-skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Sin movimiento, el esqueleto sigue siendo un esqueleto: la forma es la que
+   informa. Se apaga el barrido y no se reemplaza por nada. */
+@media (prefers-reduced-motion: reduce) {
+  .cq-skeleton::after {
+    animation: none;
+  }
+}
+
+/* ---------- Tarjeta de cifra ----------
+
+   El bloque de arriba del tablero. La caja es la misma superficie que .cq-panel;
+   lo que cambia es el orden de lectura: placa de icono, etiqueta chica, cifra
+   grande. La cifra manda, y por eso es lo único con peso tipográfico acá. */
+
+.cq-stat {
+  display: block;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-radius-panel);
+  padding: 1.1rem 1.15rem;
+  transition:
+    border-color var(--panel-speed) var(--ease-out),
+    box-shadow var(--panel-speed) var(--ease-out);
+}
+
+/* Sólo las que son enlace levantan. Una tarjeta que se ilumina sin llevar a
+   ningún lado promete una interacción que no existe. */
+a.cq-stat:hover {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 45%, var(--border));
+  box-shadow: var(--panel-shadow-raised);
+}
+
+a.cq-stat:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* La placa del icono se tinta con el acento que le toca. El color entra al 12%
+   sobre el papel, no plano: un bloque saturado de 36px al lado de una cifra le
+   gana la mirada al dato, que es justo al revés de lo que queremos. */
+.cq-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cq-stat-accent) 12%, var(--surface-raised));
+  color: var(--cq-stat-accent);
+}
+
 /* ---------- Riel de navegación ---------- */
 
+/* El borde derecho no es decoración: riel blanco contra fondo marfil son dos
+   tonos muy cercanos, y sin esa línea el riel no termina en ningún lado. */
 .cq-rail {
   background: var(--panel-rail);
   color: var(--panel-rail-text);
+  border-right: 1px solid var(--panel-rail-border);
 }
 
+/* La fila del riel es una PÍLDORA, no una franja de borde a borde. El radio de
+   10px y el alto fijo de 2.5rem son lo que la hacen ver de esta década: una fila
+   cuadrada de altura variable es lo que daba el aire de menú de sistema viejo.
+
+   El icono va en su propia caja de 1.25rem para que todas las etiquetas empiecen
+   en la misma columna aunque un glifo sea más angosto que otro. */
 .cq-rail-link {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  border-radius: var(--panel-radius-control);
-  padding: 0.6rem 0.75rem;
-  font-size: 0.85rem;
+  gap: 0.65rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  padding: 0 0.7rem;
+  font-size: 0.855rem;
   font-weight: 500;
   color: var(--panel-rail-text);
   transition:
@@ -409,25 +616,63 @@
   color: var(--panel-rail-text-strong);
 }
 
+/* Variante sin relleno al pasar el mouse. La usa el bloque del usuario: no es un
+   destino más de la lista, es quién tiene la sesión, y encenderlo como a un
+   enlace de sección lo mete en una jerarquía a la que no pertenece. */
+.cq-rail-link-flat:hover {
+  background: transparent;
+  color: var(--panel-rail-text);
+}
+
+/* Cerrar sesión se enciende en rojo. No es decoración: es la única fila de todo
+   el cromo que TERMINA algo, y el rojo aparece recién al apuntarla — en reposo
+   sigue siendo una fila más, porque una salida pintada de alerta permanente
+   grita todo el día por una acción que se usa una vez.
+
+   El fondo es un tinte del 8%, no el rojo pleno: acá se está por hacer clic, no
+   confirmando un borrado. */
+.cq-rail-link-danger:hover,
+.cq-rail-link-danger:focus-visible {
+  background: color-mix(in srgb, #a32020 8%, var(--panel-rail));
+  color: #a32020;
+}
+
+.cq-rail-link-danger:focus-visible {
+  outline-color: #a32020;
+}
+
+/* Celeste sobre blanco da 2:1 y no se ve. Todo lo que antes era celeste en el
+   riel pasa a petróleo, que es el mismo azul de la marca un escalón más oscuro
+   y el que ya usa el resto del panel claro. */
 .cq-rail-link:focus-visible {
-  outline: 2px solid var(--brand-celeste);
+  outline: 2px solid var(--brand-petroleo);
   outline-offset: 2px;
 }
 
+/* El activo no puede apoyarse sólo en el fondo: sobre blanco, un tinte al 10% es
+   una diferencia de dos tonos que se pierde. Suma color y peso en el texto, que
+   es lo que de verdad lo separa de sus vecinos. */
 .cq-rail-link[aria-current="page"] {
-  background: var(--panel-rail-raised);
-  color: var(--panel-rail-text-strong);
+  background: color-mix(in srgb, var(--brand-petroleo) 11%, var(--panel-rail));
+  color: var(--brand-petroleo);
+  font-weight: 600;
 }
 
-/* La marca de sección activa: una barra celeste que crece desde el centro.
-   Es el único momento animado del riel, y solo informa estado. */
+/* La marca de activo: una barra corta que crece desde el centro, DENTRO de la
+   píldora.
+
+   Antes colgaba en `inset-inline-start: -0.75rem`, o sea afuera del propio
+   enlace, apoyada en que el riel tuviera exactamente ese padding. Colapsado el
+   padding cambia y la barra se salía del riel. Adentro, no depende de nada
+   externo y se ve igual en los dos anchos. */
 .cq-rail-link[aria-current="page"]::before {
   content: "";
   position: absolute;
-  inset-block: 0.35rem;
-  inset-inline-start: -0.75rem;
-  width: 2px;
-  background: var(--brand-celeste);
+  inset-block: 0.6rem;
+  inset-inline-start: 0.25rem;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--brand-petroleo);
   animation: cq-rail-mark 260ms var(--ease-out-expo) both;
 }
 
@@ -448,6 +693,11 @@
    como se llega a que una fila se centre y la de al lado no. */
 
 .cq-rail[data-collapsed="true"] .cq-rail-link {
+  /* Cuadrado FIJO de 2.5rem centrado, no una fila al 100% del ancho: estirado,
+     el fondo del hover y del activo se ve como una banda mucho más ancha que el
+     icono que contiene, y es lo que hacía que la marca pareciera desbordar. */
+  width: 2.5rem;
+  margin-inline: auto;
   justify-content: center;
   padding-inline: 0;
   /* El gap tiene que irse con la etiqueta: si queda, separa al icono de una
@@ -455,29 +705,38 @@
   gap: 0;
 }
 
-/* La barra de activo colgaba del padding lateral que acabamos de sacar: pegada
-   al canto del riel se vería cortada, así que colapsado se dibuja como un aro
-   alrededor del cuadrado, que es la misma información sin depender del margen. */
+/* Colapsado NADA queda alineado a la izquierda: el riel entero pasa a ser una
+   columna de cuadrados centrados. Sin esta regla, el padding lateral del riel y
+   los bloques que no son .cq-rail-link —la marca, el pie de usuario— siguen
+   corridos y la columna se ve torcida aunque cada icono esté centrado en su
+   propia fila. */
+.cq-rail[data-collapsed="true"] {
+  align-items: center;
+  padding-inline: 0.5rem;
+}
+
+.cq-rail[data-collapsed="true"] .cq-rail-group {
+  width: 100%;
+}
+
+/* En un cuadrado de 2.5rem no entra una barra al costado sin comerse el icono:
+   colapsado el estado lo dice el relleno, que ya es información suficiente
+   cuando sólo hay un elemento activo a la vez. */
 .cq-rail[data-collapsed="true"] .cq-rail-link[aria-current="page"]::before {
-  inset: 0;
-  inset-inline-start: 0;
-  width: auto;
-  border: 1px solid color-mix(in srgb, var(--brand-celeste) 55%, transparent);
-  border-radius: var(--panel-radius-control);
-  background: transparent;
-  animation: none;
+  display: none;
 }
 
 /* Encabezado de grupo. Existe para que "Contenido" y "Sistema" no se lean como
    una lista larga y plana de seis enlaces. Colapsado no hay dónde escribirlo:
    se reemplaza por una línea, que separa igual sin ocupar una fila entera. */
 .cq-rail-group {
-  padding: 0 0.75rem;
-  font-size: 0.67rem;
+  padding: 0 0.7rem 0.15rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--panel-rail-text) 75%, transparent);
+  color: var(--text-tertiary);
+  opacity: 0.75;
 }
 
 .cq-rail[data-collapsed="true"] .cq-rail-group {

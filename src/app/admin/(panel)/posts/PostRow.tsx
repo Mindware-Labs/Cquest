@@ -42,7 +42,7 @@ export default function PostRow({
 
   return (
     <li className="cq-row flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-border px-5 py-4 last:border-b-0">
-      <div className="relative h-14 w-[5.25rem] shrink-0 overflow-hidden rounded-[2px] bg-[var(--surface-sunken)] ring-1 ring-border">
+      <div className="relative h-14 w-[5.25rem] shrink-0 overflow-hidden rounded-[6px] bg-[var(--surface-sunken)] ring-1 ring-border">
         <Image
           src={post.coverImageUrl}
           alt={post.coverImageAlt}

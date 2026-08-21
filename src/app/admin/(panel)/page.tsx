@@ -1,13 +1,21 @@
 import Link from "next/link";
 import { getCategories } from "@/lib/categories";
 import { getPosts } from "@/lib/posts";
-import { IconExternal, IconPencil, IconPlus } from "@/components/admin/ui/icons";
+import {
+  IconArticles,
+  IconCategories,
+  IconExternal,
+  IconEyeOff,
+  IconPencil,
+  IconPlus,
+} from "@/components/admin/ui/icons";
 import {
   EmptyState,
   Meter,
   PageHeader,
   Panel,
   PanelHead,
+  StatCard,
   StatusBadge,
 } from "@/components/admin/ui/Surface";
 
@@ -56,6 +64,45 @@ export default async function AdminHomePage() {
           </Link>
         }
       />
+
+      {/* La fila de cifras. Va arriba porque es el resumen, no porque sea lo más
+          importante: lo que hay que HACER sigue estando en el primer panel de
+          abajo. Cada tarjeta lleva a la pantalla donde ese número se trabaja —
+          una cifra sin destino es un adorno. */}
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Publicados"
+          value={published.length}
+          hint="Visibles en el blog público"
+          icon={<IconArticles size={18} />}
+          accent="var(--brand-verde)"
+          href="/admin/posts"
+        />
+        <StatCard
+          label="Borradores"
+          value={drafts.length}
+          hint={drafts.length === 0 ? "Nada a medio escribir" : "Sin publicar todavía"}
+          icon={<IconPencil size={18} />}
+          accent="var(--brand-petroleo)"
+          href="/admin/posts"
+        />
+        <StatCard
+          label="Ocultos"
+          value={hidden.length}
+          hint="Retirados del sitio, no borrados"
+          icon={<IconEyeOff size={18} />}
+          accent="#8a5a00"
+          href="/admin/posts"
+        />
+        <StatCard
+          label="Categorías"
+          value={categories.length}
+          hint={`${posts.length} ${posts.length === 1 ? "artículo" : "artículos"} en total`}
+          icon={<IconCategories size={18} />}
+          accent="var(--brand-celeste)"
+          href="/admin/categories"
+        />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="grid gap-5">
@@ -155,29 +202,11 @@ export default async function AdminHomePage() {
           </Panel>
         </div>
 
+        {/* El panel "Estado editorial" que estaba acá desapareció: decía
+            exactamente los mismos tres números que ahora encabezan la página.
+            Repetir un dato en dos lugares no es reforzarlo — obliga a mirar dos
+            veces para confirmar que dicen lo mismo. */}
         <div className="grid content-start gap-5">
-          <Panel>
-            <PanelHead title="Estado editorial" />
-            {/* Tres cifras en una lista de definición, no tres tarjetas iguales:
-                ocupan lo que valen y se comparan de un vistazo. */}
-            <dl className="divide-y divide-border">
-              {[
-                { label: "Publicados", value: published.length, status: "PUBLISHED" },
-                { label: "Borradores", value: drafts.length, status: "DRAFT" },
-                { label: "Ocultos", value: hidden.length, status: "HIDDEN" },
-              ].map((entry) => (
-                <div key={entry.label} className="flex items-center justify-between px-5 py-3">
-                  <dt className="flex items-center gap-2.5">
-                    <StatusBadge status={entry.status} />
-                  </dt>
-                  <dd className="font-heading text-[1.35rem] leading-none font-semibold text-foreground tabular-nums">
-                    {entry.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </Panel>
-
           <Panel>
             <PanelHead title="Por categoría" count={categories.length} />
             {byCategory.length === 0 ? (

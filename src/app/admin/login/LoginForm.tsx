@@ -1,14 +1,14 @@
 "use client";
 
-import type { KeyboardEvent, RefObject } from "react";
+import type { KeyboardEvent } from "react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import type { LoginActionState } from "@/lib/adminAuth";
+import LoginSuccessMark from "./LoginSuccessMark";
 import {
   IconCapsLock,
-  IconCheck,
   IconEye,
   IconEyeOff,
   IconLock,
@@ -17,13 +17,7 @@ import {
   IconWarning,
 } from "@/components/admin/ui/icons";
 
-function SubmitButton({
-  succeeded,
-  checkRef,
-}: {
-  succeeded: boolean;
-  checkRef: RefObject<HTMLSpanElement | null>;
-}) {
+function SubmitButton({ succeeded }: { succeeded: boolean }) {
   /* useFormStatus lee el estado del <form> padre — por eso es un componente
      aparte y no un hook dentro de LoginForm: adentro del mismo componente que
      renderiza el form, siempre devolvería pending: false. */
@@ -36,17 +30,10 @@ function SubmitButton({
          milisegundos y en esa ventana el botón todavía acepta clics. */
       disabled={pending || succeeded}
       data-variant="secondary"
-      data-state={succeeded ? "ok" : undefined}
       className="cq-btn mt-6 w-full rounded-[8px] py-3 text-[0.9rem]"
     >
-      {succeeded ? (
-        <span ref={checkRef} className="flex items-center">
-          <IconCheck size={17} />
-        </span>
-      ) : (
-        pending && <IconSpinner size={16} />
-      )}
-      {succeeded ? "Listo" : pending ? "Entrando…" : "Entrar"}
+      {pending && <IconSpinner size={16} />}
+      {pending ? "Entrando…" : "Entrar"}
     </button>
   );
 }
@@ -62,7 +49,10 @@ export default function LoginForm({
   const formRef = useRef<HTMLFormElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const checkRef = useRef<HTMLSpanElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const markRef = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<SVGCircleElement>(null);
+  const checkRef = useRef<SVGPathElement>(null);
   const router = useRouter();
 
   /* El éxito se lee directo del estado del servidor, sin copiarlo a un estado
@@ -108,16 +98,17 @@ export default function LoginForm({
 
     const timeline = gsap.timeline({ onComplete: go });
     timeline
-      .fromTo(
-        checkRef.current,
-        { scale: 0.4, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.34, ease: "back.out(2.2)" },
-      )
-      .to(
-        formRef.current,
-        { opacity: 0, y: -10, duration: 0.3, ease: "power2.in" },
-        "+=0.32",
-      );
+      /* Primero se retira el formulario, después se dibuja la marca. Solaparlos
+         haría que las dos cosas compitan y ninguna se lea. */
+      .to(contentRef.current, { opacity: 0, duration: 0.22, ease: "power2.in" })
+      .to(markRef.current, { opacity: 1, duration: 0.18 }, "-=0.08")
+      .to(circleRef.current, { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" })
+      /* El check arranca antes de que el círculo termine: pisarse un poco es lo
+         que hace que se lea como un gesto y no como dos pasos. */
+      .to(checkRef.current, { strokeDashoffset: 0, duration: 0.26, ease: "power2.out" }, "-=0.14")
+      /* Una pausa corta antes de navegar. Sin ella la marca se termina de dibujar
+         y la página ya cambió: se ve el trabajo, no el resultado. */
+      .to({}, { duration: 0.42 });
 
     return () => {
       timeline.kill();
@@ -174,7 +165,15 @@ export default function LoginForm({
   }, [showError]);
 
   return (
-    <form ref={formRef} action={formAction} noValidate>
+    <form ref={formRef} action={formAction} noValidate className="relative">
+      {/* La marca dibujada no la anuncia ningún lector de pantalla, así que el
+          éxito se dice acá aparte. Sin esto, para quien no ve la pantalla el
+          formulario simplemente deja de responder. */}
+      <p role="status" className="sr-only">
+        {succeeded ? "Sesión iniciada. Entrando al panel." : ""}
+      </p>
+
+      <div ref={contentRef}>
       <div data-enter>
         <label htmlFor="email" className="cq-label">
           Email
@@ -266,9 +265,14 @@ export default function LoginForm({
         </p>
       )}
 
-      <div data-enter>
-        <SubmitButton succeeded={succeeded} checkRef={checkRef} />
+        <div data-enter>
+          <SubmitButton succeeded={succeeded} />
+        </div>
       </div>
+
+      {succeeded && (
+        <LoginSuccessMark rootRef={markRef} circleRef={circleRef} checkRef={checkRef} />
+      )}
     </form>
   );
 }

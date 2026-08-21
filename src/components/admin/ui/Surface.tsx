@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import { IconWarning } from "./icons";
 
@@ -32,6 +33,60 @@ export function PageHeader({
   );
 }
 
+/* Tarjeta de cifra. `href` es opcional a propósito: con enlace es una puerta a
+   la pantalla que explica el número, y sin enlace es sólo un dato. Lo que NO
+   hace es fingir: sin destino, no levanta ni cambia el cursor. */
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon,
+  accent = "var(--brand-petroleo)",
+  href,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+  icon: ReactNode;
+  accent?: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <span className="cq-stat-icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="mt-3.5 block text-[0.8rem] font-medium text-[var(--text-secondary)]">
+        {label}
+      </span>
+      <span className="font-heading mt-1 block text-[1.7rem] leading-none font-semibold tracking-[-0.02em] text-foreground tabular-nums">
+        {value}
+      </span>
+      {hint && (
+        <span className="mt-1.5 block text-[0.76rem] leading-snug text-[var(--text-tertiary)]">
+          {hint}
+        </span>
+      )}
+    </>
+  );
+
+  const style = { "--cq-stat-accent": accent } as CSSProperties;
+
+  if (href) {
+    return (
+      <Link href={href} className="cq-stat" style={style}>
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="cq-stat" style={style}>
+      {body}
+    </div>
+  );
+}
+
 export function Panel({
   children,
   className,
@@ -58,7 +113,7 @@ export function PanelHead({
       <h2 className="flex items-center gap-2 text-[0.72rem] font-bold tracking-[0.11em] text-[var(--text-tertiary)] uppercase">
         {title}
         {typeof count === "number" && (
-          <span className="rounded-[2px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-[0.7rem] tracking-normal text-[var(--text-secondary)] tabular-nums">
+          <span className="rounded-[6px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-[0.7rem] tracking-normal text-[var(--text-secondary)] tabular-nums">
             {count}
           </span>
         )}
@@ -111,7 +166,7 @@ export function Alert({ children }: { children: ReactNode }) {
   return (
     <p
       role="alert"
-      className="flex items-start gap-2 rounded-[2px] border border-[#e8c9c9] bg-[#fbf1f1] px-3 py-2 text-[0.84rem] text-[#8f1d1d]"
+      className="flex items-start gap-2 rounded-[var(--panel-radius-control)] border border-[#e8c9c9] bg-[#fbf1f1] px-3 py-2 text-[0.84rem] text-[#8f1d1d]"
     >
       <IconWarning size={16} className="mt-0.5 shrink-0" />
       <span>{children}</span>

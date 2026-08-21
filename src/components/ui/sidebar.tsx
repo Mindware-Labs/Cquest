@@ -99,7 +99,7 @@ export function DesktopSidebar({ className, children }: PanelProps) {
       id={panelId}
       data-collapsed={open ? undefined : "true"}
       className={cn(
-        "cq-rail hidden shrink-0 flex-col gap-6 px-3 py-5 lg:sticky lg:top-0 lg:flex lg:h-screen",
+        "cq-rail hidden shrink-0 flex-col gap-5 px-3 py-4 lg:sticky lg:top-0 lg:flex lg:h-screen",
         className,
       )}
       animate={{ width: open ? RAIL_OPEN : RAIL_CLOSED }}
@@ -171,7 +171,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
               exit={{ x: "-100%" }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "cq-rail fixed inset-y-0 left-0 z-100 flex w-[17rem] max-w-[85vw] flex-col gap-6 overflow-y-auto px-4 py-5",
+                "cq-rail fixed inset-y-0 left-0 z-100 flex w-[17rem] max-w-[85vw] flex-col gap-5 overflow-y-auto px-3 py-4",
                 className,
               )}
             >

@@ -30,7 +30,7 @@ const FALLBACK: Shape = { widths: [100], layout: "stack", tone: "line" };
 export function TemplateShape({ types }: { types: readonly string[] }) {
   if (types.length === 0) {
     return (
-      <div className="flex h-[4.75rem] items-center justify-center rounded-[2px] bg-[var(--surface-sunken)] text-[0.74rem] text-[var(--text-tertiary)]">
+      <div className="flex h-[4.75rem] items-center justify-center rounded-[6px] bg-[var(--surface-sunken)] text-[0.74rem] text-[var(--text-tertiary)]">
         Sin bloques
       </div>
     );
@@ -39,7 +39,7 @@ export function TemplateShape({ types }: { types: readonly string[] }) {
   return (
     <div
       aria-hidden="true"
-      className="flex h-[4.75rem] flex-col gap-[4px] overflow-hidden rounded-[2px] bg-[var(--surface-sunken)] px-2.5 py-2"
+      className="flex h-[4.75rem] flex-col gap-[4px] overflow-hidden rounded-[6px] bg-[var(--surface-sunken)] px-2.5 py-2"
     >
       {types.slice(0, 6).map((type, index) => {
         const shape = SHAPE[type] ?? FALLBACK;
