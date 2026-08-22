@@ -22,7 +22,7 @@ function RailHeader() {
          pero el gap NO: seguía separando al logo de una caja vacía y lo dejaba
          corrido medio gap a la izquierda. Es exactamente lo que se veía
          descentrado. */
-      className={`flex min-w-0 items-center rounded-[var(--panel-radius-control)] py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo ${
+      className={`flex min-w-0 items-center rounded-[var(--p-radius-sm)] py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)] ${
         open ? "gap-2.5 px-1.5" : "w-full justify-center gap-0 px-0"
       }`}
     >
@@ -36,12 +36,11 @@ function RailHeader() {
         className="h-7 w-auto shrink-0"
       />
       <SidebarLabel>
-        <span className="font-heading block text-[0.95rem] leading-none font-semibold tracking-[-0.02em] text-[var(--panel-rail-text-strong)]">
-          Center Quest
-        </span>
-        <span className="mt-1 block text-[0.62rem] font-bold tracking-[0.16em] text-petroleo uppercase">
-          Panel editorial
-        </span>
+        <span className="cq-title block leading-none">Center Quest</span>
+        {/* El descriptor va en mono, no en versalitas de la tipografía de
+            interfaz: es una etiqueta de sistema —qué instancia del panel es
+            esto— y en el vocabulario de acá eso se escribe en mono. */}
+        <span className="cq-ident mt-1 block text-[var(--p-accent)]">panel/editorial</span>
       </SidebarLabel>
     </Link>
   );

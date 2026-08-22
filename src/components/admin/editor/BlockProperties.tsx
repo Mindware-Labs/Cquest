@@ -40,7 +40,7 @@ export default function BlockProperties({
 
   return (
     <div className="space-y-5">
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-petroleo">
+      <p className="cq-label text-[var(--p-accent)]">
         {TYPE_LABEL[block.type]}
       </p>
 
@@ -106,7 +106,7 @@ export default function BlockProperties({
               onChange={(alt) => patch({ alt })}
             />
             {block.src && block.alt.length === 0 && (
-              <p className="mt-1 text-[0.76rem] text-red-700">
+              <p className="cq-meta mt-1 text-[var(--p-danger)]">
                 Obligatorio: sin esto el artículo no se puede guardar.
               </p>
             )}
@@ -169,7 +169,7 @@ export default function BlockProperties({
             placeholder="dQw4w9WgXcQ"
             onChange={(videoId) => patch({ videoId })}
           />
-          <p className="text-[0.76rem] leading-relaxed text-[var(--text-tertiary)]">
+          <p className="cq-meta">
             Solo el identificador, no la URL completa. En YouTube es lo que sigue
             a <code>v=</code>; en Vimeo, el número final.
           </p>
@@ -289,7 +289,7 @@ export default function BlockProperties({
             onChange={(href) => patch({ href })}
           />
           {block.hrefKind === "internal" && (
-            <p className="text-[0.76rem] leading-relaxed text-[var(--text-tertiary)]">
+            <p className="cq-meta">
               Sin el prefijo de idioma: se agrega solo según el idioma de quien
               visita la página.
             </p>
@@ -317,7 +317,7 @@ export default function BlockProperties({
             ]}
             onChange={(value) => onColumnCountChange?.(Number(value) as 2 | 3)}
           />
-          <p className="text-[0.76rem] leading-relaxed text-[var(--text-tertiary)]">
+          <p className="cq-meta">
             Los bloques de cada columna se agregan y se ordenan desde el lienzo.
             Al pasar de 3 a 2 columnas, el contenido de la tercera se mueve a la
             última — nunca se pierde.
@@ -338,7 +338,7 @@ export default function BlockProperties({
       )}
 
       {/* Espaciado: lo tiene todo bloque, sin importar el tipo (PERS-1). */}
-      <div className="space-y-4 border-t border-border pt-5">
+      <div className="space-y-4 border-t border-[var(--p-line)] pt-4">
         <OptionGroup
           label="Espacio antes"
           value={block.spacingTop}

@@ -11,8 +11,8 @@ export const MOVE_BLOCK_MIME = "text/x-cq-move-block";
 
 export default function BlockPalette({ onAdd }: { onAdd: (type: Block["type"]) => void }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border pb-4">
-      <span className="text-[0.78rem] font-semibold text-foreground">Bloques:</span>
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--p-line)] pb-3">
+      <span className="cq-label pr-1">Bloques</span>
       {BLOCK_TYPES.map((type) => (
         <button
           key={type}
@@ -26,7 +26,12 @@ export default function BlockPalette({ onAdd }: { onAdd: (type: Block["type"]) =
              y agregar al final y después reordenar con ↑↓ tiene que alcanzar
              para armar un artículo completo. */
           onClick={() => onAdd(type)}
-          className="cursor-grab rounded-md border border-border bg-white px-3 py-1.5 text-[0.8rem] font-semibold text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo active:cursor-grabbing"
+          /* Se dibuja como el botón `outline` del sistema, con el cursor de
+             arrastre encima: es un control que además se puede tomar, no una
+             pieza con estilo propio. */
+          className="cq-btn cursor-grab active:cursor-grabbing"
+          data-variant="outline"
+          data-size="sm"
         >
           + {TYPE_LABEL[type]}
         </button>

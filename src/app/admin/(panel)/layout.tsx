@@ -1,5 +1,6 @@
 import { logoutAdmin, requireAdminSession } from "@/lib/adminAuth";
 import { Sidebar } from "@/components/ui/sidebar";
+import { ToastProvider } from "@/components/admin/ui/Toast";
 import PanelRail from "./PanelRail";
 import PanelTopbar from "./PanelTopbar";
 
@@ -25,6 +26,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
 
   return (
     <Sidebar>
+      {/* El proveedor de avisos envuelve al panel entero y no a cada vista: un
+          borrado hecho en la tabla de artículos tiene que poder avisar aunque la
+          navegación haya cambiado de sección mientras corría el plazo. */}
+      <ToastProvider>
       <div className="flex min-h-screen flex-col lg:flex-row">
         <a
           href="#panel-contenido"
@@ -35,7 +40,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
 
         <PanelRail />
 
-        <div className="flex min-w-0 flex-1 flex-col bg-background">
+        <div className="flex min-w-0 flex-1 flex-col">
           <PanelTopbar
             name={session.user?.name ?? "Administración"}
             email={session.user?.email ?? ""}
@@ -43,14 +48,20 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             logoutAction={logoutAdmin}
           />
 
+          {/* El tope subió de 76rem a 110rem. Un panel de operación no es una
+              columna de lectura: acá no hay párrafos largos que acotar, hay
+              tablas de siete columnas. En una pantalla de 1920 el tope viejo
+              dejaba 700px de margen vacío a cada lado y obligaba a la tabla a
+              desplazarse en horizontal teniendo espacio de sobra al costado. */}
           <main
             id="panel-contenido"
-            className="mx-auto w-full max-w-[80rem] flex-1 px-5 py-7 pb-20 sm:px-8"
+            className="mx-auto w-full max-w-[110rem] flex-1 px-4 py-5 pb-16 sm:px-6"
           >
             {children}
           </main>
         </div>
       </div>
+      </ToastProvider>
     </Sidebar>
   );
 }

@@ -40,7 +40,7 @@ export default async function AdminLoginPage() {
             </Link>
             <h1
               data-reveal
-              className="font-heading text-[1.4rem] leading-none font-semibold tracking-[-0.02em] text-[var(--foreground)]"
+              className="text-[1.4rem] leading-none font-semibold tracking-[-0.02em] text-[var(--foreground)]"
             >
               Entrar al panel
             </h1>

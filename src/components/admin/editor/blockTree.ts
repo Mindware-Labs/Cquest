@@ -75,6 +75,113 @@ export function appendToColumn(
   });
 }
 
+/* ---------------------------------------------------------------------------
+   Mover ENTRE niveles
+
+   Era el agujero grande del editor: se podía reordenar dentro del cuerpo y
+   dentro de una columna, pero no pasar un bloque de uno a otro. Para meter un
+   párrafo ya escrito en una columna había que borrarlo y volver a tipearlo.
+
+   Las tres funciones de abajo comparten una idea: se saca el bloque de donde
+   esté y se lo inserta donde va, en una sola pasada. Nunca hay un estado
+   intermedio donde el bloque no exista o exista dos veces.
+--------------------------------------------------------------------------- */
+
+export type BlockLocation =
+  | { scope: "root"; index: number }
+  | { scope: "column"; columnsBlockId: string; columnIndex: number; index: number };
+
+/** Dónde vive un bloque hoy. Devuelve null si no está. */
+export function locateBlock(blocks: readonly Block[], id: string): BlockLocation | null {
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
+    if (block.id === id) return { scope: "root", index };
+
+    if (block.type === "columns") {
+      for (let columnIndex = 0; columnIndex < block.columns.length; columnIndex += 1) {
+        const childIndex = block.columns[columnIndex].findIndex((child) => child.id === id);
+        if (childIndex !== -1) {
+          return { scope: "column", columnsBlockId: block.id, columnIndex, index: childIndex };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/* Sólo cinco de los once tipos entran en una columna, y es el schema el que lo
+   decide (columnSimpleBlockSchema). Preguntarlo acá evita ofrecer un destino
+   que Zod va a rechazar recién al guardar. */
+export function canLiveInColumn(block: Block): block is ColumnSimpleBlock {
+  return (
+    block.type === "heading" ||
+    block.type === "paragraph" ||
+    block.type === "image" ||
+    block.type === "list" ||
+    block.type === "cta"
+  );
+}
+
+/** Mete un bloque del cuerpo —o de otra columna— dentro de una columna. */
+export function moveIntoColumn(
+  blocks: readonly Block[],
+  id: string,
+  columnsBlockId: string,
+  columnIndex: number,
+): Block[] {
+  const block = findBlock(blocks, id);
+  if (!block || !canLiveInColumn(block)) return [...blocks];
+  /* Un bloque de columnas no puede meterse dentro de sí mismo: el árbol tiene
+     dos niveles exactos y anidarlo lo rompería. `canLiveInColumn` ya lo impide
+     por tipo, pero la comprobación explícita documenta el porqué. */
+  if (id === columnsBlockId) return [...blocks];
+
+  const without = removeBlock(blocks, id);
+
+  return without.map((candidate) => {
+    if (candidate.id !== columnsBlockId || candidate.type !== "columns") return candidate;
+    const columns = candidate.columns.map((column, index) =>
+      index === columnIndex ? [...column, block] : column,
+    );
+    return { ...candidate, columns };
+  });
+}
+
+/** Saca un bloque de su columna y lo deja en el cuerpo, justo debajo del
+    bloque de columnas del que salió — que es donde el ojo lo va a buscar. */
+export function moveOutOfColumn(blocks: readonly Block[], id: string): Block[] {
+  const location = locateBlock(blocks, id);
+  if (!location || location.scope !== "column") return [...blocks];
+
+  const block = findBlock(blocks, id);
+  if (!block) return [...blocks];
+
+  const without = removeBlock(blocks, id);
+  const anchor = without.findIndex((candidate) => candidate.id === location.columnsBlockId);
+
+  return insertBlock(without, block, anchor === -1 ? without.length : anchor + 1);
+}
+
+/** Inserta un bloque nuevo en una columna, en una posición concreta. */
+export function insertIntoColumn(
+  blocks: readonly Block[],
+  columnsBlockId: string,
+  columnIndex: number,
+  child: ColumnSimpleBlock,
+  at: number,
+): Block[] {
+  return blocks.map((block) => {
+    if (block.id !== columnsBlockId || block.type !== "columns") return block;
+    const columns = block.columns.map((column, index) => {
+      if (index !== columnIndex) return column;
+      const next = [...column];
+      next.splice(Math.max(0, Math.min(at, next.length)), 0, child);
+      return next;
+    });
+    return { ...block, columns };
+  });
+}
+
 /** Mueve un bloque simple dentro de su columna. */
 export function moveWithinColumn(
   blocks: readonly Block[],

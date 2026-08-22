@@ -261,6 +261,17 @@ export function IconWarning(props: IconProps) {
   );
 }
 
+/* Reintentar. Va en el estado de error, que es el único lugar donde una acción
+   del panel se repite tal cual. */
+export function IconRetry(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 12a8 8 0 1 1-2.6-5.9" />
+      <path d="M20 4v4.5h-4.5" />
+    </Icon>
+  );
+}
+
 export function IconSpinner({ size = 18, ...props }: IconProps) {
   return (
     <svg

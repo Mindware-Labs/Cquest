@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import type { Block } from "@/lib/blocks";
 import type { TemplateActionState } from "@/lib/templates";
+import { Alert } from "@/components/admin/ui/Surface";
+import { useToast } from "@/components/admin/ui/Toast";
 import { INPUT_CLASS } from "./fields";
 
 /* Guardar la estructura del artículo como plantilla reutilizable (AD-15).
@@ -18,28 +20,49 @@ export default function SaveAsTemplate({
   action: (state: TemplateActionState, formData: FormData) => Promise<TemplateActionState>;
   blocks: Block[];
 }) {
-  const [state, dispatch, isPending] = useActionState(action, { error: null });
   const [name, setName] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const { notify } = useToast();
 
+  /* El "guardado" decía la verdad a medias.
+
+     Antes se marcaba `saved` en el mismo momento de despachar, ANTES de que la
+     acción resolviera, y el campo no se limpiaba. Resultado: "Plantilla
+     guardada." quedaba en pantalla al lado del nombre todavía escrito, y un
+     segundo clic creaba una plantilla duplicada sin decir nada.
+
+     Ahora se espera el resultado y sólo entonces se limpia y se avisa. El aviso
+     es un toast como el del resto del panel, no un texto verde propio de esta
+     caja. */
   function save() {
     const formData = new FormData();
     formData.set("name", name);
     formData.set("blocks", JSON.stringify(blocks));
-    dispatch(formData);
-    setSaved(true);
+
+    startTransition(async () => {
+      const result = await action({ error: null }, formData);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      setError(null);
+      setName("");
+      notify({ message: `Plantilla «${name}» guardada.`, tone: "success" });
+    });
   }
 
   const isEmpty = blocks.length === 0 || name.trim().length < 2;
 
   return (
-    <div className="rounded-xl border border-border bg-[var(--surface-raised)] p-5">
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-petroleo">
-        Guardar como plantilla
-      </p>
-      <p className="mt-1.5 text-[0.78rem] leading-relaxed text-[var(--text-tertiary)]">
-        Guarda solo la estructura de bloques. Queda disponible para todo el
-        equipo.
+    <div className="cq-section pb-4">
+      <div className="cq-section-head">
+        <h2 className="cq-label">Guardar como plantilla</h2>
+      </div>
+      <p className="cq-meta">
+        Guarda sólo la estructura de bloques. Queda disponible para todo el equipo.
       </p>
 
       <label className="mt-3 block">
@@ -51,7 +74,7 @@ export default function SaveAsTemplate({
           placeholder="Nombre de la plantilla"
           onChange={(event) => {
             setName(event.target.value);
-            setSaved(false);
+            setError(null);
           }}
           className={`${INPUT_CLASS} mt-0`}
         />
@@ -61,18 +84,17 @@ export default function SaveAsTemplate({
         type="button"
         onClick={save}
         disabled={isEmpty || isPending}
-        className="mt-2.5 w-full rounded-md border border-border bg-white px-3 py-2 text-[0.8rem] font-semibold text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-40"
+        className="cq-btn mt-2.5 w-full"
+        data-variant="outline"
+        data-size="sm"
       >
         {isPending ? "Guardando…" : "Guardar plantilla"}
       </button>
 
-      {state.error && (
-        <p role="alert" className="mt-2 text-[0.78rem] text-red-700">
-          {state.error}
-        </p>
-      )}
-      {saved && !isPending && !state.error && (
-        <p className="mt-2 text-[0.78rem] text-verde">Plantilla guardada.</p>
+      {error && (
+        <div className="mt-2">
+          <Alert>{error}</Alert>
+        </div>
       )}
     </div>
   );

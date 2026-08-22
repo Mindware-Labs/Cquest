@@ -132,9 +132,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
   return (
     <div className="lg:hidden">
       <div className="cq-rail flex h-14 items-center justify-between px-4">
-        <span className="font-heading text-[0.95rem] leading-none font-semibold tracking-[-0.02em] text-[var(--panel-rail-text-strong)]">
-          Center Quest
-        </span>
+        <span className="cq-title leading-none">Center Quest</span>
         <button
           type="button"
           aria-expanded={sheet}

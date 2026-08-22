@@ -1,182 +1,378 @@
-/* Sistema visual del panel — se importa SOLO desde src/app/admin/layout.tsx,
-   que es un segundo root layout. Nada de esto llega al sitio público.
+/* ============================================================================
+   SISTEMA VISUAL DEL PANEL — «Libro mayor»
+   ============================================================================
 
-   Por qué un archivo y no utilidades sueltas en cada JSX: el panel es modo
-   "operar". Un botón Guardar que se ve distinto en dos pantallas significa que
-   una de las dos está mal, y con las clases repetidas a mano eso pasa siempre.
-   Acá el vocabulario se declara una vez. */
+   Se importa SOLO desde src/app/admin/layout.tsx, que es un segundo root
+   layout. Nada de esto llega al sitio público.
 
-:root {
-  /* El riel es BLANCO y el trabajo va sobre marfil (#f8f7f4). La jerarquía se
-     invirtió respecto de la versión en tinta: antes la navegación era la capa
-     oscura, ahora es la capa más clara de la pantalla y el contenido queda un
-     escalón por debajo. Sigue habiendo dos capas —que es lo que hace que se vea
-     dónde estás sin leer una palabra—, sólo que ordenadas al revés.
+   Todos los valores salen de panel-tokens.css. Este archivo no declara ni un
+   hex, ni un radio, ni una duración: declara VOCABULARIO. Si acá aparece un
+   literal, está mal puesto.
 
-     Los tokens se mantienen con el mismo nombre a propósito: son ROLES (fondo,
-     elevado, borde, texto, texto fuerte), no colores. Cambiar el valor acá
-     repinta el riel entero sin tocar un solo componente. */
-  --panel-rail: #ffffff;
-  --panel-rail-raised: var(--surface-sunken);
-  --panel-rail-border: var(--border);
-  --panel-rail-text: var(--text-secondary);
-  --panel-rail-text-strong: var(--foreground);
+   La postura, en una línea: base blanca, jerarquía por filete y aire, densidad
+   alta, y el dato numérico como protagonista tipográfico. No hay tarjetas
+   flotando; hay secciones separadas por una regla. */
 
-  /* Un radio con presencia, pero corto de la píldora: 8px en controles y 12px en
-     paneles. El 2px anterior no leía como decisión, leía como default de
-     navegador — y el 16px que usa todo panel genérico borra el carácter.
+@import "./panel-tokens.css";
 
-     Un solo token para TODOS los controles a propósito: si el input se redondea
-     y el botón de al lado no, el formulario se ve roto, no se ve moderno. */
-  --panel-radius-control: 8px;
-  --panel-radius-panel: 12px;
+/* ---------- Base ---------- */
 
-  /* Una sola escala de elevación. Cada sombra tiene desplazamiento Y difuminado:
-     un halo sin offset es decoración, no profundidad. */
-  --panel-shadow-raised: 0 1px 2px rgb(13 30 41 / 0.06), 0 8px 24px -12px rgb(13 30 41 / 0.18);
-  --panel-shadow-overlay: 0 2px 4px rgb(13 30 41 / 0.08), 0 18px 40px -18px rgb(13 30 41 / 0.3);
-
-  --panel-speed: 170ms;
+.cq-panel-root {
+  background: var(--p-surface);
+  color: var(--p-ink);
+  font-family: var(--p-font-ui);
+  font-size: var(--p-body-size);
+  line-height: var(--p-body-lh);
 }
 
-/* ---------- Superficies ---------- */
+/* ============================================================================
+   1. TIPOGRAFÍA — los seis pasos como clases
+   ============================================================================
+   Existen como clase y no como utilidades sueltas porque un paso tipográfico
+   es un contrato de cuatro valores. Escribir sólo el tamaño en el JSX es cómo
+   se llega a tener el mismo título con tres pesos distintos. */
 
-.cq-panel {
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--panel-radius-panel);
+.cq-display {
+  font-family: var(--p-font-display);
+  font-size: var(--p-display-size);
+  font-weight: var(--p-display-weight);
+  line-height: var(--p-display-lh);
+  letter-spacing: var(--p-display-ls);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* El encabezado de un panel lleva su propio tono para que la fila de títulos de
-   una tabla no se confunda con la primera fila de datos. */
-.cq-panel-head {
-  background: var(--surface-sunken);
-  border-bottom: 1px solid var(--border);
+/* El título usa la familia de display, no la de interfaz. Es el escalón donde
+   las dos se tocan: un título de tarjeta es texto corto y con peso, que es
+   exactamente lo que Inter Tight hace mejor que Geist. */
+.cq-title {
+  font-family: var(--p-font-display);
+  font-size: var(--p-title-size);
+  font-weight: var(--p-title-weight);
+  line-height: var(--p-title-lh);
+  letter-spacing: var(--p-title-ls);
+  color: var(--p-ink);
 }
 
-/* ---------- Controles ---------- */
+.cq-body {
+  font-size: var(--p-body-size);
+  font-weight: var(--p-body-weight);
+  line-height: var(--p-body-lh);
+  letter-spacing: var(--p-body-ls);
+}
+
+.cq-label,
+label.cq-label {
+  display: block;
+  font-size: var(--p-label-size);
+  font-weight: var(--p-label-weight);
+  line-height: var(--p-label-lh);
+  letter-spacing: var(--p-label-ls);
+  text-transform: uppercase;
+  color: var(--p-ink-muted);
+}
+
+.cq-meta {
+  font-size: var(--p-meta-size);
+  font-weight: var(--p-meta-weight);
+  line-height: var(--p-meta-lh);
+  color: var(--p-ink-muted);
+}
+
+/* El identificador del sistema. Slug, ruta, ID, conteo: todo lo que se copia y
+   se pega en vez de leerse. Va en mono y con la barra delante cuando es una
+   ruta, para que se reconozca antes de leerlo. */
+.cq-ident {
+  font-family: var(--p-font-ident);
+  font-size: var(--p-ident-size);
+  font-weight: var(--p-ident-weight);
+  line-height: var(--p-ident-lh);
+  letter-spacing: var(--p-ident-ls);
+  color: var(--p-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Variante en pastilla, para cuando el identificador convive con texto normal
+   en la misma línea y hace falta separarlo de la frase. */
+.cq-ident-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--p-space-1);
+  border-radius: var(--p-radius-xs);
+  background: var(--p-surface-sunken);
+}
+
+/* ============================================================================
+   2. SECCIÓN Y FIRMA — «el canto numerado»
+   ============================================================================
+   La firma del panel. Cada sección abre con una regla horizontal, su nombre en
+   etiqueta chica, y su cifra en serif grande MONTADA sobre la regla. Es lo que
+   hace que una lista de artículos se lea como un asiento y no como un feed.
+
+   La cifra es dato real siempre —cantidad de filas, de categorías, de
+   pendientes—, nunca un número decorativo. */
+
+.cq-section {
+  position: relative;
+  border-top: var(--p-border);
+}
+
+/* Sección hija (dentro de otra) no lleva regla: dos líneas anidadas no
+   jerarquizan nada, sólo parten la página en más pedazos. */
+.cq-section .cq-section {
+  border-top: 0;
+}
+
+.cq-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--p-space-4);
+  padding: var(--p-space-3) var(--p-gutter) var(--p-space-3) 0;
+}
+
+.cq-section-head > * {
+  min-width: 0;
+}
+
+/* El conteo de la sección, en pastilla al lado del título. Reemplazó a la cifra
+   grande sobre la regla: con cada bloque ya metido en una tarjeta, cuatro
+   números de 32px competían contra los KPIs de la fila de arriba, que son los
+   que hay que leer primero. */
+.cq-section-count {
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.25rem;
+  justify-content: center;
+  padding: 0 var(--p-space-1);
+  border-radius: var(--p-radius-xs);
+  background: var(--p-surface-sunken);
+  font-family: var(--p-font-ident);
+  font-size: var(--p-ident-size);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--p-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cq-section-body {
+  padding-inline: 0;
+}
+
+/* Tarjeta. La única caja cerrada del sistema, y existe para un caso concreto:
+   un elemento de una GRILLA, donde no hay una regla horizontal que lo separe
+   del de al lado. En una lista vertical no se usa nunca — ahí separa el filete.
+   Sin sombra y sin relleno de color: es un contorno, no una capa. */
+.cq-card {
+  display: block;
+  padding: var(--p-space-3);
+  border: var(--p-border);
+  border-radius: var(--p-radius-md);
+  background: var(--p-surface);
+  transition:
+    border-color var(--p-t-base) var(--p-ease-soft),
+    background-color var(--p-t-base) var(--p-ease-soft);
+}
+
+a.cq-card:hover,
+.cq-card[data-interactive="true"]:hover {
+  border-color: var(--p-accent);
+  background: var(--p-hover-wash);
+}
+
+/* Numeración de filas. El contador es CSS y no un índice de JavaScript porque
+   tiene que seguir siendo correcto cuando una fila se filtra o se borra en
+   optimista sin volver a montar la lista entera. */
+.cq-ledger {
+  counter-reset: cq-row;
+}
+
+.cq-ledger > li,
+.cq-ledger > tbody > tr {
+  counter-increment: cq-row;
+}
+
+.cq-ledger-n::before {
+  content: counter(cq-row, decimal-leading-zero);
+  font-family: var(--p-font-ident);
+  font-size: var(--p-ident-size);
+  font-weight: var(--p-ident-weight);
+  color: var(--p-line-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   3. CONTROLES
+   ============================================================================ */
 
 .cq-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: var(--p-space-2);
+  height: var(--p-control-h);
+  padding-inline: var(--p-space-3);
   border: 1px solid transparent;
-  border-radius: var(--panel-radius-control);
-  padding: 0.55rem 0.95rem;
-  font-size: 0.8rem;
+  border-radius: var(--p-radius-sm);
+  font-family: var(--p-font-ui);
+  font-size: var(--p-meta-size);
   font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
+  line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color var(--panel-speed) var(--ease-out),
-    border-color var(--panel-speed) var(--ease-out),
-    color var(--panel-speed) var(--ease-out),
-    box-shadow var(--panel-speed) var(--ease-out);
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft),
+    color var(--p-t-micro) var(--p-ease-soft),
+    opacity var(--p-t-micro) var(--p-ease-soft);
 }
 
-.cq-btn:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
+/* Un solo anillo de foco para los catorce componentes. Sin excepciones por
+   variante: el que navega con teclado tiene que reconocer la misma señal en
+   todos lados, incluido el botón rojo. */
+.cq-btn:focus-visible,
+.cq-icon-btn:focus-visible,
+.cq-input:focus-visible,
+.cq-select:focus-visible,
+.cq-check:focus-visible,
+.cq-rail-link:focus-visible,
+.cq-topbar-btn:focus-visible,
+.cq-account:focus-visible,
+.cq-stat:focus-visible,
+.cq-link:focus-visible,
+.cq-tab:focus-visible {
+  outline: 2px solid var(--p-accent);
   outline-offset: 2px;
 }
 
-.cq-btn:disabled {
+.cq-btn:disabled,
+.cq-btn[aria-disabled="true"] {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
+}
+
+/* El active hunde 1px. Es el único movimiento del sistema que no es opacidad o
+   color, y existe porque un botón que no acusa el clic se siente roto en una
+   herramienta que se usa ocho horas. */
+.cq-btn:active:not(:disabled),
+.cq-icon-btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .cq-btn[data-size="sm"] {
-  padding: 0.38rem 0.65rem;
-  font-size: 0.74rem;
+  height: var(--p-control-h-sm);
+  padding-inline: var(--p-space-2);
+  font-size: var(--p-ident-size);
 }
 
 .cq-btn[data-size="icon"] {
-  padding: 0.35rem;
+  width: var(--p-control-h);
+  padding-inline: 0;
 }
 
-/* Texto en tinta sobre el verde, no blanco: blanco sobre #6aaa00 da 2.6:1 y no
-   llega al mínimo legible. Es además lo que hace el botón primario del sitio
-   público, que también pone texto oscuro sobre su acento. */
+/* --- Variantes ---
+   Cuatro, y los alias de la nomenclatura anterior apuntando a ellas para que
+   el editor —que todavía escribe data-variant="primary"— siga coherente. */
+
+/* SOLID: la acción principal. Celeste con tinta encima, no blanco: el celeste
+   de marca da 2.0:1 con texto blanco y 9.5:1 con tinta. El token
+   --p-on-action existe para que esto no dependa de que alguien lo recuerde. */
+.cq-btn[data-variant="solid"],
 .cq-btn[data-variant="primary"] {
-  background: var(--brand-verde);
-  color: var(--ink);
+  background: var(--p-action);
+  color: var(--p-on-action);
 }
+.cq-btn[data-variant="solid"]:hover:not(:disabled),
 .cq-btn[data-variant="primary"]:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--brand-verde) 88%, #ffffff);
+  background: var(--p-action-hover);
 }
 
+/* OUTLINE: la acción secundaria, y el estado activo de un filtro. */
+.cq-btn[data-variant="outline"],
 .cq-btn[data-variant="secondary"] {
-  background: var(--brand-petroleo);
-  color: #ffffff;
+  background: var(--p-surface);
+  border-color: var(--p-line-strong);
+  color: var(--p-ink);
 }
+.cq-btn[data-variant="outline"]:hover:not(:disabled),
 .cq-btn[data-variant="secondary"]:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--brand-petroleo) 86%, var(--ink));
+  border-color: var(--p-accent);
+  color: var(--p-accent);
 }
 
-.cq-btn[data-variant="ghost"] {
-  background: var(--surface-raised);
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
-.cq-btn[data-variant="ghost"]:hover:not(:disabled) {
-  border-color: var(--brand-petroleo);
-  color: var(--foreground);
-}
-
+/* GHOST: la acción terciaria. Sin caja en reposo — sólo aparece al apuntarla. */
+.cq-btn[data-variant="ghost"],
 .cq-btn[data-variant="quiet"] {
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--p-ink-muted);
 }
+.cq-btn[data-variant="ghost"]:hover:not(:disabled),
 .cq-btn[data-variant="quiet"]:hover:not(:disabled) {
-  background: var(--surface-sunken);
-  color: var(--foreground);
+  background: var(--p-surface-sunken);
+  color: var(--p-ink);
 }
 
+/* DANGER: rojo en el texto, no en el fondo. El relleno rojo se guarda para el
+   segundo paso —el botón ya armado— porque un botón sólido de alerta en
+   reposo grita todo el día por una acción que se usa una vez por semana. */
 .cq-btn[data-variant="danger"] {
-  background: var(--surface-raised);
-  border-color: var(--border);
-  color: #a32020;
+  background: transparent;
+  color: var(--p-danger);
 }
 .cq-btn[data-variant="danger"]:hover:not(:disabled) {
-  background: #a32020;
-  border-color: #a32020;
-  color: #ffffff;
+  background: var(--p-danger-tint);
 }
 
-/* Confirmación armada: el segundo clic es el que borra, y el botón lo dice. */
+/* Opción elegida dentro de un grupo excluyente. Se marca con el borde y el
+   color de acento, no con relleno: el relleno está reservado para la acción
+   principal de la pantalla, y un grupo de seis opciones con una rellena le
+   ganaría la mirada al botón Guardar. */
+.cq-btn[aria-pressed="true"] {
+  border-color: var(--p-accent);
+  color: var(--p-accent);
+  background: var(--p-accent-tint);
+}
+
 .cq-btn[data-armed="true"] {
-  background: #a32020;
-  border-color: #a32020;
-  color: #ffffff;
+  background: var(--p-danger);
+  color: var(--p-on-danger);
+}
+.cq-btn[data-armed="true"]:hover:not(:disabled) {
+  background: var(--p-danger-hover);
 }
 
-/* Botón cuadrado de solo icono para el lienzo del editor: subir, bajar, quitar.
-   Comparte estados con .cq-btn ghost; cambia la caja, no el vocabulario. */
+/* Botón cuadrado de sólo icono. Comparte estados con el ghost; cambia la caja,
+   no el vocabulario. El `aria-label` lo exige el componente, no la CSS. */
 .cq-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem;
-  border: 1px solid var(--border);
-  border-radius: var(--panel-radius-control);
-  background: var(--surface-raised);
-  color: var(--text-secondary);
+  width: var(--p-control-h);
+  height: var(--p-control-h);
+  border: 1px solid transparent;
+  border-radius: var(--p-radius-sm);
+  background: transparent;
+  color: var(--p-ink-muted);
   cursor: pointer;
   transition:
-    border-color var(--panel-speed) var(--ease-out),
-    color var(--panel-speed) var(--ease-out);
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft),
+    color var(--p-t-micro) var(--p-ease-soft);
 }
 
 .cq-icon-btn:hover:not(:disabled) {
-  border-color: var(--brand-petroleo);
-  color: var(--foreground);
+  background: var(--p-surface-sunken);
+  color: var(--p-ink);
 }
 
-.cq-icon-btn:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
-  outline-offset: 2px;
+.cq-icon-btn[data-size="sm"] {
+  width: var(--p-control-h-sm);
+  height: var(--p-control-h-sm);
+}
+
+.cq-icon-btn[data-tone="danger"]:hover:not(:disabled) {
+  background: var(--p-danger-tint);
+  color: var(--p-danger);
 }
 
 .cq-icon-btn:disabled {
@@ -184,700 +380,402 @@
   opacity: 0.35;
 }
 
-/* El campo va HUNDIDO, no al mismo tono que el panel que lo contiene. Antes
-   input y panel compartían --surface-raised: el campo sólo existía por su borde
-   de 1px, y eso es lo que lo hacía ver plano. Un hueco se lee como "acá se
-   escribe" antes de leer la etiqueta. La sombra interior de un pelo remata la
-   profundidad sin convertirlo en un relieve de los 2000. */
-.cq-input {
-  width: 100%;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--panel-radius-control);
-  padding: 0.65rem 0.85rem;
-  font: inherit;
-  font-size: 0.88rem;
-  /* Interlínea ABSOLUTA, no un múltiplo: la contraseña usa una tipografía más
-     chica para sus discos, y con line-height relativo ese campo mediría menos
-     alto que el email. Dos campos apilados de distinta altura se ven como un
-     error de maquetado. */
-  line-height: 1.35rem;
-  color: var(--foreground);
-  box-shadow: inset 0 1px 2px rgb(13 30 41 / 0.05);
+/* Enlace de texto dentro del contenido. */
+.cq-link {
+  color: var(--p-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, var(--p-accent) 35%, transparent);
   transition:
-    background-color var(--panel-speed) var(--ease-out),
-    border-color var(--panel-speed) var(--ease-out),
-    box-shadow var(--panel-speed) var(--ease-out);
+    color var(--p-t-micro) var(--p-ease-soft),
+    text-decoration-color var(--p-t-micro) var(--p-ease-soft);
 }
 
-/* Lo que faltaba de verdad: el campo era inerte hasta que lo clickeabas. Un
-   control que no responde al mouse se siente muerto aunque esté bien dibujado. */
-.cq-input:hover:not(:disabled):not(:focus) {
-  border-color: color-mix(in srgb, var(--brand-petroleo) 40%, var(--border));
+.cq-link:hover {
+  color: var(--p-accent-hover);
+  text-decoration-color: currentColor;
 }
 
-.cq-input::placeholder {
-  /* Tintado desde el propio texto, nunca gris plano: así aguanta el 4.5:1. */
-  color: var(--text-tertiary);
+/* ---------- Campos ----------
+
+   El campo va HUNDIDO respecto del papel. Sobre una base blanca pura ese hueco
+   es lo único que dice "acá se escribe" antes de leer la etiqueta — un borde de
+   1px sobre blanco no alcanza, y una sombra lo convertiría en un relieve. */
+
+.cq-input,
+.cq-select,
+.cq-textarea {
+  width: 100%;
+  height: var(--p-control-h);
+  padding-inline: var(--p-space-3);
+  background: var(--p-surface-sunken);
+  border: var(--p-border);
+  border-radius: var(--p-radius-sm);
+  font-family: var(--p-font-ui);
+  font-size: var(--p-body-size);
+  color: var(--p-ink);
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft),
+    box-shadow var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-textarea {
+  height: auto;
+  min-height: calc(var(--p-control-h) * 3);
+  padding-block: var(--p-space-2);
+  line-height: var(--p-body-lh);
+  resize: vertical;
+}
+
+/* Un control que no responde al mouse se siente muerto aunque esté bien
+   dibujado. Sin `:focus` en la condición: si no, al enfocar pelea con la regla
+   de abajo y el borde parpadea. */
+.cq-input:hover:not(:disabled):not(:focus),
+.cq-select:hover:not(:disabled):not(:focus),
+.cq-textarea:hover:not(:disabled):not(:focus) {
+  border-color: var(--p-line-strong);
+}
+
+.cq-input::placeholder,
+.cq-textarea::placeholder {
+  color: var(--p-ink-muted);
   opacity: 1;
 }
 
-/* El foco NO toca el relleno: el campo enfocado tiene que ser el mismo campo,
-   sólo señalado. Mover el fondo hace que el ojo lea "esto cambió" en vez de
-   "estás acá", y encima obliga a que autocompletado y pegado repliquen ese
-   segundo color para no delatarse. El borde y el anillo alcanzan. */
-.cq-input:focus {
+/* El foco no toca el relleno: el campo enfocado tiene que ser el MISMO campo,
+   sólo señalado. Mover el fondo hace leer "esto cambió" en vez de "estás acá",
+   y encima obliga a que el autocompletado replique ese segundo color. */
+.cq-input:focus,
+.cq-select:focus,
+.cq-textarea:focus {
   outline: none;
-  border-color: var(--brand-petroleo);
-  box-shadow:
-    inset 0 1px 2px rgb(13 30 41 / 0.05),
-    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+  background: var(--p-surface);
+  border-color: var(--p-accent);
+  box-shadow: 0 0 0 3px var(--p-accent-ring);
 }
 
-/* Deshabilitado pierde la profundidad: si conservara el hueco seguiría
-   invitando a escribir en un campo que no acepta nada. */
-.cq-input:disabled {
-  background: color-mix(in srgb, var(--surface-sunken) 55%, var(--surface-raised));
-  box-shadow: none;
-  color: var(--text-tertiary);
+.cq-input:disabled,
+.cq-select:disabled,
+.cq-textarea:disabled {
+  color: var(--p-ink-muted);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
-/* Campo del login: relleno en vez de blanco sobre blanco, radio generoso y aire
-   suficiente para un icono adelante. Es una variante y no un cambio a .cq-input
-   a secas: el panel es una herramienta densa —tablas, filas, formularios de
-   muchos campos— y ahí un campo de 48px de alto cuesta pantalla. En la puerta
-   hay dos campos y sobra espacio, así que se puede pagar. */
+/* Campo inválido. `:user-invalid` y no `:invalid`: el segundo pinta de rojo un
+   campo obligatorio que todavía no se tocó, o sea que reta antes de que nadie
+   haya hecho nada. */
+.cq-input:user-invalid,
+.cq-textarea:user-invalid,
+.cq-input[aria-invalid="true"] {
+  border-color: var(--p-danger);
+}
+
+.cq-input:user-invalid:focus,
+.cq-input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-danger) 20%, transparent);
+}
+
+/* El select nativo con su galón propio. Se dibuja con gradientes cónicos para
+   no depender de una imagen ni de un SVG embebido con color literal. */
+.cq-select {
+  appearance: none;
+  padding-inline-end: var(--p-space-6);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    right var(--p-space-4) center,
+    right var(--p-space-3) center;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* Campo con icono adelante (búsqueda). El icono NO cambia de color con el
+   foco: si acompañara al borde, dos cosas cambiarían a la vez. */
 .cq-field {
-  background: var(--surface-sunken);
-  border-color: transparent;
-  border-radius: 8px;
-  padding: 0.55rem 0.8rem 0.55rem 2.45rem;
+  padding-inline-start: var(--p-space-6);
 }
 
-.cq-field:focus {
-  border-color: var(--brand-petroleo);
-}
-
-/* El icono de adelante NO cambia de color con el foco: si acompañara al borde,
-   dos cosas cambiarían a la vez y el ojo no sabría cuál mirar. */
 .cq-field-icon {
   position: absolute;
-  left: 0.85rem;
+  inset-inline-start: var(--p-space-2);
   top: 50%;
   translate: 0 -50%;
-  color: var(--text-tertiary);
+  color: var(--p-ink-muted);
   pointer-events: none;
 }
 
-/* Campo enmascarado. Discos chicos y bien separados: el peso lo pone el aire
-   entre ellos, no el tamaño de cada uno. Un disco grande grita y compite con el
-   email de arriba; uno chico con tracking se sigue contando de un vistazo —lo
-   único que se puede hacer con una contraseña que no se ve— sin levantar la voz.
-
-   `-webkit-text-security` fija el glifo en disco donde el motor lo soporta; sin
-   él el campo sigue enmascarado igual por ser type="password", así que es mejora
-   progresiva y no un requisito.
-
-   Sólo aplica enmascarado: al revelar, el valor vuelve a la métrica normal
-   porque una contraseña visible se lee como texto, no como cuentas. */
-.cq-input-mask {
-  -webkit-text-security: disc;
-  font-size: 0.72rem;
-  letter-spacing: 0.24em;
+/* Casilla. Se dibuja a mano porque la nativa no acepta el color de marca en
+   todos los motores y la señal de foco varía por sistema operativo. */
+.cq-check {
+  appearance: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  border: var(--p-border-strong);
+  border-radius: var(--p-radius-xs);
+  background: var(--p-surface-sunken);
+  cursor: pointer;
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft);
 }
 
-/* El placeholder de este campo son discos literales —el navegador no enmascara
-   placeholders—, así que hereda a propósito la métrica de arriba: los puntos
-   vacíos y los escritos tienen que ocupar exactamente el mismo lugar, o el campo
-   salta al escribir la primera tecla.
-
-   Lo que SÍ los separa es el valor: el placeholder es tenue y el contenido real
-   va a plena tinta. Esa diferencia es la que evita leer un campo vacío como un
-   campo ya completado por el gestor de contraseñas. */
-.cq-input-mask::placeholder {
-  color: var(--text-tertiary);
-  opacity: 0.55;
+.cq-check:hover:not(:disabled) {
+  border-color: var(--p-accent);
 }
 
-/* Autocompletado del navegador. Chrome y Safari pintan un fondo propio —blanco
-   o amarillo— por encima del `background` del input, y ninguna regla de
-   `background` lo tapa. La única forma de ganarle es rellenar la caja con una
-   sombra interior sólida del color que corresponde, y forzar el color del texto
-   con -webkit-text-fill-color, que también es de mayor prioridad que `color`.
-   La transición larga es el truco conocido para que el amarillo no se vea ni un
-   fotograma antes de que la sombra se aplique. */
+.cq-check:checked {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+}
+
+/* El tilde es un <svg> hermano, no un `background-image` con un SVG embebido.
+   Un data-URI obliga a escribir el color en hexadecimal dentro de la cadena
+   —un literal fuera del archivo de tokens— y encima no puede heredar
+   `currentColor`. Como hermano, el icono toma el color del papel por token y se
+   apaga con la casilla. */
+.cq-check-mark {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--p-on-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-check:checked + .cq-check-mark {
+  opacity: 1;
+}
+
+.cq-check:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* Autocompletado del navegador. Chrome y Safari pintan un fondo propio por
+   encima del `background` del input y ninguna regla de `background` lo tapa: la
+   única forma de ganarle es rellenar la caja con una sombra interior sólida y
+   forzar el color del texto con -webkit-text-fill-color. */
 .cq-input:-webkit-autofill,
 .cq-input:-webkit-autofill:hover,
-.cq-input:-webkit-autofill:focus,
 .cq-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
-  -webkit-text-fill-color: var(--foreground);
-  caret-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0 100px var(--p-surface-sunken) inset;
+  -webkit-text-fill-color: var(--p-ink);
+  caret-color: var(--p-ink);
   transition: background-color 100000s ease-in-out 0s;
 }
 
-/* El foco tiene que seguir viéndose aunque el valor venga del autocompletado:
-   sin esto la sombra de arriba pisa el anillo de foco y el campo activo queda
-   indistinguible del otro. */
+/* El foco tiene que seguir viéndose con el valor traído del gestor: sin esto la
+   sombra de arriba pisa el anillo y el campo activo queda indistinguible. */
 .cq-input:-webkit-autofill:focus {
   -webkit-box-shadow:
-    0 0 0 100px var(--surface-sunken) inset,
-    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+    0 0 0 100px var(--p-surface) inset,
+    0 0 0 3px var(--p-accent-ring);
 }
 
-/* El campo del login es relleno, así que su autocompletado tiene que rellenarse
-   con ESE color: si hereda el blanco de la regla de arriba, un campo traído del
-   gestor de contraseñas se ve más claro que el de al lado. */
-.cq-field:-webkit-autofill,
-.cq-field:-webkit-autofill:hover,
-.cq-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
+/* Selector estándar en bloque aparte: mezclarlo con `-webkit-autofill` en una
+   misma lista hace que un motor que no entienda uno descarte la regla entera. */
+.cq-input:autofill {
+  box-shadow: 0 0 0 100px var(--p-surface-sunken) inset;
+  -webkit-text-fill-color: var(--p-ink);
+  caret-color: var(--p-ink);
 }
 
-/* Mismo relleno que en reposo. Esta regla quedó con --surface-raised de cuando
-   el foco aclaraba el campo; ahora el foco sólo mueve borde y anillo, así que
-   pintar blanco acá era el único lugar del formulario donde el campo cambiaba de
-   color solo. */
-.cq-field:-webkit-autofill:focus {
-  -webkit-box-shadow:
-    0 0 0 100px var(--surface-sunken) inset,
-    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
-}
-
-/* Selector estándar, en bloques aparte a propósito: mezclarlo con
-   `-webkit-autofill` en una misma lista hace que un motor que no entienda uno de
-   los dos descarte la regla entera. Firefox pinta su propio fondo y sólo
-   responde a `:autofill`. */
-.cq-input:autofill,
-.cq-field:autofill {
-  -webkit-box-shadow: 0 0 0 100px var(--surface-sunken) inset;
-  box-shadow: 0 0 0 100px var(--surface-sunken) inset;
-  -webkit-text-fill-color: var(--foreground);
-  caret-color: var(--foreground);
-}
-
-.cq-input:autofill:focus,
-.cq-field:autofill:focus {
-  -webkit-box-shadow:
-    0 0 0 100px var(--surface-sunken) inset,
-    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+.cq-input:autofill:focus {
   box-shadow:
-    0 0 0 100px var(--surface-sunken) inset,
-    0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+    0 0 0 100px var(--p-surface) inset,
+    0 0 0 3px var(--p-accent-ring);
 }
 
-.cq-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+/* ============================================================================
+   4. DATOS — tabla, fila, insignia
+   ============================================================================ */
+
+/* Barra de herramientas de la tabla.
+
+   Filtros y búsqueda viven DENTRO de la tarjeta de la tabla, pegados arriba de
+   las columnas. Estaban repartidos entre el encabezado de la sección y el
+   cuerpo, y eso obligaba a mirar en dos lugares para entender qué recorte se
+   está viendo. Todo lo que altera la tabla vive con la tabla.
+
+   No necesita ser pegajosa: queda FUERA del contenedor que se desplaza, así que
+   al recorrer cuarenta filas el filtro activo sigue a la vista igual. El que
+   se pega es el `thead`, adentro. */
+.cq-table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-space-2) var(--p-space-3);
+  padding-block: var(--p-space-3) var(--p-space-2);
+  background: var(--p-surface);
+  border-bottom: var(--p-border);
 }
 
-/* ---------- Barra superior ----------
+/* Los filtros empujan todo lo demás al extremo derecho. Es un `margin-inline-end
+   auto` sobre el primer hijo y no `justify-content: space-between`: con tres
+   grupos —filtros, búsqueda, acción— el space-between los reparte a tercios y
+   la búsqueda queda flotando en el medio, separada del botón con el que
+   trabaja. */
+.cq-table-toolbar > :first-child {
+  margin-inline-end: auto;
+}
 
-   Blanca y pegada arriba, con una sola línea de 1px abajo. No lleva sombra: el
-   contenido se desplaza POR DEBAJO y una sombra permanente se leería como una
-   segunda superficie flotando sobre todo el panel. La línea alcanza para
-   separar, y no miente sobre la profundidad. */
+/* Barra de acciones sobre la selección. Aparece sólo con algo marcado y se
+   apoya en el acento: es un modo distinto de la tabla —"estás operando sobre
+   varias filas"— y tiene que verse como tal sin cambiar de pantalla. */
+.cq-bulkbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-space-2) var(--p-space-4);
+  margin-block-end: var(--p-space-2);
+  padding: var(--p-space-2) var(--p-space-3);
+  border: 1px solid var(--p-accent);
+  border-radius: var(--p-radius-sm);
+  background: var(--p-accent-tint);
+  animation: cq-enter var(--p-t-base) var(--p-ease-out) both;
+}
 
-.cq-topbar {
+/* La fila marcada se tiñe. Sin esto, con la barra arriba diciendo "3
+   seleccionados" hay que buscar cuáles son mirando casilla por casilla. */
+.cq-row[data-selected="true"] {
+  background: var(--p-accent-tint);
+}
+
+.cq-table-scroll {
+  overflow-x: auto;
+}
+
+.cq-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* El encabezado es lo único hundido de la tabla, y va pegajoso: en una lista de
+   cuarenta artículos, perder los nombres de columna al bajar obliga a subir
+   para saber qué se está mirando. */
+.cq-table thead th {
   position: sticky;
   top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 3.5rem;
-  padding: 0 1.25rem;
-  background: var(--surface-raised);
-  border-bottom: 1px solid var(--border);
-}
-
-@media (min-width: 640px) {
-  .cq-topbar {
-    padding: 0 2rem;
-  }
-}
-
-/* Control cuadrado de la barra: el mismo alto que el resto de la fila, para que
-   los iconos de los extremos se alineen entre sí y con la miga del medio. */
-.cq-topbar-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--panel-radius-control);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color var(--panel-speed) var(--ease-out),
-    color var(--panel-speed) var(--ease-out);
-}
-
-.cq-topbar-btn:hover {
-  background: var(--surface-sunken);
-  color: var(--foreground);
-}
-
-.cq-topbar-btn:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
-  outline-offset: 2px;
-}
-
-/* Disparador de la cuenta, al extremo derecho de la barra.
-
-   Se dibuja como CONTROL y no como texto con un avatar al lado. Un bloque de
-   identidad sin caja se lee como información —algo que el panel te muestra— y
-   nadie le hace clic a la información. El borde y el relleno son lo que dice
-   "esto se toca" antes de que nadie pase el mouse por encima.
-
-   Los tres estados son distintos entre sí a propósito: reposo con borde tenue,
-   hover con borde de marca, y abierto sostenido en ese mismo borde. Que el
-   abierto NO vuelva al reposo es lo que evita el menú huérfano: se ve de dónde
-   salió el panel que está flotando. */
-.cq-account {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  flex-shrink: 0;
-  max-width: 13rem;
-  padding: 0.28rem 0.5rem 0.28rem 0.3rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-raised);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color var(--panel-speed) var(--ease-out),
-    border-color var(--panel-speed) var(--ease-out),
-    color var(--panel-speed) var(--ease-out);
-}
-
-.cq-account:hover,
-.cq-account[data-open="true"] {
-  background: var(--surface-sunken);
-  border-color: var(--brand-petroleo);
-  color: var(--foreground);
-}
-
-.cq-account:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
-  outline-offset: 2px;
-}
-
-/* El galón gira al abrir. Es la señal más barata de que ese control tiene algo
-   guardado abajo, y la única que sigue funcionando cuando el menú queda fuera de
-   la vista. */
-.cq-account-caret {
-  flex-shrink: 0;
-  transition: transform var(--panel-speed) var(--ease-out);
-}
-
-.cq-account[data-open="true"] .cq-account-caret {
-  transform: rotate(180deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cq-account-caret {
-    transition: none;
-  }
-}
-
-/* ---------- Esqueletos de carga ----------
-
-   Cada pantalla del panel abre con `await` contra la base. Sin esqueleto, ese
-   tiempo es una pantalla en blanco y el que opera no sabe si el panel está
-   cargando o si se rompió.
-
-   Un esqueleto y no un spinner centrado: el esqueleto ya dibuja la FORMA de lo
-   que viene, así que cuando llegan los datos nada se mueve de lugar. Un spinner
-   informa que algo pasa y después reacomoda la página entera.
-
-   El barrido va en `transform` sobre un pseudo-elemento, no en `background-
-   position`: animar la posición de un degradado repinta la caja en cada cuadro y
-   con veinte filas a la vez eso se nota. */
-.cq-skeleton {
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
-  background: var(--surface-sunken);
-}
-
-.cq-skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--surface-raised) 70%, transparent),
-    transparent
-  );
-  animation: cq-skeleton-sweep 1.4s var(--ease-out) infinite;
-}
-
-@keyframes cq-skeleton-sweep {
-  to {
-    transform: translateX(100%);
-  }
-}
-
-/* Sin movimiento, el esqueleto sigue siendo un esqueleto: la forma es la que
-   informa. Se apaga el barrido y no se reemplaza por nada. */
-@media (prefers-reduced-motion: reduce) {
-  .cq-skeleton::after {
-    animation: none;
-  }
-}
-
-/* ---------- Tarjeta de cifra ----------
-
-   El bloque de arriba del tablero. La caja es la misma superficie que .cq-panel;
-   lo que cambia es el orden de lectura: placa de icono, etiqueta chica, cifra
-   grande. La cifra manda, y por eso es lo único con peso tipográfico acá. */
-
-.cq-stat {
-  display: block;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--panel-radius-panel);
-  padding: 1.1rem 1.15rem;
-  transition:
-    border-color var(--panel-speed) var(--ease-out),
-    box-shadow var(--panel-speed) var(--ease-out);
-}
-
-/* Sólo las que son enlace levantan. Una tarjeta que se ilumina sin llevar a
-   ningún lado promete una interacción que no existe. */
-a.cq-stat:hover {
-  border-color: color-mix(in srgb, var(--brand-petroleo) 45%, var(--border));
-  box-shadow: var(--panel-shadow-raised);
-}
-
-a.cq-stat:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
-  outline-offset: 2px;
-}
-
-/* La placa del icono se tinta con el acento que le toca. El color entra al 12%
-   sobre el papel, no plano: un bloque saturado de 36px al lado de una cifra le
-   gana la mirada al dato, que es justo al revés de lo que queremos. */
-.cq-stat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--cq-stat-accent) 12%, var(--surface-raised));
-  color: var(--cq-stat-accent);
-}
-
-/* ---------- Riel de navegación ---------- */
-
-/* El borde derecho no es decoración: riel blanco contra fondo marfil son dos
-   tonos muy cercanos, y sin esa línea el riel no termina en ningún lado. */
-.cq-rail {
-  background: var(--panel-rail);
-  color: var(--panel-rail-text);
-  border-right: 1px solid var(--panel-rail-border);
-}
-
-/* La fila del riel es una PÍLDORA, no una franja de borde a borde. El radio de
-   10px y el alto fijo de 2.5rem son lo que la hacen ver de esta década: una fila
-   cuadrada de altura variable es lo que daba el aire de menú de sistema viejo.
-
-   El icono va en su propia caja de 1.25rem para que todas las etiquetas empiecen
-   en la misma columna aunque un glifo sea más angosto que otro. */
-.cq-rail-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  height: 2.5rem;
-  border-radius: 10px;
-  padding: 0 0.7rem;
-  font-size: 0.855rem;
-  font-weight: 500;
-  color: var(--panel-rail-text);
-  transition:
-    background-color var(--panel-speed) var(--ease-out),
-    color var(--panel-speed) var(--ease-out);
-}
-
-.cq-rail-link:hover {
-  background: var(--panel-rail-raised);
-  color: var(--panel-rail-text-strong);
-}
-
-/* Variante sin relleno al pasar el mouse. La usa el bloque del usuario: no es un
-   destino más de la lista, es quién tiene la sesión, y encenderlo como a un
-   enlace de sección lo mete en una jerarquía a la que no pertenece. */
-.cq-rail-link-flat:hover {
-  background: transparent;
-  color: var(--panel-rail-text);
-}
-
-/* Cerrar sesión se enciende en rojo. No es decoración: es la única fila de todo
-   el cromo que TERMINA algo, y el rojo aparece recién al apuntarla — en reposo
-   sigue siendo una fila más, porque una salida pintada de alerta permanente
-   grita todo el día por una acción que se usa una vez.
-
-   El fondo es un tinte del 8%, no el rojo pleno: acá se está por hacer clic, no
-   confirmando un borrado. */
-.cq-rail-link-danger:hover,
-.cq-rail-link-danger:focus-visible {
-  background: color-mix(in srgb, #a32020 8%, var(--panel-rail));
-  color: #a32020;
-}
-
-.cq-rail-link-danger:focus-visible {
-  outline-color: #a32020;
-}
-
-/* Celeste sobre blanco da 2:1 y no se ve. Todo lo que antes era celeste en el
-   riel pasa a petróleo, que es el mismo azul de la marca un escalón más oscuro
-   y el que ya usa el resto del panel claro. */
-.cq-rail-link:focus-visible {
-  outline: 2px solid var(--brand-petroleo);
-  outline-offset: 2px;
-}
-
-/* El activo no puede apoyarse sólo en el fondo: sobre blanco, un tinte al 10% es
-   una diferencia de dos tonos que se pierde. Suma color y peso en el texto, que
-   es lo que de verdad lo separa de sus vecinos. */
-.cq-rail-link[aria-current="page"] {
-  background: color-mix(in srgb, var(--brand-petroleo) 11%, var(--panel-rail));
-  color: var(--brand-petroleo);
-  font-weight: 600;
-}
-
-/* La marca de activo: una barra corta que crece desde el centro, DENTRO de la
-   píldora.
-
-   Antes colgaba en `inset-inline-start: -0.75rem`, o sea afuera del propio
-   enlace, apoyada en que el riel tuviera exactamente ese padding. Colapsado el
-   padding cambia y la barra se salía del riel. Adentro, no depende de nada
-   externo y se ve igual en los dos anchos. */
-.cq-rail-link[aria-current="page"]::before {
-  content: "";
-  position: absolute;
-  inset-block: 0.6rem;
-  inset-inline-start: 0.25rem;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--brand-petroleo);
-  animation: cq-rail-mark 260ms var(--ease-out-expo) both;
-}
-
-@keyframes cq-rail-mark {
-  from {
-    transform: scaleY(0);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-
-/* ---------- Riel colapsado ----------
-
-   Con el riel angosto, cada fila pasa a ser un cuadrado con el icono centrado.
-   Se resuelve por ATRIBUTO en el contenedor y no con condicionales en cada JSX:
-   el estado del riel es uno solo, y repartirlo en diez ternarios de className es
-   como se llega a que una fila se centre y la de al lado no. */
-
-.cq-rail[data-collapsed="true"] .cq-rail-link {
-  /* Cuadrado FIJO de 2.5rem centrado, no una fila al 100% del ancho: estirado,
-     el fondo del hover y del activo se ve como una banda mucho más ancha que el
-     icono que contiene, y es lo que hacía que la marca pareciera desbordar. */
-  width: 2.5rem;
-  margin-inline: auto;
-  justify-content: center;
-  padding-inline: 0;
-  /* El gap tiene que irse con la etiqueta: si queda, separa al icono de una
-     etiqueta de ancho cero y lo deja descentrado medio gap a la izquierda. */
-  gap: 0;
-}
-
-/* Colapsado NADA queda alineado a la izquierda: el riel entero pasa a ser una
-   columna de cuadrados centrados. Sin esta regla, el padding lateral del riel y
-   los bloques que no son .cq-rail-link —la marca, el pie de usuario— siguen
-   corridos y la columna se ve torcida aunque cada icono esté centrado en su
-   propia fila. */
-.cq-rail[data-collapsed="true"] {
-  align-items: center;
-  padding-inline: 0.5rem;
-}
-
-.cq-rail[data-collapsed="true"] .cq-rail-group {
-  width: 100%;
-}
-
-/* En un cuadrado de 2.5rem no entra una barra al costado sin comerse el icono:
-   colapsado el estado lo dice el relleno, que ya es información suficiente
-   cuando sólo hay un elemento activo a la vez. */
-.cq-rail[data-collapsed="true"] .cq-rail-link[aria-current="page"]::before {
-  display: none;
-}
-
-/* Encabezado de grupo. Existe para que "Contenido" y "Sistema" no se lean como
-   una lista larga y plana de seis enlaces. Colapsado no hay dónde escribirlo:
-   se reemplaza por una línea, que separa igual sin ocupar una fila entera. */
-.cq-rail-group {
-  padding: 0 0.7rem 0.15rem;
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
+  z-index: 1;
+  background: var(--p-surface-sunken);
+  border-bottom: var(--p-border);
+  padding: var(--p-space-2) var(--p-space-3);
+  font-size: var(--p-label-size);
+  font-weight: var(--p-label-weight);
+  letter-spacing: var(--p-label-ls);
   text-transform: uppercase;
-  color: var(--text-tertiary);
-  opacity: 0.75;
+  color: var(--p-ink-muted);
+  white-space: nowrap;
 }
 
-.cq-rail[data-collapsed="true"] .cq-rail-group {
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  color: transparent;
-  background: var(--panel-rail-border);
+.cq-table tbody td {
+  height: var(--p-row-h);
+  padding: var(--p-space-2) var(--p-space-3);
+  vertical-align: middle;
+  font-size: var(--p-body-size);
+  color: var(--p-ink-muted);
+  border-bottom: var(--p-border);
 }
 
-/* ---------- Estado ---------- */
+.cq-table thead th:first-child,
+.cq-table tbody td:first-child {
+  padding-inline-start: 0;
+}
 
+.cq-table thead th:last-child,
+.cq-table tbody td:last-child {
+  padding-inline-end: 0;
+}
+
+/* La última fila no lleva línea: la regla de la sección siguiente ya cierra. */
+.cq-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* El hover no decora: indica que la fila es accionable. Un lavado del 4% del
+   acento, no un gris — sobre blanco puro un gris al 4% es invisible. */
+.cq-row {
+  transition: background-color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-row:hover,
+.cq-row:focus-within {
+  background: var(--p-hover-wash);
+}
+
+/* Las acciones están SIEMPRE visibles.
+
+   Antes aparecían al apuntar la fila. Suena prolijo y es un error en una
+   herramienta que se usa todos los días: lo que no se ve, no se sabe que
+   existe. Alguien que entra por primera vez a la tabla no tiene forma de
+   descubrir que cada fila se puede publicar, ocultar o borrar sin pasar el
+   mouse por encima a ver qué aparece.
+
+   Y hay un costo peor: con las acciones ocultas hay que apuntar la fila, esperar
+   a que aparezcan, y recién entonces apuntar el botón. Son dos movimientos para
+   una acción, cuarenta veces por día.
+
+   Lo que sí se mantiene es el hover de la FILA, que sigue diciendo cuál está
+   bajo el cursor. */
+.cq-row-actions {
+  opacity: 1;
+}
+
+/* Insignia de estado. Sin relleno de color: un punto y una palabra. Sobre base
+   blanca, tres pastillas de colores en la misma columna compiten con el título
+   del artículo, que es lo que de verdad hay que leer. */
 .cq-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  border-radius: var(--panel-radius-control);
-  padding: 0.2rem 0.45rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: var(--p-space-2);
+  font-size: var(--p-meta-size);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--p-ink-muted);
 }
 
 .cq-badge::before {
   content: "";
-  width: 0.4rem;
-  height: 0.4rem;
+  width: 0.4375rem;
+  height: 0.4375rem;
   border-radius: 999px;
   background: currentColor;
 }
 
 .cq-badge[data-tone="published"] {
-  background: color-mix(in srgb, var(--brand-verde) 12%, var(--surface-raised));
-  color: #3f6600;
+  color: var(--p-success);
 }
 
 .cq-badge[data-tone="draft"] {
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
+  color: var(--p-accent);
 }
 
 .cq-badge[data-tone="hidden"] {
-  background: color-mix(in srgb, var(--brand-gris) 45%, var(--surface-raised));
-  color: #5b5148;
+  color: var(--p-ink-muted);
 }
 
-/* Fila de datos: el hover no decora, indica que la fila es accionable. */
-.cq-row {
-  transition: background-color var(--panel-speed) var(--ease-out);
+.cq-badge[data-tone="hidden"]::before {
+  /* El oculto lleva el punto vacío: es el único estado que significa ausencia,
+     y se distingue de los otros dos sin depender del color. */
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
 }
 
-.cq-row:hover {
-  background: color-mix(in srgb, var(--surface-sunken) 55%, var(--surface-raised));
-}
-
-/* ---------- Tabla de datos ----------
-   Una tabla de verdad (<table>), no una lista disfrazada: el lector de pantalla
-   anuncia "columna Estado" en cada celda y el ojo compara en vertical, que es
-   justamente lo que una lista de tarjetas no deja hacer. */
-.cq-table-scroll {
-  overflow-x: auto;
-  /* El borde del panel ya redondea; el scroll no debe recortarlo en cuadrado. */
-  border-radius: 0 0 var(--panel-radius-panel) var(--panel-radius-panel);
-}
-
-.cq-table {
-  width: 100%;
-  min-width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.cq-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--surface-sunken);
-  border-bottom: 1px solid var(--border);
-  padding: 0.6rem 0.75rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
-
-.cq-table thead th:first-child {
-  padding-left: 1.25rem;
-}
-
-.cq-table thead th:last-child {
-  padding-right: 1.25rem;
-}
-
-.cq-table tbody td {
-  padding: 0.7rem 0.75rem;
-  vertical-align: middle;
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border);
-}
-
-.cq-table tbody td:first-child {
-  padding-left: 1.25rem;
-}
-
-.cq-table tbody td:last-child {
-  padding-right: 1.25rem;
-}
-
-/* La última fila no lleva línea: el borde del panel ya cierra la tabla y dos
-   líneas juntas se leen como un error de dibujo. */
-.cq-table tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-/* Las acciones aparecen al pasar el mouse, pero NUNCA se esconden del teclado
-   ni del táctil: sin puntero fino se muestran siempre. */
-@media (hover: hover) and (pointer: fine) {
-  .cq-table .cq-row-actions {
-    opacity: 0;
-    transition: opacity var(--panel-speed) var(--ease-out);
-  }
-  .cq-table tr:hover .cq-row-actions,
-  .cq-table tr:focus-within .cq-row-actions {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cq-table .cq-row-actions {
-    transition: none;
-  }
-}
-
-/* Barra de proporción — dato real (reparto por categoría), no adorno. */
+/* Barra de proporción. Dato real (reparto por categoría), no adorno. */
 .cq-meter {
-  height: 0.3rem;
-  background: var(--surface-sunken);
+  height: 5px;
+  background: var(--p-surface-sunken);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -886,12 +784,12 @@ a.cq-stat:focus-visible {
   display: block;
   height: 100%;
   width: 100%;
-  background: var(--brand-petroleo);
   border-radius: 999px;
+  background: var(--p-accent);
   transform-origin: left center;
-  /* La proporción llega por variable, no por transform en línea: si el keyframe
-     terminara en scaleX(1) fijo, la animación pisaría el dato. */
-  animation: cq-meter-grow 520ms var(--ease-out-expo) both;
+  /* La proporción llega por variable y no por transform en línea: si el
+     keyframe terminara en scaleX(1) fijo, la animación pisaría el dato. */
+  animation: cq-meter-grow var(--p-t-enter) var(--p-ease-out) both;
 }
 
 @keyframes cq-meter-grow {
@@ -903,9 +801,794 @@ a.cq-stat:focus-visible {
   }
 }
 
+/* Tarjeta de cifra del tablero. Caja CERRADA: filete completo y radio.
+
+   Estaba abierta —sólo una regla arriba— y sobre blanco puro eso hacía que
+   cuatro cifras en fila se leyeran como un bloque continuo de texto en vez de
+   como cuatro datos separados. El contorno es lo que las vuelve contables de un
+   vistazo. Sigue sin sombra: es un contorno, no una capa flotando. */
+.cq-stat {
+  display: block;
+  padding: var(--p-space-4);
+  border: var(--p-border);
+  border-radius: var(--p-radius-md);
+  background: var(--p-surface);
+  transition:
+    border-color var(--p-t-base) var(--p-ease-soft),
+    background-color var(--p-t-base) var(--p-ease-soft);
+}
+
+/* Sólo las que son enlace responden. Una tarjeta que se ilumina sin llevar a
+   ningún lado promete una interacción que no existe. */
+a.cq-stat:hover {
+  border-color: var(--p-accent);
+  background: var(--p-hover-wash);
+}
+
+/* El punto de color de la cifra. Mismo código que la tarjeta que desarrolla ese
+   número más abajo, para que se lean como una sola cosa. */
+.cq-stat[data-accent] {
+  --cq-accent: var(--p-accent);
+}
+
+.cq-stat[data-accent="volume"] {
+  --cq-accent: var(--p-volume);
+}
+
+.cq-stat[data-accent="category"] {
+  --cq-accent: var(--p-accent);
+}
+
+.cq-stat[data-accent="pending"] {
+  --cq-accent: var(--p-pending);
+}
+
+.cq-stat[data-accent="published"] {
+  --cq-accent: var(--p-success);
+}
+
+.cq-stat-dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--cq-accent);
+}
+
+a.cq-stat[data-accent]:hover {
+  border-color: var(--cq-accent);
+}
+
+/* Variación contra el período anterior. Es el dato que convierte una cifra en
+   información: "128 publicados" no dice nada solo; "128, +12 este mes" sí.
+   Lleva signo Y color, nunca sólo color — el verde y el rojo son exactamente
+   el par que más gente no distingue. */
+.cq-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-1);
+  font-family: var(--p-font-ident);
+  font-size: var(--p-ident-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink-muted);
+}
+
+.cq-delta[data-trend="up"] {
+  color: var(--p-success);
+}
+
+.cq-delta[data-trend="down"] {
+  color: var(--p-danger);
+}
+
+/* Sección cerrada. La sección abierta —una regla arriba y aire— sigue siendo lo
+   correcto para una tabla larga. La cerrada es para un gráfico: sin marco, el
+   área pintada flota sobre la página y no se sabe dónde termina el dato.
+
+   El encabezado NO lleva línea abajo. La llevaba, y era una de las razones por
+   las que el tablero se leía "muy por secciones": cada bloque tenía su contorno
+   MÁS una línea interna, o sea dos separadores para una sola división. El aire
+   alcanza. */
+.cq-section[data-boxed="true"] {
+  border: var(--p-border);
+  border-radius: var(--p-radius-md);
+  background: var(--p-surface);
+  padding: var(--p-space-1) var(--p-space-4) 0;
+}
+
+.cq-section[data-boxed="true"] .cq-section-head {
+  padding-inline: 0;
+  margin-bottom: var(--p-space-2);
+}
+
+/* Acento por tarjeta.
+
+   Una regla de 3px arriba, del color del bloque, y el título en ese mismo
+   color. Es lo que hace que las cuatro tarjetas del tablero se distingan de un
+   vistazo sin leerlas, y lo que deja seguir el recorrido de un artículo por la
+   pantalla: ámbar mientras está sin terminar, verde cuando se publica, índigo
+   cuando suma al volumen.
+
+   La regla va ARRIBA y no como borde izquierdo: en una grilla de dos columnas,
+   un borde lateral se lee como si las tarjetas de la derecha estuvieran
+   indentadas respecto de las de la izquierda. */
+.cq-section[data-accent] {
+  --cq-accent: var(--p-accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.cq-section[data-accent]::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: var(--cq-accent);
+}
+
+.cq-section[data-accent] .cq-section-head .cq-label > span:first-child {
+  color: var(--cq-accent);
+}
+
+.cq-section[data-accent="volume"] {
+  --cq-accent: var(--p-volume);
+}
+
+.cq-section[data-accent="category"] {
+  --cq-accent: var(--p-accent);
+}
+
+.cq-section[data-accent="pending"] {
+  --cq-accent: var(--p-pending);
+}
+
+.cq-section[data-accent="published"] {
+  --cq-accent: var(--p-success);
+}
+
+/* ---------- Bloque con scroll propio ----------
+
+   Una lista larga NO estira la página: se desplaza dentro de su tarjeta. Así
+   el tablero entero entra en una pantalla y cada bloque queda donde el ojo ya
+   lo ubicó, en vez de moverse según cuántos datos haya ese día.
+
+   `min-height: 0` en el padre es obligatorio y es el error clásico: un hijo con
+   overflow dentro de un contenedor flex NO se achica sin eso —el mínimo
+   automático es su contenido— y la lista empuja la tarjeta hasta desbordar la
+   pantalla en vez de desplazarse. */
+.cq-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  /* Barra fina y en color de sistema. La del navegador en Windows es gris
+     oscuro de 17px y rompe el borde redondeado de la tarjeta. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-line-strong) transparent;
+  /* El desplazamiento se frena en el bloque: llegar al final de la lista no
+     debe seguir desplazando la página de atrás. */
+  overscroll-behavior: contain;
+}
+
+.cq-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cq-scroll::-webkit-scrollbar-thumb {
+  background: var(--p-line-strong);
+  border-radius: 999px;
+}
+
+.cq-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+a.cq-stat:hover .cq-stat-value {
+  color: var(--p-accent);
+}
+
+.cq-stat-value {
+  transition: color var(--p-t-micro) var(--p-ease-soft);
+}
+
+/* ============================================================================
+   5. ESTADO VACÍO, ERROR, CARGA
+   ============================================================================ */
+
+/* El vacío no es texto centrado en gris: es la FORMA de lo que falta, dibujada
+   en filete punteado, con la acción principal encima. Se ve qué iría ahí antes
+   de leer una palabra. */
+.cq-empty {
+  padding: var(--p-space-6) 0 var(--p-space-7);
+}
+
+.cq-ghost {
+  border: 1px dashed var(--p-line-strong);
+  border-radius: var(--p-radius-md);
+  background: var(--p-surface);
+  transition: border-color var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-empty:hover .cq-ghost {
+  border-color: var(--p-accent);
+}
+
+/* Casilla de "agregar" al final de una grilla. Filete punteado y del mismo alto
+   que las tarjetas de al lado: se lee como un hueco donde va a entrar la
+   próxima, no como un botón que se cayó adentro de la grilla.
+
+   Es también el estado vacío: con cero elementos, la grilla es esta casilla
+   sola y ya dice qué hacer. Un vacío y un "agregar" son la misma cosa cuando
+   la acción es crear el primero. */
+.cq-add-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--p-space-1);
+  min-height: 9rem;
+  height: 100%;
+  padding: var(--p-space-4);
+  border: 1px dashed var(--p-line-strong);
+  border-radius: var(--p-radius-md);
+  background: var(--p-surface);
+  color: var(--p-ink-muted);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--p-t-base) var(--p-ease-soft),
+    background-color var(--p-t-base) var(--p-ease-soft),
+    color var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-add-tile:hover {
+  border-color: var(--p-accent);
+  background: var(--p-hover-wash);
+  color: var(--p-accent);
+}
+
+.cq-add-tile:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+/* El título hereda el color en hover — sin esto se queda en tinta mientras el
+   resto de la casilla se tiñe, y se ve como si sólo una parte respondiera. */
+.cq-add-tile:hover .cq-title {
+  color: inherit;
+}
+
+/* Las barras de la fila fantasma: la silueta de una fila real, sin datos. */
+.cq-ghost-bar {
+  height: 6px;
+  border-radius: var(--p-radius-xs);
+  background: var(--p-surface-sunken);
+}
+
+.cq-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--p-space-2);
+  padding: var(--p-space-2) var(--p-space-3);
+  border-inline-start: 2px solid var(--p-danger);
+  background: var(--p-danger-tint);
+  border-radius: 0 var(--p-radius-sm) var(--p-radius-sm) 0;
+  font-size: var(--p-meta-size);
+  line-height: var(--p-body-lh);
+  color: var(--p-danger);
+}
+
+/* Un esqueleto tiene que tener la MISMA caja que el contenido que reemplaza. Si
+   la fila real mide 36px y el esqueleto 30px, al llegar los datos la página
+   salta — y ese salto llega justo cuando el ojo ya se apoyó en algo.
+
+   El barrido va en `transform` sobre un pseudo-elemento, no en
+   `background-position`: animar la posición de un degradado repinta la caja en
+   cada cuadro, y con veinte filas a la vez eso se nota. */
+.cq-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--p-radius-xs);
+  background: var(--p-surface-sunken);
+}
+
+.cq-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--p-surface) 75%, transparent),
+    transparent
+  );
+  animation: cq-sweep 1.4s var(--p-ease-soft) infinite;
+}
+
+@keyframes cq-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================================
+   6. ENTRADAS — escalonado
+   ============================================================================
+   Todo por transform y opacity. El retraso lo pone una variable en línea que
+   calcula el componente, tope de ocho: a partir de ahí la última fila empieza
+   medio segundo tarde y el que opera ya está leyendo la primera. */
+
+.cq-enter {
+  animation: cq-enter var(--p-t-enter) var(--p-ease-out) both;
+  animation-delay: calc(var(--cq-i, 0) * var(--p-stagger));
+}
+
+@keyframes cq-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ============================================================================
+   7. CROMO — riel, barra superior, cuenta
+   ============================================================================ */
+
+/* El riel es blanco igual que el contenido. Lo que lo separa es la regla
+   vertical, no un tono: dos capas de gris sobre blanco es exactamente el
+   apilado de cajas que esta dirección descarta. */
+.cq-rail {
+  background: var(--p-surface);
+  color: var(--p-ink-muted);
+  border-inline-end: var(--p-border);
+}
+
+.cq-rail-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  height: var(--p-rail-item-h);
+  padding-inline: var(--p-space-2);
+  border-radius: var(--p-radius-sm);
+  font-size: var(--p-body-size);
+  font-weight: 500;
+  color: var(--p-ink-muted);
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-rail-link:hover {
+  background: var(--p-surface-sunken);
+  color: var(--p-ink);
+}
+
+.cq-rail-link-flat:hover {
+  background: transparent;
+  color: var(--p-ink-muted);
+}
+
+/* Cerrar sesión se enciende en rojo recién al apuntarla: en reposo es una fila
+   más, porque una salida pintada de alerta permanente grita todo el día por una
+   acción que se usa una vez. */
+.cq-rail-link-danger:hover,
+.cq-rail-link-danger:focus-visible {
+  background: var(--p-danger-tint);
+  color: var(--p-danger);
+}
+
+.cq-rail-link-danger:focus-visible {
+  outline-color: var(--p-danger);
+}
+
+/* El activo no se apoya sólo en el fondo: sobre blanco un tinte al 9% es una
+   diferencia de dos tonos que se pierde. Suma color y peso en el texto. */
+.cq-rail-link[aria-current="page"] {
+  background: var(--p-accent-tint);
+  color: var(--p-accent);
+  font-weight: 600;
+}
+
+/* La marca de activo va DENTRO de la píldora. Colgada afuera dependía de que el
+   riel tuviera exactamente cierto padding, y colapsado se salía. */
+.cq-rail-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-block: var(--p-space-1);
+  inset-inline-start: 0;
+  width: 2px;
+  border-radius: var(--p-radius-xs);
+  background: var(--p-accent);
+  animation: cq-rail-mark var(--p-t-base) var(--p-ease-out) both;
+}
+
+@keyframes cq-rail-mark {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.cq-rail-group {
+  padding: 0 var(--p-space-2) var(--p-space-1);
+  font-size: var(--p-label-size);
+  font-weight: var(--p-label-weight);
+  letter-spacing: var(--p-label-ls);
+  text-transform: uppercase;
+  color: var(--p-ink-muted);
+}
+
+/* --- Riel colapsado ---
+   Se resuelve por ATRIBUTO en el contenedor y no con condicionales en cada JSX:
+   el estado del riel es uno solo, y repartirlo en diez ternarios de className es
+   como se llega a que una fila se centre y la de al lado no. */
+
+.cq-rail[data-collapsed="true"] {
+  align-items: center;
+  padding-inline: var(--p-space-2);
+}
+
+.cq-rail[data-collapsed="true"] .cq-rail-link {
+  width: var(--p-rail-item-h);
+  margin-inline: auto;
+  justify-content: center;
+  padding-inline: 0;
+  /* El gap tiene que irse con la etiqueta: si queda, separa al icono de una
+     etiqueta de ancho cero y lo deja descentrado medio gap a la izquierda. */
+  gap: 0;
+}
+
+.cq-rail[data-collapsed="true"] .cq-rail-group {
+  width: 100%;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  background: var(--p-line);
+}
+
+.cq-rail[data-collapsed="true"] .cq-rail-link[aria-current="page"]::before {
+  display: none;
+}
+
+/* --- Barra superior ---
+   Blanca y pegada arriba, con una sola línea de 1px abajo. Sin sombra: el
+   contenido se desplaza POR DEBAJO y una sombra permanente se leería como una
+   segunda superficie flotando sobre todo el panel. */
+
+.cq-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-3);
+  min-height: var(--p-space-7);
+  padding-inline: var(--p-space-4);
+  background: var(--p-surface);
+  border-bottom: var(--p-border);
+}
+
+.cq-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--p-control-h);
+  height: var(--p-control-h);
+  border-radius: var(--p-radius-sm);
+  color: var(--p-ink-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-topbar-btn:hover {
+  background: var(--p-surface-sunken);
+  color: var(--p-ink);
+}
+
+/* Disparador de la cuenta. Se dibuja como CONTROL y no como texto con un avatar
+   al lado: un bloque de identidad sin caja se lee como información, y nadie le
+   hace clic a la información. Que el estado abierto NO vuelva al reposo es lo
+   que evita el menú huérfano — se ve de dónde salió el panel que flota. */
+.cq-account {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  flex-shrink: 0;
+  max-width: 13rem;
+  height: var(--p-control-h);
+  padding-inline: var(--p-space-1) var(--p-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--p-radius-sm);
+  background: transparent;
+  color: var(--p-ink-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft),
+    color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-account:hover,
+.cq-account[data-open="true"] {
+  background: var(--p-surface-sunken);
+  border-color: var(--p-line);
+  color: var(--p-ink);
+}
+
+.cq-account-caret {
+  flex-shrink: 0;
+  transition: transform var(--p-t-base) var(--p-ease-out);
+}
+
+.cq-account[data-open="true"] .cq-account-caret {
+  transform: rotate(180deg);
+}
+
+/* Filtro en pestaña. El activo se marca con una regla debajo, no con relleno:
+   es la misma gramática del canto de sección. */
+.cq-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  height: var(--p-control-h);
+  padding-inline: var(--p-space-2);
+  border-bottom: 2px solid transparent;
+  font-size: var(--p-meta-size);
+  font-weight: 500;
+  color: var(--p-ink-muted);
+  transition:
+    color var(--p-t-micro) var(--p-ease-soft),
+    border-color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-tab:hover {
+  color: var(--p-ink);
+}
+
+.cq-tab[aria-current="true"] {
+  color: var(--p-ink);
+  font-weight: 600;
+  border-bottom-color: var(--p-accent);
+}
+
+.cq-tab-count {
+  font-family: var(--p-font-ident);
+  font-size: var(--p-ident-size);
+  color: var(--p-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   8. CAPAS FLOTANTES — menú, diálogo, aviso, ayuda
+   ============================================================================
+   Lo único del sistema que lleva sombra, porque es lo único que de verdad está
+   por encima del documento. */
+
+.cq-overlay {
+  background: var(--p-surface);
+  border: var(--p-border);
+  border-radius: var(--p-radius-md);
+  box-shadow: var(--p-shadow-overlay);
+}
+
+.cq-scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--p-ink) 45%, transparent);
+  animation: cq-fade var(--p-t-base) var(--p-ease-soft) both;
+}
+
+/* El diálogo es un <dialog> nativo abierto con showModal(). No es una decisión
+   estética: el navegador da gratis la trampa de foco, el cierre con Escape, el
+   `aria-modal`, la inertización del resto de la página y la capa superior — que
+   es exactamente lo que se hace mal cuando se reimplementa a mano. */
+.cq-dialog {
+  margin: auto;
+  padding: 0;
+  max-width: min(28rem, calc(100vw - var(--p-space-6)));
+  color: var(--p-ink);
+  animation: cq-dialog-in var(--p-t-enter) var(--p-ease-out) both;
+}
+
+.cq-dialog::backdrop {
+  background: color-mix(in srgb, var(--p-ink) 45%, transparent);
+  animation: cq-fade var(--p-t-base) var(--p-ease-soft) both;
+}
+
+@keyframes cq-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes cq-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+/* Cajón lateral. Ocupa el alto completo y entra por el costado.
+
+   El ancho está tope a `100vw - 2rem`: en 375px el cajón NO puede ser un panel
+   de 24rem que se sale de pantalla y obliga a desplazarse en horizontal. Ahí
+   ocupa casi todo el ancho, que es lo correcto — en un teléfono un cajón y una
+   pantalla completa son la misma cosa. */
+.cq-drawer {
+  position: fixed;
+  inset-block: 0;
+  max-width: min(26rem, calc(100vw - var(--p-space-6)));
+  width: 100%;
+  max-height: 100dvh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--p-surface);
+  color: var(--p-ink);
+  box-shadow: var(--p-shadow-overlay);
+}
+
+.cq-drawer[data-side="right"] {
+  inset-inline-end: 0;
+  inset-inline-start: auto;
+  border-inline-start: var(--p-border);
+  /* Sólo el canto interior se redondea. El borde que toca la pantalla queda
+     recto: un radio ahí deja ver el fondo por la esquina y el cajón parece
+     despegado del costado. */
+  border-radius: var(--p-radius-lg) 0 0 var(--p-radius-lg);
+  animation: cq-drawer-in-right var(--p-t-enter) var(--p-ease-out) both;
+}
+
+.cq-drawer[data-side="left"] {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  border-inline-end: var(--p-border);
+  border-radius: 0 var(--p-radius-lg) var(--p-radius-lg) 0;
+  animation: cq-drawer-in-left var(--p-t-enter) var(--p-ease-out) both;
+}
+
+/* La salida no es la entrada al revés en duración: sale más rápido de lo que
+   entra. Entrar es presentar algo —conviene que se lea el recorrido—; salir es
+   sacarlo del medio, y ahí toda demora es espera. */
+.cq-drawer[data-leaving="true"][data-side="right"] {
+  animation: cq-drawer-out-right var(--p-t-base) var(--p-ease-soft) both;
+}
+
+.cq-drawer[data-leaving="true"][data-side="left"] {
+  animation: cq-drawer-out-left var(--p-t-base) var(--p-ease-soft) both;
+}
+
+.cq-drawer::backdrop {
+  background: color-mix(in srgb, var(--p-ink) 40%, transparent);
+  animation: cq-fade var(--p-t-base) var(--p-ease-soft) both;
+}
+
+@keyframes cq-drawer-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cq-drawer-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cq-drawer-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes cq-drawer-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Aviso. Entra desde abajo a la derecha y se va por donde vino. Lleva su propia
+   barra de tiempo: si un aviso ofrece deshacer, hay que poder ver cuánto queda
+   antes de que sea tarde. */
+.cq-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-3);
+  min-width: 17rem;
+  max-width: min(24rem, calc(100vw - var(--p-space-6)));
+  padding: var(--p-space-3);
+  animation: cq-toast-in var(--p-t-enter) var(--p-ease-out) both;
+}
+
+.cq-toast[data-leaving="true"] {
+  animation: cq-toast-out var(--p-t-base) var(--p-ease-soft) both;
+}
+
+@keyframes cq-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes cq-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.cq-toast-timer {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--p-accent);
+  transform-origin: left center;
+  animation: cq-toast-timer var(--cq-toast-ms, 5000ms) linear both;
+}
+
+@keyframes cq-toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Ayuda contextual. Aparece con retraso a propósito: sin él, cruzar una fila de
+   seis botones dispara seis globos. */
+.cq-tooltip {
+  position: absolute;
+  z-index: 60;
+  padding: var(--p-space-1) var(--p-space-2);
+  border-radius: var(--p-radius-sm);
+  background: var(--p-ink);
+  color: var(--p-surface);
+  font-size: var(--p-ident-size);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: cq-fade var(--p-t-micro) var(--p-ease-soft) both;
+}
+
+/* ============================================================================
+   9. MOVIMIENTO REDUCIDO
+   ============================================================================
+   Se apaga todo lo que se mueve solo. NO se apaga lo que responde a una acción
+   directa —color de hover, anillo de foco, el hundido del botón— porque eso no
+   es movimiento decorativo, es la respuesta del control. Y la barra de tiempo
+   del aviso se queda: es información sobre cuánto falta para que se pierda la
+   posibilidad de deshacer, no una animación. */
+
 @media (prefers-reduced-motion: reduce) {
+  .cq-bulkbar,
+  .cq-enter,
+  .cq-skeleton::after,
+  .cq-meter > span,
   .cq-rail-link[aria-current="page"]::before,
-  .cq-meter > span {
+  .cq-dialog,
+  .cq-toast,
+  .cq-scrim,
+  .cq-tooltip,
+  .cq-drawer,
+  .cq-drawer[data-side="right"],
+  .cq-drawer[data-side="left"],
+  .cq-drawer::backdrop {
     animation: none;
+  }
+
+  .cq-account-caret {
+    transition: none;
+  }
+
+  .cq-btn:active:not(:disabled),
+  .cq-icon-btn:active:not(:disabled) {
+    transform: none;
   }
 }

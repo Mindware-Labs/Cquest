@@ -3,8 +3,16 @@ import Link from "next/link";
 import clsx from "clsx";
 import { IconWarning } from "./icons";
 
-/* Piezas de superficie del panel. Todas son Server Components a propósito:
-   ninguna necesita estado, así que ninguna paga el peso de enviarse al cliente. */
+/* Superficies del panel. Todas son Server Components a propósito: ninguna
+   necesita estado, así que ninguna paga el peso de enviarse al cliente. */
+
+/* ---------------------------------------------------------------------------
+   PageHeader
+   El título no se dibuja: la sección ya la dice el riel y la miga de la barra
+   superior, y repetirla en grande gasta el primer tercio de la pantalla en algo
+   que el que opera ya sabe. Igual va en el DOM como <h1> para lectores de
+   pantalla y para que el documento tenga un encabezado de nivel uno.
+--------------------------------------------------------------------------- */
 
 export function PageHeader({
   title,
@@ -15,16 +23,11 @@ export function PageHeader({
   description?: string;
   actions?: ReactNode;
 }) {
-  /* El título no se dibuja: la sección ya la dice el menú lateral, y repetirla
-     en grande gasta el primer tercio de la pantalla en algo que el que opera ya
-     sabe. Igual va en el DOM como <h1> para lectores de pantalla y para que el
-     documento tenga un encabezado de nivel uno — quitarlo del árbol sería
-     quitarle a alguien la orientación que el resto recibe por el menú. */
   return (
     <header
       className={clsx(
-        "flex flex-wrap items-start justify-end gap-x-6 gap-y-4",
-        actions ? "pb-6" : undefined,
+        "flex flex-wrap items-center justify-end gap-x-4 gap-y-2",
+        actions && "pb-4",
       )}
     >
       <h1 className="sr-only">{title}</h1>
@@ -34,60 +37,90 @@ export function PageHeader({
   );
 }
 
-/* Tarjeta de cifra. `href` es opcional a propósito: con enlace es una puerta a
-   la pantalla que explica el número, y sin enlace es sólo un dato. Lo que NO
-   hace es fingir: sin destino, no levanta ni cambia el cursor. */
-export function StatCard({
-  label,
-  value,
-  hint,
-  icon,
-  accent = "var(--brand-petroleo)",
-  href,
+/* ---------------------------------------------------------------------------
+   Section — LA FIRMA
+   Una regla horizontal, el nombre en etiqueta chica, y la cifra en serif
+   apoyada sobre la regla. La cifra es siempre un dato real: cuántas filas hay
+   en esa sección. Nunca un número puesto para llenar.
+--------------------------------------------------------------------------- */
+
+export function Section({
+  title,
+  count,
+  actions,
+  children,
+  className,
+  style,
+  as: Tag = "section",
+  headingLevel: Heading = "h2",
+  boxed = false,
+  accent,
+  hideHead = false,
 }: {
-  label: string;
-  value: number | string;
-  hint?: string;
-  icon: ReactNode;
-  accent?: string;
-  href?: string;
+  title: string;
+  /* Opcional: una sección que no cuenta nada no dibuja cifra en vez de dibujar
+     un cero que no significa nada. */
+  count?: number;
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  /* Sólo para el retraso del escalonado (`--cq-i`). No es una puerta para
+     estilos sueltos: todo lo visual sale de los tokens. */
+  style?: CSSProperties;
+  as?: "section" | "div" | "aside";
+  headingLevel?: "h2" | "h3";
+  /* Cerrada, con filete alrededor. Para gráficos: sin marco, el área pintada
+     flota y no se ve dónde termina el dato. Una tabla larga NO la usa — ahí el
+     marco sólo agrega una línea que compite con las filas. */
+  boxed?: boolean;
+  /* Código de color del bloque. Regla de 3px arriba y título en ese color: es
+     lo que permite reconocer de qué habla cada tarjeta sin leerla, y seguir el
+     recorrido de un artículo por la pantalla. */
+  accent?: "volume" | "category" | "pending" | "published";
+  /* Oculta la fila de título dejándola en el árbol de accesibilidad.
+     Es para cuando la sección ES la pantalla: repetir "Artículos" arriba de la
+     tabla de artículos, en una vista que no tiene ninguna otra sección, sólo
+     agrega una franja y hace que la tarjeta se lea como parte de algo más
+     grande que no existe. El <h2> se queda para el lector de pantalla. */
+  hideHead?: boolean;
 }) {
-  const body = (
-    <>
-      <span className="cq-stat-icon" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="mt-3.5 block text-[0.8rem] font-medium text-[var(--text-secondary)]">
-        {label}
-      </span>
-      <span className="font-heading mt-1 block text-[1.7rem] leading-none font-semibold tracking-[-0.02em] text-foreground tabular-nums">
-        {value}
-      </span>
-      {hint && (
-        <span className="mt-1.5 block text-[0.76rem] leading-snug text-[var(--text-tertiary)]">
-          {hint}
-        </span>
-      )}
-    </>
-  );
-
-  const style = { "--cq-stat-accent": accent } as CSSProperties;
-
-  if (href) {
-    return (
-      <Link href={href} className="cq-stat" style={style}>
-        {body}
-      </Link>
-    );
-  }
-
   return (
-    <div className="cq-stat" style={style}>
-      {body}
-    </div>
+    <Tag
+      data-boxed={boxed ? "true" : undefined}
+      data-accent={accent}
+      style={style}
+      className={clsx("cq-section", className)}
+    >
+      {/* La cifra grande sobre la regla se fue. Con cada bloque ya en tarjeta,
+          había cuatro números de 32px compitiendo contra los KPIs de arriba —y
+          los KPIs son los que de verdad hay que leer primero. El conteo sigue,
+          pero como pastilla al lado del título: informa sin gritar. */}
+      {hideHead ? (
+        <Heading className="sr-only">
+          {title}
+          {typeof count === "number" ? ` — ${count}` : ""}
+        </Heading>
+      ) : (
+        <div className="cq-section-head">
+          <Heading className="cq-label flex min-w-0 items-center gap-2">
+            <span className="truncate">{title}</span>
+            {typeof count === "number" && <span className="cq-section-count">{count}</span>}
+          </Heading>
+          {actions && <div className="flex shrink-0 flex-wrap items-center gap-1.5">{actions}</div>}
+        </div>
+      )}
+      {/* `min-h-0` es obligatorio para que un hijo con scroll propio funcione:
+          dentro de un contenedor flex, el mínimo automático de un elemento es
+          su contenido, así que sin esto la lista empuja la tarjeta hasta
+          desbordar en vez de desplazarse adentro. */}
+      <div className="cq-section-body flex min-h-0 flex-1 flex-col">{children}</div>
+    </Tag>
   );
 }
 
+/* Alias de compatibilidad. El editor y sus subcomponentes todavía escriben
+   <Panel>/<PanelHead>; se mantienen apuntando a la sección nueva para que no
+   queden dos gramáticas conviviendo mientras se migra el editor. */
 export function Panel({
   children,
   className,
@@ -97,7 +130,7 @@ export function Panel({
   className?: string;
   as?: "section" | "div" | "aside";
 }) {
-  return <Tag className={clsx("cq-panel", className)}>{children}</Tag>;
+  return <Tag className={clsx("cq-section", className)}>{children}</Tag>;
 }
 
 export function PanelHead({
@@ -110,23 +143,198 @@ export function PanelHead({
   actions?: ReactNode;
 }) {
   return (
-    <div className="cq-panel-head flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-      <h2 className="flex items-center gap-2 text-[0.72rem] font-bold tracking-[0.11em] text-[var(--text-tertiary)] uppercase">
-        {title}
-        {typeof count === "number" && (
-          <span className="rounded-[6px] bg-[var(--surface-raised)] px-1.5 py-0.5 text-[0.7rem] tracking-normal text-[var(--text-secondary)] tabular-nums">
-            {count}
-          </span>
-        )}
+    <div className="cq-section-head">
+      <h2 className="cq-label flex min-w-0 items-center gap-2">
+        <span className="truncate">{title}</span>
+        {typeof count === "number" && <span className="cq-section-count">{count}</span>}
       </h2>
       {actions}
     </div>
   );
 }
 
-/* Un vacío que enseña el siguiente paso. "No hay nada" no es un estado vacío,
-   es un callejón sin salida. */
+/* Tarjeta. Sólo para elementos de una grilla: en una lista vertical separa el
+   filete, no una caja. */
+export function Card({
+  children,
+  className,
+  href,
+}: {
+  children: ReactNode;
+  className?: string;
+  href?: string;
+}) {
+  if (href) {
+    return (
+      <Link href={href} className={clsx("cq-card", className)}>
+        {children}
+      </Link>
+    );
+  }
+  return <div className={clsx("cq-card", className)}>{children}</div>;
+}
+
+/* ---------------------------------------------------------------------------
+   Identificador del sistema
+   Slug, ruta, ID. Se muestra en mono porque no se lee: se copia, se pega y se
+   compara carácter por carácter. Que se VEA distinto del texto de interfaz es
+   la mitad de su trabajo.
+--------------------------------------------------------------------------- */
+
+export function Ident({
+  children,
+  path = false,
+  chip = false,
+  className,
+}: {
+  children: ReactNode;
+  /* `path` antepone la barra: lo que se ve es la URL pública real. */
+  path?: boolean;
+  chip?: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={clsx("cq-ident", chip && "cq-ident-chip", className)}>
+      {path && <span aria-hidden="true">/</span>}
+      {children}
+    </span>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Cifra del tablero
+   `href` opcional a propósito: con enlace es una puerta a la pantalla que
+   explica el número; sin enlace es sólo un dato. Lo que NO hace es fingir —
+   sin destino no cambia de color ni de cursor.
+--------------------------------------------------------------------------- */
+
+export function StatCard({
+  label,
+  value,
+  hint,
+  href,
+  delta,
+  accent,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+  href?: string;
+  /* Variación contra el período anterior. Es lo que convierte una cifra en
+     información: "128" no dice nada solo; "128, +12 en 30 días" sí. */
+  delta?: { value: number; label: string };
+  accent?: "volume" | "category" | "pending" | "published";
+}) {
+  const trend = delta ? (delta.value > 0 ? "up" : delta.value < 0 ? "down" : "flat") : undefined;
+
+  const body = (
+    <>
+      {/* El punto de color ata esta cifra con el bloque que la desarrolla más
+          abajo. Va antes de la etiqueta, no después: es lo primero que el ojo
+          usa para agrupar. */}
+      <span className="flex items-center gap-2">
+        {accent && <span aria-hidden="true" className="cq-stat-dot" />}
+        <span className="cq-label">{label}</span>
+      </span>
+      <span className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span className="cq-display cq-stat-value">{value}</span>
+        {delta && (
+          /* El signo va SIEMPRE, no sólo el color. Verde y rojo son justamente
+             el par que más gente no distingue; sin el signo, para esa persona
+             las dos variaciones dicen lo mismo. */
+          <span className="cq-delta" data-trend={trend}>
+            {delta.value > 0 ? "+" : delta.value < 0 ? "−" : "="}
+            {Math.abs(delta.value)}
+            <span className="sr-only">
+              {delta.value > 0 ? " más" : delta.value < 0 ? " menos" : " sin cambios"}
+            </span>
+          </span>
+        )}
+      </span>
+      {delta && <span className="cq-meta mt-1 block">{delta.label}</span>}
+      {hint && !delta && <span className="cq-meta mt-1.5 block">{hint}</span>}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} data-accent={accent} className="cq-stat h-full">
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <div data-accent={accent} className="cq-stat h-full">
+      {body}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Estado vacío
+   No es texto centrado en gris: es la FORMA de lo que falta, en filete
+   punteado, con la acción principal encima. Se ve qué iría ahí antes de leer
+   una palabra, y la salida está a un clic.
+--------------------------------------------------------------------------- */
+
 export function EmptyState({
+  title,
+  hint,
+  action,
+  /* Cuántas filas fantasma dibujar. Tres es el mínimo para que se lea como una
+     lista y no como una caja suelta. */
+  rows = 3,
+}: {
+  title: string;
+  hint?: string;
+  action?: ReactNode;
+  rows?: number;
+}) {
+  return (
+    <div className="cq-empty">
+      <div className="cq-ghost relative overflow-hidden px-4 py-4">
+        {/* La silueta. `aria-hidden` porque no dice nada que el título no diga:
+            un lector de pantalla no necesita recorrer nueve barras vacías. */}
+        <div aria-hidden="true" className="grid gap-4 opacity-70">
+          {Array.from({ length: rows }, (_, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div className="cq-ghost-bar w-6 shrink-0" />
+              <div className="grid flex-1 gap-1.5">
+                <div className="cq-ghost-bar" style={{ width: `${62 - index * 9}%` }} />
+                <div className="cq-ghost-bar h-[4px]" style={{ width: `${38 - index * 6}%` }} />
+              </div>
+              <div className="cq-ghost-bar w-10 shrink-0" />
+            </div>
+          ))}
+        </div>
+
+        {/* El mensaje se apoya ENCIMA de la silueta, no debajo: el vacío es una
+            sola cosa, no un dibujo con un texto de pie. El velo deja ver la
+            forma sin que compita con la lectura. */}
+        {/* El velo se escribe con color-mix y no con la sintaxis de opacidad de
+            Tailwind: `bg-[var(--x)]/85` no resuelve el canal alfa de una
+            variable, y saldría opaco. */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center"
+          style={{ background: "color-mix(in srgb, var(--p-surface) 88%, transparent)" }}
+        >
+          <p className="cq-title">{title}</p>
+          {hint && <p className="cq-meta max-w-[52ch]">{hint}</p>}
+          {action && <div className="mt-2">{action}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Error
+   Un estado, no un accidente. Dice qué pasó, qué se puede hacer, y ofrece
+   reintentar sin recargar la pestaña entera.
+--------------------------------------------------------------------------- */
+
+export function ErrorState({
   title,
   hint,
   action,
@@ -136,23 +344,39 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="px-6 py-14 text-center">
-      <p className="text-[0.98rem] font-semibold text-foreground">{title}</p>
-      {hint && (
-        <p className="mx-auto mt-2 max-w-[46ch] text-[0.88rem] leading-relaxed text-[var(--text-secondary)]">
-          {hint}
-        </p>
-      )}
-      {action && <div className="mt-5 flex justify-center">{action}</div>}
+    <div className="cq-empty">
+      <div className="flex flex-col items-center gap-2 border-l-2 border-[var(--p-danger)] bg-[var(--p-danger-tint)] px-6 py-10 text-center">
+        <p className="cq-title text-[var(--p-danger)]">{title}</p>
+        {hint && <p className="cq-meta max-w-[56ch]">{hint}</p>}
+        {action && <div className="mt-2">{action}</div>}
+      </div>
     </div>
   );
 }
+
+/* ---------------------------------------------------------------------------
+   Insignia de estado
+--------------------------------------------------------------------------- */
 
 const TONE: Record<string, { tone: string; label: string }> = {
   PUBLISHED: { tone: "published", label: "Publicado" },
   DRAFT: { tone: "draft", label: "Borrador" },
   HIDDEN: { tone: "hidden", label: "Oculto" },
 };
+
+export function Badge({
+  children,
+  tone = "draft",
+}: {
+  children: ReactNode;
+  tone?: "published" | "draft" | "hidden";
+}) {
+  return (
+    <span className="cq-badge" data-tone={tone}>
+      {children}
+    </span>
+  );
+}
 
 export function StatusBadge({ status }: { status: string }) {
   const entry = TONE[status] ?? TONE.DRAFT;
@@ -163,29 +387,34 @@ export function StatusBadge({ status }: { status: string }) {
   );
 }
 
+/* ---------------------------------------------------------------------------
+   Aviso en línea
+--------------------------------------------------------------------------- */
+
 export function Alert({ children }: { children: ReactNode }) {
   return (
-    <p
-      role="alert"
-      className="flex items-start gap-2 rounded-[var(--panel-radius-control)] border border-[#e8c9c9] bg-[#fbf1f1] px-3 py-2 text-[0.84rem] text-[#8f1d1d]"
-    >
-      <IconWarning size={16} className="mt-0.5 shrink-0" />
+    <p role="alert" className="cq-alert">
+      <IconWarning size={14} className="mt-0.5 shrink-0" />
       <span>{children}</span>
     </p>
   );
 }
 
-/* Barra de proporción con su valor al lado. El número es el dato; la barra solo
-   hace comparable de un vistazo lo que el número ya dice. */
+/* ---------------------------------------------------------------------------
+   Barra de proporción
+   El número es el dato; la barra sólo hace comparable de un vistazo lo que el
+   número ya dice.
+--------------------------------------------------------------------------- */
+
 export function Meter({ value, total, label }: { value: number; total: number; label: string }) {
   const ratio = total > 0 ? value / total : 0;
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[0.88rem] text-foreground">{label}</span>
-        <span className="text-[0.82rem] text-[var(--text-secondary)] tabular-nums">{value}</span>
+        <span className="cq-body truncate text-[var(--p-ink)]">{label}</span>
+        <span className="cq-ident shrink-0">{value}</span>
       </div>
-      <div className="cq-meter mt-1.5" aria-hidden="true">
+      <div className="cq-meter mt-2" aria-hidden="true">
         <span style={{ "--cq-ratio": ratio } as CSSProperties} />
       </div>
     </div>

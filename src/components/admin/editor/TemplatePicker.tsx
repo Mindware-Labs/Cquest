@@ -1,6 +1,8 @@
 "use client";
 
 import type { Block } from "@/lib/blocks";
+import { Ident } from "@/components/admin/ui/Surface";
+import { TemplateShape } from "@/components/admin/ui/TemplateShape";
 
 export type TemplateChoice = {
   key: string;
@@ -38,37 +40,49 @@ export default function TemplatePicker({
   onSkip: () => void;
 }) {
   return (
-    <section className="rounded-xl border border-border bg-[var(--surface-raised)] p-6">
-      <h2 className="font-heading text-[1.05rem] font-semibold tracking-[-0.015em] text-foreground">
-        Empezar desde una plantilla
-      </h2>
-      <p className="mt-1.5 text-[0.88rem] leading-relaxed text-[var(--text-secondary)]">
-        Una plantilla trae los bloques ya armados como punto de partida. Podés
-        cambiar todo después.
+    <section className="cq-section">
+      <div className="cq-section-head">
+        <div className="flex items-end gap-3">
+          <span aria-hidden="true" className="cq-section-figure">
+            {String(templates.length).padStart(2, "0")}
+          </span>
+          <h2 className="cq-label pb-1.5">Empezar desde una plantilla</h2>
+        </div>
+      </div>
+
+      <p className="cq-meta max-w-[64ch]">
+        Una plantilla trae los bloques ya armados como punto de partida. Podés cambiar todo después.
       </p>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {templates.map((template) => (
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {templates.map((template, index) => (
           <button
             key={template.key}
             type="button"
             onClick={() => onPick(withFreshIds(template.blocks))}
-            className="rounded-lg border border-border bg-white px-4 py-4 text-left transition-colors hover:border-petroleo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+            className="cq-card cq-enter text-left"
+            style={{ "--cq-i": Math.min(index, 8) } as React.CSSProperties}
           >
-            <p className="text-[0.92rem] font-semibold text-foreground">{template.name}</p>
-            <p className="mt-1 text-[0.76rem] text-[var(--text-tertiary)]">
-              {template.blocks.length} {template.blocks.length === 1 ? "bloque" : "bloques"}
-              {template.origin === "saved" && template.authorName ? ` · ${template.authorName}` : ""}
+            <TemplateShape types={template.blocks.map((block) => block.type)} />
+            <p className="cq-title mt-3">{template.name}</p>
+            <p className="mt-1 flex flex-wrap items-center gap-1.5">
+              <Ident>
+                {template.blocks.length} {template.blocks.length === 1 ? "bloque" : "bloques"}
+              </Ident>
+              {template.origin === "saved" && template.authorName && (
+                <>
+                  <span aria-hidden="true" className="cq-meta">
+                    ·
+                  </span>
+                  <span className="cq-meta">{template.authorName}</span>
+                </>
+              )}
             </p>
           </button>
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={onSkip}
-        className="mt-5 text-[0.85rem] font-semibold text-petroleo underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
-      >
+      <button type="button" onClick={onSkip} className="cq-link cq-body mt-4 pb-4">
         Empezar en blanco
       </button>
     </section>

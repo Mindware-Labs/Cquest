@@ -9,8 +9,12 @@ import { INPUT_CLASS } from "./fields";
    (agregar, quitar, reordenar filas) y mezclarlos ahí volvía ese archivo
    imposible de leer. */
 
-const SMALL_BUTTON =
-  "rounded-md border border-border bg-white px-2.5 py-1 text-[0.75rem] font-semibold text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-30";
+/* Antes acá se redeclaraban a mano borde, relleno, tipografía y foco de un
+   botón. Es el mismo botón `ghost` chico del sistema: se apunta a la clase en
+   vez de copiar sus valores, que es lo que hacía que el control de "agregar
+   fila" se viera distinto del de al lado. */
+const SMALL_BUTTON = "cq-btn";
+const SMALL_BUTTON_ATTRS = { "data-variant": "ghost", "data-size": "sm" } as const;
 
 export function StringListEditor({
   label,
@@ -25,7 +29,7 @@ export function StringListEditor({
 }) {
   return (
     <div>
-      <span className="text-[0.78rem] font-semibold text-foreground">{label}</span>
+      <span className="cq-label">{label}</span>
       <ul className="mt-1.5 space-y-2">
         {items.map((item, index) => (
           <li key={index} className="flex items-center gap-1.5">
@@ -46,6 +50,7 @@ export function StringListEditor({
               disabled={items.length === 1}
               onClick={() => onChange(items.filter((_, i) => i !== index))}
               className={SMALL_BUTTON}
+              {...SMALL_BUTTON_ATTRS}
             >
               <IconClose size={13} />
             </button>
@@ -57,6 +62,7 @@ export function StringListEditor({
         disabled={items.length >= max}
         onClick={() => onChange([...items, ""])}
         className={`${SMALL_BUTTON} mt-2`}
+        {...SMALL_BUTTON_ATTRS}
       >
         + Agregar
       </button>
@@ -89,7 +95,7 @@ export function TableEditor({
 
   return (
     <div>
-      <span className="text-[0.78rem] font-semibold text-foreground">Tabla</span>
+      <span className="cq-label">Tabla</span>
 
       <div className="mt-1.5 space-y-2">
         {headers.map((header, index) => (
@@ -112,6 +118,7 @@ export function TableEditor({
               disabled={headers.length === 1}
               onClick={() => removeColumn(index)}
               className={SMALL_BUTTON}
+              {...SMALL_BUTTON_ATTRS}
             >
               <IconClose size={13} />
             </button>
@@ -124,15 +131,19 @@ export function TableEditor({
         disabled={headers.length >= 8}
         onClick={addColumn}
         className={`${SMALL_BUTTON} mt-2`}
+        {...SMALL_BUTTON_ATTRS}
       >
         + Columna
       </button>
 
       <div className="mt-4 space-y-3">
         {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="rounded-md border border-border p-2.5">
+          <div
+            key={rowIndex}
+            className="rounded-[var(--p-radius-sm)] border border-[var(--p-line)] p-2.5"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">
+              <span className="cq-label">
                 Fila {rowIndex + 1}
               </span>
               <button
@@ -141,6 +152,7 @@ export function TableEditor({
                 disabled={rows.length === 1}
                 onClick={() => onChange({ headers, rows: rows.filter((_, i) => i !== rowIndex) })}
                 className={SMALL_BUTTON}
+              {...SMALL_BUTTON_ATTRS}
               >
                 <IconClose size={13} />
               </button>
@@ -171,6 +183,7 @@ export function TableEditor({
         disabled={rows.length >= 50}
         onClick={() => onChange({ headers, rows: [...rows, headers.map(() => "")] })}
         className={`${SMALL_BUTTON} mt-2`}
+        {...SMALL_BUTTON_ATTRS}
       >
         + Fila
       </button>
@@ -199,13 +212,16 @@ export function GalleryEditor({
 
   return (
     <div>
-      <span className="text-[0.78rem] font-semibold text-foreground">Imágenes</span>
+      <span className="cq-label">Imágenes</span>
 
       <div className="mt-1.5 space-y-4">
         {images.map((image, index) => (
-          <div key={index} className="space-y-2.5 rounded-md border border-border p-3">
+          <div
+            key={index}
+            className="space-y-2.5 rounded-[var(--p-radius-sm)] border border-[var(--p-line)] p-3"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">
+              <span className="cq-label">
                 Imagen {index + 1}
               </span>
               <button
@@ -214,6 +230,7 @@ export function GalleryEditor({
                 disabled={images.length === 1}
                 onClick={() => onChange(images.filter((_, i) => i !== index))}
                 className={SMALL_BUTTON}
+              {...SMALL_BUTTON_ATTRS}
               >
                 <IconClose size={13} />
               </button>
@@ -235,7 +252,7 @@ export function GalleryEditor({
               className={`${INPUT_CLASS} mt-0`}
             />
             {image.src && image.alt.trim().length === 0 && (
-              <p className="text-[0.76rem] text-red-700">
+              <p className="cq-meta text-[var(--p-danger)]">
                 Obligatorio: sin esto el artículo no se puede guardar.
               </p>
             )}
@@ -257,6 +274,7 @@ export function GalleryEditor({
         disabled={images.length >= 12}
         onClick={() => onChange([...images, { src: "", alt: "" }])}
         className={`${SMALL_BUTTON} mt-2`}
+        {...SMALL_BUTTON_ATTRS}
       >
         + Imagen
       </button>

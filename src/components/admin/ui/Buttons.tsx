@@ -4,7 +4,15 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { IconSpinner, IconTrash } from "./icons";
 
-type Variant = "primary" | "secondary" | "ghost" | "quiet" | "danger";
+/* Los botones atados a un <form>. Viven aparte de Button.tsx porque dependen de
+   `useFormStatus`, que sólo funciona dentro del formulario que envía — y eso
+   los obliga a ser componentes de cliente. Un botón común no tiene por qué
+   pagar ese costo.
+
+   Las variantes son las mismas cuatro del sistema. Los nombres viejos
+   (`primary`, `secondary`, `quiet`) siguen aceptados porque el editor todavía
+   los escribe, y la CSS los mapea a las variantes nuevas. */
+type Variant = "solid" | "outline" | "ghost" | "danger" | "primary" | "secondary" | "quiet";
 type Size = "md" | "sm" | "icon";
 
 /* Un botón de envío que se apaga y se explica mientras la acción corre. El
@@ -13,7 +21,7 @@ type Size = "md" | "sm" | "icon";
 export function SubmitButton({
   children,
   pendingLabel,
-  variant = "primary",
+  variant = "solid",
   size = "md",
   name,
   value,

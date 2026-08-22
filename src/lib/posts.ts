@@ -301,6 +301,78 @@ export async function setPostStatus(
   return { error: null };
 }
 
+/** Cambia el estado de VARIOS artículos de una vez.
+ *
+ *  No es azúcar sobre setPostStatus en un bucle del cliente: publicar diez
+ *  borradores así eran diez viajes al servidor, diez revalidaciones de las
+ *  mismas rutas, y un estado a medio aplicar si el tercero fallaba. Acá es una
+ *  transacción y una sola revalidación al final.
+ *
+ *  La fecha de publicación se resuelve por artículo y no en bloque: sólo se
+ *  fija en los que nunca se publicaron, igual que en la versión de a uno.
+ *  Ocultar y republicar no vuelve a mover esa fecha. */
+export async function setPostsStatus(
+  _prevState: PostActionState,
+  formData: FormData,
+): Promise<PostActionState> {
+  "use server";
+
+  await getCurrentAdminId();
+
+  const ids = formData
+    .getAll("id")
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value));
+
+  if (ids.length === 0) {
+    return { error: "No hay artículos seleccionados." };
+  }
+
+  const parsedStatus = statusSchema.safeParse(formData.get("status"));
+  if (!parsedStatus.success) {
+    return { error: "Estado inválido." };
+  }
+
+  const status = PostStatus[parsedStatus.data];
+
+  const posts = await prisma.post.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, slug: true, publishedAt: true },
+  });
+
+  if (posts.length === 0) {
+    return { error: "No se encontró ninguno de los artículos seleccionados." };
+  }
+
+  const now = new Date();
+
+  /* Una transacción: o cambian todos o no cambia ninguno. Con un bucle suelto,
+     un fallo a la mitad deja una selección aplicada por partes y sin forma de
+     saber cuál sí y cuál no. */
+  await prisma.$transaction(
+    posts.map((post) =>
+      prisma.post.update({
+        where: { id: post.id },
+        data: {
+          status,
+          ...(status === PostStatus.PUBLISHED && !post.publishedAt
+            ? { publishedAt: now }
+            : {}),
+        },
+      }),
+    ),
+  );
+
+  /* Una revalidación del listado y del blog, más la página propia de cada
+     artículo tocado: sus URLs son distintas, así que esas sí van una por una. */
+  revalidatePost();
+  for (const post of posts) {
+    revalidatePath(`/[lang]/blog/${post.slug}`, "page");
+  }
+
+  return { error: null };
+}
+
 export async function deletePost(
   _prevState: PostActionState,
   formData: FormData,

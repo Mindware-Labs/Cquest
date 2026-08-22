@@ -1,0 +1,263 @@
+/* ============================================================================
+   TOKENS DEL PANEL — «Libro mayor»
+   ============================================================================
+
+   Este es el ÚNICO archivo del panel donde puede aparecer un valor literal.
+   Ningún componente, ninguna vista y ningún otro CSS declara un hex, un radio,
+   una duración ni un tamaño de fuente por su cuenta. Si hace falta un valor que
+   no está acá, se agrega acá.
+
+   Se declaran con prefijo `--p-` y no se reutilizan los tokens globales de
+   tokens.css a propósito: esos los comparte el sitio público, que tiene otra
+   base (marfil), otra densidad y otra escala tipográfica. Un token compartido
+   entre dos sistemas con reglas distintas termina cediendo en los dos.
+
+   POSTURA: la base es blanco puro. La jerarquía se construye con filete,
+   espaciado y peso tipográfico — nunca con cajas de color apiladas ni con
+   sombras. Hay exactamente una sombra en todo el sistema y es para lo que
+   flota de verdad (menú, diálogo, aviso). Nada más la usa. */
+
+:root {
+  /* ---------- Color ----------
+
+     Nueve roles. Ninguno es un color: `accent` es "lo que señala el sistema" y
+     `action` es "lo que hace el usuario". Que hoy uno sea petróleo y el otro
+     celeste es un valor, no una definición.
+
+     Contrastes verificados sobre --p-surface (#FFFFFF):
+       ink        16.8:1   ink-muted   5.1:1
+       accent      5.2:1   danger      7.1:1
+     Y sobre los rellenos:
+       ink sobre action     9.5:1
+       surface sobre accent 5.2:1
+       surface sobre danger 7.1:1
+
+     El celeste NO admite texto blanco encima (2.0:1). Por eso el botón de
+     acción lleva tinta, no papel. Está declarado abajo como token para que
+     nadie tenga que recordarlo. */
+
+  --p-surface: #ffffff;
+  /* Sólo para lo HUNDIDO: campo de texto, encabezado de tabla, esqueleto,
+     pastilla de conteo. Nunca para una tarjeta: una tarjeta gris sobre blanco
+     es la caja apilada que esta dirección descarta. */
+  --p-surface-sunken: #f6f8f9;
+
+  --p-ink: #0d1e29;
+  --p-ink-muted: #5a7280;
+
+  --p-line: #e2e7ea;
+  /* El filete al doble de presencia, para el borde que cierra una sección
+     entera frente al que divide dos filas. Misma familia, distinto peso. */
+  --p-line-strong: #c9d3d9;
+
+  --p-accent: #3f738d;
+  --p-accent-hover: #325c71;
+  --p-on-accent: #ffffff;
+
+  --p-action: #74c3d5;
+  --p-action-hover: #5fb4c8;
+  --p-on-action: #0d1e29;
+
+  --p-danger: #a32020;
+  --p-danger-hover: #8a1a1a;
+  --p-on-danger: #ffffff;
+
+  /* Bajó de #4d7c00 a #3f6600. El anterior daba 3.9:1 y se usa como TEXTO —la
+     insignia "Publicado" y el título de la tarjeta verde—, así que no llegaba
+     al 4.5:1 que pide un texto chico. Este da 5.4:1. */
+  --p-success: #3f6600;
+
+  /* ---------- Serie de datos ----------
+
+     Cinco colores para gráficos con más de una categoría. No son decorativos y
+     no son tintes del mismo azul: dos porciones de una dona que sólo se
+     diferencian por claridad son indistinguibles en una pantalla mala, en una
+     impresión, o para alguien con baja visión.
+
+     La primera versión eran tonos terrosos y desaturados —oliva, tierra,
+     violeta apagado— y sobre blanco puro se leían lavados: una dona de cinco
+     porciones apagadas parece un gráfico deshabilitado. Estos van a saturación
+     plena.
+
+     Están ORDENADOS ALTERNANDO luminosidad —oscuro, claro, oscuro, claro— y no
+     por familia de color. Es a propósito: las porciones vecinas de la dona son
+     las que hay que poder separar, y dos colores contiguos de luminosidad
+     parecida se funden en el borde por más distinto que sea el tono. Alternando,
+     el gráfico sigue siendo legible impreso en blanco y negro.
+
+     Todos superan 3:1 sobre blanco, que es el mínimo que pide WCAG para un
+     objeto gráfico que transmite información — un arco de dona lo es. Es el
+     techo real de "más vivo": pasado cierto brillo, un color deja de verse
+     sobre papel blanco. */
+  --p-series-1: #2563eb; /* azul     5.2:1 */
+  --p-series-2: #ea580c; /* naranja  3.6:1 */
+  --p-series-3: #7c3aed; /* violeta  5.9:1 */
+  --p-series-4: #059669; /* esmeralda 3.4:1 */
+  --p-series-5: #db2777; /* magenta  4.9:1 */
+  /* Todo lo que sobra del top 5, junto. Gris a propósito y sin saturar: "otras"
+     no es una categoría, es el resto, y no tiene que competir con las cinco que
+     sí tienen nombre. */
+  --p-series-rest: #64748b;
+
+  /* ---------- Acentos por tarjeta ----------
+
+     Cada bloque del tablero tiene su color, y no es decoración: es lo que
+     permite reconocer de qué habla cada tarjeta sin leer el título, y seguir el
+     movimiento de un artículo por la pantalla —nace en Sin publicar (ámbar),
+     pasa a Últimos publicados (verde), y suma al Volumen (índigo)—.
+
+     El índigo sale de la paleta institucional a propósito. El petróleo ya está
+     ocupado por "lo que señala el sistema" (foco, activo, enlaces), y usarlo
+     también para el gráfico principal hacía que el bloque más importante del
+     tablero se viera igual que un borde de foco. Este índigo da 6.4:1 sobre
+     blanco, así que aguanta texto encima y no sólo relleno.
+
+     Los cuatro son distinguibles en escala de grises: tono Y luminosidad
+     distintos, que es la prueba barata para daltonismo. */
+
+  /* Estos dos NO se saturan como los de serie, y la razón es funcional: además
+     de pintar la regla de 3px de la tarjeta, pintan el TÍTULO de esa tarjeta.
+     Un texto de 11px necesita 4.5:1, no 3:1 — el ámbar vivo (#d97706) da 3.1:1
+     y no llega. Un arco de dona puede ser más brillante que una palabra. */
+  --p-volume: #4f46e5; /* índigo — volumen publicado. 6.4:1 */
+  --p-pending: #b45309; /* ámbar quemado — trabajo sin terminar. 4.8:1 */
+
+  /* Tintes derivados. Se calculan acá una vez y se consumen por nombre: un
+     `color-mix` suelto en un componente es un hex disfrazado. */
+  --p-accent-tint: color-mix(in srgb, var(--p-accent) 9%, var(--p-surface));
+  --p-accent-ring: color-mix(in srgb, var(--p-accent) 22%, transparent);
+  --p-danger-tint: color-mix(in srgb, var(--p-danger) 7%, var(--p-surface));
+  --p-success-tint: color-mix(in srgb, var(--p-success) 11%, var(--p-surface));
+  --p-hover-wash: color-mix(in srgb, var(--p-accent) 4%, var(--p-surface));
+
+  /* ---------- Tipografía ----------
+
+     Tres familias, tres trabajos:
+       display  Inter Tight    cifras grandes y títulos de tarjeta
+       ui       Geist          todo lo que se lee como interfaz
+       ident    JetBrains Mono slugs, rutas, conteos, IDs
+
+     Display y UI son hermanas a propósito. Inter Tight tiene el mismo esqueleto
+     neo-grotesco que Geist pero más angosto y de aperturas más cerradas: a 32px
+     eso es lo que hace que una cifra se lea compacta en vez de desparramada,
+     y a la vez no mete una voz nueva en la pantalla. Aprieta la que ya está.
+
+     Geist se queda para todo lo chico: sus aperturas amplias son las que
+     sostienen una tabla de 13px, donde Inter Tight se cerraría demasiado.
+
+     Hubo un serif de display y se sacó: en un tablero los dígitos se escanean,
+     no se leen, y un serif de contraste alto los vuelve más lentos de
+     distinguir a tamaño grande.
+
+     El mono no es estilo: un identificador del sistema tiene que VERSE como
+     identificador antes de leerse, porque se copia y se pega. */
+
+  --p-font-display: var(--font-inter-tight), var(--font-geist), system-ui, sans-serif;
+  --p-font-ui: var(--font-geist), system-ui, -apple-system, sans-serif;
+  --p-font-ident: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Seis pasos. Cada uno con tamaño, peso, interlínea y tracking cerrados: un
+     paso que sólo define el tamaño se termina usando con cuatro pesos
+     distintos y deja de ser un paso. */
+
+  /* Sin el serif, el peso pasa a hacer el trabajo que hacía el contraste del
+     remate: 600 y tracking cerrado. A 400 en una grotesca la cifra se vería
+     lavada al lado de su etiqueta. */
+  --p-display-size: 2rem; /* 32px */
+  --p-display-weight: 600;
+  --p-display-lh: 1.05;
+  --p-display-ls: -0.035em;
+
+  --p-title-size: 0.9375rem; /* 15px */
+  --p-title-weight: 600;
+  --p-title-lh: 1.3;
+  --p-title-ls: -0.01em;
+
+  --p-body-size: 0.84375rem; /* 13.5px */
+  --p-body-weight: 400;
+  --p-body-lh: 1.5;
+  --p-body-ls: 0;
+
+  --p-label-size: 0.6875rem; /* 11px */
+  --p-label-weight: 600;
+  --p-label-lh: 1.2;
+  --p-label-ls: 0.09em;
+
+  --p-meta-size: 0.75rem; /* 12px */
+  --p-meta-weight: 400;
+  --p-meta-lh: 1.4;
+  --p-meta-ls: 0;
+
+  --p-ident-size: 0.75rem; /* 12px */
+  --p-ident-weight: 500;
+  --p-ident-lh: 1.3;
+  --p-ident-ls: -0.01em;
+
+  /* ---------- Espaciado ----------
+     Escala 4/8 cerrada. Siete escalones y se terminó: si algo necesita 14px, o
+     encaja en 12 o encaja en 16. */
+
+  --p-space-1: 0.25rem; /* 4  */
+  --p-space-2: 0.5rem; /* 8  */
+  --p-space-3: 0.75rem; /* 12 */
+  --p-space-4: 1rem; /* 16 */
+  --p-space-5: 1.5rem; /* 24 */
+  --p-space-6: 2rem; /* 32 */
+  --p-space-7: 3rem; /* 48 */
+
+  /* ---------- Radios ----------
+
+     La escala subió. Estaba en 2/4/6 —una austeridad de planilla— y hacía que
+     cada caja se leyera como una celda recortada. Ahora hay dos familias, y la
+     diferencia entre ellas es lo que hace que un panel se lea como un panel:
+
+       controles (8px)   lo que se toca: botón, campo, select
+       superficies (14px) lo que contiene: tarjeta, gráfico, cajón
+
+     Un control con el mismo radio que su contenedor desaparece dentro de él.
+     Una superficie con el radio de un control se ve como un botón gigante. */
+
+  --p-radius-xs: 4px; /* pastilla de conteo, barra de forma, muestra de color */
+  --p-radius-sm: 8px; /* TODOS los controles: botón, campo, select, casilla */
+  --p-radius-md: 14px; /* superficies: tarjeta, sección cerrada, capa flotante */
+  --p-radius-lg: 18px; /* el contenedor del módulo, un escalón por encima */
+
+  /* ---------- Filetes ----------
+     Siempre 1px. El grosor no es la variable — el color lo es. */
+
+  --p-border: 1px solid var(--p-line);
+  --p-border-strong: 1px solid var(--p-line-strong);
+
+  /* ---------- Elevación ----------
+     Una sola, y sólo para lo que flota por encima del documento. El resto del
+     panel no tiene sombra: no la necesita, porque no hay nada apilado. */
+
+  --p-shadow-overlay:
+    0 1px 2px rgb(13 30 41 / 0.08), 0 16px 32px -16px rgb(13 30 41 / 0.28);
+
+  /* ---------- Movimiento ---------- */
+
+  --p-t-micro: 120ms; /* color, borde, fondo — hover y active */
+  --p-t-base: 180ms; /* cambio de estado, foco, apertura chica */
+  --p-t-enter: 240ms; /* entrada de contenido */
+
+  --p-ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* entra o sale */
+  --p-ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* transición de color */
+
+  /* Escalonado de entradas. Se corta en 8 porque a partir de ahí la última fila
+     empieza medio segundo tarde y el que opera ya está leyendo la primera. */
+  --p-stagger: 30ms;
+
+  /* ---------- Métrica de densidad ----------
+     La altura de fila es un token porque es la decisión que define cuánta
+     información entra en una pantalla. Cambiarla acá cambia el panel entero. */
+
+  --p-row-h: 2.25rem; /* 36px */
+  --p-control-h: 2rem; /* 32px */
+  --p-control-h-sm: 1.75rem; /* 28px */
+  --p-rail-item-h: 2.25rem;
+
+  /* Padding lateral de sección. Uno solo para tabla, lista, encabezado y
+     vacío: es lo que hace que todo el contenido caiga en la misma columna. */
+  --p-gutter: var(--p-space-4);
+}

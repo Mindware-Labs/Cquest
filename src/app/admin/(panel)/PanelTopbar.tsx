@@ -82,7 +82,7 @@ export default function PanelTopbar({
             return (
               <Fragment key={crumb.href}>
                 {index > 0 && (
-                  <li aria-hidden="true" className="text-[var(--text-tertiary)]">
+                  <li aria-hidden="true" className="text-[var(--p-line-strong)]">
                     /
                   </li>
                 )}
@@ -99,7 +99,7 @@ export default function PanelTopbar({
                   ) : (
                     <Link
                       href={crumb.href}
-                      className="block truncate text-[var(--text-secondary)] transition-colors hover:text-foreground"
+                      className="block truncate text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)]"
                     >
                       {crumb.label}
                     </Link>

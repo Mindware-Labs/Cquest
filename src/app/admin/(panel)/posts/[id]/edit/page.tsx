@@ -5,6 +5,8 @@ import { createTemplateFromBlocks } from "@/lib/templates";
 import { getTemplateChoices } from "@/lib/templateChoices";
 import { blockArraySchema } from "@/lib/blocks";
 import PostEditor from "@/components/admin/PostEditor";
+import { LinkButton } from "@/components/admin/ui/Button";
+import { ErrorState, Ident } from "@/components/admin/ui/Surface";
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,14 +26,17 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
   const parsed = blockArraySchema.safeParse(post.content);
   if (!parsed.success) {
     return (
-      <div className="pt-10">
-        <h1 className="font-heading text-[1.6rem] font-semibold tracking-[-0.02em] text-foreground">
-          Editar artículo
-        </h1>
-        <p className="mt-3 max-w-[42rem] rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[0.88rem] leading-relaxed text-red-700">
-          El contenido de este artículo no coincide con el formato de bloques
-          actual, así que el editor no lo abre para no sobrescribirlo. Detalle:{" "}
-          {parsed.error.issues[0]?.message}
+      <div>
+        <h1 className="sr-only">Editar artículo</h1>
+        <ErrorState
+          title="Este artículo no se puede abrir en el editor"
+          hint="Su contenido no coincide con el formato de bloques actual. El editor no lo abre para no sobrescribirlo: el artículo publicado sigue intacto."
+          action={<LinkButton href="/admin/posts">Volver a los artículos</LinkButton>}
+        />
+        {/* El detalle técnico va en mono y aparte del mensaje: sirve para
+            reportar el caso, no para que lo lea quien sólo quería editar. */}
+        <p className="mt-3 text-center">
+          <Ident chip>{parsed.error.issues[0]?.message}</Ident>
         </p>
       </div>
     );

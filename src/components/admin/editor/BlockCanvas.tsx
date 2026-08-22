@@ -116,9 +116,8 @@ export default function BlockCanvas({
           setDropIndex(0);
         }}
         onDrop={handleDrop}
-        className={`mt-4 rounded-lg border-2 border-dashed py-14 text-center text-[0.88rem] transition-colors ${
-          dropIndex === 0 ? "border-petroleo bg-petroleo/5 text-petroleo" : "border-border text-[var(--text-tertiary)]"
-        }`}
+        data-over={dropIndex === 0 ? "true" : undefined}
+        className="cq-ghost cq-body mt-4 py-12 text-center data-[over=true]:border-[var(--p-accent)] data-[over=true]:bg-[var(--p-accent-tint)] data-[over=true]:text-[var(--p-accent)]"
       >
         Arrastrá un bloque acá, o hacé clic en uno de la paleta.
       </div>
@@ -147,7 +146,7 @@ export default function BlockCanvas({
                 el lienzo mientras se arrastra. */}
             <div
               aria-hidden
-              className={`h-0.5 rounded-full transition-colors ${dropIndex === index ? "bg-petroleo" : "bg-transparent"}`}
+              className={`h-0.5 rounded-full transition-colors ${dropIndex === index ? "bg-[var(--p-accent)]" : "bg-transparent"}`}
             />
 
             <div
@@ -156,8 +155,10 @@ export default function BlockCanvas({
                 event.dataTransfer.setData(MOVE_BLOCK_MIME, block.id);
                 event.dataTransfer.effectAllowed = "move";
               }}
-              className={`my-1.5 cursor-grab rounded-lg border px-4 py-3 transition-colors active:cursor-grabbing ${
-                isSelected ? "border-petroleo bg-petroleo/5" : "border-border bg-white"
+              className={`cq-card my-1.5 cursor-grab active:cursor-grabbing ${
+                isSelected
+                  ? "border-[var(--p-accent)] bg-[var(--p-accent-tint)]"
+                  : "hover:border-[var(--p-line-strong)]"
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -165,16 +166,17 @@ export default function BlockCanvas({
                   type="button"
                   onClick={() => onSelect(block.id)}
                   aria-pressed={isSelected}
-                  className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+                  className="min-w-0 flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
                 >
-                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-petroleo">
-                    {TYPE_LABEL[block.type]}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[0.85rem] text-[var(--text-secondary)]">
+                  <span className="cq-label text-[var(--p-accent)]">{TYPE_LABEL[block.type]}</span>
+                  <span className="cq-body mt-0.5 block truncate text-[var(--p-ink)]">
                     {summarize(block)}
                   </span>
+                  {/* El aviso de accesibilidad faltante va en la propia fila del
+                      bloque y no en un resumen al final: quien puede arreglarlo
+                      es quien está mirando ese bloque, ahora. */}
                   {missingAltText(block) && (
-                    <span className="mt-1 inline-block rounded-full bg-red-50 px-2 py-0.5 text-[0.68rem] font-semibold text-red-700">
+                    <span className="cq-badge mt-1" data-tone="hidden" style={{ color: "var(--p-danger)" }}>
                       Falta texto alternativo
                     </span>
                   )}
@@ -213,6 +215,7 @@ export default function BlockCanvas({
                       onAnnounce(`${TYPE_LABEL[block.type]} eliminado.`);
                     }}
                     className={ICON_BUTTON}
+                    data-tone="danger"
                   >
                     <IconClose size={15} />
                   </button>
@@ -245,7 +248,7 @@ export default function BlockCanvas({
       >
         <div
           aria-hidden
-          className={`h-0.5 rounded-full transition-colors ${dropIndex === blocks.length ? "bg-petroleo" : "bg-transparent"}`}
+          className={`h-0.5 rounded-full transition-colors ${dropIndex === blocks.length ? "bg-[var(--p-accent)]" : "bg-transparent"}`}
         />
       </li>
     </ul>
@@ -269,31 +272,36 @@ function ColumnsEditor({
 }) {
   return (
     <div
-      className={`mt-3 grid gap-3 border-t border-border pt-3 ${
+      className={`mt-3 grid gap-3 border-t border-[var(--p-line)] pt-3 ${
         block.columnCount === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"
       }`}
     >
       {block.columns.map((column, columnIndex) => (
-        <div key={columnIndex} className="rounded-md border border-border bg-[var(--surface-sunken)] p-2.5">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">
-            Columna {columnIndex + 1}
-          </p>
+        <div
+          key={columnIndex}
+          className="rounded-[var(--p-radius-sm)] bg-[var(--p-surface-sunken)] p-2.5"
+        >
+          <p className="cq-label">Columna {columnIndex + 1}</p>
 
           <ul className="mt-2 space-y-1.5">
             {column.map((child: ColumnSimpleBlock, childIndex) => (
               <li
                 key={child.id}
-                className={`flex items-center gap-1 rounded-md border px-2 py-1.5 ${
-                  child.id === selectedId ? "border-petroleo bg-petroleo/5" : "border-border bg-white"
+                className={`flex items-center gap-1 rounded-[var(--p-radius-sm)] border px-2 py-1 ${
+                  child.id === selectedId
+                    ? "border-[var(--p-accent)] bg-[var(--p-accent-tint)]"
+                    : "border-[var(--p-line)] bg-[var(--p-surface)]"
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => onSelect(child.id)}
                   aria-pressed={child.id === selectedId}
-                  className="min-w-0 flex-1 truncate text-left text-[0.76rem] text-[var(--text-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+                  className="cq-meta min-w-0 flex-1 truncate text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
                 >
-                  <span className="font-semibold text-petroleo">{TYPE_LABEL[child.type]}</span>{" "}
+                  <span className="font-semibold text-[var(--p-accent)]">
+                    {TYPE_LABEL[child.type]}
+                  </span>{" "}
                   {summarize(child)}
                 </button>
                 <button
@@ -334,7 +342,9 @@ function ColumnsEditor({
                 key={type}
                 type="button"
                 onClick={() => onAddToColumn(block.id, columnIndex, type)}
-                className="rounded-md border border-border bg-white px-1.5 py-0.5 text-[0.7rem] font-semibold text-[var(--text-secondary)] transition-colors hover:border-petroleo hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+                className="cq-btn"
+                data-variant="ghost"
+                data-size="sm"
               >
                 + {TYPE_LABEL[type]}
               </button>

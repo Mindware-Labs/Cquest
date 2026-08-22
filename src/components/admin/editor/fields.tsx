@@ -5,8 +5,11 @@
    en todo el editor — que es justo lo que hace cumplir PERS-2 y PERS-3: el
    admin siempre elige de un conjunto, nunca escribe un color o una fuente. */
 
-export const INPUT_CLASS =
-  "mt-1.5 w-full rounded-md border border-border bg-white px-3 py-2 text-[0.9rem] text-foreground outline-none transition-colors focus:border-petroleo focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-petroleo";
+/* Un alias sobre la clase del sistema, no una copia de sus estilos. Antes acá
+   se redeclaraban borde, relleno, tamaño y foco a mano, y era la razón por la
+   que un campo del editor se veía distinto de uno del formulario de
+   categorías. El vocabulario se declara una sola vez, en admin.css. */
+export const INPUT_CLASS = "cq-input mt-1.5";
 
 export function TextField({
   label,
@@ -23,7 +26,7 @@ export function TextField({
 }) {
   return (
     <label className="block">
-      <span className="text-[0.78rem] font-semibold text-foreground">{label}</span>
+      <span className="cq-label">{label}</span>
       <input
         type="text"
         value={value}
@@ -49,12 +52,12 @@ export function TextAreaField({
 }) {
   return (
     <label className="block">
-      <span className="text-[0.78rem] font-semibold text-foreground">{label}</span>
+      <span className="cq-label">{label}</span>
       <textarea
         value={value}
         rows={rows}
         onChange={(event) => onChange(event.target.value)}
-        className={`${INPUT_CLASS} resize-y leading-relaxed`}
+        className="cq-textarea mt-1.5"
       />
     </label>
   );
@@ -76,7 +79,7 @@ export function OptionGroup<T extends string>({
 }) {
   return (
     <div>
-      <span className="text-[0.78rem] font-semibold text-foreground">{label}</span>
+      <span className="cq-label">{label}</span>
       <div role="group" aria-label={label} className="mt-1.5 flex flex-wrap gap-1.5">
         {options.map((option) => {
           const isActive = option.value === value;
@@ -86,11 +89,13 @@ export function OptionGroup<T extends string>({
               type="button"
               aria-pressed={isActive}
               onClick={() => onChange(option.value)}
-              className={`rounded-md border px-2.5 py-1.5 text-[0.78rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo ${
-                isActive
-                  ? "border-petroleo bg-petroleo text-white"
-                  : "border-border bg-white text-[var(--text-secondary)] hover:border-petroleo hover:text-foreground"
-              }`}
+              /* La opción elegida usa `outline` y no `solid`: el relleno del
+                 sistema está reservado para la acción principal de la pantalla,
+                 y un grupo de seis opciones con una rellena competiría con el
+                 botón Guardar. El borde de acento y el peso alcanzan. */
+              className="cq-btn"
+              data-variant={isActive ? "outline" : "ghost"}
+              data-size="sm"
             >
               {option.label}
             </button>

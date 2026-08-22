@@ -27,10 +27,18 @@ const SHAPE: Record<string, Shape> = {
 
 const FALLBACK: Shape = { widths: [100], layout: "stack", tone: "line" };
 
-export function TemplateShape({ types }: { types: readonly string[] }) {
+export function TemplateShape({
+  types,
+  className,
+}: {
+  types: readonly string[];
+  className?: string;
+}) {
   if (types.length === 0) {
     return (
-      <div className="flex h-[4.75rem] items-center justify-center rounded-[6px] bg-[var(--surface-sunken)] text-[0.74rem] text-[var(--text-tertiary)]">
+      <div
+        className={`cq-meta flex h-[4.75rem] items-center justify-center rounded-[var(--p-radius-md)] bg-[var(--p-surface-sunken)] ${className ?? ""}`}
+      >
         Sin bloques
       </div>
     );
@@ -39,14 +47,17 @@ export function TemplateShape({ types }: { types: readonly string[] }) {
   return (
     <div
       aria-hidden="true"
-      className="flex h-[4.75rem] flex-col gap-[4px] overflow-hidden rounded-[6px] bg-[var(--surface-sunken)] px-2.5 py-2"
+      className={`flex h-[4.75rem] flex-col gap-[4px] overflow-hidden rounded-[var(--p-radius-md)] bg-[var(--p-surface-sunken)] px-2.5 py-2 ${className ?? ""}`}
     >
       {types.slice(0, 6).map((type, index) => {
         const shape = SHAPE[type] ?? FALLBACK;
+        /* El bloque con peso propio —un título, una imagen, un CTA— va en
+           acento; el que es sólo texto corrido va en filete. Es la misma
+           distinción que hace el ojo al hojear el artículo publicado. */
         const bar =
           shape.tone === "solid"
-            ? "h-[7px] rounded-[1px] bg-petroleo/60"
-            : "h-[3px] rounded-[1px] bg-[var(--brand-gris)]";
+            ? "h-[7px] rounded-[1px] bg-[var(--p-accent)]"
+            : "h-[3px] rounded-[1px] bg-[var(--p-line-strong)]";
 
         return (
           <div
