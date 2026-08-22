@@ -81,6 +81,10 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       description: SITE_DESCRIPTION[lang],
     },
     alternates: localeAlternates(lang, ""),
+    /* URL estática en /public en vez de la ruta generada por la convención
+       app/icon.png (que agrega hash + query de deploy en cada build): Google
+       recomienda mantener la URL del favicon estable entre despliegues. */
+    icons: { icon: "/icon.png", apple: "/icon.png" },
     /* Vacío hasta tener una propiedad de Search Console real: un token
        inventado no verifica nada, y el `undefined` simplemente omite la
        etiqueta en vez de emitir una vacía. */
