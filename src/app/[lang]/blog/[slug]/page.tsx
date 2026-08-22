@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import BlockRenderer from "@/components/blog/BlockRenderer";
+import PostMotion from "@/components/blog/PostMotion";
 import { formatPostDate } from "@/components/blog/date";
 import { resolveLang } from "@/i18n/resolveLangParam";
 import { LocalizedLink } from "@/i18n/LocalizedLink";
@@ -13,6 +14,18 @@ import { blogPostPageGraph } from "@/lib/schema";
 import { PostStatus } from "@/generated/prisma/client";
 
 type Params = Promise<{ lang: string; slug: string }>;
+
+const BACK_LABEL: Record<Locale, string> = { es: "Blog", en: "Blog" };
+
+const BREADCRUMB_LABEL: Record<Locale, string> = { es: "Ruta", en: "Breadcrumb" };
+
+/* Función y no plantilla suelta: en inglés el nombre de la categoría va al final
+   y en español al medio. Concatenar cadenas sueltas daría "Más de" + nombre en
+   los dos idiomas y uno de los dos quedaría mal escrito. */
+const MORE_LABEL: Record<Locale, (category: string) => string> = {
+  es: (category) => `Ver más artículos de ${category}`,
+  en: (category) => `See more ${category} articles`,
+};
 
 type PublicPost = NonNullable<Awaited<ReturnType<typeof getPostBySlug>>>;
 
@@ -87,40 +100,80 @@ export default async function BlogPostPage({ params }: { params: Params }) {
         )}
       />
 
+      <PostMotion>
       <article className="pb-28 pt-32 sm:pt-36">
-        <header className="mx-auto w-full max-w-[44rem] px-5 sm:px-8">
-          {/* Salida del artículo hacia el listado, filtrado por su categoría:
-              quien terminó de leer algo de BPO probablemente quiera más de BPO,
-              no el índice completo. */}
-          <LocalizedLink
-            href={`/blog?categoria=${post.category.slug}`}
-            className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-petroleo transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
+        <header className="mx-auto w-full max-w-[46rem] px-5 sm:px-8">
+          {/* Ruta en vez de un botón "atrás": una flecha de retroceso repite lo
+              que ya hace el navegador y no dice nada de dónde está uno. El
+              breadcrumb ubica el artículo y da las dos salidas reales — el
+              índice completo y el listado filtrado por su categoría. */}
+          <nav data-post-line aria-label={BREADCRUMB_LABEL[lang]}>
+            <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.82rem] font-medium text-[var(--text-tertiary)]">
+              <li>
+                <LocalizedLink
+                  href="/blog"
+                  className="transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+                >
+                  {BACK_LABEL[lang]}
+                </LocalizedLink>
+              </li>
+              <li aria-hidden="true" className="text-border">
+                /
+              </li>
+              <li>
+                <LocalizedLink
+                  href={`/blog?categoria=${post.category.slug}`}
+                  className="transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+                >
+                  {post.category.name}
+                </LocalizedLink>
+              </li>
+            </ol>
+          </nav>
+
+          {/* El límite en `ch` y no en `rem`: lo que hay que acotar es la
+              cantidad de caracteres por línea, y eso no cambia con el tamaño de
+              fuente como sí lo haría una medida fija. */}
+          <h1
+            data-post-title
+            className="mt-6 max-w-[20ch] text-balance font-heading text-[clamp(2.1rem,5vw,3.4rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-foreground"
           >
-            {post.category.name}
-          </LocalizedLink>
-          <h1 className="mt-3 text-pretty font-heading text-[clamp(2rem,4.2vw,2.9rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-foreground">
             {post.title}
           </h1>
-          <p className="mt-5 text-pretty text-[1.15rem] leading-[1.7] text-[var(--text-secondary)]">
+          <p
+            data-post-line
+            className="mt-6 max-w-[56ch] text-pretty text-[1.15rem] leading-[1.7] text-[var(--text-secondary)]"
+          >
             {post.excerpt}
           </p>
-          <time
-            dateTime={post.publishedAt!.toISOString()}
-            className="mt-5 block text-[0.85rem] text-[var(--text-tertiary)]"
+
+          {/* Autor y fecha en una línea sobre una regla fina: la firma cierra la
+              cabecera y separa el preámbulo del cuerpo sin meter otra caja. */}
+          <div
+            data-post-line
+            className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-5 text-[0.85rem] text-[var(--text-tertiary)]"
           >
-            {formatPostDate(post.publishedAt!, lang)}
-          </time>
+            <span className="font-medium text-[var(--text-secondary)]">{post.author.name}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={post.publishedAt!.toISOString()}>
+              {formatPostDate(post.publishedAt!, lang)}
+            </time>
+          </div>
         </header>
 
         {/* Portada a ancho completo (BP-6), recortada a una proporción fija: es
             la única imagen del artículo donde el encuadre lo decide el diseño y
             no la foto. */}
         <div className="mx-auto mt-10 w-full max-w-[76rem] px-5 sm:px-8">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-[var(--surface-sunken)]">
+          <div
+            data-post-cover
+            className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-[var(--surface-sunken)]"
+          >
             {/* `priority`: es la imagen más grande sobre el pliegue y casi
                 siempre el LCP de la página. Sin esto entra en la cola de carga
                 diferida y arrastra la métrica que el requisito de "<3s" mide. */}
             <Image
+              data-post-cover-media
               src={post.coverImageUrl}
               alt={post.coverImageAlt}
               fill
@@ -134,10 +187,39 @@ export default async function BlogPostPage({ params }: { params: Params }) {
         {/* Columna de lectura: ~44rem es la medida cómoda para texto largo
             (RNF-3). Los bloques a ancho completo salen de acá con márgenes
             negativos propios. */}
-        <div className="mx-auto mt-14 w-full max-w-[44rem] px-5 sm:px-8">
+        <div data-post-body className="mx-auto mt-14 w-full max-w-[44rem] px-5 sm:px-8">
           <BlockRenderer blocks={blocks.data} />
         </div>
+
+        {/* Final del artículo: una salida, no un muro. Quien terminó de leer
+            tiene que poder seguir en algo relacionado sin volver con el botón
+            del navegador. */}
+        <footer className="mx-auto mt-20 w-full max-w-[46rem] px-5 sm:px-8">
+          <div className="border-t border-border pt-8">
+            <LocalizedLink
+              href={`/blog?categoria=${post.category.slug}`}
+              className="group inline-flex items-center gap-2 font-heading text-[1.05rem] font-semibold text-foreground transition-opacity duration-200 hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            >
+              {MORE_LABEL[lang](post.category.name)}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="transition-transform duration-300 ease-[var(--ease-out)] group-hover:translate-x-1"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </LocalizedLink>
+          </div>
+        </footer>
       </article>
+      </PostMotion>
     </>
   );
 }

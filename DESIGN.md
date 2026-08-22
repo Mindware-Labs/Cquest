@@ -220,3 +220,19 @@ Los controles comerciales, campos y chips son casi cuadrados. Los paneles flotan
 - **Don't** redondear cada bloque o convertir listados editoriales en mosaicos de tarjetas genéricas.
 - **Don't** usar sombras decorativas permanentes donde un borde o cambio tonal comunica la misma jerarquía.
 - **Don't** recurrir a grises fríos genéricos, colores sin fuente o composiciones dominadas por fotografía de stock.
+
+---
+
+## Excepción documentada: el Blog
+
+El **índice del blog** (`/[lang]/blog`) se aparta del sistema institucional por decisión explícita del cliente, tomando como referencia el blog de Notion. No es deriva: es una excepción acotada a esta sección, y no autoriza las mismas licencias en el resto del sitio.
+
+Qué se aparta, y hasta dónde:
+
+- **Hoja blanca sin acentos de color.** No hay campos de tinta ni celeste ni petróleo en la interfaz. El único color de la página lo ponen las portadas de los artículos. El celeste sigue siendo el acento del resto del sitio.
+- **Radios de 12px** en portadas y miniaturas, contra los 2–4px de `rounded.control` / `rounded.panel`. Aplica solo a las imágenes del blog.
+- **Grilla de tres columnas** con imagen sobre texto. El sistema desaconseja los mosaicos de tarjetas para listados editoriales; acá se acepta porque la portada de cada artículo es contenido real, no un contenedor decorativo — no hay borde, sombra ni fondo alrededor del texto.
+- **Contenedor de 70rem** en vez del compartido de 84rem: con tres columnas, 84rem deja cada portada tan ancha que el título queda flotando bajo una imagen desproporcionada.
+- **Grises neutros propios** (`--text-secondary` / `--text-tertiary` redefinidos en `.cq-blog-surface`). Los grises del sistema salen del azul institucional y ese tinte ensucia una hoja sin color.
+
+Lo que **sí** se conserva: Josefin Sans como única voz tipográfica, la escala y los pesos del sistema, la navegación y el footer del sitio, las zonas táctiles y el foco visible.

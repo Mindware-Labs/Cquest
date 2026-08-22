@@ -11,7 +11,6 @@ export default async function AdminCategoriesPage() {
     <div>
       <PageHeader
         title="Categorías"
-        description="Cada artículo pertenece a una categoría. Una categoría con artículos asociados no se puede eliminar."
       />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">

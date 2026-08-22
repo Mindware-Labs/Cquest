@@ -84,7 +84,6 @@ export default async function AdminPostsPage({
     <div>
       <PageHeader
         title="Artículos"
-        description="Todos los artículos, en cualquier estado. Solo los publicados con fecha alcanzada aparecen en el blog público."
         actions={
           <Link href="/admin/posts/new" className="cq-btn" data-variant="primary">
             <IconPlus size={16} />
@@ -186,26 +185,52 @@ export default async function AdminPostsPage({
             }
           />
         ) : (
-          <ul>
-            {visible.map((post) => (
-              <PostRow
-                key={post.id}
-                post={{
-                  id: post.id,
-                  title: post.title,
-                  slug: post.slug,
-                  coverImageUrl: post.coverImageUrl,
-                  coverImageAlt: post.coverImageAlt,
-                  status: post.status,
-                  locale: post.locale,
-                  categoryName: post.category.name,
-                  updatedAt: EDITED_AT.format(post.updatedAt),
-                }}
-                setStatusAction={setPostStatus}
-                deleteAction={deletePost}
-              />
-            ))}
-          </ul>
+          <div className="cq-table-scroll">
+            <table className="cq-table">
+              <caption className="sr-only">
+                Artículos {active === "todos" ? "en todos los estados" : `— ${activeStatus?.label}`}
+                {term ? `, filtrados por «${term}»` : ""}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Artículo</th>
+                  <th scope="col" className="hidden md:table-cell">
+                    Categoría
+                  </th>
+                  <th scope="col" className="hidden md:table-cell">
+                    Idioma
+                  </th>
+                  <th scope="col">Estado</th>
+                  <th scope="col" className="hidden lg:table-cell">
+                    Editado
+                  </th>
+                  <th scope="col" className="text-right">
+                    <span className="sr-only">Acciones</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((post) => (
+                  <PostRow
+                    key={post.id}
+                    post={{
+                      id: post.id,
+                      title: post.title,
+                      slug: post.slug,
+                      coverImageUrl: post.coverImageUrl,
+                      coverImageAlt: post.coverImageAlt,
+                      status: post.status,
+                      locale: post.locale,
+                      categoryName: post.category.name,
+                      updatedAt: EDITED_AT.format(post.updatedAt),
+                    }}
+                    setStatusAction={setPostStatus}
+                    deleteAction={deletePost}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Panel>
     </div>

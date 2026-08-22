@@ -83,12 +83,10 @@ export function SkeletonPanelHead() {
    línea de la página no se mueva ni un píxel cuando entra el contenido. */
 export function SkeletonPageHeader({ withAction = true }: { withAction?: boolean }) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 pb-7">
-      <div className="min-w-0 flex-1">
-        <SkeletonLine width="9rem" height="1.75rem" className="rounded-[8px]" />
-        <SkeletonLine width="min(52ch, 100%)" height="0.92rem" className="mt-3" />
-        <SkeletonLine width="min(34ch, 90%)" height="0.92rem" className="mt-2" />
-      </div>
+    /* Espeja el encabezado real: sin título ni bajada visibles, solo el botón de
+       acción. Un esqueleto que dibuja piezas que no van a existir hace saltar el
+       contenido cuando llega. */
+    <header className="flex flex-wrap items-start justify-end gap-x-6 gap-y-4 pb-6">
       {withAction && <SkeletonLine width="9.5rem" height="2.3rem" className="rounded-[8px]" />}
     </header>
   );

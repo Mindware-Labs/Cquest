@@ -15,19 +15,20 @@ export function PageHeader({
   description?: string;
   actions?: ReactNode;
 }) {
+  /* El título no se dibuja: la sección ya la dice el menú lateral, y repetirla
+     en grande gasta el primer tercio de la pantalla en algo que el que opera ya
+     sabe. Igual va en el DOM como <h1> para lectores de pantalla y para que el
+     documento tenga un encabezado de nivel uno — quitarlo del árbol sería
+     quitarle a alguien la orientación que el resto recibe por el menú. */
   return (
-    <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 pb-7">
-      <div>
-        {/* Sin ojal ni etiqueta encima del título: el título se sostiene solo. */}
-        <h1 className="font-heading text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.02em] text-foreground">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-2 max-w-[52ch] text-[0.92rem] leading-relaxed text-[var(--text-secondary)]">
-            {description}
-          </p>
-        )}
-      </div>
+    <header
+      className={clsx(
+        "flex flex-wrap items-start justify-end gap-x-6 gap-y-4",
+        actions ? "pb-6" : undefined,
+      )}
+    >
+      <h1 className="sr-only">{title}</h1>
+      {description && <p className="sr-only">{description}</p>}
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </header>
   );

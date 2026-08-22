@@ -1,0 +1,96 @@
+/* Blog — hoja blanca. La sección se aparta a propósito del sistema
+   institucional del resto del sitio: acá no hay campos de tinta, ni acentos de
+   color, ni linework. La única jerarquía es el tamaño del texto, el peso y el
+   aire entre bloques, y la imagen de portada de cada artículo es lo único que
+   pone color en la página.
+
+   Lo que vive acá es lo que Tailwind no puede expresar en clases: el riel de
+   categorías y la entrada escalonada de la grilla. */
+
+/* ---------- Superficie ---------- */
+
+/* Blanco puro y no el crema del sitio: el blog es la sección donde se lee texto
+   largo, y el papel blanco es el que da el contraste más alto contra la tinta.
+   Sale del token que ya existe, no de un #fff suelto. */
+.cq-blog-surface {
+  background: var(--surface-raised);
+
+  /* Sobre blanco, el gris de las cajas de imagen del sistema se lee amarillento.
+     Redefinir el token dentro de la sección lo corrige en todos los componentes
+     del blog a la vez, sin tocar el valor global ni el resto del sitio. */
+  --surface-sunken: color-mix(in srgb, var(--border) 45%, #ffffff);
+
+  /* Gris neutro, propio de la sección. Los grises del sistema salen del azul
+     institucional; en una hoja sin color ese tinte se nota y ensucia el blanco.
+     Se redefinen acá y solo acá. */
+  --text-secondary: #3d4348;
+  --text-tertiary: #71787d;
+}
+
+/* ---------- Riel de categorías ---------- */
+
+/* En móvil las categorías no se apilan en varias líneas: ruedan. Una fila que
+   se parte en tres renglones empuja el contenido hacia abajo y deja al artículo
+   destacado fuera de la primera pantalla, que es justo lo que hay que ver. */
+.cq-blog-rail {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* El desvanecido a la derecha es la señal de que hay más categorías. Sin él,
+     una barra oculta convierte el scroll en un secreto. */
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
+.cq-blog-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Desde tablet entran todas: se desactivan riel y desvanecido para que el foco
+   del teclado no quede recortado por la máscara. */
+@media (min-width: 768px) {
+  .cq-blog-rail {
+    overflow-x: visible;
+    mask-image: none;
+    flex-wrap: wrap;
+  }
+}
+
+/* La barra de filtros queda fija al tope al bajar: en un índice largo el filtro
+   deja de existir apenas se hace scroll, y volver arriba para cambiar de
+   categoría es el tipo de fricción que no aporta nada. El desplazamiento cubre
+   la altura del navbar para que no se monte encima. */
+.cq-blog-filters {
+  position: sticky;
+  /* 5.5rem = NAV_HEIGHT_PX (88px) en navigation/data.ts. */
+  top: 5.5rem;
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, #ffffff 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+/* ---------- Entrada ---------- */
+
+/* El movimiento del blog lo maneja GSAP (BlogIndexMotion / PostMotion): las
+   entradas se disparan al entrar en pantalla y el estado inicial lo fija el
+   JavaScript, nunca el CSS. Es deliberado — si el script no llega, la página
+   se lee completa en vez de quedarse en opacidad cero para siempre.
+
+   Lo único que vive acá es lo que la máscara de líneas necesita del layout.
+   `SplitText` con `mask: "lines"` envuelve cada renglón en un contenedor con
+   overflow oculto; el renglón sube desde abajo y aparece por el filo, como un
+   tipo saliendo del rodillo. Sin el `overflow: clip` explícito, algunos
+   navegadores dejan asomar el descendente de la línea anterior. */
+.cq-line {
+  display: block;
+  will-change: transform;
+}
+
+/* Las descendentes (g, j, p, y) y los acentos altos de los títulos en español
+   se comen el filo de la máscara si la caja es exactamente la altura de línea.
+   El padding se compensa con el margen negativo: la línea respira dentro de su
+   ventana sin que el bloque cambie de alto. */
+.cq-line > * {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}

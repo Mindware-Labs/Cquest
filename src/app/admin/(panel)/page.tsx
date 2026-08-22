@@ -56,7 +56,6 @@ export default async function AdminHomePage() {
     <div>
       <PageHeader
         title="Inicio"
-        description="Lo que está sin publicar, primero. Después, cómo quedó repartido el blog."
         actions={
           <Link href="/admin/posts/new" className="cq-btn" data-variant="primary">
             <IconPlus size={16} />

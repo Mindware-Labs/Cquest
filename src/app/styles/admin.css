@@ -793,6 +793,87 @@ a.cq-stat:focus-visible {
   background: color-mix(in srgb, var(--surface-sunken) 55%, var(--surface-raised));
 }
 
+/* ---------- Tabla de datos ----------
+   Una tabla de verdad (<table>), no una lista disfrazada: el lector de pantalla
+   anuncia "columna Estado" en cada celda y el ojo compara en vertical, que es
+   justamente lo que una lista de tarjetas no deja hacer. */
+.cq-table-scroll {
+  overflow-x: auto;
+  /* El borde del panel ya redondea; el scroll no debe recortarlo en cuadrado. */
+  border-radius: 0 0 var(--panel-radius-panel) var(--panel-radius-panel);
+}
+
+.cq-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cq-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.cq-table thead th:first-child {
+  padding-left: 1.25rem;
+}
+
+.cq-table thead th:last-child {
+  padding-right: 1.25rem;
+}
+
+.cq-table tbody td {
+  padding: 0.7rem 0.75rem;
+  vertical-align: middle;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.cq-table tbody td:first-child {
+  padding-left: 1.25rem;
+}
+
+.cq-table tbody td:last-child {
+  padding-right: 1.25rem;
+}
+
+/* La última fila no lleva línea: el borde del panel ya cierra la tabla y dos
+   líneas juntas se leen como un error de dibujo. */
+.cq-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Las acciones aparecen al pasar el mouse, pero NUNCA se esconden del teclado
+   ni del táctil: sin puntero fino se muestran siempre. */
+@media (hover: hover) and (pointer: fine) {
+  .cq-table .cq-row-actions {
+    opacity: 0;
+    transition: opacity var(--panel-speed) var(--ease-out);
+  }
+  .cq-table tr:hover .cq-row-actions,
+  .cq-table tr:focus-within .cq-row-actions {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-table .cq-row-actions {
+    transition: none;
+  }
+}
+
 /* Barra de proporción — dato real (reparto por categoría), no adorno. */
 .cq-meter {
   height: 0.3rem;

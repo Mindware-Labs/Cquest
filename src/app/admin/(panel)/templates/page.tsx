@@ -20,7 +20,6 @@ export default async function AdminTemplatesPage() {
     <div>
       <PageHeader
         title="Plantillas"
-        description="Una plantilla guarda una combinación de bloques como punto de partida. Las guardadas por el equipo están disponibles para todos."
         actions={
           <Link href="/admin/posts/new" className="cq-btn" data-variant="ghost">
             <IconPlus size={16} />

@@ -19,10 +19,23 @@ export default function CategoryFilter({
   /* Con una sola categoría el filtro no filtra nada: se omite. */
   if (categories.length < 2) return null;
 
-  const options = [{ slug: null, name: ALL_LABEL[lang] }, ...categories.map((c) => ({ slug: c.slug, name: c.name }))];
+  const options = [
+    { slug: null, name: ALL_LABEL[lang] },
+    ...categories.map((c) => ({ slug: c.slug, name: c.name })),
+  ];
 
   return (
-    <nav aria-label={NAV_LABEL[lang]} className="mt-8 flex flex-wrap gap-2">
+    /* Texto plano y no pastillas: en una hoja sin color, una fila de pastillas
+       rellenas sería el elemento más pesado de la página y ganaría por encima
+       de los títulos, que es lo que en un índice tiene que ganar. Lo activo se
+       marca con peso y con negro pleno; lo inactivo, en gris. */
+    <nav
+      aria-label={NAV_LABEL[lang]}
+      /* El padding derecho extra deja la última categoría fuera del desvanecido:
+         sin él, con pocas categorías que entran todas, la máscara igual apagaba
+         la última y parecía un recorte y no una señal de scroll. */
+      className="cq-blog-rail -mx-5 flex gap-7 pl-5 pr-12 sm:-mx-8 sm:pl-8 sm:pr-14 md:mx-0 md:px-0"
+    >
       {options.map((option) => {
         const isActive = option.slug === activeSlug;
         return (
@@ -30,13 +43,22 @@ export default function CategoryFilter({
             key={option.slug ?? "all"}
             href={option.slug ? `/blog?categoria=${option.slug}` : "/blog"}
             aria-current={isActive ? "page" : undefined}
-            className={`rounded-full border px-4 py-1.5 text-[0.82rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo ${
+            className={`relative shrink-0 whitespace-nowrap py-4 text-[0.92rem] transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground ${
               isActive
-                ? "border-petroleo bg-petroleo text-white"
-                : "border-border text-[var(--text-secondary)] hover:border-petroleo hover:text-foreground"
+                ? "font-semibold text-foreground"
+                : "font-medium text-[var(--text-tertiary)] hover:text-foreground"
             }`}
           >
             {option.name}
+            {/* La línea la dibuja un hijo y no un border-bottom en el enlace:
+                así el ancho del subrayado no depende del padding y la fila
+                completa mantiene la misma altura esté activa o no. */}
+            <span
+              aria-hidden="true"
+              className={`absolute inset-x-0 -bottom-px h-[2px] bg-foreground transition-opacity duration-200 ${
+                isActive ? "opacity-100" : "opacity-0"
+              }`}
+            />
           </LocalizedLink>
         );
       })}
