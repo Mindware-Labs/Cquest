@@ -1,12 +1,19 @@
 import Link from "next/link";
-import { blockArraySchema } from "@/lib/blocks";
+import { blockArraySchema, type Block } from "@/lib/blocks";
 import { STARTER_TEMPLATES, deleteTemplate, getTemplates } from "@/lib/templates";
 import { IconPlus, IconSearch } from "@/components/admin/ui/icons";
 import { LinkButton } from "@/components/admin/ui/Button";
 import { SearchField } from "@/components/admin/ui/Field";
 import { ModulePage } from "@/components/admin/ui/ModulePage";
 import { EmptyState } from "@/components/admin/ui/Surface";
+import { TemplateThumb } from "@/components/admin/ui/TemplateThumb";
 import TemplateCard, { type TemplateItem } from "./TemplateCard";
+
+/* Los datos de la tarjeta viajan separados de los bloques que dibujan su
+   miniatura. `TemplateItem` cruza al cliente —la tarjeta lleva estado— y no
+   tiene sentido serializarle el árbol de bloques entero para algo que se
+   renderiza acá y baja como HTML. */
+type Entry = { item: TemplateItem; blocks: Block[] };
 
 const CREATED_AT = new Intl.DateTimeFormat("es-DO", {
   day: "2-digit",
@@ -103,32 +110,38 @@ export default async function AdminTemplatesPage({
      `choiceKey` se arma con el mismo formato que `lib/templateChoices.ts`,
      que es lo que el editor lee del parámetro `?plantilla=`. Si los dos lados se
      separan, el enlace "Usar" abre el editor en blanco sin decir por qué. */
-  const system: TemplateItem[] = STARTER_TEMPLATES.map((template) => ({
-    key: `system-${template.id}`,
-    choiceKey: `starter:${template.id}`,
-    name: template.name.es,
-    types: template.blocks.map((block) => block.type),
-    blockCount: template.blocks.length,
-    origin: "system",
+  const system: Entry[] = STARTER_TEMPLATES.map((template) => ({
+    blocks: template.blocks,
+    item: {
+      key: `system-${template.id}`,
+      choiceKey: `starter:${template.id}`,
+      name: template.name.es,
+      types: template.blocks.map((block) => block.type),
+      blockCount: template.blocks.length,
+      origin: "system",
+    },
   }));
 
-  const team: TemplateItem[] = saved.map((template) => {
+  const team: Entry[] = saved.map((template) => {
     /* El contador de bloques sale del contenido validado: una plantilla vieja
        que ya no encaja se muestra con 0 en vez de romper la pantalla entera. Y
        sin `choiceKey`, porque `getTemplateChoices` la descarta: la tarjeta dice
        que no se puede aplicar en vez de ofrecer un enlace que no hace nada. */
     const parsed = blockArraySchema.safeParse(template.blocks);
     return {
-      key: `team-${template.id}`,
-      choiceKey: parsed.success ? `saved:${template.id}` : null,
-      id: template.id,
-      name: template.name,
-      types: parsed.success ? parsed.data.map((block) => block.type) : [],
-      blockCount: parsed.success ? parsed.data.length : 0,
-      isBroken: !parsed.success,
-      origin: "team",
-      authorName: template.author.name,
-      createdAt: CREATED_AT.format(template.createdAt),
+      blocks: parsed.success ? parsed.data : [],
+      item: {
+        key: `team-${template.id}`,
+        choiceKey: parsed.success ? `saved:${template.id}` : null,
+        id: template.id,
+        name: template.name,
+        types: parsed.success ? parsed.data.map((block) => block.type) : [],
+        blockCount: parsed.success ? parsed.data.length : 0,
+        isBroken: !parsed.success,
+        origin: "team",
+        authorName: template.author.name,
+        createdAt: CREATED_AT.format(template.createdAt),
+      },
     };
   });
 
@@ -138,17 +151,17 @@ export default async function AdminTemplatesPage({
 
   const needle = normalize(term);
   const matched = needle
-    ? pool.filter((template) => {
+    ? pool.filter(({ item }) => {
         const haystack = [
-          template.name,
-          template.authorName ?? "",
-          ...template.types.map((type) => BLOCK_LABEL[type] ?? type),
+          item.name,
+          item.authorName ?? "",
+          ...item.types.map((type) => BLOCK_LABEL[type] ?? type),
         ].join(" ");
         return normalize(haystack).includes(needle);
       })
     : pool;
 
-  const visible = [...matched].sort((a, b) => {
+  const visible = [...matched].sort(({ item: a }, { item: b }) => {
     if (sort === "bloques") return b.blockCount - a.blockCount;
     if (sort === "recientes") {
       /* Las del sistema no tienen fecha: viven en código desde siempre. En vez
@@ -284,12 +297,18 @@ export default async function AdminTemplatesPage({
              ancha. Los cortes son por ANCHO DE TARJETA y no por dispositivo —a
              240px la miniatura deja de leerse como página. */
           <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {visible.map((template, index) => (
+            {visible.map(({ item, blocks }, index) => (
               <TemplateCard
-                key={template.key}
+                key={item.key}
                 index={index}
-                template={template}
-                deleteAction={template.origin === "team" ? deleteTemplate : undefined}
+                template={item}
+                /* La miniatura se renderiza ACÁ, en el servidor, y baja armada.
+                   `BlockRenderer` es un server component; si la tarjeta —que es
+                   de cliente— lo importara, se llevaría los once renderers de
+                   bloque al bundle del navegador para dibujar algo que nunca
+                   cambia después del primer pintado. */
+                thumb={<TemplateThumb blocks={blocks} />}
+                deleteAction={item.origin === "team" ? deleteTemplate : undefined}
               />
             ))}
           </ul>

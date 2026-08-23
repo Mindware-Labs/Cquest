@@ -219,6 +219,7 @@ a.cq-card:hover,
 --------------------------------------------------------------------------- */
 
 .cq-tcard {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -246,33 +247,52 @@ a.cq-card:hover,
 /* La bandeja de la lámina. Hundida a propósito: es lo que convierte el papel
    blanco de la miniatura en un objeto apoyado, y no en un hueco del mismo
    color que la tarjeta. */
+/* La zona de la previa. Blanca y al ras del borde de la tarjeta.
+
+   Antes era una bandeja hundida con la hoja dentro, con su propio filete, su
+   radio y su sombra. Sobre el papel se veía lo que era: una caja adentro de otra
+   caja. Y el tinte hundido del panel (#f6f8f9) está a un pelo del blanco, así
+   que la metáfora de "hoja apoyada sobre bandeja" no llegaba a leerse — sólo
+   quedaba el anidado.
+
+   Ahora la previa ES el borde superior de la tarjeta. Sin marco, sin bandeja y
+   sin sombra: el contenido entra directamente, se desvanece abajo y una sola
+   regla lo separa del pie. Una caja menos. */
 .cq-thumb {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  height: 8.5rem;
-  padding: var(--p-space-3) var(--p-space-4) 0;
-  background: var(--p-surface-sunken);
+  height: 11rem;
+  overflow: hidden;
+  background: var(--p-surface);
   border-bottom: var(--p-border);
 }
 
-/* La página. Ancho de hoja y no de caja: los márgenes laterales son parte de
-   lo que la hace leer como documento. Se recorta abajo porque una página
-   sigue — no termina en el borde de una tarjeta. */
+/* La hoja. Ancho fijo —el de la composición reducida— y centrada en la bandeja:
+   es una página apoyada, no un panel que se estira. Se recorta abajo porque una
+   página sigue; no termina en el borde de una tarjeta.
+
+   El desvanecido del pie es lo que dice "hay más" sin dibujar una barra de
+   scroll falsa ni cortar una línea de texto por la mitad. */
 .cq-thumb-page {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  max-width: 11rem;
+  position: relative;
   height: 100%;
   overflow: hidden;
-  padding: var(--p-space-2) var(--p-space-2) 0;
-  border: var(--p-border);
-  border-bottom: 0;
-  border-radius: var(--p-radius-xs) var(--p-radius-xs) 0 0;
-  background: var(--p-surface);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--p-ink) 8%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
+}
+
+/* La composición real, reducida. `transform-origin: top left` con el ancho de
+   lectura del blog: así los saltos de línea son los del artículo publicado.
+
+   `transform` y no `zoom`: zoom afecta el layout y arrastraría las media
+   queries internas de los bloques a decisiones tomadas para un ancho de 704px
+   que en pantalla ocupa 267. El transform escala el PINTADO y deja la
+   composición intacta, que es justamente lo que una miniatura tiene que hacer. */
+.cq-thumb-scale {
+  transform-origin: top left;
+  padding: 14px 18px 0;
+  pointer-events: none;
 }
 
 .cq-thumb-blank {
@@ -290,8 +310,6 @@ a.cq-card:hover,
   padding: var(--p-space-3);
 }
 
-/* Las acciones se apoyan sobre una regla y contra el fondo hundido: es un pie
-   de tarjeta, no dos botones sueltos flotando bajo el texto. */
 .cq-tcard-foot {
   display: flex;
   align-items: center;
@@ -299,6 +317,68 @@ a.cq-card:hover,
   gap: var(--p-space-2);
   margin-top: auto;
   padding-top: var(--p-space-3);
+}
+
+/* «Usar» estira su área sobre TODA la tarjeta.
+
+   Antes era un botón relleno de acento, y en una grilla de cuatro columnas eso
+   son cuatro pastillas teal idénticas en fila. El acento marca lo primario; si
+   se repite en cada tarjeta deja de marcar nada, y el ojo pierde el único color
+   fuerte que tenía para orientarse en la pantalla.
+
+   Además el destino de la tarjeta ES usar la plantilla: la miniatura, el nombre
+   y el conteo describen todos lo mismo. Con el enlace estirado el objetivo pasa
+   de una pastilla de 70px a la tarjeta entera —trescientos y pico de ancho— y el
+   rótulo se queda como afordancia, no como el único lugar donde se puede tocar.
+
+   Es la misma técnica que ya usa `.cq-card`: un pseudo-elemento sobre la caja. */
+.cq-tcard-use {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  font-size: var(--p-meta-size);
+  font-weight: 600;
+  color: var(--p-accent);
+  transition: color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-tcard-use::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.cq-tcard:hover .cq-tcard-use {
+  color: var(--p-accent-hover);
+}
+
+/* La flecha avanza 2px al apuntar. Es el único movimiento de la tarjeta además
+   de la elevación, y dice hacia dónde lleva. */
+.cq-tcard-use svg {
+  transition: transform var(--p-t-base) var(--p-ease-out);
+}
+
+.cq-tcard:hover .cq-tcard-use svg {
+  transform: translateX(2px);
+}
+
+/* Borrar vive POR ENCIMA del enlace estirado. Sin esto el pseudo-elemento le
+   tapa el clic y el botón deja de existir aunque se siga viendo. */
+.cq-tcard-foot > *:not(.cq-tcard-use) {
+  position: relative;
+  z-index: var(--p-z-raised);
+}
+
+/* El foco lo pinta la TARJETA. El enlace estirado tiene área cero propia, así
+   que su anillo se dibujaba como una raya invisible al costado del rótulo. */
+.cq-tcard:has(.cq-tcard-use:focus-visible) {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+.cq-tcard-use:focus-visible {
+  outline: none;
 }
 
 /* Numeración de filas. El contador es CSS y no un índice de JavaScript porque
@@ -1668,8 +1748,16 @@ a.cq-stat:hover .cq-stat-value {
 .cq-drawer {
   position: fixed;
   inset-block: 0;
-  max-width: min(26rem, calc(100vw - var(--p-space-6)));
+  /* El ancho sale del tamaño pedido; el tope lo pone la pantalla. La resta
+     deja ver una franja del fondo, que es lo que dice "esto es una capa sobre
+     la lista" y no "cambiaste de pantalla".
+
+     En pantalla angosta esa franja se achica de 32px a 16px: en un teléfono de
+     360px, 32px de fondo son 32px menos de formulario, y el mensaje de "hay
+     algo detrás" ya lo da el velo. */
+  --cq-drawer-w: 26rem;
   width: 100%;
+  max-width: min(var(--cq-drawer-w), calc(100vw - var(--p-space-4)));
   max-height: 100dvh;
   height: 100dvh;
   margin: 0;
@@ -1678,6 +1766,135 @@ a.cq-stat:hover .cq-stat-value {
   background: var(--p-surface);
   color: var(--p-ink);
   box-shadow: var(--p-shadow-overlay);
+}
+
+/* Un campo y doce metadatos no quieren el mismo ancho. `md` es el valor que el
+   cajón tenía antes de que existiera la escala, así que nada se mueve solo. */
+.cq-drawer[data-size="sm"] {
+  --cq-drawer-w: 21rem;
+}
+
+.cq-drawer[data-size="md"] {
+  --cq-drawer-w: 26rem;
+}
+
+.cq-drawer[data-size="lg"] {
+  --cq-drawer-w: 34rem;
+}
+
+@media (min-width: 640px) {
+  .cq-drawer {
+    max-width: min(var(--cq-drawer-w), calc(100vw - var(--p-space-6)));
+  }
+}
+
+/* Las tres zonas comparten la sangría lateral. Estaba escrita como utilidades
+   sueltas en el componente —`px-4 py-3` en el canto, `px-4 py-4` en el cuerpo—,
+   que da los mismos píxeles por casualidad pero deja el cajón fuera de la escala
+   de espaciado: cambiar `--p-space-4` movía todo el panel menos esto. */
+.cq-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--p-space-3);
+  padding: var(--p-space-4);
+  border-bottom: var(--p-border);
+  /* El cajón mide `100dvh` desde el borde de arriba, así que en un teléfono con
+     muesca el título queda debajo de la barra de estado. En navegadores sin
+     inset `env()` vale 0 y el `max()` deja el valor de siempre. */
+  padding-top: max(var(--p-space-4), env(safe-area-inset-top));
+}
+
+/* El título del cajón pesa más que un `.cq-title` de fila. Es el nombre de la
+   superficie entera —lo primero que se lee al abrirla— y competía de igual a
+   igual con el título de cada campo del formulario de abajo. */
+.cq-drawer-title {
+  font-family: var(--p-font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--p-ink);
+}
+
+.cq-drawer-body {
+  flex: 1;
+  padding: var(--p-space-4);
+}
+
+/* Sin pie, el último elemento del cuerpo es lo último del cajón, así que la
+   franja del gesto de iOS le toca a él. `:last-child` acierta exactamente ese
+   caso: cuando hay pie, el pie ya se encarga y sumar el inset acá dejaría el
+   doble de aire en el medio. */
+.cq-drawer-body:last-child {
+  padding-bottom: max(var(--p-space-4), env(safe-area-inset-bottom));
+}
+
+.cq-drawer-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--p-space-2);
+  padding: var(--p-space-3) var(--p-space-4);
+  border-top: var(--p-border);
+  /* La franja del gesto de inicio en iOS se come el pie: sin esto, "Crear
+     categoría" queda debajo de la barra del sistema y el dedo abre el
+     multitarea en vez de enviar el formulario. */
+  padding-bottom: max(var(--p-space-3), env(safe-area-inset-bottom));
+}
+
+/* Con el dedo, dos botones chicos alineados a la derecha son dos destinos de
+   ~90px pegados en la esquina más incómoda de alcanzar. Acá se reparten el
+   ancho: el mismo orden, el mismo peso visual, el doble de superficie. */
+@media (pointer: coarse) {
+  .cq-drawer-foot > * {
+    flex: 1 1 0;
+  }
+}
+
+.cq-drawer-section + .cq-drawer-section.cq-drawer-section-divided {
+  margin-top: var(--p-space-4);
+  padding-top: var(--p-space-4);
+  border-top: var(--p-border);
+}
+
+/* El canto de sección en versalitas, no en título: nombra el grupo, no compite
+   con los valores que hay adentro. */
+.cq-drawer-section-title {
+  display: block;
+  color: var(--p-ink-muted);
+}
+
+.cq-drawer-fields {
+  display: grid;
+  gap: var(--p-space-3);
+}
+
+/* Etiqueta arriba y valor abajo, bien juntos: son UNA cosa. El espacio grande
+   va ENTRE pares, no dentro de uno — al revés, la lista se lee como una sola
+   columna de textos sueltos. */
+.cq-drawer-field > dd {
+  margin-top: 2px;
+}
+
+/* En línea para valores cortos. La etiqueta no se encoge y el valor se lleva lo
+   que sobra, así una columna de fechas o estados queda alineada. */
+.cq-drawer-field-inline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-space-3);
+}
+
+.cq-drawer-field-inline > dt {
+  flex-shrink: 0;
+}
+
+.cq-drawer-field-inline > dd {
+  margin-top: 0;
+  min-width: 0;
+  text-align: end;
 }
 
 .cq-drawer[data-side="right"] {

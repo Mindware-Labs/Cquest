@@ -371,6 +371,87 @@ export async function updatePost(
   }
 }
 
+/* La FICHA del artículo: todo lo que lo identifica y lo hace encontrable, sin
+   una sola línea de su contenido.
+
+   Se separa de `postFieldsSchema` a propósito y no se reusa entero. Ese pide
+   `content`, `coverImageUrl` y `coverImageAlt` como obligatorios, que es
+   correcto para el editor —un artículo sin portada no se publica— pero haría
+   imposible corregir una tilde del título desde la tabla sin reenviar el árbol
+   de bloques y la portada en el mismo formulario. Y reenviar el contenido para
+   editar el título es exactamente cómo se pierde el trabajo de otro: dos
+   pestañas abiertas, la que guarda segunda pisa los bloques de la primera.
+
+   Acá se escriben SÓLO los campos que el cajón muestra. Los bloques, la portada
+   y el estado no se tocan ni se leen. */
+const postMetaSchema = postFieldsSchema.pick({
+  title: true,
+  excerpt: true,
+  categoryId: true,
+  locale: true,
+  seoTitle: true,
+  seoDescription: true,
+});
+
+/** Edición rápida de la ficha desde la tabla, sin abrir el editor de bloques. */
+export async function updatePostMeta(
+  _prevState: PostActionState,
+  formData: FormData,
+): Promise<PostActionState> {
+  "use server";
+
+  await getCurrentAdminId();
+
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id)) {
+    return { error: "Artículo inválido." };
+  }
+
+  const parsed = postMetaSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const slug = resolveSlug(formData, parsed.data.title);
+  if (!slug) {
+    return { error: "Ese título no genera un slug válido — usa al menos una letra o número." };
+  }
+
+  /* El slug ANTERIOR hay que invalidarlo además del nuevo: si se renombra la
+     URL de un artículo publicado, la página vieja se queda cacheada y servida
+     como si siguiera existiendo. */
+  const existing = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
+  if (!existing) {
+    return { error: "Artículo inválido." };
+  }
+
+  try {
+    await prisma.post.update({
+      where: { id },
+      data: {
+        title: parsed.data.title,
+        excerpt: parsed.data.excerpt,
+        categoryId: parsed.data.categoryId,
+        locale: parsed.data.locale as PostLocale,
+        seoTitle: emptyToUndefined(parsed.data.seoTitle ?? ""),
+        seoDescription: emptyToUndefined(parsed.data.seoDescription ?? ""),
+        slug,
+      },
+    });
+    if (existing.slug !== slug) revalidatePost(existing.slug);
+    revalidatePost(slug);
+    return { error: null, id };
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return { error: `Ya existe un artículo con el slug "${slug}".` };
+    }
+    if (isForeignKeyConstraintError(error)) {
+      return { error: "La categoría seleccionada no existe." };
+    }
+    throw error;
+  }
+}
+
 const statusSchema = z.enum(["DRAFT", "PUBLISHED", "HIDDEN"]);
 
 /** Cambia el estado (publicar/ocultar/volver a borrador) sin borrar el registro.

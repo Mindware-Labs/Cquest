@@ -42,7 +42,7 @@ export default function AdminTemplatesLoading() {
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {Array.from({ length: 8 }, (_, index) => (
           <div key={index} className="cq-tcard">
-            <SkeletonLine width="100%" height="8.5rem" className="rounded-none" />
+            <SkeletonLine width="100%" height="10rem" className="rounded-none" />
             <div className="cq-tcard-body">
               <SkeletonLine width={NAME_WIDTHS[index % NAME_WIDTHS.length]} height="0.95rem" />
               <SkeletonLine width="70%" height="0.75rem" className="mt-1.5" />

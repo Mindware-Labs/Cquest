@@ -6,6 +6,7 @@ import { Button } from "@/components/admin/ui/Button";
 import { useToast } from "@/components/admin/ui/Toast";
 import { IconCheck, IconEye, IconEyeOff, IconSpinner } from "@/components/admin/ui/icons";
 import PostRow, { type PostRowData } from "./PostRow";
+import PostMetaDrawer from "./PostMetaDrawer";
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
@@ -23,18 +24,34 @@ const CAPTION = "Artículos del panel";
 
 export default function PostsTable({
   posts,
+  categories,
   caption,
   setStatusAction,
   deleteAction,
   bulkStatusAction,
+  updateMetaAction,
 }: {
   posts: PostRowData[];
+  categories: ReadonlyArray<{ id: number; name: string }>;
   caption?: string;
   setStatusAction: Action;
   deleteAction: Action;
   bulkStatusAction: Action;
+  updateMetaAction: Action;
 }) {
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
+  /* Qué fila tiene el cajón abierto. Vive acá y no en la fila por dos razones:
+     un <dialog> dentro de un <tbody> es marcado inválido, y así hay UNA
+     instancia del formulario para toda la tabla en vez de veinticinco.
+
+     Se guarda el ARTÍCULO entero y no su id, con la apertura en un estado
+     aparte. Con el id había que buscarlo en `posts` en cada render y —lo que
+     importa— al cerrar, el id volvía a null y el cajón se desmontaba en el
+     mismo fotograma: la animación de salida no llegaba a correr NUNCA. Con el
+     objeto, el contenido sobrevive al cierre y lo único que se apaga es
+     `editorOpen`. */
+  const [editing, setEditing] = useState<PostRowData | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { notify } = useToast();
 
@@ -195,11 +212,43 @@ export default function PostsTable({
                 onSelectedChange={(on) => toggle(post.id, on)}
                 setStatusAction={setStatusAction}
                 deleteAction={deleteAction}
+                onEdit={() => {
+                  setEditing(post);
+                  setEditorOpen(true);
+                }}
               />
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Fuera de la tabla, y con `key` por artículo.
+
+          El `key` no es prolijidad: los campos del formulario son NO
+          CONTROLADOS —usan `defaultValue`— y un input ya montado ignora los
+          cambios posteriores de su valor por defecto. Sin el `key`, abrir la
+          fila B después de la A mostraría los datos de A adentro del cajón. El
+          `key` fuerza un formulario nuevo por artículo. */}
+      {editing && (
+        <PostMetaDrawer
+          key={editing.id}
+          open={editorOpen}
+          onClose={() => setEditorOpen(false)}
+          categories={categories}
+          action={updateMetaAction}
+          post={{
+            id: editing.id,
+            title: editing.title,
+            slug: editing.slug,
+            excerpt: editing.excerpt,
+            categoryId: editing.categoryId,
+            locale: editing.locale,
+            seoTitle: editing.seoTitle,
+            seoDescription: editing.seoDescription,
+            status: editing.status,
+          }}
+        />
+      )}
     </>
   );
 }

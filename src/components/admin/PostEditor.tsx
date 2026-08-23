@@ -743,7 +743,11 @@ export default function PostEditor({
         </div>
         <div className="mx-auto max-w-[44rem] pb-8">
           {blocks.length > 0 ? (
-            <BlockRenderer blocks={blocks} />
+            /* `preview`: los bloques de imagen sin subir dibujan su marco en
+               vez de desaparecer. Sin esto, agregar una imagen y venir a ver
+               cómo queda la página no mostraba NADA —ni el hueco—, así que no
+               había forma de juzgar el ritmo antes de subir el archivo. */
+            <BlockRenderer blocks={blocks} preview />
           ) : (
             <div className="cq-ghost px-4 py-10 text-center">
               <p className="cq-body text-[var(--p-ink)]">Todavía no hay nada que previsualizar</p>

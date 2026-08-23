@@ -1,8 +1,8 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Block } from "@/lib/blocks";
 import { Ident } from "@/components/admin/ui/Surface";
-import { TemplateShape } from "@/components/admin/ui/TemplateShape";
 
 export type TemplateChoice = {
   key: string;
@@ -12,6 +12,18 @@ export type TemplateChoice = {
      distinguen para que el admin sepa cuál puede borrar. */
   origin: "starter" | "saved";
   authorName?: string;
+  /* La miniatura, YA RENDERIZADA desde el servidor.
+
+     Es el mismo render real que usa la pantalla de Plantillas —`TemplateThumb`,
+     que monta `BlockRenderer` a escala— y no la silueta de barras que había
+     acá. Dos motivos para unificar: la silueta se leía como esqueleto de carga
+     (mismo material que `.cq-skeleton`), y era un segundo mapa de siluetas que
+     había que ampliar a mano con cada tipo de bloque nuevo.
+
+     Llega como `ReactNode` y no se construye acá porque `BlockRenderer` es un
+     server component y este selector es de cliente: importarlo arrastraría los
+     once renderers de bloque al bundle del navegador. */
+  thumb?: ReactNode;
 };
 
 /* Los ids de una plantilla son fijos (vienen de un archivo o de la base). Si se
@@ -60,24 +72,31 @@ export default function TemplatePicker({
             key={template.key}
             type="button"
             onClick={() => onPick(withFreshIds(template.blocks))}
-            className="cq-card cq-enter text-left"
+            className="cq-tcard cq-enter text-left"
             style={{ "--cq-i": Math.min(index, 8) } as React.CSSProperties}
           >
-            <TemplateShape types={template.blocks.map((block) => block.type)} />
-            <p className="cq-title mt-3">{template.name}</p>
-            <p className="mt-1 flex flex-wrap items-center gap-1.5">
-              <Ident>
-                {template.blocks.length} {template.blocks.length === 1 ? "bloque" : "bloques"}
-              </Ident>
-              {template.origin === "saved" && template.authorName && (
-                <>
-                  <span aria-hidden="true" className="cq-meta">
-                    ·
-                  </span>
-                  <span className="cq-meta">{template.authorName}</span>
-                </>
-              )}
-            </p>
+            {template.thumb}
+            {/* El cuerpo lleva su propio relleno: la lámina va al ras del borde
+                de la tarjeta —es una hoja apoyada, no una imagen con marco— así
+                que el respiro tiene que vivir acá abajo y no en la tarjeta. */}
+            <div className="cq-tcard-body">
+              <p className="cq-title truncate" title={template.name}>
+                {template.name}
+              </p>
+              <p className="mt-1 flex flex-wrap items-center gap-1.5">
+                <Ident>
+                  {template.blocks.length} {template.blocks.length === 1 ? "bloque" : "bloques"}
+                </Ident>
+                <span aria-hidden="true" className="cq-meta">
+                  ·
+                </span>
+                <span className="cq-meta">
+                  {template.origin === "saved" && template.authorName
+                    ? template.authorName
+                    : "Del sistema"}
+                </span>
+              </p>
+            </div>
           </button>
         ))}
       </div>

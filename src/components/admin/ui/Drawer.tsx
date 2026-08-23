@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import clsx from "clsx";
 import { IconClose } from "./icons";
 import { IconButton } from "./Button";
 
@@ -47,6 +48,12 @@ export function Drawer({
   children,
   footer,
   side = "right",
+  /* El ancho sale de una escala corta, no de un número por sitio de uso. Un
+     cajón con un campo y uno con doce metadatos no quieren el mismo ancho, y
+     hasta ahora los dos medían 26rem porque era el único que había. `md` es
+     exactamente el valor anterior: los consumidores que no pidan nada se
+     dibujan igual que antes. */
+  size = "md",
 }: {
   open: boolean;
   onClose: () => void;
@@ -55,10 +62,14 @@ export function Drawer({
   children: ReactNode;
   footer?: ReactNode;
   side?: "right" | "left";
+  size?: "sm" | "md" | "lg";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
+  /* Marca que el cierre lo pidió ESTE componente, para no reenviar el aviso
+     cuando el <dialog> emita su propio evento `close` a continuación. */
+  const closing = useRef(false);
 
   /* El cierre se demora lo que dura la animación de salida: sin eso el <dialog>
      desaparecería en el fotograma cero y la entrada se vería animada pero la
@@ -76,11 +87,17 @@ export function Drawer({
 
     if (open && !dialog.open) {
       delete dialog.dataset.leaving;
+      closing.current = false;
       dialog.showModal();
       return;
     }
 
     if (!open && dialog.open) {
+      /* Todo cierre que sale de acá ya viene de que el consumidor puso `open`
+         en false: el `close` nativo que dispare `dialog.close()` más abajo no
+         tiene que volver a avisarle. */
+      closing.current = true;
+
       /* Con movimiento reducido no hay animación que esperar: cerrar y listo.
          Esperar 240ms sin que se mueva nada sólo se siente como lentitud. */
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -108,12 +125,25 @@ export function Drawer({
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       data-side={side}
+      data-size={size}
       className="cq-drawer"
       onCancel={(event) => {
         event.preventDefault();
         onClose();
       }}
-      onClose={onClose}
+      /* `onClose` se dispara TAMBIÉN por el `dialog.close()` que ejecuta el
+         efecto de arriba al terminar la animación de salida, así que avisar sin
+         condición llamaba a `onClose` dos veces por cada cierre. Con
+         `setOpen(false)` en el consumidor no se notaba —es idempotente—, pero
+         cualquier cierre que además limpie un formulario, mande una métrica o
+         muestre un aviso lo haría dos veces. */
+      onClose={() => {
+        if (closing.current) {
+          closing.current = false;
+          return;
+        }
+        onClose();
+      }}
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
@@ -121,10 +151,10 @@ export function Drawer({
       {/* El encabezado va pegado arriba y el pie abajo: el cuerpo puede tener un
           formulario largo, y en ese caso el botón de guardar no puede quedar
           fuera de vista al final del scroll. */}
-      <div className="flex h-full flex-col">
-        <header className="flex items-start justify-between gap-3 border-b border-[var(--p-line)] px-4 py-3">
+      <div className="flex h-full min-h-0 flex-col">
+        <header className="cq-drawer-head">
           <div className="min-w-0">
-            <h2 id={titleId} className="cq-title">
+            <h2 id={titleId} className="cq-drawer-title">
               {title}
             </h2>
             {description && (
@@ -142,14 +172,82 @@ export function Drawer({
           />
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
+        {/* `.cq-scroll` y no un `overflow-y-auto` suelto: trae la barra fina en
+            color de sistema y —lo que importa— `overscroll-behavior: contain`,
+            así llegar al final del formulario deja de arrastrar la página de
+            atrás, que es lo que pasaba con la rueda del mouse. */}
+        <div className="cq-drawer-body cq-scroll">{children}</div>
 
-        {footer && (
-          <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--p-line)] px-4 py-3">
-            {footer}
-          </footer>
-        )}
+        {footer && <footer className="cq-drawer-foot">{footer}</footer>}
       </div>
     </dialog>
   );
+}
+
+/* ---------------------------------------------------------------------------
+   Sección del cajón
+   Agrupa campos o datos relacionados con un canto de texto, no con una caja.
+
+   Es a propósito que NO dibuje tarjeta: un cajón de 26rem con tres tarjetas
+   adentro es una caja dentro de una caja dentro de una caja, y a ese ancho el
+   filete se come el espacio que necesita el contenido. La agrupación la hacen
+   la etiqueta, el espacio y una regla fina — que es todo lo que hace falta para
+   que se lea como bloque.
+--------------------------------------------------------------------------- */
+
+export function DrawerSection({
+  title,
+  description,
+  children,
+  /* La primera sección no lleva regla arriba: el encabezado del cajón ya cerró
+     con la suya, y dos líneas separadas por 16px se leen como un error. */
+  divided = true,
+}: {
+  title?: string;
+  description?: string;
+  children: ReactNode;
+  divided?: boolean;
+}) {
+  return (
+    <section className={clsx("cq-drawer-section", divided && "cq-drawer-section-divided")}>
+      {title && <h3 className="cq-label cq-drawer-section-title">{title}</h3>}
+      {description && <p className="cq-meta mt-1">{description}</p>}
+      <div className={clsx(title || description ? "mt-3" : undefined)}>{children}</div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Dato del cajón
+   Una etiqueta y su valor. La etiqueta pesa menos que el valor: es el nombre
+   del campo, no la información. Quien recorre un cajón buscando un dato lee los
+   valores y usa las etiquetas sólo para ubicarse.
+--------------------------------------------------------------------------- */
+
+export function DrawerField({
+  label,
+  children,
+  /* En una sola columna cuando el valor es largo —un título, una URL— y en dos
+     cuando es corto. La decisión la toma quien conoce el dato, no el
+     componente adivinando por el largo del string. */
+  inline = false,
+}: {
+  label: string;
+  children: ReactNode;
+  inline?: boolean;
+}) {
+  return (
+    <div className={clsx("cq-drawer-field", inline && "cq-drawer-field-inline")}>
+      <dt className="cq-meta">{label}</dt>
+      <dd className="cq-body text-[var(--p-ink)]">{children}</dd>
+    </div>
+  );
+}
+
+/* La lista que envuelve a los `DrawerField`. Existe para que el par
+   etiqueta/valor sea `<dt>`/`<dd>` de verdad y no dos `<span>` que se ven
+   parecido: un lector de pantalla anuncia "Estado, Activo" como un par y no
+   como dos textos sueltos que casualmente están cerca. */
+export function DrawerFields({ children }: { children: ReactNode }) {
+  return <dl className="cq-drawer-fields">{children}</dl>;
 }

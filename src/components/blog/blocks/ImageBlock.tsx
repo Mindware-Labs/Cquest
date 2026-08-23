@@ -1,13 +1,37 @@
 import Image from "next/image";
 import { ACCENT_RING, blockSpacing, type BlockOf } from "@/lib/blocks-style";
+import MediaSlot from "./MediaSlot";
 
-export default function ImageBlock({ block }: { block: BlockOf<"image"> }) {
-  /* Un bloque de imagen sin subir todavía (borrador a medio escribir) no
-     renderiza un <img> roto: simplemente no existe en el artículo público. */
-  if (!block.src) return null;
-
+export default function ImageBlock({
+  block,
+  preview = false,
+}: {
+  block: BlockOf<"image">;
+  /* Sólo lo activan las vistas previas del admin. El artículo público nunca lo
+     pasa, así que su comportamiento no cambia en una coma. */
+  preview?: boolean;
+}) {
   const accent = block.accent ? ACCENT_RING[block.accent] : "";
   const isFull = block.display === "full";
+
+  /* Un bloque de imagen sin subir todavía (borrador a medio escribir) no
+     renderiza un <img> roto: simplemente no existe en el artículo público.
+
+     En una previa sí se dibuja, como marco vacío. Y no es un parche para la
+     miniatura de plantillas: la previa del editor tenía el mismo agujero. Quien
+     está escribiendo agrega el bloque de imagen, va a mirar cómo queda la página
+     y no ve NADA — ni el hueco—, así que no puede juzgar el ritmo de lo que está
+     armando hasta después de subir el archivo. */
+  if (!block.src) {
+    if (!preview) return null;
+    return (
+      <figure
+        className={`${isFull ? "-mx-5 sm:-mx-10 lg:-mx-24" : ""} ${blockSpacing(block.spacingTop, block.spacingBottom)}`}
+      >
+        <MediaSlot />
+      </figure>
+    );
+  }
 
   /* La columna de lectura mide 44rem (704px); a ancho completo llega a 76rem.
      Decírselo al optimizador evita que sirva una imagen de 2000px para un

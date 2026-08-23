@@ -7,9 +7,10 @@ import {
   isAdminPostsSort,
   setPostStatus,
   setPostsStatus,
+  updatePostMeta,
   type AdminPostsSort,
 } from "@/lib/posts";
-import { getCategoryBySlug } from "@/lib/categories";
+import { getCategories, getCategoryBySlug } from "@/lib/categories";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -116,6 +117,11 @@ export default async function AdminPostsPage({
   const activeCategory = categorySlug
     ? ((await getCategoryBySlug(categorySlug))?.name ?? categorySlug)
     : undefined;
+
+  /* Todas las categorías, para el desplegable del cajón de ficha. Es la lista
+     completa y no la de los artículos visibles: recategorizar un artículo a algo
+     que hoy no está en pantalla es justamente el caso de uso. */
+  const allCategories = await getCategories();
 
   const countFor = (filter: (typeof FILTERS)[number]) =>
     "status" in filter ? counts[filter.status] : counts.todos;
@@ -365,10 +371,19 @@ export default async function AdminPostsPage({
               locale: post.locale,
               categoryName: post.category.name,
               updatedAt: EDITED_AT.format(post.updatedAt),
+              /* La ficha que edita el cajón. Sale de la MISMA consulta que ya
+                 alimenta la tabla —son columnas del propio artículo—, así que
+                 abrir el cajón no cuesta un viaje al servidor. */
+              categoryId: post.categoryId,
+              excerpt: post.excerpt,
+              seoTitle: post.seoTitle ?? "",
+              seoDescription: post.seoDescription ?? "",
             }))}
+            categories={allCategories}
             setStatusAction={setPostStatus}
             deleteAction={deletePost}
             bulkStatusAction={setPostsStatus}
+            updateMetaAction={updatePostMeta}
           />
         )}
 

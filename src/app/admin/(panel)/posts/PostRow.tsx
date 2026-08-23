@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition, type CSSProperties } from "react";
 import type { PostActionState } from "@/lib/posts";
-import { Button, IconLinkButton } from "@/components/admin/ui/Button";
+import { Button, IconButton, IconLinkButton } from "@/components/admin/ui/Button";
 import { DeleteAction } from "@/components/admin/ui/DeleteAction";
 import {
   IconCheck,
@@ -29,12 +29,26 @@ export type PostRowData = {
   locale: string;
   categoryName: string;
   updatedAt: string;
+  /* La ficha que edita el cajón. Viaja con la fila y no se pide aparte al
+     abrirlo: son campos que la consulta de la tabla ya trae, así que buscarlos
+     de nuevo sería un viaje al servidor para datos que están en memoria. */
+  categoryId: number;
+  excerpt: string;
+  seoTitle: string;
+  seoDescription: string;
 };
 
 export default function PostRow({
   post,
   setStatusAction,
   deleteAction,
+  /* Abrir el cajón de ficha. La fila avisa; el cajón lo monta la TABLA.
+
+     Un <dialog> es marcado inválido dentro de un <tbody>, así que no puede
+     vivir acá aunque el estado de "qué fila se está editando" parezca de la
+     fila. Y de paso hay UNA instancia del formulario para toda la tabla en vez
+     de una por fila. */
+  onEdit,
   index = 0,
   selected = false,
   onSelectedChange,
@@ -42,6 +56,7 @@ export default function PostRow({
   post: PostRowData;
   setStatusAction: Action;
   deleteAction: Action;
+  onEdit?: () => void;
   index?: number;
   selected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
@@ -189,11 +204,18 @@ export default function PostRow({
               />
             )}
 
-            <IconLinkButton
-              href={`/admin/posts/${post.id}/edit`}
-              label={`Editar «${post.title}»`}
+            {/* El lápiz abre el cajón de ficha en vez de navegar al editor.
+
+                El noventa por ciento de las ediciones de una redacción son una
+                tilde del título, un extracto que quedó largo o una categoría
+                mal puesta, y todas ellas obligaban a cargar el editor de
+                bloques entero y volver. El editor sigue estando a un clic —
+                desde adentro del cajón— para lo que de verdad lo necesita. */}
+            <IconButton
+              label={`Editar la ficha de «${post.title}»`}
               size="sm"
               icon={<IconPencil size={14} />}
+              onClick={onEdit}
             />
 
             <Button
@@ -243,6 +265,7 @@ export default function PostRow({
           </td>
         </tr>
       )}
+
     </>
   );
 }

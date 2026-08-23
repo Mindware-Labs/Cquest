@@ -15,14 +15,17 @@ const COLUMN_COUNT = {
    5 bloques simples que declara columnSimpleBlockSchema, y este switch es lo
    que hace que esa restricción sea visible en el código y no solo en Zod.
    De paso evita el import circular con BlockRenderer. */
-function ColumnBlock({ block }: { block: ColumnSimpleBlock }) {
+function ColumnBlock({ block, preview }: { block: ColumnSimpleBlock; preview: boolean }) {
   switch (block.type) {
     case "heading":
       return <HeadingBlock block={block} />;
     case "paragraph":
       return <ParagraphBlock block={block} />;
+    /* El único de los cinco que cambia en previa. La bandera baja igual por el
+       switch entero para que agregar un bloque con medios a las columnas no se
+       olvide de pasarla. */
     case "image":
-      return <ImageBlock block={block} />;
+      return <ImageBlock block={block} preview={preview} />;
     case "list":
       return <ListBlock block={block} />;
     case "cta":
@@ -30,7 +33,13 @@ function ColumnBlock({ block }: { block: ColumnSimpleBlock }) {
   }
 }
 
-export default function ColumnsBlock({ block }: { block: BlockOf<"columns"> }) {
+export default function ColumnsBlock({
+  block,
+  preview = false,
+}: {
+  block: BlockOf<"columns">;
+  preview?: boolean;
+}) {
   return (
     <div
       className={`grid grid-cols-1 gap-8 ${COLUMN_COUNT[block.columnCount]} ${blockSpacing(block.spacingTop, block.spacingBottom)}`}
@@ -38,7 +47,7 @@ export default function ColumnsBlock({ block }: { block: BlockOf<"columns"> }) {
       {block.columns.map((column, columnIndex) => (
         <div key={columnIndex}>
           {column.map((child) => (
-            <ColumnBlock key={child.id} block={child} />
+            <ColumnBlock key={child.id} block={child} preview={preview} />
           ))}
         </div>
       ))}

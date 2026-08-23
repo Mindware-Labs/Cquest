@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
+import Link from "next/link";
 import type { TemplateActionState } from "@/lib/templates";
 import { DeleteAction } from "@/components/admin/ui/DeleteAction";
-import { LinkButton } from "@/components/admin/ui/Button";
 import { Alert } from "@/components/admin/ui/Surface";
-import { TemplateThumb } from "@/components/admin/ui/TemplateThumb";
 import { IconArrowRight } from "@/components/admin/ui/icons";
 
 /* La tarjeta de plantilla — una sola, para las del sistema y las del equipo.
@@ -47,10 +46,19 @@ const BLOCK_LABEL: Record<string, string> = {
 
 export default function TemplateCard({
   template,
+  thumb,
   deleteAction,
   index = 0,
 }: {
   template: TemplateItem;
+  /* La miniatura llega ARMADA desde el servidor, no se construye acá.
+
+     `BlockRenderer` es un server component y esta tarjeta es de cliente —lleva
+     el estado optimista del borrado—, así que no puede importarlo: hacerlo lo
+     arrastraría entero al bundle del navegador junto con los once renderers de
+     bloque. Pasarlo como `ReactNode` lo deja renderizado en el servidor y acá
+     sólo se acomoda en su lugar. */
+  thumb: ReactNode;
   /* Ausente en las del sistema: viven en `src/lib/templates.ts`, no en la base.
      La tarjeta no dibuja un botón apagado — un control que nunca se puede usar
      es ruido que hay que aprender a ignorar. */
@@ -74,7 +82,7 @@ export default function TemplateCard({
          medio segundo tarde y el que opera ya está leyendo la primera. */
       style={{ "--cq-i": Math.min(index, 8) } as CSSProperties}
     >
-      <TemplateThumb types={template.types} />
+      {thumb}
 
       <div className="cq-tcard-body">
         <h3 className="cq-title truncate" title={template.name}>
@@ -129,14 +137,18 @@ export default function TemplateCard({
             Cuando existan Duplicar y Renombrar, ahí se gana el menú. */}
         <div className="cq-tcard-foot">
           {canApply ? (
-            <LinkButton
+            <Link
               href={`/admin/posts/new?plantilla=${encodeURIComponent(template.choiceKey!)}`}
-              variant="solid"
-              size="sm"
-              icon={<IconArrowRight size={14} />}
+              className="cq-tcard-use"
             >
-              Usar
-            </LinkButton>
+              Usar plantilla
+              <IconArrowRight size={14} aria-hidden="true" />
+              {/* El enlace cubre la tarjeta entera, así que su nombre accesible
+                  tiene que decir CUÁL: veinte enlaces que dicen "Usar plantilla"
+                  en la lista de enlaces de un lector de pantalla son veinte
+                  destinos indistinguibles. */}
+              <span className="sr-only">: {template.name}</span>
+            </Link>
           ) : (
             /* Sin destino no se finge un botón: un control que no lleva a
                ningún lado enseña a desconfiar de los que sí funcionan. */

@@ -3,6 +3,7 @@ import { createPost } from "@/lib/posts";
 import { createTemplateFromBlocks } from "@/lib/templates";
 import { getTemplateChoices } from "@/lib/templateChoices";
 import { withFreshIds } from "@/components/admin/editor/TemplatePicker";
+import { withThumbs } from "@/components/admin/ui/TemplateThumb";
 import PostEditor from "@/components/admin/PostEditor";
 import { LinkButton } from "@/components/admin/ui/Button";
 import { IconPlus } from "@/components/admin/ui/icons";
@@ -62,7 +63,7 @@ export default async function NewPostPage({
     <PostEditor
       action={createPost}
       categories={categories}
-      templates={templates}
+      templates={withThumbs(templates)}
       saveTemplateAction={createTemplateFromBlocks}
       initial={{
         title: "",

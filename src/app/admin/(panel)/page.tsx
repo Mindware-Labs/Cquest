@@ -1,11 +1,12 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { getCategories } from "@/lib/categories";
-import { getPosts } from "@/lib/posts";
-import { IconExternal, IconPencil, IconPlus } from "@/components/admin/ui/icons";
+import { getPosts, updatePostMeta } from "@/lib/posts";
+import { IconExternal, IconPlus } from "@/components/admin/ui/icons";
 import { IconLinkButton, LinkButton } from "@/components/admin/ui/Button";
 import { ModulePage } from "@/components/admin/ui/ModulePage";
 import { EmptyState, Ident, Section, StatusBadge } from "@/components/admin/ui/Surface";
+import PostQuickEdit from "./posts/PostQuickEdit";
 import { CategoryDonut, buildVolumeSeries } from "./charts";
 import { VolumeBars } from "./VolumeBars";
 
@@ -232,11 +233,30 @@ export default async function AdminHomePage() {
                   </span>
                   <StatusBadge status={post.status} />
                   <span className="cq-row-actions">
-                    <IconLinkButton
-                      href={`/admin/posts/${post.id}/edit`}
-                      label={`Continuar «${post.title}»`}
-                      size="sm"
-                      icon={<IconPencil size={14} />}
+                    {/* El lápiz abre la ficha en un cajón; el TÍTULO sigue
+                        llevando al editor de bloques. Es la misma división que
+                        en la tabla de Artículos: el nombre lleva al contenido,
+                        el lápiz a los datos del artículo.
+
+                        Desde el tablero esto es lo que más se nota: se entra a
+                        ver qué falta, se ve un borrador con la categoría mal
+                        puesta, y arreglarlo obligaba a cargar el editor entero
+                        y volver. */}
+                    <PostQuickEdit
+                      label={`Editar la ficha de «${post.title}»`}
+                      categories={categories}
+                      action={updatePostMeta}
+                      post={{
+                        id: post.id,
+                        title: post.title,
+                        slug: post.slug,
+                        excerpt: post.excerpt,
+                        categoryId: post.categoryId,
+                        locale: post.locale,
+                        seoTitle: post.seoTitle ?? "",
+                        seoDescription: post.seoDescription ?? "",
+                        status: post.status,
+                      }}
                     />
                   </span>
                 </li>
