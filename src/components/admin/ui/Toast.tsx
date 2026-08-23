@@ -94,10 +94,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {/* La región vive fuera del árbol de contenido y es `polite`: un aviso de
           "guardado" no debe interrumpir lo que el lector de pantalla esté
           diciendo en ese momento. */}
+      {/* `aria-live` va acá y no en cada aviso: la región tiene que existir en
+          el árbol ANTES de que aparezca el contenido, o el lector de pantalla
+          no observa el cambio. Un `role="region"` a secas —lo que había— no
+          anuncia nada, y toda la ventana de "Deshacer" de cada borrado del
+          panel era silenciosa. `atomic=false` para que se lea el aviso nuevo y
+          no la pila entera cada vez. */}
       <div
         role="region"
         aria-label="Avisos"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] flex flex-col items-end gap-2 p-4 sm:inset-x-auto sm:right-0"
+        aria-live="polite"
+        aria-atomic="false"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-[var(--p-z-toast)] flex flex-col items-end gap-2 p-4 sm:inset-x-auto sm:right-0"
       >
         {toasts.map((toast) => (
           <ToastCard

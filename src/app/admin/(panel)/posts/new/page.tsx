@@ -2,12 +2,18 @@ import { getCategories } from "@/lib/categories";
 import { createPost } from "@/lib/posts";
 import { createTemplateFromBlocks } from "@/lib/templates";
 import { getTemplateChoices } from "@/lib/templateChoices";
+import { withFreshIds } from "@/components/admin/editor/TemplatePicker";
 import PostEditor from "@/components/admin/PostEditor";
 import { LinkButton } from "@/components/admin/ui/Button";
 import { IconPlus } from "@/components/admin/ui/icons";
 import { EmptyState } from "@/components/admin/ui/Surface";
 
-export default async function NewPostPage() {
+export default async function NewPostPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plantilla?: string }>;
+}) {
+  const { plantilla } = await searchParams;
   const [categories, templates] = await Promise.all([getCategories(), getTemplateChoices()]);
 
   /* Sin categorías no hay artículo posible: categoryId es obligatorio en el
@@ -32,6 +38,26 @@ export default async function NewPostPage() {
     );
   }
 
+  /* «Usar» desde la pantalla de Plantillas llega acá con la plantilla elegida en
+     la URL, y el editor abre YA con esos bloques puestos en vez de mostrar el
+     selector. Antes ese botón no podía existir: la única forma de aplicar una
+     plantilla era entrar al editor en blanco y elegirla de nuevo adentro, así
+     que la pantalla de Plantillas listaba cosas que no se podían usar desde ahí.
+
+     Los ids se renuevan ACÁ, en el servidor, y no dentro del editor. Es la parte
+     que no es obvia: `withFreshIds` usa `crypto.randomUUID()`, y llamarlo en el
+     estado inicial de un componente de cliente da un id en el render del
+     servidor y otro en la hidratación — o sea, un desajuste de hidratación en la
+     pantalla más pesada del panel. Resuelto acá, `PostEditor` no se entera de
+     que existe el parámetro: recibe bloques iniciales como en cualquier otro
+     caso, y su propia regla («el selector sólo aparece si el artículo está
+     vacío») hace sola lo correcto.
+
+     Una clave que no existe —plantilla borrada, URL vieja, algo mal tipeado— no
+     es un error: se cae al editor en blanco, que es exactamente donde el
+     selector aparece y ofrece las que sí están. */
+  const picked = plantilla ? templates.find((template) => template.key === plantilla) : undefined;
+
   return (
     <PostEditor
       action={createPost}
@@ -48,7 +74,7 @@ export default async function NewPostPage() {
         locale: "es",
         seoTitle: "",
         seoDescription: "",
-        blocks: [],
+        blocks: picked ? withFreshIds(picked.blocks) : [],
       }}
     />
   );

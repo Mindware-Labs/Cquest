@@ -59,7 +59,7 @@ export default function SaveAsTemplate({
   return (
     <div className="cq-section pb-4">
       <div className="cq-section-head">
-        <h2 className="cq-label">Guardar como plantilla</h2>
+        <h2 className="cq-section-title">Guardar como plantilla</h2>
       </div>
       <p className="cq-meta">
         Guarda sólo la estructura de bloques. Queda disponible para todo el equipo.

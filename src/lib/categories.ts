@@ -45,6 +45,16 @@ export async function getCategories() {
   });
 }
 
+/** Una sola categoría por su identificador de URL.
+ *
+ *  Existe para que la tabla de artículos pueda nombrar la categoría por la que
+ *  está filtrando. Antes lo sacaba del propio listado, pero con paginación el
+ *  slug filtrado puede no estar en la página que se ve, y la etiqueta terminaba
+ *  mostrando el slug crudo en vez del nombre. */
+export async function getCategoryBySlug(slug: string) {
+  return prisma.category.findUnique({ where: { slug }, select: { name: true } });
+}
+
 export async function createCategory(
   _prevState: CategoryActionState,
   formData: FormData,

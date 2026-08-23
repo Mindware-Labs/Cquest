@@ -13,7 +13,9 @@ export default function AdminHomeLoading() {
   return (
     <div>
       <LoadingAnnouncement>Cargando el tablero</LoadingAnnouncement>
-      <SkeletonPageHeader />
+      {/* El tablero ya no tiene acción primaria en la franja, así que tampoco
+          tiene franja: arranca en las cifras. */}
+      <SkeletonPageHeader withAction={false} />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
@@ -30,7 +32,7 @@ export default function AdminHomeLoading() {
           </div>
           <div className="pb-5">
             <SkeletonLine width="9rem" height="2rem" />
-            <SkeletonLine width="100%" height="8rem" className="mt-4 rounded-[4px]" />
+            <SkeletonLine width="100%" height="8rem" className="mt-4 rounded-[var(--p-radius-xs)]" />
           </div>
         </div>
         <div className="cq-section" data-boxed="true">

@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { createContext, useContext, useEffect, useId, useState, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { IconClose, IconMenu } from "@/components/admin/ui/icons";
@@ -113,18 +121,80 @@ export function DesktopSidebar({ className, children }: PanelProps) {
 
 export function MobileSidebar({ className, children }: PanelProps) {
   const { open, setOpen, panelId } = useSidebar();
+  /* Id propio. Los dos rieles se montan siempre —uno se oculta por CSS— y los
+     dos escribían `id={panelId}`: dos elementos con el mismo id en el documento,
+     que es HTML inválido y deja el `aria-controls` del botón apuntando a
+     cualquiera de los dos. Ojo, el landmark NO está duplicado: `display: none`
+     saca el riel de escritorio del árbol de accesibilidad. El problema era el
+     id, no la región. */
+  const sheetId = `${panelId}-sheet`;
   /* El estado de apertura es compartido con el escritorio, pero en móvil
      significa otra cosa: acá arranca CERRADO siempre, porque un panel encima del
      contenido al entrar es un obstáculo, no una ayuda. */
   const [sheet, setSheet] = useState(false);
 
-  /* Escape cierra. Es lo que espera cualquiera que haya usado un panel modal, y
-     sin esto en un teléfono con teclado no hay forma de salir sin apuntar. */
+  const panelRef = useRef<HTMLElement | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+
+  /* Escape cierra, el foco entra y queda atrapado, y al cerrar vuelve a donde
+     estaba.
+
+     Esta hoja era el ÚNICO overlay del panel sin nada de eso. El cajón y el
+     diálogo van sobre `<dialog>` nativo, así que el navegador les da trampa de
+     foco, Escape, capa superior e inertización del fondo. Acá hay un
+     `motion.aside`, que no es un diálogo para nadie salvo para el ojo: con
+     teclado, Tab se escapaba al contenido de atrás —que se sigue viendo debajo
+     del velo— y al cerrar el foco quedaba en la nada, o sea al principio del
+     documento.
+
+     No se porta a `<dialog>` porque la animación de entrada y el ancho relativo
+     al viewport dependen de que sea un elemento del flujo; se le agrega el
+     comportamiento que le faltaba. */
   useEffect(() => {
-    if (!sheet) return;
+    if (!sheet) {
+      /* Restituir el foco al abridor. Sin esto, cerrar con Escape deja el foco
+         en el <body> y el siguiente Tab arranca desde arriba de todo. */
+      openerRef.current?.focus();
+      return;
+    }
+
+    openerRef.current = document.activeElement as HTMLElement | null;
+
+    const panel = panelRef.current;
+    const focusables = () =>
+      Array.from(
+        panel?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((node) => node.offsetParent !== null);
+
+    focusables()[0]?.focus();
+
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSheet(false);
+      if (event.key === "Escape") {
+        setSheet(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const nodes = focusables();
+      if (nodes.length === 0) return;
+
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      const active = document.activeElement;
+
+      /* El ciclo se cierra en los dos sentidos, y el `!panel.contains` cubre el
+         caso de entrar a la hoja con el foco ya afuera. */
+      if (event.shiftKey && (active === first || !panel?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !panel?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [sheet]);
@@ -136,7 +206,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
         <button
           type="button"
           aria-expanded={sheet}
-          aria-controls={panelId}
+          aria-controls={sheetId}
           aria-label="Abrir el menú del panel"
           onClick={() => {
             setSheet(true);
@@ -159,17 +229,24 @@ export function MobileSidebar({ className, children }: PanelProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setSheet(false)}
-              className="fixed inset-0 z-90 bg-black/55"
+              className="fixed inset-0 z-[var(--p-z-overlay)] bg-[color-mix(in_srgb,var(--p-ink)_45%,transparent)]"
               aria-hidden="true"
             />
             <motion.aside
-              id={panelId}
+              ref={panelRef}
+              id={sheetId}
+              /* Es un diálogo modal para quien no lo ve, igual que el cajón. Sin
+                 esto un lector de pantalla lo anuncia como una región más y
+                 sigue leyendo la página de atrás como si estuviera disponible. */
+              role="dialog"
+              aria-modal="true"
+              aria-label="Secciones del panel"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "cq-rail fixed inset-y-0 left-0 z-100 flex w-[17rem] max-w-[85vw] flex-col gap-5 overflow-y-auto px-3 py-4",
+                "cq-rail fixed inset-y-0 left-0 z-[var(--p-z-overlay)] flex w-[17rem] max-w-[85vw] flex-col gap-5 overflow-y-auto px-3 py-4",
                 className,
               )}
             >

@@ -71,7 +71,7 @@ export default function PanelUserMenu({
             los iconos de sección. */}
         <span
           aria-hidden="true"
-          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--p-accent)] text-[0.6rem] leading-none font-bold text-[var(--p-on-accent)]"
+          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--p-accent)] text-[var(--p-label-size)] leading-none font-semibold text-[var(--p-on-accent)]"
         >
           {initials}
         </span>
@@ -100,7 +100,7 @@ export default function PanelUserMenu({
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             style={{ transformOrigin: "top right" }}
-            className="cq-overlay absolute top-full right-0 z-50 mt-2 w-[14rem] overflow-hidden p-1.5"
+            className="cq-overlay absolute top-full right-0 z-[var(--p-z-dropdown)] mt-2 w-[14rem] overflow-hidden p-1.5"
           >
             {/* El email no cabe en el disparador y es lo que distingue una cuenta
                 de otra cuando alguien administra dos. Acá es donde se verifica. */}

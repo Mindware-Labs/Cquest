@@ -17,12 +17,17 @@ export default async function AdminLoginPage() {
        hueso de la marca (#f8f7f4) y la tarjeta en blanco puro. Eso es lo que
        hace que flote — un blanco sobre blanco no tiene de dónde despegarse.
        Sigue sin haber capa de fondo, así que la página es HTML plano. */
-    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] px-6 py-16">
+    /* Tokens del PANEL. Esta pantalla vive bajo `app/admin`, hereda su hoja y
+       es la primera que ve un administrador — pero pintaba con los tokens del
+       sitio público (`--background`, `--surface-raised`, `--foreground`,
+       `--text-secondary`), o sea con la escala de otro sistema. */
+    <div className="flex min-h-screen items-center justify-center bg-[var(--p-surface-sunken)] px-6 py-16">
       <LoginReveal>
-        {/* Radio de 16px y sombra larga y muy abierta: así se lee como altura
-            sobre la página y no como un contorno gris. El borde de 1px la
-            sostiene en pantallas donde la sombra casi no se ve. */}
-        <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface-raised)] px-7 py-9 shadow-[0_1px_2px_rgb(13_30_41_/_0.04),0_20px_44px_-16px_rgb(13_30_41_/_0.16)] sm:px-9 sm:py-10">
+        {/* La única sombra del sistema, y acá está justificada: la tarjeta es
+            lo único que flota en la pantalla. El radio sale de la escala de
+            superficies en vez de un literal de 16px, y el filete de 1px la
+            sostiene donde la sombra casi no se ve. */}
+        <div className="cq-overlay px-7 py-9 sm:px-9 sm:py-10">
           {/* El encabezado se separa del formulario con espacio, sin regla: con
               sólo dos campos debajo, una línea divide algo que no necesitaba
               dividirse y agrega un elemento más que descartar. */}
@@ -40,14 +45,14 @@ export default async function AdminLoginPage() {
             </Link>
             <h1
               data-reveal
-              className="text-[1.4rem] leading-none font-semibold tracking-[-0.02em] text-[var(--foreground)]"
+              /* El paso de display del panel, no un tamaño intermedio inventado
+                 para esta pantalla. Es el único titular de la vista y no
+                 compite con nada: es exactamente para lo que existe el paso. */
+              className="cq-display"
             >
               Entrar al panel
             </h1>
-            <p
-              data-reveal
-              className="text-center text-[0.85rem] leading-relaxed text-[var(--text-secondary)]"
-            >
+            <p data-reveal className="cq-body text-center text-[var(--p-ink-muted)]">
               Administra tus artículos, categorías y plantillas del blog.
             </p>
           </div>
@@ -63,7 +68,7 @@ export default async function AdminLoginPage() {
             formulario, y afuera no le compite jerarquía a los campos. Ya no
             lleva la línea fina de arriba — ese trabajo lo hace el canto de la
             tarjeta. */}
-        <p className="mt-5 text-center text-[0.8rem] leading-relaxed text-[var(--text-tertiary)]">
+        <p className="cq-meta mt-5 text-center">
           Las cuentas se crean internamente. No hay registro abierto.
         </p>
       </LoginReveal>

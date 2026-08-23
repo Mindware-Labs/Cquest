@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import { IconTrash } from "./icons";
 import { Button, IconButton } from "./Button";
 import { ConfirmDialog } from "./Dialog";
@@ -52,6 +52,7 @@ export function DeleteAction({
   const [pending, startTransition] = useTransition();
   const { notify } = useToast();
   const cancelled = useRef(false);
+  const describedById = useId();
 
   function commit() {
     setAsking(false);
@@ -84,13 +85,22 @@ export function DeleteAction({
     });
   }
 
+  /* El motivo por el que NO se puede eliminar se describe, no se nombra. Antes
+     reemplazaba la etiqueta del botón, así que un lector de pantalla anunciaba
+     "botón, No se puede eliminar una categoría con artículos" y el control
+     dejaba de decir qué hace. El nombre siempre es la acción; el motivo va
+     aparte y se lee después. */
+  const reasonId = `${describedById}-reason`;
+  const showReason = disabled && Boolean(disabledReason);
+
   const trigger = compact ? (
     <IconButton
-      label={disabled && disabledReason ? disabledReason : `Eliminar «${name}»`}
+      label={`Eliminar «${name}»`}
       tone="danger"
       size="sm"
       icon={<IconTrash size={14} />}
       disabled={disabled || pending}
+      aria-describedby={showReason ? reasonId : undefined}
       onClick={() => setAsking(true)}
     />
   ) : (
@@ -100,6 +110,7 @@ export function DeleteAction({
       icon={<IconTrash size={14} />}
       disabled={disabled || pending}
       title={disabled ? disabledReason : undefined}
+      aria-describedby={showReason ? reasonId : undefined}
       onClick={() => setAsking(true)}
     >
       Eliminar
@@ -109,6 +120,11 @@ export function DeleteAction({
   return (
     <>
       {trigger}
+      {showReason && (
+        <span id={reasonId} className="sr-only">
+          {disabledReason}
+        </span>
+      )}
       <ConfirmDialog
         open={asking}
         onClose={() => setAsking(false)}

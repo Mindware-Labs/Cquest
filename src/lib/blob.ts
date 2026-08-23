@@ -1,8 +1,13 @@
 import { put } from "@vercel/blob";
 import { imageSize } from "image-size";
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/uploadLimits";
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+/* El límite y los tipos salen de lib/uploadLimits.ts, que también lee el campo
+   de subida del editor. Estaban escritos dos veces —acá y en el cliente— y ya
+   habían divergido: el cliente dejaba pasar 8MB y este rechazaba a los 5, así
+   que un archivo de 6 viajaba entero para morir en el servidor. */
+const MAX_SIZE_BYTES = MAX_UPLOAD_BYTES;
+const ALLOWED_TYPES: readonly string[] = ALLOWED_IMAGE_TYPES;
 
 export class UploadValidationError extends Error {}
 

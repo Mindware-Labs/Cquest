@@ -83,12 +83,125 @@ function revalidatePost(slug?: string): void {
   revalidatePath("/sitemap.xml");
 }
 
-/** Listado completo para el panel admin — todos los estados. */
+/** Listado completo para el panel admin — todos los estados.
+ *
+ *  Se mantiene para quien necesite el conjunto entero (hoy, el tablero). La
+ *  TABLA de artículos ya no lo usa: ver getAdminPosts. */
 export async function getPosts() {
   return prisma.post.findMany({
     orderBy: { createdAt: "desc" },
     include: { category: true, author: { select: { id: true, name: true } } },
   });
+}
+
+/* ---------------------------------------------------------------------------
+   Listado paginado de la tabla del admin
+   ---------------------------------------------------------------------------
+
+   Antes la tabla llamaba a getPosts() y filtraba en memoria. Con veinte
+   artículos daba igual; con quinientos son quinientas filas montadas de una,
+   cada una un componente de cliente con su propio useActionState y su <Image>,
+   sobre quinientas filas traídas de la base para mostrar veinticinco.
+
+   Acá el recorte, el orden y la página los hace Postgres. Los tres controles
+   —estado, búsqueda, categoría— viven en la URL igual que antes, así que una
+   pestaña con "borradores de onboarding, página 2" se sigue pudiendo compartir
+   y sigue funcionando con el botón de atrás.
+--------------------------------------------------------------------------- */
+
+export const ADMIN_POSTS_PAGE_SIZE = 25;
+
+/* El orden es un conjunto cerrado y no un par campo+dirección libre: dejar que
+   la URL nombre una columna arbitraria es dejar que la URL nombre una columna
+   de la base. */
+export const ADMIN_POSTS_SORTS = {
+  reciente: { label: "Más recientes", orderBy: { createdAt: "desc" } },
+  antiguo: { label: "Más antiguos", orderBy: { createdAt: "asc" } },
+  editado: { label: "Editados hace poco", orderBy: { updatedAt: "desc" } },
+  titulo: { label: "Título A–Z", orderBy: { title: "asc" } },
+  "titulo-desc": { label: "Título Z–A", orderBy: { title: "desc" } },
+} as const satisfies Record<string, { label: string; orderBy: Prisma.PostOrderByWithRelationInput }>;
+
+export type AdminPostsSort = keyof typeof ADMIN_POSTS_SORTS;
+
+export function isAdminPostsSort(value: string | undefined): value is AdminPostsSort {
+  return value !== undefined && value in ADMIN_POSTS_SORTS;
+}
+
+export async function getAdminPosts({
+  status,
+  categorySlug,
+  term,
+  sort = "reciente",
+  page = 1,
+}: {
+  status?: PostStatus;
+  categorySlug?: string;
+  term?: string;
+  sort?: AdminPostsSort;
+  page?: number;
+}) {
+  /* El recorte que NO depende del estado. Se separa porque los conteos de las
+     pestañas tienen que contar dentro de la búsqueda y la categoría actuales
+     —si dijeran el total, "Borradores 12" al lado de una lista de 2 sería una
+     contradicción en la misma fila— pero obviamente no dentro del estado que
+     esa misma pestaña representa. */
+  const scope: Prisma.PostWhereInput = {
+    ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+    /* Se busca sobre título, identificador de URL y nombre de categoría. El
+       slug entra porque es lo que se ve en la URL pública y a veces es lo único
+       que se recuerda de un artículo viejo. */
+    ...(term
+      ? {
+          OR: [
+            { title: { contains: term, mode: "insensitive" as const } },
+            { slug: { contains: term, mode: "insensitive" as const } },
+            { category: { name: { contains: term, mode: "insensitive" as const } } },
+          ],
+        }
+      : {}),
+  };
+
+  const where: Prisma.PostWhereInput = { ...scope, ...(status ? { status } : {}) };
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+
+  /* El conteo va ANTES de traer las filas, no en paralelo: con `?pagina=99`
+     sobre tres páginas, un `skip` calculado con la página cruda devuelve vacío,
+     y la vista termina dibujando una paginación que dice "página 3 de 3" arriba
+     de una lista sin nada. Cuesta un viaje más y a cambio la página pedida
+     siempre se puede acotar a una que existe. */
+  const [total, grouped] = await Promise.all([
+    prisma.post.count({ where }),
+    prisma.post.groupBy({ by: ["status"], where: scope, _count: { _all: true } }),
+  ]);
+
+  const pageCount = Math.max(1, Math.ceil(total / ADMIN_POSTS_PAGE_SIZE));
+  const currentPage = Math.min(safePage, pageCount);
+
+  const rows = await prisma.post.findMany({
+    where,
+    orderBy: ADMIN_POSTS_SORTS[sort].orderBy,
+    skip: (currentPage - 1) * ADMIN_POSTS_PAGE_SIZE,
+    take: ADMIN_POSTS_PAGE_SIZE,
+    include: { category: true },
+  });
+
+  const byStatus = Object.fromEntries(
+    grouped.map((entry) => [entry.status, entry._count._all]),
+  ) as Partial<Record<PostStatus, number>>;
+
+  return {
+    posts: rows,
+    total,
+    page: currentPage,
+    pageCount,
+    counts: {
+      todos: Object.values(byStatus).reduce((sum, n) => sum + (n ?? 0), 0),
+      DRAFT: byStatus.DRAFT ?? 0,
+      PUBLISHED: byStatus.PUBLISHED ?? 0,
+      HIDDEN: byStatus.HIDDEN ?? 0,
+    },
+  };
 }
 
 /** Lo que ve el blog público: del idioma pedido, publicado, y ya en su fecha.

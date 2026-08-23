@@ -76,7 +76,7 @@ export default function PanelTopbar({
       </button>
 
       <nav aria-label="Ruta" className="min-w-0 flex-1">
-        <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.85rem]">
+        <ol className="cq-body flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
           {crumbs.map((crumb, index) => {
             const isLast = crumb === current;
             return (

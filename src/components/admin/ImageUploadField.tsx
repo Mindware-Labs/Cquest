@@ -2,6 +2,11 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import {
+  ACCEPT_ATTRIBUTE,
+  MAX_UPLOAD_BYTES,
+  formatUploadSize,
+} from "@/lib/uploadLimits";
 import { Alert } from "./ui/Surface";
 import { Button } from "./ui/Button";
 
@@ -11,16 +16,14 @@ import { Button } from "./ui/Button";
    empleos, no para cada imagen del blog. */
 export type UploadResult = { url: string; width?: number; height?: number };
 
-/* Tope del lado del cliente. El servidor tiene el suyo —y es el que manda—,
-   pero rechazar acá evita subir ocho megas por una conexión de oficina para
-   recibir un error al final. El aviso llega en el momento en que se elige el
-   archivo, no dos minutos después. */
-const MAX_BYTES = 8 * 1024 * 1024;
-const ACCEPTED = "image/jpeg,image/png,image/webp,image/avif";
-
-function formatSize(bytes: number) {
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+/* El tope y los tipos salen del MISMO archivo que valida el servidor. Rechazar
+   acá evita subir cinco megas por una conexión de oficina para recibir el error
+   al final, pero sólo sirve si los dos números coinciden: un límite de cliente
+   más permisivo que el del servidor no evita nada, sólo mueve el rechazo al
+   peor momento posible. */
+const MAX_BYTES = MAX_UPLOAD_BYTES;
+const ACCEPTED = ACCEPT_ATTRIBUTE;
+const formatSize = formatUploadSize;
 
 export default function ImageUploadField({
   label,
@@ -179,7 +182,7 @@ export default function ImageUploadField({
           /* El botón interno del selector de archivo se dibuja con el mismo
              vocabulario que el resto: es el único control del panel que el
              navegador pinta por su cuenta si no se lo pisa. */
-          className="cq-meta mt-2 block w-full file:mr-3 file:cursor-pointer file:rounded-[var(--p-radius-sm)] file:border file:border-[var(--p-line-strong)] file:bg-[var(--p-surface)] file:px-3 file:py-1.5 file:text-[0.75rem] file:font-semibold file:text-[var(--p-ink)]"
+          className="cq-meta mt-2 block w-full file:mr-3 file:cursor-pointer file:rounded-[var(--p-radius-sm)] file:border file:border-[var(--p-line-strong)] file:bg-[var(--p-surface)] file:px-3 file:py-1.5 file:text-[var(--p-meta-size)] file:font-semibold file:text-[var(--p-ink)]"
         />
       )}
 

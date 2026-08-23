@@ -29,8 +29,13 @@ function SubmitButton({ succeeded }: { succeeded: boolean }) {
       /* Sigue deshabilitado después del éxito: la navegación tarda unos
          milisegundos y en esa ventana el botón todavía acepta clics. */
       disabled={pending || succeeded}
-      data-variant="secondary"
-      className="cq-btn mt-6 w-full rounded-[8px] py-3 text-[0.9rem]"
+      /* El sistema, no un botón a mano. Traía `data-variant="secondary"` —un
+         alias muerto— más un radio, un alto y un tamaño de fuente propios, y
+         era la única cosa del panel que definía su propia caja. `lg` existe
+         justamente para esto: la acción única de una pantalla enfocada. */
+      data-variant="solid"
+      data-size="lg"
+      className="cq-btn mt-6 w-full"
     >
       {pending && <IconSpinner size={16} />}
       {pending ? "Entrando…" : "Entrar"}
@@ -231,7 +236,7 @@ export default function LoginForm({
             onClick={() => setRevealed((current) => !current)}
             aria-label={revealed ? "Ocultar contraseña" : "Mostrar contraseña"}
             aria-pressed={revealed}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[8px] text-[var(--text-tertiary)] transition-colors hover:text-[var(--foreground)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-petroleo)]"
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[var(--p-radius-sm)] text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
           >
             {revealed ? <IconEyeOff size={17} /> : <IconEye size={17} />}
           </button>
@@ -244,7 +249,7 @@ export default function LoginForm({
           <p
             id="password-caps"
             role="status"
-            className="mt-2 flex items-center gap-2 text-[0.8rem] leading-snug text-[#8a5a00]"
+            className="cq-meta mt-2 flex items-center gap-2 text-[var(--p-pending)]"
           >
             <IconCapsLock size={15} className="shrink-0" />
             Bloq Mayús está activado.
@@ -258,7 +263,7 @@ export default function LoginForm({
         <p
           ref={errorRef}
           role="alert"
-          className="mt-4 flex items-start gap-2 rounded-[8px] border border-[#e5b4b4] bg-[#fdf3f3] px-3 py-2.5 text-[0.84rem] text-[#8c1f1f]"
+          className="cq-alert mt-4"
         >
           <IconWarning size={16} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>

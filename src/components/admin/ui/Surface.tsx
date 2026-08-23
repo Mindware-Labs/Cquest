@@ -6,36 +6,11 @@ import { IconWarning } from "./icons";
 /* Superficies del panel. Todas son Server Components a propósito: ninguna
    necesita estado, así que ninguna paga el peso de enviarse al cliente. */
 
-/* ---------------------------------------------------------------------------
-   PageHeader
-   El título no se dibuja: la sección ya la dice el riel y la miga de la barra
-   superior, y repetirla en grande gasta el primer tercio de la pantalla en algo
-   que el que opera ya sabe. Igual va en el DOM como <h1> para lectores de
-   pantalla y para que el documento tenga un encabezado de nivel uno.
---------------------------------------------------------------------------- */
-
-export function PageHeader({
-  title,
-  description,
-  actions,
-}: {
-  title: string;
-  description?: string;
-  actions?: ReactNode;
-}) {
-  return (
-    <header
-      className={clsx(
-        "flex flex-wrap items-center justify-end gap-x-4 gap-y-2",
-        actions && "pb-4",
-      )}
-    >
-      <h1 className="sr-only">{title}</h1>
-      {description && <p className="sr-only">{description}</p>}
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </header>
-  );
-}
+/* `PageHeader` vivía acá y no lo usaba nadie: los cuatro módulos arman su
+   encabezado con `ModulePage`, que lo reimplementaba entero en vez de llamarlo.
+   Un componente compartido con cero consumidores no es una abstracción
+   disponible, es una segunda versión del mismo encabezado esperando que alguien
+   la use y quede distinta de la primera. */
 
 /* ---------------------------------------------------------------------------
    Section — LA FIRMA
@@ -102,7 +77,7 @@ export function Section({
         </Heading>
       ) : (
         <div className="cq-section-head">
-          <Heading className="cq-label flex min-w-0 items-center gap-2">
+          <Heading className="cq-section-title flex min-w-0 items-center gap-2">
             <span className="truncate">{title}</span>
             {typeof count === "number" && <span className="cq-section-count">{count}</span>}
           </Heading>
@@ -118,40 +93,11 @@ export function Section({
   );
 }
 
-/* Alias de compatibilidad. El editor y sus subcomponentes todavía escriben
-   <Panel>/<PanelHead>; se mantienen apuntando a la sección nueva para que no
-   queden dos gramáticas conviviendo mientras se migra el editor. */
-export function Panel({
-  children,
-  className,
-  as: Tag = "section",
-}: {
-  children: ReactNode;
-  className?: string;
-  as?: "section" | "div" | "aside";
-}) {
-  return <Tag className={clsx("cq-section", className)}>{children}</Tag>;
-}
-
-export function PanelHead({
-  title,
-  count,
-  actions,
-}: {
-  title: string;
-  count?: number;
-  actions?: ReactNode;
-}) {
-  return (
-    <div className="cq-section-head">
-      <h2 className="cq-label flex min-w-0 items-center gap-2">
-        <span className="truncate">{title}</span>
-        {typeof count === "number" && <span className="cq-section-count">{count}</span>}
-      </h2>
-      {actions}
-    </div>
-  );
-}
+/* `Panel` y `PanelHead` eran alias de compatibilidad para una migración del
+   editor que ya terminó: cero consumidores. `PanelHead` además había quedado
+   distinto de la cabecera de `Section` —sin `shrink-0` ni `flex-wrap` en las
+   acciones—, o sea que el alias que existía para evitar dos gramáticas ya era
+   la segunda gramática. */
 
 /* Tarjeta. Sólo para elementos de una grilla: en una lista vertical separa el
    filete, no una caja. */
@@ -176,28 +122,27 @@ export function Card({
 
 /* ---------------------------------------------------------------------------
    Identificador del sistema
-   Slug, ruta, ID. Se muestra en mono porque no se lee: se copia, se pega y se
-   compara carácter por carácter. Que se VEA distinto del texto de interfaz es
-   la mitad de su trabajo.
+   ID, conteo, fecha, código. Se muestra en mono porque no se lee: se copia, se
+   pega y se compara carácter por carácter. Que se VEA distinto del texto de
+   interfaz es la mitad de su trabajo.
+
+   La variante `path` —que anteponía una barra para dibujar una ruta— se fue con
+   sus dos consumidores. Las rutas del panel no se muestran: la barra de
+   direcciones ya las tiene, y repetirlas en la pantalla las convierte en un
+   dato del contenido cuando son plomería.
 --------------------------------------------------------------------------- */
 
 export function Ident({
   children,
-  path = false,
   chip = false,
   className,
 }: {
   children: ReactNode;
-  /* `path` antepone la barra: lo que se ve es la URL pública real. */
-  path?: boolean;
   chip?: boolean;
   className?: string;
 }) {
   return (
-    <span className={clsx("cq-ident", chip && "cq-ident-chip", className)}>
-      {path && <span aria-hidden="true">/</span>}
-      {children}
-    </span>
+    <span className={clsx("cq-ident", chip && "cq-ident-chip", className)}>{children}</span>
   );
 }
 
@@ -285,12 +230,26 @@ export function EmptyState({
   /* Cuántas filas fantasma dibujar. Tres es el mínimo para que se lea como una
      lista y no como una caja suelta. */
   rows = 3,
+  /* Sin silueta: sólo el mensaje, centrado en el alto disponible de la tarjeta.
+     Para bloques donde el fantasma de una lista no aporta nada. */
+  plain = false,
 }: {
   title: string;
   hint?: string;
   action?: ReactNode;
   rows?: number;
+  plain?: boolean;
 }) {
+  if (plain) {
+    return (
+      <div className="cq-empty flex flex-1 flex-col items-center justify-center gap-2 px-6 py-8 text-center">
+        <p className="cq-title">{title}</p>
+        {hint && <p className="cq-meta max-w-[52ch]">{hint}</p>}
+        {action && <div className="mt-2">{action}</div>}
+      </div>
+    );
+  }
+
   return (
     <div className="cq-empty">
       <div className="cq-ghost relative overflow-hidden px-4 py-4">
@@ -344,10 +303,16 @@ export function ErrorState({
   action?: ReactNode;
 }) {
   return (
+    /* La caja es `.cq-alert`, no una reimplementación. Estaba escrita con
+       utilidades arbitrarias que repetían el filete, el tinte y el color del
+       alert —y se quedaba sin su radio, así que el mismo error se dibujaba con
+       esquinas distintas según quién lo mostrara. Acá sólo se sobreescribe lo
+       que de verdad cambia: es un estado de página, no una línea de aviso, así
+       que apila en el centro y respira. */
     <div className="cq-empty">
-      <div className="flex flex-col items-center gap-2 border-l-2 border-[var(--p-danger)] bg-[var(--p-danger-tint)] px-6 py-10 text-center">
+      <div className="cq-alert flex-col items-center px-6 py-10 text-center">
         <p className="cq-title text-[var(--p-danger)]">{title}</p>
-        {hint && <p className="cq-meta max-w-[56ch]">{hint}</p>}
+        {hint && <p className="cq-meta max-w-[52ch]">{hint}</p>}
         {action && <div className="mt-2">{action}</div>}
       </div>
     </div>
@@ -364,20 +329,9 @@ const TONE: Record<string, { tone: string; label: string }> = {
   HIDDEN: { tone: "hidden", label: "Oculto" },
 };
 
-export function Badge({
-  children,
-  tone = "draft",
-}: {
-  children: ReactNode;
-  tone?: "published" | "draft" | "hidden";
-}) {
-  return (
-    <span className="cq-badge" data-tone={tone}>
-      {children}
-    </span>
-  );
-}
-
+/* `Badge` genérico se fue: renderizaba exactamente el mismo marcado que
+   `StatusBadge` y no lo llamaba nadie. Un estado del sistema se nombra desde el
+   mapa de arriba, no escribiendo el texto en cada sitio. */
 export function StatusBadge({ status }: { status: string }) {
   const entry = TONE[status] ?? TONE.DRAFT;
   return (

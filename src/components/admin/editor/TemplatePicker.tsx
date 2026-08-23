@@ -46,7 +46,7 @@ export default function TemplatePicker({
           <span aria-hidden="true" className="cq-section-figure">
             {String(templates.length).padStart(2, "0")}
           </span>
-          <h2 className="cq-label pb-1.5">Empezar desde una plantilla</h2>
+          <h2 className="cq-section-title pb-1.5">Empezar desde una plantilla</h2>
         </div>
       </div>
 

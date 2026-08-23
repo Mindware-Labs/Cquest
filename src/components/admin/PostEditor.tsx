@@ -31,8 +31,10 @@ import {
 } from "./editor/blockTree";
 import MoveBlockControl from "./editor/MoveBlockControl";
 import { TextAreaField, TextField } from "./editor/fields";
-import { IconSpinner } from "./ui/icons";
+import { IconArrowLeft, IconSpinner } from "./ui/icons";
+import { IconLinkButton } from "./ui/Button";
 import { Alert, Ident } from "./ui/Surface";
+import { ConfirmDialog } from "./ui/Dialog";
 import { useToast } from "./ui/Toast";
 import { TYPE_LABEL } from "./editor/blockFactory";
 
@@ -49,10 +51,22 @@ export type PostEditorInitial = {
   locale: string;
   seoTitle: string;
   seoDescription: string;
+  /* Ausente al crear. Sirve para distinguir la primera publicación —la que
+     efectivamente saca el artículo a la web— del guardado de uno que ya está
+     publicado. */
+  status?: string;
   blocks: Block[];
 };
 
-function SaveButtons() {
+function SaveButtons({
+  onPublishIntent,
+  publishLabel,
+}: {
+  /* Devuelve `true` si hay que frenar y pedir confirmación. El botón no sabe
+     por qué: sólo pregunta antes de enviar. */
+  onPublishIntent: () => boolean;
+  publishLabel: string;
+}) {
   const { pending } = useFormStatus();
 
   /* Los dos botones mandan `intent` distinto en el mismo submit (AD-12): el
@@ -80,9 +94,12 @@ function SaveButtons() {
         disabled={pending}
         className="cq-btn"
         data-variant="solid"
+        onClick={(event) => {
+          if (onPublishIntent()) event.preventDefault();
+        }}
       >
         {pending ? <IconSpinner size={15} /> : null}
-        {pending ? "Publicando…" : "Publicar"}
+        {pending ? "Publicando…" : publishLabel}
       </button>
     </div>
   );
@@ -212,6 +229,68 @@ export default function PostEditor({
       blocks: initial.blocks,
     });
 
+  /* El error se busca solo. La validación llega como una sola alerta arriba de
+     un formulario de tres pantallas de alto: al enviar desde el final, el aviso
+     aparecía completamente fuera de la vista y el botón simplemente no hacía
+     nada visible. Se desplaza hasta él y se le pone el foco —de ahí el
+     `tabIndex={-1}`—, así el teclado también queda parado en el problema y no
+     donde estaba antes. */
+  const errorRef = useRef<HTMLDivElement | null>(null);
+
+  /* Confirmación antes de la PRIMERA publicación.
+
+     El panel protegía lo reversible y dejaba abierto lo que sale a producción:
+     borrar pedía diálogo y daba cinco segundos para deshacer, mientras publicar
+     era un clic sin nada, con el botón pegado a "Guardar borrador", del mismo
+     tamaño y a ocho píxeles. Un error de puntería sacaba un borrador a la web.
+
+     Sólo la PRIMERA vez. Volver a guardar un artículo que ya está publicado no
+     cambia su visibilidad, y preguntar ahí sería un peaje en el trabajo normal
+     de corregir un párrafo — que es como se entrena a la gente a confirmar sin
+     leer. El diálogo aparece cuando el estado cambia de verdad.
+
+     El formulario se envía por referencia y no reenviando el evento: hay que
+     conservar el `intent=publish` del botón, y `requestSubmit` con el botón
+     como argumento es lo único que lo incluye. */
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [confirmingPublish, setConfirmingPublish] = useState(false);
+  const goingLive = initial.status !== "PUBLISHED";
+  const publishLabel = goingLive ? "Publicar" : "Guardar y publicar";
+
+  /* El permiso para pasar de largo va en un ref y no en el estado del diálogo:
+     `confirmPublish` reenvía el formulario en el mismo tick en que baja el
+     estado, así que el `onClick` que se vuelve a disparar leería el valor del
+     render anterior. Un ref se lee y se escribe en el momento. */
+  const publishConfirmed = useRef(false);
+
+  const askBeforePublish = useCallback(() => {
+    if (!goingLive || publishConfirmed.current) {
+      publishConfirmed.current = false;
+      return false;
+    }
+    setConfirmingPublish(true);
+    return true;
+  }, [goingLive]);
+
+  const confirmPublish = useCallback(() => {
+    setConfirmingPublish(false);
+    publishConfirmed.current = true;
+    const form = formRef.current;
+    const button = form?.querySelector<HTMLButtonElement>('button[value="publish"]');
+    if (form && button) form.requestSubmit(button);
+    else publishConfirmed.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (!state.error) return;
+    const node = errorRef.current;
+    if (!node) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    node.focus({ preventScroll: true });
+  }, [state.error]);
+
   useEffect(() => {
     if (!isDirty) return;
 
@@ -224,6 +303,46 @@ export default function PostEditor({
 
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
+
+  /* `beforeunload` sólo cubre cerrar la pestaña, recargar o irse a otro sitio.
+     NO se dispara en una navegación de Next: un clic en "Artículos" del riel es
+     un push del router, no una descarga de documento — el guard de arriba no se
+     enteraba y el borrador se perdía en silencio.
+
+     Se escucha el clic en fase de captura sobre el documento y no se envuelve
+     cada enlace: los enlaces que sacan de acá están en el riel y en la miga,
+     que son componentes del layout y no saben que abajo hay un editor sucio.
+     Un solo oyente los cubre a todos, incluidos los que se agreguen después.
+
+     Se dejan pasar: el clic con modificador (abre en otra pestaña, no te saca
+     de esta), el destino externo o con `target`, la descarga, y el enlace que
+     apunta a esta misma ruta. */
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const onCapture = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const anchor = (event.target as Element | null)?.closest?.("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (anchor.hasAttribute("download")) return;
+      if (anchor.origin !== window.location.origin) return;
+      if (anchor.pathname === window.location.pathname) return;
+
+      const leave = window.confirm(
+        "Este artículo tiene cambios sin guardar. Si salís ahora se pierden.",
+      );
+      if (!leave) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    document.addEventListener("click", onCapture, true);
+    return () => document.removeEventListener("click", onCapture, true);
   }, [isDirty]);
 
   /* Un bloque nuevo entra JUSTO DEBAJO del que está seleccionado, no al final.
@@ -268,6 +387,7 @@ export default function PostEditor({
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       onSubmit={(event) => {
         /* Qué botón se apretó. `submitter` es lo único que lo dice, y hace
@@ -289,8 +409,24 @@ export default function PostEditor({
           El editor mide varias pantallas de alto: con los botones sólo en el
           encabezado, guardar desde el final del formulario obliga a subir todo
           el camino. Es la corrección más útil de esta vista. */}
-      <div className="sticky top-[3rem] z-30 -mx-4 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--p-line)] bg-[var(--p-surface)] px-4 py-2.5 sm:-mx-6 sm:px-6">
+      {/* El desplazamiento sale del token que define el alto de la barra
+          superior (`--p-space-7`), no de un `3rem` escrito a mano: eran el
+          mismo número en dos archivos, y el día que la barra cambie de alto
+          esta se le monta encima. */}
+      <div className="sticky top-[var(--p-space-7)] z-[var(--p-z-sticky)] -mx-4 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--p-line)] bg-[var(--p-surface)] px-4 py-2.5 sm:-mx-6 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
+          {/* La SALIDA. No existía: el editor tenía dos botones para guardar y
+              ninguno para irse. La única forma de abandonar un borrador era el
+              botón de atrás del navegador o un enlace del riel, o sea salir por
+              donde no hay puerta. Va a la izquierda del título porque es un
+              retroceso, no una acción sobre el artículo — y por eso es un
+              enlace y no un botón: navega. El guard de cambios sin guardar lo
+              intercepta igual que a cualquier otro enlace. */}
+          <IconLinkButton
+            href="/admin/posts"
+            label="Volver a Artículos"
+            icon={<IconArrowLeft size={16} />}
+          />
           <h1 className="cq-title truncate">
             {initial.id ? "Editar artículo" : "Nuevo artículo"}
           </h1>
@@ -298,10 +434,24 @@ export default function PostEditor({
               un mensaje para señalar de cuál se está hablando. */}
           {initial.id && <Ident chip>#{initial.id}</Ident>}
         </div>
-        <SaveButtons />
+        <SaveButtons onPublishIntent={askBeforePublish} publishLabel={publishLabel} />
+        <ConfirmDialog
+          open={confirmingPublish}
+          onClose={() => setConfirmingPublish(false)}
+          onConfirm={confirmPublish}
+          tone="primary"
+          confirmLabel="Publicar ahora"
+          cancelLabel="Todavía no"
+          title={`¿Publicar «${title || "este artículo"}»?`}
+          description="Queda visible en el blog público apenas se guarde. Se puede volver a borrador o esconder desde la tabla de artículos."
+        />
       </div>
 
-      {state.error && <Alert>{state.error}</Alert>}
+      {state.error && (
+        <div ref={errorRef} tabIndex={-1}>
+          <Alert>{state.error}</Alert>
+        </div>
+      )}
 
       <p aria-live="polite" className="sr-only">
         {announcement.text}
@@ -324,12 +474,13 @@ export default function PostEditor({
 
       <section className="cq-section">
         <div className="cq-section-head">
-          <h2 className="cq-label">Datos del artículo</h2>
+          <h2 className="cq-section-title">Datos del artículo</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 pb-6 lg:grid-cols-2">
-        <TextField label="Título" value={title} onChange={setTitle} maxLength={120} />
+        <TextField label="Título" value={title} onChange={setTitle} maxLength={120} required />
         <TextField
-          label="Slug (opcional — se genera del título)"
+          label="Slug"
+          hint="Se genera del título si lo dejás vacío. Es lo que se ve en la URL pública."
           value={slug}
           onChange={setSlug}
           placeholder="mi-articulo"
@@ -338,7 +489,13 @@ export default function PostEditor({
         <input type="hidden" name="slug" value={slug} />
 
         <div className="lg:col-span-2">
-          <TextAreaField label="Extracto" value={excerpt} onChange={setExcerpt} rows={3} />
+          <TextAreaField
+            label="Extracto"
+            hint="El resumen que acompaña al artículo en el listado del blog."
+            value={excerpt}
+            onChange={setExcerpt}
+            rows={3}
+          />
           <input type="hidden" name="excerpt" value={excerpt} />
         </div>
 
@@ -352,6 +509,7 @@ export default function PostEditor({
         />
         <TextField
           label="Texto alternativo de la portada"
+          hint="Describe la imagen para quien no puede verla. Lo lee un lector de pantalla."
           value={coverImageAlt}
           onChange={setCoverImageAlt}
           maxLength={200}
@@ -389,13 +547,39 @@ export default function PostEditor({
           </select>
         </label>
 
-        <TextField label="Título SEO (opcional)" value={seoTitle} onChange={setSeoTitle} maxLength={70} />
-        <TextField
-          label="Descripción SEO (opcional)"
-          value={seoDescription}
-          onChange={setSeoDescription}
-          maxLength={160}
-        />
+        {/* El SEO va PLEGADO y aparte.
+
+            Estaba suelto en la misma grilla que Título, Portada y Categoría, o
+            sea que dos campos opcionales que la mayoría de las veces se dejan
+            vacíos pesaban lo mismo que los obligatorios. Lo único que los
+            distinguía era la palabra "(opcional)" dentro del rótulo.
+
+            `<details>` y no una pestaña ni un acordeón propio: es un control
+            nativo, funciona sin JavaScript, el navegador ya lo hace accesible
+            con teclado, y el buscador del navegador (Ctrl+F) encuentra lo que
+            hay adentro y lo abre solo. */}
+        <details className="cq-details lg:col-span-2">
+          <summary className="cq-details-summary">
+            <span className="cq-section-title">Metadatos para buscadores</span>
+            <span className="cq-meta">Opcional — si se dejan vacíos se usa el título y el extracto</span>
+          </summary>
+          <div className="grid grid-cols-1 gap-4 pt-4 lg:grid-cols-2">
+            <TextField
+              label="Título SEO"
+              hint="Hasta 70 caracteres. Es lo que se ve como titular en Google."
+              value={seoTitle}
+              onChange={setSeoTitle}
+              maxLength={70}
+            />
+            <TextField
+              label="Descripción SEO"
+              hint="Hasta 160 caracteres. Es el párrafo debajo del titular."
+              value={seoDescription}
+              onChange={setSeoDescription}
+              maxLength={160}
+            />
+          </div>
+        </details>
         <input type="hidden" name="seoTitle" value={seoTitle} />
         <input type="hidden" name="seoDescription" value={seoDescription} />
         </div>
@@ -408,7 +592,7 @@ export default function PostEditor({
               <span aria-hidden="true" className="cq-section-figure" data-zero={blocks.length === 0 ? "true" : undefined}>
                 {String(blocks.length).padStart(2, "0")}
               </span>
-              <h2 className="cq-label pb-1.5">Bloques del artículo</h2>
+              <h2 className="cq-section-title pb-1.5">Bloques del artículo</h2>
             </div>
           </div>
 
@@ -480,10 +664,12 @@ export default function PostEditor({
           />
         </section>
 
-        <aside className="lg:sticky lg:top-[7rem] lg:self-start">
+        {/* Barra superior + barra de guardado + aire. Se compone de los mismos
+            tokens que las dos barras que tiene encima. */}
+        <aside className="lg:sticky lg:top-[calc(var(--p-space-7)*2+var(--p-space-4))] lg:self-start">
           <div className="cq-section pb-5">
             <div className="cq-section-head">
-              <h2 className="cq-label">Propiedades</h2>
+              <h2 className="cq-section-title">Propiedades</h2>
             </div>
             {selected ? (
               <div className="grid gap-4">
@@ -553,7 +739,7 @@ export default function PostEditor({
           se ve acá es literalmente lo que se va a publicar, no una maqueta. */}
       <section className="cq-section mt-8">
         <div className="cq-section-head">
-          <h2 className="cq-label">Vista previa</h2>
+          <h2 className="cq-section-title">Vista previa</h2>
         </div>
         <div className="mx-auto max-w-[44rem] pb-8">
           {blocks.length > 0 ? (

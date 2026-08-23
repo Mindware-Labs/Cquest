@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, type CSSProperties } from "react";
+import { useState, useTransition, type CSSProperties } from "react";
 import type { CategoryActionState } from "@/lib/categories";
-import { SubmitButton } from "@/components/admin/ui/Buttons";
-import { IconButton } from "@/components/admin/ui/Button";
+import { Button, IconButton } from "@/components/admin/ui/Button";
 import { DeleteAction } from "@/components/admin/ui/DeleteAction";
 import { IconClose, IconPencil } from "@/components/admin/ui/icons";
-import { Alert, Ident } from "@/components/admin/ui/Surface";
+import { Alert } from "@/components/admin/ui/Surface";
+import { useToast } from "@/components/admin/ui/Toast";
 
 type Action = (state: CategoryActionState, formData: FormData) => Promise<CategoryActionState>;
 
@@ -46,9 +46,38 @@ export default function CategoryCard({
   index?: number;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [renameState, renameFormAction] = useActionState(renameAction, { error: null });
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [renaming, startRename] = useTransition();
   const [removed, setRemoved] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { notify } = useToast();
+
+  /* Cierre y confirmación del renombrado.
+
+     Faltaban las dos cosas. Al guardar, la tarjeta se QUEDABA en modo edición y
+     el campo seguía mostrando el texto anterior —es un input no controlado, así
+     que `defaultValue` no se vuelve a leer—, mientras el nombre nuevo ya estaba
+     guardado detrás. O sea: la única lectura posible era "no pasó nada", con el
+     dato viejo a la vista. Y era además la única mutación del panel sin aviso;
+     crear, borrar y guardar plantilla avisan las tres.
+
+     Va con `useTransition` y la acción llamada directo, como hace DeleteAction,
+     y no con `useActionState` más un efecto que cierre al ver el resultado: el
+     resultado acá se necesita como VALOR para decidir si cerrar, y esperar la
+     promesa lo da en el mismo lugar donde se decide. Un efecto que mira el
+     estado devuelto y hace `setState` encadena un render por guardado. */
+  function submitRename(formData: FormData) {
+    startRename(async () => {
+      const result = await renameAction({ error: null }, formData);
+      if (result.error) {
+        setRenameError(result.error);
+        return;
+      }
+      setRenameError(null);
+      setIsEditing(false);
+      notify({ message: "Categoría renombrada.", tone: "success" });
+    });
+  }
 
   /* Una categoría con artículos no se puede borrar (AD-4). El backend ya lo
      impide; deshabilitar el botón acá es para que se sepa ANTES de hacer clic,
@@ -61,7 +90,7 @@ export default function CategoryCard({
     return (
       <li className="cq-card cq-enter" style={{ "--cq-i": index } as CSSProperties}>
         <form
-          action={renameFormAction}
+          action={submitRename}
           className="grid gap-2"
           onKeyDown={(event) => {
             if (event.key === "Escape") setIsEditing(false);
@@ -82,17 +111,18 @@ export default function CategoryCard({
             className="cq-input"
           />
           <div className="flex items-center gap-2">
-            <SubmitButton variant="solid" size="sm" pendingLabel="Guardando…">
-              Guardar
-            </SubmitButton>
+            <Button type="submit" variant="solid" size="sm" disabled={renaming}>
+              {renaming ? "Guardando…" : "Guardar"}
+            </Button>
             <IconButton
               label="Cancelar el cambio de nombre"
               size="sm"
               icon={<IconClose size={14} />}
+              disabled={renaming}
               onClick={() => setIsEditing(false)}
             />
           </div>
-          {renameState.error && <Alert>{renameState.error}</Alert>}
+          {renameError && <Alert>{renameError}</Alert>}
         </form>
       </li>
     );
@@ -101,7 +131,12 @@ export default function CategoryCard({
   return (
     <li className="cq-card cq-enter relative" style={{ "--cq-i": index } as CSSProperties}>
       <Link
-        href={`/admin/posts?q=${encodeURIComponent(category.name)}`}
+        /* `categoria=<slug>`, no `q=<nombre>`. La búsqueda es coincidencia de
+           texto sobre título, slug y nombre de categoría: una categoría
+           llamada "Blog" devolvía todo artículo cuyo título dijera "blog", y
+           una llamada "Casos" no devolvía los suyos si el título no repetía la
+           palabra. El slug compara contra la relación real. */
+        href={`/admin/posts?categoria=${encodeURIComponent(category.slug)}`}
         /* El enlace se estira sobre toda la tarjeta con un pseudo-elemento, así
            que el área de clic es la tarjeta completa pero el nombre accesible
            sigue siendo sólo el título — no el título más el slug más la cifra
@@ -111,10 +146,10 @@ export default function CategoryCard({
         <p className="cq-title truncate">{category.name}</p>
       </Link>
 
-      <Ident path className="mt-1 block truncate">
-        {category.slug}
-      </Ident>
-
+      {/* El slug se fue de acá también. En una tarjeta de categoría el nombre
+          es el dato, y la versión en minúsculas con guiones debajo era el mismo
+          nombre escrito dos veces —"Casos de éxito" / "casos-de-exito"— con la
+          segunda en tipografía de sistema. */}
       <p className="mt-4 flex items-baseline gap-2">
         <span className="cq-display leading-none">{category.postCount}</span>
         <span className="cq-meta">

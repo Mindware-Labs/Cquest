@@ -25,6 +25,20 @@ import { IconButton } from "./Button";
    al navegador a recalcular la maquetación del contenido del cajón en cada
    cuadro, y con un formulario adentro se nota. */
 
+/* Cuánto dura de verdad la animación de salida, leída del elemento en vez de
+   escrita a mano. Así el token de CSS sigue siendo la única fuente: cambiar
+   `--p-t-base` mueve la espera sin tocar este archivo. El respaldo de 180ms
+   sólo entra si el navegador todavía no calculó el estilo. */
+function exitDurationMs(element: HTMLElement): number {
+  const declared = getComputedStyle(element).getPropertyValue("--p-t-base").trim();
+  const parsed = declared.endsWith("ms")
+    ? Number.parseFloat(declared)
+    : declared.endsWith("s")
+      ? Number.parseFloat(declared) * 1000
+      : Number.NaN;
+  return Number.isFinite(parsed) ? parsed : 180;
+}
+
 export function Drawer({
   open,
   onClose,
@@ -76,10 +90,14 @@ export function Drawer({
       }
 
       dialog.dataset.leaving = "true";
+      /* La espera se lee del token que gobierna la animación de salida en vez
+         de repetirlo acá. Estaba fijo en 240ms —el token de ENTRADA— mientras
+         la salida dura `--p-t-base`: el cajón quedaba invisible pero abierto
+         60ms de más, con el fondo todavía inerte. */
       const timer = setTimeout(() => {
         dialog.close();
         delete dialog.dataset.leaving;
-      }, 240);
+      }, exitDurationMs(dialog));
       return () => clearTimeout(timer);
     }
   }, [open]);

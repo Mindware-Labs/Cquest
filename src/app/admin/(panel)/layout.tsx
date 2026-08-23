@@ -33,7 +33,13 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <div className="flex min-h-screen flex-col lg:flex-row">
         <a
           href="#panel-contenido"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-110 focus:rounded-[8px] focus:bg-surface-raised focus:px-4 focus:py-2 focus:text-[0.85rem] focus:font-semibold focus:text-foreground focus:outline-2 focus:outline-petroleo"
+          /* Los tokens del PANEL, no los del sitio público. Traía
+             `bg-surface-raised`, `text-foreground` y `outline-petroleo`, que
+             son del otro sistema, más un radio y un tamaño de fuente escritos
+             a mano. El primer control que ve alguien que navega con teclado no
+             puede ser el único que no pertenece al panel. */
+          className="cq-btn sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[var(--p-z-skip)]"
+          data-variant="solid"
         >
           Saltar al contenido
         </a>

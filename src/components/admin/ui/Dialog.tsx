@@ -80,9 +80,15 @@ export function Dialog({
   );
 }
 
-/* Confirmación de una acción destructiva. Un solo componente para todas, con el
-   nombre de lo que se va a borrar escrito en el título: "¿Eliminar?" a secas
-   obliga a recordar sobre qué fila se hizo clic. */
+/* Confirmación de una acción con consecuencia. Un solo componente para todas,
+   con el nombre de aquello sobre lo que se actúa escrito en el título:
+   "¿Eliminar?" a secas obliga a recordar sobre qué fila se hizo clic.
+
+   `tone` existe porque no toda confirmación es un borrado. Publicar también
+   pide una —saca el artículo a la web— pero es la acción PRINCIPAL, no una
+   destructiva: pintarla de rojo enseñaría que el rojo significa "importante"
+   en vez de "esto destruye algo", y a partir de ahí el rojo del borrado deja
+   de avisar nada. */
 export function ConfirmDialog({
   open,
   onClose,
@@ -91,6 +97,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = "Eliminar",
   cancelLabel = "Cancelar",
+  tone = "danger",
 }: {
   open: boolean;
   onClose: () => void;
@@ -99,6 +106,7 @@ export function ConfirmDialog({
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  tone?: "danger" | "primary";
 }) {
   return (
     <Dialog
@@ -109,12 +117,12 @@ export function ConfirmDialog({
       footer={
         <>
           {/* Cancelar va primero en el DOM: es el destino por defecto del foco
-              al abrir el diálogo, y en una confirmación destructiva el foco
-              tiene que caer en la salida segura. */}
+              al abrir el diálogo, y en una confirmación el foco tiene que caer
+              en la salida segura. */}
           <Button variant="ghost" onClick={onClose}>
             {cancelLabel}
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant={tone === "danger" ? "danger" : "solid"} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </>

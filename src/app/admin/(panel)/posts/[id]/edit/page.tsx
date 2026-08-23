@@ -59,6 +59,11 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
         locale: post.locale,
         seoTitle: post.seoTitle ?? "",
         seoDescription: post.seoDescription ?? "",
+        /* El editor lo necesita para saber si "Publicar" es una PRIMERA
+           publicación —que saca el artículo a la web— o el guardado de uno que
+           ya está publicado, que no cambia su visibilidad. Sólo el primero pide
+           confirmación. */
+        status: post.status,
         blocks: parsed.data,
       }}
     />

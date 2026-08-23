@@ -221,12 +221,32 @@
   --p-radius-sm: 8px; /* TODOS los controles: botón, campo, select, casilla */
   --p-radius-md: 14px; /* superficies: tarjeta, sección cerrada, capa flotante */
   --p-radius-lg: 18px; /* el contenedor del módulo, un escalón por encima */
+  /* Círculo completo: punto de estado, medidor, barra de desplazamiento. Estaba
+     escrito `999px` en cinco reglas sueltas, que es un literal repetido. */
+  --p-radius-full: 999px;
 
   /* ---------- Filetes ----------
      Siempre 1px. El grosor no es la variable — el color lo es. */
 
   --p-border: 1px solid var(--p-line);
   --p-border-strong: 1px solid var(--p-line-strong);
+
+  /* ---------- Apilado ----------
+
+     Este archivo dice arriba que es el único lugar del panel donde puede
+     aparecer un literal, y el z-index era el agujero: había seis números
+     mágicos repartidos en cuatro archivos, sin forma de saber cuál gana contra
+     cuál sin abrirlos todos. Son seis estratos y se leen en orden.
+
+     El salto de 10 en 10 deja lugar para meter algo en el medio sin renumerar
+     lo que ya está. */
+
+  --p-z-raised: 10; /* encabezado de tabla pegado, dentro de su caja */
+  --p-z-sticky: 20; /* barra superior y barras de acción del documento */
+  --p-z-dropdown: 30; /* menú de cuenta, panel flotante anclado a un control */
+  --p-z-overlay: 40; /* velo y capa modal — tapa todo lo anterior */
+  --p-z-toast: 50; /* el aviso sobrevive al modal que lo disparó */
+  --p-z-skip: 60; /* el salto al contenido gana siempre; si no, no sirve */
 
   /* ---------- Elevación ----------
      Una sola, y sólo para lo que flota por encima del documento. El resto del
@@ -256,6 +276,15 @@
   --p-control-h: 2rem; /* 32px */
   --p-control-h-sm: 1.75rem; /* 28px */
   --p-rail-item-h: 2.25rem;
+
+  /* 44px. Dos trabajos, un valor:
+       1. La acción única de una pantalla enfocada —entrar, confirmar— donde un
+          control de 32px se lee como un botón de barra de herramientas perdido
+          en el medio de una tarjeta. El login lo escribía a mano con `py-3` y
+          un radio y un tamaño de fuente propios.
+       2. El piso táctil. En un puntero grueso todo control baja a este alto,
+          porque 28px con el dedo es un error de destino, no una densidad. */
+  --p-control-h-lg: 2.75rem;
 
   /* Padding lateral de sección. Uno solo para tabla, lista, encabezado y
      vacío: es lo que hace que todo el contenido caiga en la misma columna. */

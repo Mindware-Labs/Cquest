@@ -15,15 +15,22 @@ import CategoryCreateDrawer from "./CategoryCreateDrawer";
    el que se decide algo sobre una categoría: si tiene contenido o está vacía, y
    por lo tanto si se puede borrar.
 
-   La última casilla es "Nueva categoría", en filete punteado. Así la acción de
-   crear está donde el ojo terminó de recorrer la lista, y el estado vacío no
-   necesita un componente aparte: con cero categorías, la grilla es esa casilla
-   sola y ya dice qué hacer. */
+   El azulejo punteado "Nueva categoría" quedó SÓLO para la grilla vacía, que es
+   donde de verdad trabaja: con cero categorías es el estado vacío y dice qué
+   hacer sin necesitar un componente aparte. Como última casilla permanente
+   dejaba de funcionar apenas la lista crecía —con veinte categorías la acción
+   de crear se iba abajo de todo— y además era el cuarto lugar distinto donde
+   este panel ponía su acción principal. Ahora está en el encabezado, como en
+   los otros tres módulos. */
 export default async function AdminCategoriesPage() {
   const categories = await getCategories();
 
   return (
-    <ModulePage title="Categorías" path="admin/categories" description="Cada artículo pertenece a una">
+    <ModulePage
+      title="Categorías"
+      description="Cada artículo pertenece a una"
+      actions={<CategoryCreateDrawer action={createCategory} />}
+    >
       <Section
         title="Todas las categorías"
         count={categories.length}
@@ -48,9 +55,11 @@ export default async function AdminCategoriesPage() {
             />
           ))}
 
-          <li>
-            <CategoryCreateDrawer action={createCategory} tile />
-          </li>
+          {categories.length === 0 && (
+            <li>
+              <CategoryCreateDrawer action={createCategory} tile />
+            </li>
+          )}
         </ul>
       </Section>
     </ModulePage>

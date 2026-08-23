@@ -86,15 +86,17 @@ export default async function AdminHomePage() {
   const { lastPeriod, previousPeriod, volume } = comparePeriods(publishedDates);
 
   return (
+    /* Sin acción primaria. El tablero es una pantalla de LECTURA: dice qué está
+       publicado, qué quedó en borrador y qué se movió en el período. Escribir un
+       artículo se hace en Artículos, que está a un clic en el riel y ya tiene su
+       propio botón — y el mismo «Nuevo artículo» repetido en cuatro módulos
+       enseña a no mirar la franja del encabezado.
+
+       Con `actions` ausente, `ModulePage` ya no dibuja la franja: el tablero
+       arranca directamente en sus cifras, que es lo que se viene a ver. */
     <ModulePage
       title="Inicio"
-      path="admin"
       description="Qué falta hacer"
-      actions={
-        <LinkButton href="/admin/posts/new" variant="solid" icon={<IconPlus size={15} />}>
-          Nuevo artículo
-        </LinkButton>
-      }
       stats={[
         {
           label: "Publicados",
@@ -198,7 +200,7 @@ export default async function AdminHomePage() {
             <EmptyState
               title="No queda nada pendiente"
               hint="Todo lo que existe está publicado."
-              rows={2}
+              plain
               action={
                 <LinkButton href="/admin/posts/new" icon={<IconPlus size={15} />}>
                   Escribir uno nuevo

@@ -2,10 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useState, type CSSProperties } from "react";
+import { useState, useTransition, type CSSProperties } from "react";
 import type { PostActionState } from "@/lib/posts";
-import { SubmitButton } from "@/components/admin/ui/Buttons";
-import { IconLinkButton } from "@/components/admin/ui/Button";
+import { Button, IconLinkButton } from "@/components/admin/ui/Button";
 import { DeleteAction } from "@/components/admin/ui/DeleteAction";
 import {
   IconCheck,
@@ -13,8 +12,10 @@ import {
   IconEye,
   IconEyeOff,
   IconPencil,
+  IconSpinner,
 } from "@/components/admin/ui/icons";
 import { Alert, Ident, StatusBadge } from "@/components/admin/ui/Surface";
+import { useToast } from "@/components/admin/ui/Toast";
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
@@ -45,16 +46,63 @@ export default function PostRow({
   selected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
 }) {
-  const [statusState, statusFormAction] = useActionState(setStatusAction, { error: null });
   const [removed, setRemoved] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [switching, startSwitch] = useTransition();
+  const { notify } = useToast();
 
   /* Publicado ↔ oculto es el interruptor de visibilidad. Un borrador que nunca
      se publicó no se "oculta": se publica. */
   const isPublished = post.status === "PUBLISHED";
   const nextStatus = isPublished ? "HIDDEN" : "PUBLISHED";
   const toggleLabel = isPublished ? "Ocultar" : "Publicar";
-  const error = statusState.error ?? deleteError;
+  const error = statusError ?? deleteError;
+
+  /* Publicar desde la fila sigue siendo UN clic, pero ahora deja deshacerlo.
+
+     El panel protegía lo reversible —borrar pedía diálogo y daba cinco
+     segundos— y dejaba abierto lo que sale a producción: este botón mandaba un
+     artículo a la web sin confirmación ni vuelta atrás.
+
+     Acá no va un diálogo, y es a propósito. Este control existe para operar la
+     tabla rápido: sí o sí publicar y esconder de a varios seguidos, y un modal
+     por fila convierte eso en un trámite. El diálogo se reserva para el editor,
+     donde publicar cierra un trabajo largo. En la tabla, la red es el deshacer,
+     que es exactamente el idioma que el panel ya usa para borrar.
+
+     Y a diferencia del borrado, el cambio se aplica YA: publicar es reversible
+     por definición —el botón que lo revierte es el mismo—, así que no hay razón
+     para retener la llamada cinco segundos. */
+  function toggleStatus() {
+    startSwitch(async () => {
+      const formData = new FormData();
+      formData.set("id", String(post.id));
+      formData.set("status", nextStatus);
+      const result = await setStatusAction({ error: null }, formData);
+      setStatusError(result.error);
+      if (result.error) return;
+
+      notify({
+        message: isPublished
+          ? `«${post.title}» ya no se ve en el blog.`
+          : `«${post.title}» está publicado.`,
+        tone: "success",
+        action: {
+          label: "Deshacer",
+          onClick: () => {
+            startSwitch(async () => {
+              const undo = new FormData();
+              undo.set("id", String(post.id));
+              undo.set("status", post.status);
+              const back = await setStatusAction({ error: null }, undo);
+              setStatusError(back.error);
+            });
+          },
+        },
+      });
+    });
+  }
 
   /* Mientras corre la ventana de deshacer, la fila sale de la tabla. */
   if (removed) return null;
@@ -94,20 +142,20 @@ export default function PostRow({
                 className="object-cover"
               />
             </div>
+            {/* Sólo el título. Debajo iba el slug en mono con barra adelante,
+                como identificador de máquina — pero en una tabla de artículos
+                el título ya identifica la fila, y la segunda línea gris de
+                texto técnico agregaba altura y ruido a cada una de las
+                veinticinco. El artículo publicado tiene su enlace al blog
+                público en las acciones de la fila, que es donde de verdad se
+                necesita la URL. */}
             <div className="min-w-0">
-              {/* El título completo, no truncado a mitad de palabra: en una
-                  lista de artículos el título ES el identificador humano. */}
               <Link
                 href={`/admin/posts/${post.id}/edit`}
                 className="cq-title block hover:underline"
               >
                 {post.title}
               </Link>
-              {/* Y este es el identificador de máquina. En mono, con la barra
-                  adelante: es la URL pública real, la que se copia y se pega. */}
-              <Ident path className="mt-0.5 block truncate">
-                {post.slug}
-              </Ident>
             </div>
           </div>
         </td>
@@ -148,18 +196,23 @@ export default function PostRow({
               icon={<IconPencil size={14} />}
             />
 
-            <form action={statusFormAction}>
-              <input type="hidden" name="id" value={post.id} />
-              <input type="hidden" name="status" value={nextStatus} />
-              <SubmitButton
-                variant="ghost"
-                size="sm"
-                pendingLabel="Guardando…"
-                icon={isPublished ? <IconEyeOff size={14} /> : <IconEye size={14} />}
-              >
-                {toggleLabel}
-              </SubmitButton>
-            </form>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={switching}
+              onClick={toggleStatus}
+              icon={
+                switching ? (
+                  <IconSpinner size={14} />
+                ) : isPublished ? (
+                  <IconEyeOff size={14} />
+                ) : (
+                  <IconEye size={14} />
+                )
+              }
+            >
+              {switching ? "Guardando…" : toggleLabel}
+            </Button>
 
             <DeleteAction
               compact

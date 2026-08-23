@@ -2,30 +2,41 @@ import {
   LoadingAnnouncement,
   SkeletonLine,
   SkeletonPageHeader,
-  SkeletonRows,
+  SkeletonTable,
 } from "@/components/admin/ui/Skeleton";
 
 export default function AdminPostsLoading() {
   return (
     <div>
       <LoadingAnnouncement>Cargando los artículos</LoadingAnnouncement>
-      <SkeletonPageHeader withAction={false} />
-      {/* Espeja la barra de herramientas —filtros a la izquierda, búsqueda y
-          acción a la derecha— y después las filas. Sin tarjeta alrededor,
-          igual que la pantalla real. */}
+      {/* Con acción: "Nuevo artículo" ahora vive en el encabezado del módulo,
+          igual que en los otros tres. Antes estaba dentro de la barra de la
+          tabla y este esqueleto la dibujaba ahí. */}
+      <SkeletonPageHeader />
+      {/* Espeja la barra de herramientas: cuatro pestañas de filtro a la
+          izquierda, campo de búsqueda y su botón a la derecha. Sin tarjeta
+          alrededor, igual que la pantalla real. */}
       <div className="cq-table-toolbar">
-        <div className="flex items-center gap-3">
-          <SkeletonLine width="3.5rem" height="0.8rem" />
-          <SkeletonLine width="4.5rem" height="0.8rem" />
-          <SkeletonLine width="4.5rem" height="0.8rem" />
-          <SkeletonLine width="3.5rem" height="0.8rem" />
+        <div className="flex items-center gap-1">
+          <SkeletonLine width="3.5rem" height="var(--p-control-h)" />
+          <SkeletonLine width="5rem" height="var(--p-control-h)" />
+          <SkeletonLine width="5rem" height="var(--p-control-h)" />
+          <SkeletonLine width="4rem" height="var(--p-control-h)" />
         </div>
         <div className="flex items-center gap-2">
-          <SkeletonLine width="9rem" height="2rem" className="rounded-[8px]" />
-          <SkeletonLine width="8rem" height="2rem" className="rounded-[8px]" />
+          <SkeletonLine
+            width="9rem"
+            height="var(--p-control-h)"
+            className="rounded-[var(--p-radius-sm)]"
+          />
+          <SkeletonLine
+            width="4.5rem"
+            height="var(--p-control-h-sm)"
+            className="rounded-[var(--p-radius-sm)]"
+          />
         </div>
       </div>
-      <SkeletonRows count={10} />
+      <SkeletonTable count={10} />
     </div>
   );
 }

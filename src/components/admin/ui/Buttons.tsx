@@ -3,17 +3,21 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { IconSpinner, IconTrash } from "./icons";
+import type { ButtonVariant, ButtonSize } from "./Button";
 
 /* Los botones atados a un <form>. Viven aparte de Button.tsx porque dependen de
    `useFormStatus`, que sólo funciona dentro del formulario que envía — y eso
    los obliga a ser componentes de cliente. Un botón común no tiene por qué
    pagar ese costo.
 
-   Las variantes son las mismas cuatro del sistema. Los nombres viejos
-   (`primary`, `secondary`, `quiet`) siguen aceptados porque el editor todavía
-   los escribe, y la CSS los mapea a las variantes nuevas. */
-type Variant = "solid" | "outline" | "ghost" | "danger" | "primary" | "secondary" | "quiet";
-type Size = "md" | "sm" | "icon";
+   Las variantes y los tamaños se IMPORTAN de Button.tsx, no se redeclaran. Este
+   archivo tenía su propia unión con siete variantes y tres tamaños contra las
+   cuatro y dos del otro: dos vocabularios para el mismo botón, y el que
+   escribía uno no se enteraba de que el otro existía. Los alias viejos
+   (`primary`, `secondary`, `quiet`) se fueron con su CSS — el único que
+   quedaba escribiéndolos era el botón a mano del login, que ahora usa el
+   sistema. Los `"primary"`/`"secondary"` del editor de bloques son otra cosa:
+   estilos de botón del SITIO PÚBLICO, no variantes de `cq-btn`. */
 
 /* Un botón de envío que se apaga y se explica mientras la acción corre. El
    `useFormStatus` solo funciona dentro del <form> que envía, así que esto vive
@@ -30,8 +34,8 @@ export function SubmitButton({
 }: {
   children: ReactNode;
   pendingLabel?: string;
-  variant?: Variant;
-  size?: Size;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   name?: string;
   value?: string;
   icon?: ReactNode;
@@ -71,7 +75,7 @@ export function ConfirmSubmit({
   children: ReactNode;
   confirmLabel: string;
   pendingLabel?: string;
-  size?: Size;
+  size?: ButtonSize;
   className?: string;
   disabled?: boolean;
   title?: string;
@@ -89,26 +93,34 @@ export function ConfirmSubmit({
   }, [armed]);
 
   return (
-    <button
-      type="submit"
-      disabled={pending || disabled}
-      title={title}
-      data-variant="danger"
-      data-size={size}
-      data-armed={armed || undefined}
-      aria-live="polite"
-      className={`cq-btn ${className ?? ""}`}
-      onBlur={() => setArmed(false)}
-      onClick={(event) => {
-        if (!armed) {
-          /* El primer clic no envía: solo cambia el botón a "¿Seguro?". */
-          event.preventDefault();
-          setArmed(true);
-        }
-      }}
-    >
-      {pending ? <IconSpinner size={14} /> : <IconTrash size={14} />}
-      {pending && pendingLabel ? pendingLabel : armed ? confirmLabel : children}
-    </button>
+    <>
+      {/* El anuncio vive en un nodo aparte y no en el botón. `aria-live` sobre
+          un control interactivo lo convierte en su propia región viva: se
+          relee en cada re-render, no sólo cuando cambia el texto. Acá se
+          anuncia el armado una vez y nada más. */}
+      <span aria-live="polite" className="sr-only">
+        {armed ? confirmLabel : ""}
+      </span>
+      <button
+        type="submit"
+        disabled={pending || disabled}
+        title={title}
+        data-variant="danger"
+        data-size={size}
+        data-armed={armed || undefined}
+        className={`cq-btn ${className ?? ""}`}
+        onBlur={() => setArmed(false)}
+        onClick={(event) => {
+          if (!armed) {
+            /* El primer clic no envía: solo cambia el botón a "¿Seguro?". */
+            event.preventDefault();
+            setArmed(true);
+          }
+        }}
+      >
+        {pending ? <IconSpinner size={14} /> : <IconTrash size={14} />}
+        {pending && pendingLabel ? pendingLabel : armed ? confirmLabel : children}
+      </button>
+    </>
   );
 }

@@ -163,6 +163,18 @@ export function IconArrowRight(props: IconProps) {
   );
 }
 
+/* Espejo exacto de IconArrowRight: mismo trazo, mismo largo de asta, misma
+   apertura de punta. Un icono de volver dibujado a ojo se nota al lado del de
+   avanzar. */
+export function IconArrowLeft(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M19.5 12h-15" />
+      <path d="m10.5 6-6 6 6 6" />
+    </Icon>
+  );
+}
+
 export function IconArrowUp(props: IconProps) {
   return (
     <Icon {...props}>

@@ -97,9 +97,17 @@ export default function PostsTable({
           barra permanente con los botones apagados enseña a ignorarla. */}
       {activeSelection.length > 0 && (
         <div className="cq-bulkbar" role="region" aria-label="Acciones sobre la selección">
+          {/* "en esta página", explícito. La selección nunca cruzó la
+              paginación —la casilla del encabezado marca las filas montadas— y
+              mientras la tabla mostraba todo, "3 seleccionados" y "3 de los que
+              hay" eran lo mismo. Con páginas dejaron de serlo, y una acción
+              masiva que dice "seleccionados" sobre un subconjunto invisible es
+              exactamente el tipo de ambigüedad que hace que alguien publique de
+              menos y no se entere. */}
           <span className="cq-body font-semibold text-[var(--p-ink)]">
             {activeSelection.length}{" "}
-            {activeSelection.length === 1 ? "seleccionado" : "seleccionados"}
+            {activeSelection.length === 1 ? "seleccionado" : "seleccionados"}{" "}
+            <span className="cq-meta font-normal">en esta página</span>
           </span>
 
           <div className="flex flex-wrap items-center gap-1.5">

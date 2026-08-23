@@ -35,12 +35,13 @@ function RailHeader() {
         priority
         className="h-7 w-auto shrink-0"
       />
+      {/* Sólo la marca. Abajo decía `panel/editorial` en mono, que además de no
+          ser una ruta —no existe esa URL— se leía como una: el mono y la barra
+          son justamente lo que en este panel significa "esto es un
+          identificador del sistema". Era una etiqueta decorativa disfrazada de
+          dato. Qué panel es esto ya lo dice el logo. */}
       <SidebarLabel>
         <span className="cq-title block leading-none">Center Quest</span>
-        {/* El descriptor va en mono, no en versalitas de la tipografía de
-            interfaz: es una etiqueta de sistema —qué instancia del panel es
-            esto— y en el vocabulario de acá eso se escribe en mono. */}
-        <span className="cq-ident mt-1 block text-[var(--p-accent)]">panel/editorial</span>
       </SidebarLabel>
     </Link>
   );

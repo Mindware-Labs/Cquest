@@ -4,7 +4,11 @@ export default function AdminCategoriesLoading() {
   return (
     <div>
       <LoadingAnnouncement>Cargando las categorías</LoadingAnnouncement>
-      <SkeletonPageHeader withAction={false} />
+      {/* Con acción: Categorías tiene el cajón de «Nueva categoría» en la franja
+          del módulo, igual que los otros tres. Decía `withAction={false}` desde
+          antes de que ese botón se mudara ahí, así que el esqueleto no
+          reservaba nada y el control aparecía empujando la grilla hacia abajo. */}
+      <SkeletonPageHeader />
 
       {/* Espeja la grilla real de tarjetas, no una lista: si el esqueleto
           dibuja filas y llegan tarjetas, la página se rearma entera a la vista. */}

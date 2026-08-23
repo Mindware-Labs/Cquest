@@ -1,6 +1,22 @@
 import Link from "next/link";
-import { deletePost, getPosts, setPostStatus, setPostsStatus } from "@/lib/posts";
-import { IconPlus, IconSearch } from "@/components/admin/ui/icons";
+import {
+  ADMIN_POSTS_PAGE_SIZE,
+  ADMIN_POSTS_SORTS,
+  deletePost,
+  getAdminPosts,
+  isAdminPostsSort,
+  setPostStatus,
+  setPostsStatus,
+  type AdminPostsSort,
+} from "@/lib/posts";
+import { getCategoryBySlug } from "@/lib/categories";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconClose,
+  IconPlus,
+  IconSearch,
+} from "@/components/admin/ui/icons";
 import { LinkButton } from "@/components/admin/ui/Button";
 import { SearchField } from "@/components/admin/ui/Field";
 import { ModulePage } from "@/components/admin/ui/ModulePage";
@@ -35,10 +51,27 @@ function isFilterKey(value: string | undefined): value is FilterKey {
 /* Un href que conserva TODO lo que ya estaba puesto. Sin esto, tocar un filtro
    borra la búsqueda y buscar borra el filtro: dos controles que se pisan son
    peores que tener uno solo. */
-function buildHref({ estado, q }: { estado?: FilterKey; q?: string }) {
+function buildHref({
+  estado,
+  q,
+  categoria,
+  orden,
+  pagina,
+}: {
+  estado?: FilterKey;
+  q?: string;
+  categoria?: string;
+  orden?: AdminPostsSort;
+  pagina?: number;
+}) {
   const params = new URLSearchParams();
   if (estado && estado !== "todos") params.set("estado", estado);
   if (q) params.set("q", q);
+  if (categoria) params.set("categoria", categoria);
+  if (orden && orden !== "reciente") params.set("orden", orden);
+  /* La página 1 no se escribe. Es el default, y una URL que dice `?pagina=1` es
+     una URL que se ve distinta de la misma pantalla sin el parámetro. */
+  if (pagina && pagina > 1) params.set("pagina", String(pagina));
   const query = params.toString();
   return query ? `/admin/posts?${query}` : "/admin/posts";
 }
@@ -46,42 +79,51 @@ function buildHref({ estado, q }: { estado?: FilterKey; q?: string }) {
 export default async function AdminPostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; q?: string }>;
+  searchParams: Promise<{
+    estado?: string;
+    q?: string;
+    categoria?: string;
+    orden?: string;
+    pagina?: string;
+  }>;
 }) {
-  const { estado, q } = await searchParams;
-  const posts = await getPosts();
+  const { estado, q, categoria, orden, pagina } = await searchParams;
 
-  /* El filtro y la búsqueda viven en la URL y no en estado de cliente: así una
-     pestaña con "solo borradores de onboarding" se puede compartir, recargar y
-     volver atrás. */
+  /* Todo el recorte vive en la URL y no en estado de cliente: así una pestaña
+     con "solo borradores de onboarding, ordenados por edición, página 2" se
+     puede compartir, recargar y volver atrás. */
   const active: FilterKey = isFilterKey(estado) ? estado : "todos";
   const activeStatus = FILTERS.find((filter) => filter.key === active);
   const term = q?.trim() ?? "";
+  const categorySlug = categoria?.trim() || undefined;
+  const sort: AdminPostsSort = isAdminPostsSort(orden) ? orden : "reciente";
+  const requestedPage = Number.parseInt(pagina ?? "1", 10);
 
-  /* Se busca sobre el título, el identificador de URL y la categoría. El slug
-     entra porque es lo que se ve en la URL pública y a veces es lo único que se
-     recuerda de un artículo viejo. */
-  const needle = term.toLocaleLowerCase("es");
-  const matches = term
-    ? posts.filter((post) =>
-        [post.title, post.slug, post.category.name].some((field) =>
-          field.toLocaleLowerCase("es").includes(needle),
-        ),
-      )
-    : posts;
+  /* El filtrado, el orden y la página los hace la base. Antes se traía la tabla
+     entera y se recortaba en memoria: con quinientos artículos eran quinientas
+     filas viajando para mostrar veinticinco. */
+  const { posts, total, page, pageCount, counts } = await getAdminPosts({
+    status: activeStatus && "status" in activeStatus ? activeStatus.status : undefined,
+    categorySlug,
+    term: term || undefined,
+    sort,
+    page: Number.isNaN(requestedPage) ? 1 : requestedPage,
+  });
 
-  const visible =
-    activeStatus && "status" in activeStatus
-      ? matches.filter((post) => post.status === activeStatus.status)
-      : matches;
+  /* El nombre visible de la categoría sale de una consulta propia y chica, no
+     del listado: con paginación el slug filtrado puede no aparecer en la página
+     que se está viendo, y antes eso dejaba la etiqueta mostrando el slug crudo. */
+  const activeCategory = categorySlug
+    ? ((await getCategoryBySlug(categorySlug))?.name ?? categorySlug)
+    : undefined;
 
-  /* Los contadores cuentan sobre el resultado de la BÚSQUEDA, no sobre el total.
-     Si dijeran el total, "Borradores 12" al lado de una lista de 2 sería una
-     contradicción en la misma fila. */
   const countFor = (filter: (typeof FILTERS)[number]) =>
-    "status" in filter
-      ? matches.filter((post) => post.status === filter.status).length
-      : matches.length;
+    "status" in filter ? counts[filter.status] : counts.todos;
+
+  /* Si NO hay recorte activo y aun así no hay nada, es que no existe ningún
+     artículo — no que la búsqueda no encontró. Son dos vacíos distintos y se
+     salen por puertas distintas. */
+  const isFiltered = Boolean(term) || Boolean(categorySlug) || active !== "todos";
 
   return (
     /* Sin tira de cifras: los cuatro números que resumen esta pantalla ya están
@@ -90,8 +132,17 @@ export default async function AdminPostsPage({
        el trabajo real— fuera de la primera pantalla. */
     <ModulePage
       title="Artículos"
-      path="admin/posts"
       description="El contenido del blog público"
+      /* La acción principal vive en el encabezado del módulo, igual que en los
+         otros tres. Estaba dentro de la barra de la tabla con el argumento de
+         que "todo lo que se hace en esta pantalla está en la misma fila" — pero
+         filtrar y buscar ALTERAN la tabla y crear no: crear se va a otra
+         pantalla. La barra queda para lo que recorta lo que se está viendo. */
+      actions={
+        <LinkButton href="/admin/posts/new" variant="solid" icon={<IconPlus size={15} />}>
+          Nuevo artículo
+        </LinkButton>
+      }
     >
       {/* Sin tarjeta. La tabla ES la pantalla, así que no va metida en una caja
           con filete y radio: eso la dibujaba como un bloque apoyado sobre la
@@ -101,9 +152,15 @@ export default async function AdminPostsPage({
           `100dvh` y no `100vh`: en un teléfono la barra del navegador aparece y
           desaparece, y `vh` mide la pantalla sin ella — la última fila quedaba
           tapada. */}
-      <div className="cq-enter flex max-h-[calc(100dvh-8rem)] flex-col">
+      {/* El tope se compone de los tokens de lo que hay ARRIBA de la tabla
+          —barra superior, encabezado del módulo, relleno del contenedor— en vez
+          de un `8rem` fijo. Con el encabezado del módulo ahora visible, esa
+          constante quedaba corta y la región desplazable se pasaba de largo,
+          así que la página entera ganaba una segunda barra de desplazamiento
+          además de la de la tabla. */}
+      <div className="cq-enter flex max-h-[calc(100dvh-var(--p-space-7)-6rem)] flex-col">
         <h2 className="sr-only">
-          {activeStatus ? activeStatus.label : "Artículos"} — {visible.length}
+          {activeStatus ? activeStatus.label : "Artículos"} — {total}
         </h2>
         {/* Todo lo que altera la tabla vive CON la tabla: filtros y búsqueda en
             una sola barra pegada arriba de las columnas. Estaban repartidos
@@ -118,7 +175,16 @@ export default async function AdminPostsPage({
               return (
                 <Link
                   key={filter.key}
-                  href={buildHref({ estado: filter.key, q: term })}
+                  /* Cambiar de pestaña vuelve a la página 1 a propósito: la
+                     página 3 de "Todos" no es la página 3 de "Borradores", y
+                     conservar el número deja una lista vacía sin motivo. El
+                     orden sí se conserva — es una preferencia de lectura. */
+                  href={buildHref({
+                    estado: filter.key,
+                    q: term,
+                    categoria: categorySlug,
+                    orden: sort,
+                  })}
                   aria-current={isActive ? "true" : undefined}
                   className="cq-tab"
                 >
@@ -140,6 +206,10 @@ export default async function AdminPostsPage({
             className="flex items-center gap-2"
           >
             {active !== "todos" && <input type="hidden" name="estado" value={active} />}
+            {categorySlug && <input type="hidden" name="categoria" value={categorySlug} />}
+            {/* El orden viaja con la búsqueda; la página no. Buscar produce un
+                conjunto nuevo, y arrancarlo en la página 3 no tiene sentido. */}
+            {sort !== "reciente" && <input type="hidden" name="orden" value={sort} />}
             <SearchField
               id="post-search"
               name="q"
@@ -157,7 +227,7 @@ export default async function AdminPostsPage({
                 nada, y enseña a ignorarlo. */}
             {term && (
               <Link
-                href={buildHref({ estado: active })}
+                href={buildHref({ estado: active, categoria: categorySlug, orden: sort })}
                 className="cq-btn"
                 data-variant="ghost"
                 data-size="sm"
@@ -165,28 +235,68 @@ export default async function AdminPostsPage({
                 Limpiar
               </Link>
             )}
-
           </form>
 
-          {/* La acción principal vive en la barra de la tabla, no en un
-              encabezado aparte: todo lo que se hace en esta pantalla —filtrar,
-              buscar, crear— está en la misma fila, arriba de los datos sobre
-              los que se opera.
+          {/* El recorte por categoría llega por URL desde la tarjeta de
+              Categorías, así que tiene que ser VISIBLE y reversible acá: un
+              filtro que sólo vive en la barra de direcciones es una lista
+              incompleta sin explicación. La quita es el propio control. */}
+          {categorySlug && (
+            <Link
+              href={buildHref({ estado: active, q: term, orden: sort })}
+              className="cq-btn"
+              data-variant="outline"
+              data-size="sm"
+            >
+              <span className="cq-meta">Categoría:</span>
+              {activeCategory}
+              <IconClose size={13} aria-hidden="true" />
+              <span className="sr-only">Quitar el filtro de categoría</span>
+            </Link>
+          )}
 
-              Fuera del <form> de búsqueda, no adentro: es un enlace a otra
-              pantalla y no tiene nada que ver con lo que ese formulario envía.
-              Meterlo adentro ataría dos cosas que no se relacionan. */}
-          <LinkButton
-            href="/admin/posts/new"
-            variant="solid"
-            size="sm"
-            icon={<IconPlus size={14} />}
-          >
-            Nuevo artículo
-          </LinkButton>
+          {/* El orden, como <select> dentro de un <form> GET y no como
+              encabezados de columna con flechita.
+
+              Dos razones. La tabla se desplaza en horizontal en pantalla
+              angosta, así que un control que vive en el encabezado de la
+              columna "Editado" es un control que a veces no está en pantalla. Y
+              la mitad de los órdenes útiles acá no corresponden a una columna
+              visible —"más antiguos" es la fecha de creación, que la tabla no
+              muestra—, así que la metáfora de "hacer clic en la columna" ya no
+              alcanzaba antes de escribirla.
+
+              Sin JavaScript funciona igual: el botón envía el formulario. Con
+              JavaScript el `onChange` lo envía solo, pero eso vive en el
+              cliente y esta página es un Server Component, así que el botón se
+              queda — y de paso es el único camino accesible con teclado que no
+              depende de que el select dispare al navegar con flechas. */}
+          <form method="get" action="/admin/posts" className="flex items-center gap-2">
+            {active !== "todos" && <input type="hidden" name="estado" value={active} />}
+            {term && <input type="hidden" name="q" value={term} />}
+            {categorySlug && <input type="hidden" name="categoria" value={categorySlug} />}
+            <label htmlFor="post-sort" className="cq-label whitespace-nowrap">
+              Orden
+            </label>
+            <select
+              id="post-sort"
+              name="orden"
+              defaultValue={sort}
+              className="cq-select w-[11rem]"
+            >
+              {Object.entries(ADMIN_POSTS_SORTS).map(([key, option]) => (
+                <option key={key} value={key}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="cq-btn" data-variant="outline" data-size="sm">
+              Aplicar
+            </button>
+          </form>
         </div>
 
-        {posts.length === 0 ? (
+        {total === 0 && !isFiltered ? (
           <EmptyState
             title="Todavía no hay artículos"
             hint="Un artículo se arma con bloques: título, párrafos, imágenes, tablas. Podés partir de una plantilla o desde cero."
@@ -196,23 +306,39 @@ export default async function AdminPostsPage({
               </LinkButton>
             }
           />
-        ) : visible.length === 0 ? (
+        ) : total === 0 ? (
           /* Tres vacíos distintos, no uno genérico. "No hay resultados" obliga a
              adivinar si el problema es la búsqueda, el filtro o que no existe
              nada — y cada caso se sale por una puerta diferente. */
           <EmptyState
-            title={term ? `Nada coincide con «${term}»` : "Ningún artículo en este estado"}
+            title={
+              term
+                ? `Nada coincide con «${term}»`
+                : activeCategory
+                  ? `Nada en «${activeCategory}»`
+                  : "Ningún artículo en este estado"
+            }
             hint={
               term && active !== "todos"
                 ? "Puede que exista pero en otro estado. Probá quitando el filtro antes de descartar la búsqueda."
                 : term
                   ? "Se busca en el título, el identificador de URL y la categoría."
-                  : "Probá con otro filtro para ver el resto."
+                  : activeCategory && active !== "todos"
+                    ? "Esta categoría no tiene artículos en este estado."
+                    : activeCategory
+                      ? "La categoría existe pero todavía no tiene artículos."
+                      : "Probá con otro filtro para ver el resto."
             }
             rows={2}
             action={
               term && active !== "todos" ? (
-                <LinkButton href={buildHref({ q: term })}>Buscar en todos los estados</LinkButton>
+                <LinkButton href={buildHref({ q: term, categoria: categorySlug, orden: sort })}>
+                  Buscar en todos los estados
+                </LinkButton>
+              ) : activeCategory && active !== "todos" ? (
+                <LinkButton href={buildHref({ categoria: categorySlug, orden: sort })}>
+                  Ver toda la categoría
+                </LinkButton>
               ) : (
                 <LinkButton href="/admin/posts">
                   {term ? "Limpiar la búsqueda" : "Ver todos"}
@@ -228,8 +354,8 @@ export default async function AdminPostsPage({
              que una tabla hace mejor que una lista. En pantalla angosta ahora
              se desplaza en horizontal DENTRO de su caja. */
           <PostsTable
-            caption={`Artículos ${active === "todos" ? "en todos los estados" : `— ${activeStatus?.label}`}${term ? `, filtrados por «${term}»` : ""}`}
-            posts={visible.map((post) => ({
+            caption={`Artículos ${active === "todos" ? "en todos los estados" : `— ${activeStatus?.label}`}${activeCategory ? `, en la categoría ${activeCategory}` : ""}${term ? `, filtrados por «${term}»` : ""} — página ${page} de ${pageCount}`}
+            posts={posts.map((post) => ({
               id: post.id,
               title: post.title,
               slug: post.slug,
@@ -244,6 +370,85 @@ export default async function AdminPostsPage({
             deleteAction={deletePost}
             bulkStatusAction={setPostsStatus}
           />
+        )}
+
+        {/* Paginación.
+
+            Enlaces y no botones: cada página es una URL propia, se puede
+            compartir, se abre en pestaña nueva y el botón de atrás hace lo que
+            se espera. Es la misma decisión que ya tomaban el filtro y la
+            búsqueda.
+
+            Fuera de la región desplazable de la tabla, así queda siempre a la
+            vista y no hay que llegar al final del scroll interno para
+            encontrarla.
+
+            No se dibujan números de página. Con un tope de 25 por página, una
+            operación de blog rara vez pasa de unas pocas; una tira de números
+            que casi siempre dice "1 2" es cuatro controles para reemplazar dos.
+            Anterior / siguiente, y el conteo dice dónde estás. */}
+        {pageCount > 1 && (
+          <nav
+            aria-label="Paginación de artículos"
+            className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--p-line)] pt-3"
+          >
+            <p className="cq-meta">
+              {(page - 1) * ADMIN_POSTS_PAGE_SIZE + 1}–
+              {Math.min(page * ADMIN_POSTS_PAGE_SIZE, total)} de {total}
+            </p>
+            <div className="flex items-center gap-2">
+              {/* El extremo se dibuja deshabilitado y no se oculta: un control
+                  que aparece y desaparece hace saltar la fila, y no poder ir
+                  atrás en la página 1 es información. Es un <span> y no un <a>
+                  sin href porque un enlace sin destino no es enfocable ni
+                  anunciable — y no tiene por qué serlo. */}
+              {page > 1 ? (
+                <LinkButton
+                  href={buildHref({
+                    estado: active,
+                    q: term,
+                    categoria: categorySlug,
+                    orden: sort,
+                    pagina: page - 1,
+                  })}
+                  size="sm"
+                  icon={<IconArrowLeft size={14} />}
+                >
+                  Anterior
+                </LinkButton>
+              ) : (
+                <span className="cq-btn" data-variant="outline" data-size="sm" aria-disabled="true">
+                  <IconArrowLeft size={14} />
+                  Anterior
+                </span>
+              )}
+
+              <p className="cq-ident whitespace-nowrap">
+                {page} / {pageCount}
+              </p>
+
+              {page < pageCount ? (
+                <LinkButton
+                  href={buildHref({
+                    estado: active,
+                    q: term,
+                    categoria: categorySlug,
+                    orden: sort,
+                    pagina: page + 1,
+                  })}
+                  size="sm"
+                  icon={<IconArrowRight size={14} />}
+                >
+                  Siguiente
+                </LinkButton>
+              ) : (
+                <span className="cq-btn" data-variant="outline" data-size="sm" aria-disabled="true">
+                  Siguiente
+                  <IconArrowRight size={14} />
+                </span>
+              )}
+            </div>
+          </nav>
         )}
       </div>
     </ModulePage>

@@ -31,17 +31,12 @@ export type ModuleStat = {
 
 export function ModulePage({
   title,
-  /* La ruta del módulo, en mono. No es decoración: quien opera este panel todos
-     los días navega por URL, y es el dato que se pega en un mensaje para
-     señalar de qué pantalla se está hablando. */
-  path,
   description,
   actions,
   stats,
   children,
 }: {
   title: string;
-  path: string;
   description?: string;
   actions?: ReactNode;
   stats?: ModuleStat[];
@@ -49,21 +44,44 @@ export function ModulePage({
 }) {
   return (
     <div>
-      {/* El encabezado visible se fue: repetía lo que ya dicen el riel y la miga
-          de la barra superior, y se comía una franja de alto en una pantalla que
-          tiene que entrar entera sin desplazarse.
+      {/* La franja de encabezado se queda; el título VISIBLE no.
 
-          El <h1> se queda en el DOM. No es un detalle: un documento sin
-          encabezado de nivel uno deja a quien navega con lector de pantalla sin
-          punto de entrada, y `path`/`description` siguen describiéndolo ahí. */}
-      <header className="flex flex-wrap items-center justify-end gap-2 pb-4">
-        <h1 className="sr-only">{title}</h1>
-        <p className="sr-only">
-          {path}
-          {description ? ` — ${description}` : ""}
-        </p>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-      </header>
+          El nombre del módulo se decía tres veces en la misma pantalla: el
+          ítem marcado del riel, el último tramo de la miga en la barra superior
+          —en negrita y en color de tinta plena— y este `<h1>`. Tres es dos de
+          más. La miga es la que gana: está siempre, sobrevive al riel plegado,
+          y es la única de las tres que además dice de dónde venís.
+
+          Pero la franja NO se borra, y esa es la parte que no es obvia. Su otro
+          trabajo es ser la ranura de la acción principal, y ese trabajo es
+          real: antes de que existiera, cada módulo puso su botón donde pudo
+          —el tablero arriba a la derecha, artículos dentro de la barra de la
+          tabla, categorías como último azulejo de la grilla—. Cuatro módulos,
+          tres lugares. Sacar la franja con el título devolvería ese problema.
+
+          Así que queda la franja con la acción sola contra el margen derecho, y
+          el `<h1>` se va a `sr-only`: el documento sigue teniendo su
+          encabezado de primer nivel —un lector de pantalla y el esquema del
+          documento lo necesitan— y la pantalla gana la línea.
+
+          La bajada sigue sin dibujarse: describe el módulo a quien todavía no
+          lo conoce, y quien opera esto lo hace todos los días. */}
+      <h1 className="sr-only">{title}</h1>
+      {description && <p className="sr-only">{description}</p>}
+
+      {/* La franja sólo existe si hay algo que poner en ella. Con el título ya
+          en `sr-only`, un `<header>` sin acciones era 16px de relleno vacío
+          empujando el trabajo hacia abajo en cada módulo que no tuviera botón.
+
+          Un módulo puede además anclar su acción DENTRO de su propia barra de
+          herramientas y no pasar `actions` —es lo que hace Plantillas—: ahí el
+          botón pertenece a la barra que filtra y busca, en vez de flotar solo
+          sobre el contenido. */}
+      {actions && (
+        <header className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 pb-4">
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        </header>
+      )}
 
       {stats && stats.length > 0 && (
         <div
