@@ -56,6 +56,12 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
+/* Sin esto, cualquier segmento inválido ("/home.php", restos del sitio PHP
+   anterior) cae en resolveLang() y se sirve como si fuera /es — 200 eterno
+   que Google nunca puede dejar de rastrear. Con dynamicParams=false, Next
+   devuelve 404 real para cualquier lang fuera de generateStaticParams. */
+export const dynamicParams = false;
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const lang = await resolveLang(params);
   return {
