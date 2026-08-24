@@ -1,11 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Josefin_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { loginAdmin } from "@/lib/adminAuth";
 import LoginForm from "./LoginForm";
 import LoginReveal from "./LoginReveal";
 import "./login.css";
+
+/* Misma fuente y mismo corte que `src/app/[lang]/layout.tsx`: variable, sin
+   lista de pesos, porque acá también hace falta más de un peso (400 del
+   cuerpo, 600 del título y las etiquetas, 700 del botón). El panel vive en un
+   `<html>` propio (ver admin/layout.tsx) que nunca comparte árbol con el
+   sitio público, así que la variable de ahí no llega acá — hay que pedirla de
+   nuevo. Next dedupea el archivo de fuente real; lo que se duplica es sólo
+   esta declaración de cinco líneas. */
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  variable: "--font-josefin",
+  display: "swap",
+});
 
 export default async function AdminLoginPage() {
   /* Con sesión activa el login no tiene sentido: manda al panel en vez de
@@ -19,7 +33,9 @@ export default async function AdminLoginPage() {
        panel alrededor, así que tiene que anunciar la marca antes que la
        herramienta interna. El resplandor de fondo es decorativo — `aria-hidden`
        y detrás de la tarjeta por `z-index`, nunca compite con el formulario. */
-    <div className="cq-login-page flex min-h-screen items-center justify-center bg-[var(--p-surface-sunken)] px-6 py-16">
+    <div
+      className={`cq-login-page ${josefin.variable} flex min-h-screen items-center justify-center bg-[var(--p-surface-sunken)] px-6 py-16`}
+    >
       <div aria-hidden className="cq-login-glow" />
       <LoginReveal>
         {/* Sin filete: lo que separa la tarjeta del fondo es la sombra con

@@ -8,11 +8,14 @@
    en page.tsx— porque es la ÚNICA que flota de verdad, antes de que exista
    sesión y sin nada de cromo del panel alrededor.
 
-   Esta hoja extiende esa excepción al resto de la forma: sin filete, esquina
-   recta de 2px —el mismo radio que `.cq-rect-cta` del sitio público, citado a
-   propósito— y sombra con el color de marca en vez de tinta neutra. Es la
-   puerta de entrada al panel, y tiene que anunciar la marca antes que la
-   herramienta interna.
+   Esta hoja extiende esa excepción al resto de la forma —sin filete, esquina
+   recta de 2px, el mismo radio que `.cq-rect-cta` del sitio público, y sombra
+   con el color de marca en vez de tinta neutra— y ahora también a la
+   tipografía: el panel corre en Geist/Inter Tight (admin/layout.tsx) a
+   propósito, pero esta pantalla es la puerta de entrada y tiene que
+   anunciar la marca antes que la herramienta interna, así que corre en
+   Josefin Sans, la misma familia que el sitio público (cargada en
+   login/page.tsx, no en el layout — el panel no la ve).
 
    Se importa SOLO desde login/page.tsx. No define un token nuevo en
    panel-tokens.css porque no es vocabulario del panel: es la cita puntual de
@@ -23,10 +26,18 @@
    no por orden de import — dos hojas sueltas no tienen un orden de carga
    garantizado entre desarrollo y build. */
 
+/* `--p-font-display`/`--p-font-ui` se REDECLARAN acá, no se reemplazan en
+   panel-tokens.css: siguen valiendo Geist/Inter Tight para cada otra pantalla
+   del panel, y valen Josefin sólo dentro de este contenedor. Como son
+   variables, todo lo que ya lee `var(--p-font-display)` o `var(--p-font-ui)`
+   —`.cq-display`, `.cq-body`, `.cq-label`, `.cq-meta`, `.cq-btn`, `.cq-input`—
+   cambia de fuente solo, sin tocar ni un selector más. */
 .cq-login-page {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  --p-font-display: var(--font-josefin), system-ui, sans-serif;
+  --p-font-ui: var(--font-josefin), system-ui, -apple-system, sans-serif;
 }
 
 /* Resplandor de marca. Dos manchas —celeste y petróleo, las mismas dos puntas
