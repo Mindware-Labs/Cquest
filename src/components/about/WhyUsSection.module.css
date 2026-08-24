@@ -643,7 +643,8 @@
   }
 
   .stage {
-    --plaque-w: clamp(13rem, 25vw, 19rem);
+    --plaque-w: clamp(15rem, 30vw, 19rem);
+    --plaque-h: clamp(18rem, 30vw, 20rem);
     max-width: 64rem;
   }
 }
@@ -661,8 +662,11 @@
   }
 
   .stage {
-    --plaque-w: clamp(11.5rem, 62vw, 14rem);
-    --plaque-h: clamp(13rem, 60vw, 15rem);
+    /* Alto con piso propio, no ligado 1:1 al ancho: la tarjeta más larga
+       (cuerpo de ~140 caracteres) necesita más alto del que el ancho de
+       columna sugeriría, o el texto se desborda del marco fijo de .face. */
+    --plaque-w: clamp(14rem, 76vw, 17rem);
+    --plaque-h: clamp(18rem, 84vw, 21rem);
   }
 
   .rail {

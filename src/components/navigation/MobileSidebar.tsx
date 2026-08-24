@@ -97,22 +97,11 @@ export default function MobileSidebar({
                 : "border-border/60 bg-background/95 backdrop-blur-xl"
             }`}
           >
-            <div className="flex items-center justify-end px-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label={dict.nav.menuClose}
-                className={`flex h-10 w-10 touch-manipulation items-center justify-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                  dark
-                    ? "border-white/20 text-white hover:bg-white/10 focus-visible:outline-celeste"
-                    : "border-border/70 text-foreground hover:bg-foreground/5 focus-visible:outline-petroleo"
-                }`}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <ul className="flex flex-1 flex-col overflow-y-auto px-6 py-4">
+            {/* Sin botón de cierre propio: el hamburger de Navbar ya se
+                convierte en X y flota por encima de este panel (z-50 contra
+                el z-40 del panel) — un segundo círculo aquí quedaba pegado
+                al mismo punto y se leía como un botón fantasma duplicado. */}
+            <ul className="flex flex-1 flex-col overflow-y-auto px-6 pb-4 pt-[max(6.5rem,calc(env(safe-area-inset-top)+5.5rem))]">
               {links.map(({ label, href, children }, index) => (
                 <motion.li
                   key={label}
@@ -223,22 +212,6 @@ function ChevronIcon({ open }: { open: boolean }) {
       strokeLinejoin="round"
     >
       <path d="M4 6l4 4 4-4" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 16 16"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <path d="M3 3l10 10M13 3L3 13" />
     </svg>
   );
 }
