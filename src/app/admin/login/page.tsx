@@ -39,7 +39,7 @@ export default async function AdminLoginPage() {
                   />
                 </Link>
                 <h1 data-reveal className="cq-display">
-                  Entrar al panel
+                  Inicio de sesión
                 </h1>
                 <p data-reveal className="cq-body text-center text-[var(--p-ink-muted)]">
                   Administra tus artículos, categorías y plantillas del blog.
