@@ -1,8 +1,6 @@
 import { ALIGN, blockSpacing, type BlockOf } from "@/lib/blocks-style";
 
-/* Tres registros de cuerpo, no tres tamaños libres: "lead" es la entradilla
-   que abre una sección, "muted" la nota al margen. El admin elige intención,
-   no tipografía. */
+// Tres registros de cuerpo, no tamaños libres: el admin elige intención ("lead" entradilla, "muted" nota al margen), no tipografía.
 const VARIANT = {
   body: "text-[1.02rem] leading-[1.8] text-[var(--text-secondary)]",
   lead: "text-[1.18rem] leading-[1.7] text-foreground",
@@ -14,8 +12,7 @@ export default function ParagraphBlock({ block }: { block: BlockOf<"paragraph"> 
     <p
       className={`text-pretty ${VARIANT[block.variant]} ${ALIGN[block.align]} ${blockSpacing(block.spacingTop, block.spacingBottom)}`}
     >
-      {/* El texto llega en plano desde el editor — sin HTML — así que los
-          saltos de línea del admin se respetan acá en vez de perderse. */}
+      {/* El texto llega en plano (sin HTML): los saltos de línea se reconstruyen acá en vez de perderse. */}
       {block.text.split("\n").map((line, index) => (
         <span key={index}>
           {index > 0 && <br />}

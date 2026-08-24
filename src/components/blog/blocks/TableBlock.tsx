@@ -2,9 +2,7 @@ import { blockSpacing, type BlockOf } from "@/lib/blocks-style";
 
 export default function TableBlock({ block }: { block: BlockOf<"table"> }) {
   return (
-    /* La tabla scrollea dentro de su propia caja: en móvil (más del 60% del
-       tráfico) una tabla de 5 columnas no puede empujar el ancho de la página
-       entera. */
+    // Scrollea dentro de su propia caja: en móvil (>60% del tráfico) una tabla ancha no puede empujar el ancho de la página.
     <div className={`overflow-x-auto ${blockSpacing(block.spacingTop, block.spacingBottom)}`}>
       <table className="w-full min-w-[32rem] border-collapse text-left text-[0.95rem]">
         <thead>

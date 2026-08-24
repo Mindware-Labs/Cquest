@@ -20,20 +20,7 @@ const COPY: Record<
   },
 };
 
-/* Paginación del blog público.
-   ---------------------------------------------------------------------------
-
-   Antes no existía: el listado tenía un `take: 60` y el artículo número 61
-   desaparecía del sitio mientras el sitemap seguía declarándolo.
-
-   Enlaces y no botones, igual que el filtro de categorías: cada página es una
-   URL propia, se comparte, se abre en pestaña nueva y el botón de atrás hace lo
-   que se espera. Y funciona sin una línea de JavaScript.
-
-   Sin tira de números. Un blog corporativo no llega a veinte páginas, y una
-   fila de dígitos para elegir entre tres es más controles que contenido. El
-   texto del medio dice dónde estás, que es la única pregunta que la tira de
-   números contesta de verdad. */
+// Antes no existía paginación: con take: 60, el artículo 61 desaparecía del sitio pero el sitemap seguía declarándolo. Enlaces y no botones, como el filtro de categorías; sin tira de números porque un blog corporativo no llega a veinte páginas.
 export default function BlogPagination({
   lang,
   page,
@@ -47,8 +34,7 @@ export default function BlogPagination({
   total: number;
   category: string | null;
 }) {
-  /* Con una sola página no se dibuja nada. Una paginación deshabilitada de
-     punta a punta ocupa lugar para decir que no hay nada que paginar. */
+  // Con una sola página no se dibuja nada: una paginación deshabilitada de punta a punta solo ocuparía lugar.
   if (pageCount <= 1) return null;
 
   const copy = COPY[lang];
@@ -60,10 +46,7 @@ export default function BlogPagination({
       aria-label={copy.label}
       className="mt-20 flex items-center justify-between gap-4 border-t border-border pt-8"
     >
-      {/* El extremo se dibuja como texto apagado y no se oculta: un control que
-          aparece y desaparece hace saltar la fila entera de un lado a otro. Y
-          no es un enlace sin href — un enlace sin destino no es enfocable ni
-          anunciable, y no tiene por qué serlo. */}
+      {/* Se dibuja como texto apagado y no se oculta (evita que la fila salte) ni como enlace sin href (no sería enfocable ni anunciable). */}
       {page > 1 ? (
         <LocalizedLink href={blogHref(lang, { category, page: page - 1 })} className={linkClass}>
           <Arrow direction="left" />
@@ -78,9 +61,7 @@ export default function BlogPagination({
 
       <p className="text-[0.82rem] text-[var(--text-tertiary)]">
         {copy.position(page, pageCount)}
-        {/* El total va oculto y no impreso: en pantalla el número de página ya
-            ubica, pero un lector de pantalla que salta entre páginas se queda
-            sin saber cuántos artículos hay en total. */}
+        {/* El total va oculto (sr-only) porque un lector de pantalla que salta entre páginas no sabría cuántos artículos hay en total. */}
         <span className="sr-only"> — {total}</span>
       </p>
 

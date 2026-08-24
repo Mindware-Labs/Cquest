@@ -10,16 +10,7 @@ import PostMetaDrawer from "./PostMetaDrawer";
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
-/* La tabla de artículos con selección múltiple.
-
-   Existe como componente de cliente porque la selección es estado compartido
-   entre las filas y la barra de acciones: si viviera en cada fila, la barra no
-   podría saber cuántas hay marcadas.
-
-   El problema que resuelve: publicar diez borradores eran diez clics en diez
-   filas, cada uno con su viaje al servidor y su revalidación. Ahora es marcar,
-   elegir la acción, y una sola transacción. */
-
+// Componente de cliente porque la selección es estado compartido entre filas y la barra de acciones: publicar diez borradores es ahora una sola transacción en vez de diez viajes al servidor.
 const CAPTION = "Artículos del panel";
 
 export default function PostsTable({
@@ -40,25 +31,13 @@ export default function PostsTable({
   updateMetaAction: Action;
 }) {
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
-  /* Qué fila tiene el cajón abierto. Vive acá y no en la fila por dos razones:
-     un <dialog> dentro de un <tbody> es marcado inválido, y así hay UNA
-     instancia del formulario para toda la tabla en vez de veinticinco.
-
-     Se guarda el ARTÍCULO entero y no su id, con la apertura en un estado
-     aparte. Con el id había que buscarlo en `posts` en cada render y —lo que
-     importa— al cerrar, el id volvía a null y el cajón se desmontaba en el
-     mismo fotograma: la animación de salida no llegaba a correr NUNCA. Con el
-     objeto, el contenido sobrevive al cierre y lo único que se apaga es
-     `editorOpen`. */
+  // Se guarda el ARTÍCULO entero y no su id, con la apertura en estado aparte: con el id, cerrar lo ponía en null y el cajón se desmontaba en el mismo fotograma sin dejar correr la animación de salida.
   const [editing, setEditing] = useState<PostRowData | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { notify } = useToast();
 
-  /* La selección se limpia sola de lo que ya no está en pantalla. Sin esto,
-     filtrar por "Borradores" después de marcar un publicado dejaría ese id
-     marcado en la sombra, y la acción en bloque tocaría un artículo que la
-     persona ya no está viendo. */
+  // La selección se limpia sola de lo que ya no está en pantalla: si no, una acción en bloque podría tocar un artículo que la persona ya no ve.
   const visibleIds = useMemo(() => new Set(posts.map((post) => post.id)), [posts]);
   const activeSelection = useMemo(
     () => [...selected].filter((id) => visibleIds.has(id)),
@@ -66,8 +45,7 @@ export default function PostsTable({
   );
 
   const allSelected = posts.length > 0 && activeSelection.length === posts.length;
-  /* Estado indeterminado: hay algo marcado pero no todo. Es el único caso donde
-     una casilla no puede decir la verdad con dos estados. */
+  // Indeterminado: hay algo marcado pero no todo, el único caso donde una casilla no puede decir la verdad con dos estados.
   const someSelected = activeSelection.length > 0 && !allSelected;
 
   function toggle(id: number, on: boolean) {
@@ -109,18 +87,10 @@ export default function PostsTable({
 
   return (
     <>
-      {/* La barra de selección aparece SOLO con algo marcado, y ocupa el lugar
-          de nada: no empuja la tabla porque vive pegada arriba de ella. Una
-          barra permanente con los botones apagados enseña a ignorarla. */}
+      {/* Aparece sólo con algo marcado: una barra permanente con botones apagados enseña a ignorarla. */}
       {activeSelection.length > 0 && (
         <div className="cq-bulkbar" role="region" aria-label="Acciones sobre la selección">
-          {/* "en esta página", explícito. La selección nunca cruzó la
-              paginación —la casilla del encabezado marca las filas montadas— y
-              mientras la tabla mostraba todo, "3 seleccionados" y "3 de los que
-              hay" eran lo mismo. Con páginas dejaron de serlo, y una acción
-              masiva que dice "seleccionados" sobre un subconjunto invisible es
-              exactamente el tipo de ambigüedad que hace que alguien publique de
-              menos y no se entere. */}
+          {/* "en esta página" explícito: con paginación, "seleccionados" a secas sería ambiguo sobre un subconjunto invisible. */}
           <span className="cq-body font-semibold text-[var(--p-ink)]">
             {activeSelection.length}{" "}
             {activeSelection.length === 1 ? "seleccionado" : "seleccionados"}{" "}
@@ -154,10 +124,7 @@ export default function PostsTable({
             >
               Pasar a borrador
             </Button>
-            {/* Sin acción de borrado en bloque a propósito: eliminar diez
-                artículos de un clic es la operación más destructiva posible del
-                panel, y el deshacer de cinco segundos que protege al borrado de
-                a uno no da para revisar diez títulos. Se borra de a uno. */}
+            {/* Sin borrado en bloque a propósito: el deshacer de cinco segundos no da para revisar diez títulos a la vez. */}
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
               Quitar selección
             </Button>
@@ -165,9 +132,7 @@ export default function PostsTable({
         </div>
       )}
 
-      {/* Sólo desplazamiento HORIZONTAL, y sólo cuando las columnas no entran.
-          El vertical se fue: la tabla crece con la página y se recorre con la
-          rueda de siempre. */}
+      {/* Sólo desplazamiento horizontal, cuando las columnas no entran: el vertical se fue, la tabla crece con la página. */}
       <div className="cq-table-scroll pb-2">
         <table className="cq-table cq-ledger">
           <caption className="sr-only">{caption ?? CAPTION}</caption>
@@ -180,8 +145,7 @@ export default function PostsTable({
                     className="cq-check"
                     checked={allSelected}
                     ref={(node) => {
-                      /* `indeterminate` no existe como atributo de HTML: sólo
-                         se puede poner desde JavaScript sobre el elemento. */
+                      // `indeterminate` no existe como atributo de HTML: sólo se puede poner desde JavaScript.
                       if (node) node.indeterminate = someSelected;
                     }}
                     onChange={(event) => toggleAll(event.target.checked)}
@@ -225,13 +189,7 @@ export default function PostsTable({
         </table>
       </div>
 
-      {/* Fuera de la tabla, y con `key` por artículo.
-
-          El `key` no es prolijidad: los campos del formulario son NO
-          CONTROLADOS —usan `defaultValue`— y un input ya montado ignora los
-          cambios posteriores de su valor por defecto. Sin el `key`, abrir la
-          fila B después de la A mostraría los datos de A adentro del cajón. El
-          `key` fuerza un formulario nuevo por artículo. */}
+      {/* `key` por artículo: los campos usan `defaultValue` (no controlados), así que sin el `key` abrir la fila B después de la A mostraría los datos de A. */}
       {editing && (
         <PostMetaDrawer
           key={editing.id}

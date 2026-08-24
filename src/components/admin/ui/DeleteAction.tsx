@@ -6,29 +6,9 @@ import { Button, IconButton } from "./Button";
 import { ConfirmDialog } from "./Dialog";
 import { useToast } from "./Toast";
 
-/* Borrado con confirmación Y deshacer.
-
-   El punto fino, porque define todo el componente: la acción de servidor NO se
-   dispara al confirmar. Se dispara cuando VENCE el aviso.
-
-   Confirmar sólo saca la fila de la vista y abre una ventana de cinco segundos
-   con un botón "Deshacer". Si se toca, no pasó nada: no hubo pedido, no hubo
-   borrado, no hace falta restaurar. Si el plazo vence, recién ahí sale el
-   pedido al servidor.
-
-   Se hizo así a propósito y no con un borrado real + restauración, porque un
-   deshacer de verdad exigiría una columna `deletedAt` en el modelo —o sea un
-   cambio de datos, que este trabajo no toca—. Esta versión da la misma
-   protección al que opera sin pedir nada al esquema.
-
-   Consecuencia honesta y asumida: si se cierra la pestaña dentro de esos cinco
-   segundos, el borrado no llega a ocurrir. El registro sigue existiendo. Para
-   un panel interno es el lado correcto en el que fallar: se pierde una
-   eliminación, no un artículo. */
-
+// La acción de servidor NO se dispara al confirmar, sólo cuando VENCE el aviso de deshacer (5s): sin eso un deshacer real exigiría `deletedAt` en el modelo. Si se cierra la pestaña antes, el borrado no llega a ocurrir — asumido, es el lado correcto en el que fallar para un panel interno.
 export function DeleteAction({
-  /* Qué se está por borrar, con nombre propio. "¿Eliminar el elemento?" obliga
-     a recordar sobre qué fila se hizo clic. */
+  // Nombre propio de lo que se borra: "¿Eliminar el elemento?" obliga a recordar sobre qué fila se hizo clic.
   name,
   noun = "el artículo",
   action,
@@ -39,10 +19,9 @@ export function DeleteAction({
 }: {
   name: string;
   noun?: string;
-  /* Recibe el control ya envuelto: quien use esto no arma el FormData. */
+  // Recibe el control ya envuelto: quien use esto no arma el FormData.
   action: () => Promise<{ error: string | null }>;
-  /* Saca la fila de la lista mientras corre la ventana de deshacer. Opcional:
-     si la vista no maneja estado optimista, el aviso igual funciona. */
+  // Saca la fila de la lista mientras corre la ventana de deshacer; opcional, el aviso funciona igual sin esto.
   onOptimisticRemove?: (removed: boolean) => void;
   disabled?: boolean;
   disabledReason?: string;
@@ -73,9 +52,7 @@ export function DeleteAction({
         if (cancelled.current) return;
         startTransition(async () => {
           const result = await action();
-          /* Si el servidor rechaza, la fila vuelve: dejarla oculta mostraría
-             como borrado algo que sigue existiendo, y eso se descubre recién al
-             recargar. */
+          // Si el servidor rechaza, la fila vuelve: dejarla oculta mostraría como borrado algo que sigue existiendo.
           if (result.error) {
             onOptimisticRemove?.(false);
             notify({ message: result.error, tone: "danger", durationMs: 8000 });
@@ -85,11 +62,7 @@ export function DeleteAction({
     });
   }
 
-  /* El motivo por el que NO se puede eliminar se describe, no se nombra. Antes
-     reemplazaba la etiqueta del botón, así que un lector de pantalla anunciaba
-     "botón, No se puede eliminar una categoría con artículos" y el control
-     dejaba de decir qué hace. El nombre siempre es la acción; el motivo va
-     aparte y se lee después. */
+  // El motivo se describe (aparte, con aria-describedby) y no reemplaza la etiqueta del botón: si no, un lector de pantalla anunciaría el motivo en vez de la acción.
   const reasonId = `${describedById}-reason`;
   const showReason = disabled && Boolean(disabledReason);
 

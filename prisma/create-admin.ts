@@ -3,9 +3,7 @@ import { z } from "zod";
 import { prisma } from "../src/lib/prisma";
 import { createAdminUser } from "../src/lib/adminUsers";
 
-/* Sin formulario de alta público a propósito — esta es esa vía "por consola"
-   que describe el plan. Uso:
-   npx tsx prisma/create-admin.ts --email=persona@centerquest.do --name="Nombre" --password="algo-seguro" */
+// Sin formulario de alta público a propósito: esta es la vía "por consola". Uso: npx tsx prisma/create-admin.ts --email=persona@centerquest.do --name="Nombre" --password="algo-seguro"
 
 function parseArgs(argv: string[]): Record<string, string> {
   const out: Record<string, string> = {};

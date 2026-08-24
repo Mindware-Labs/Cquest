@@ -7,9 +7,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { IconExternal, IconPanelLeft } from "@/components/admin/ui/icons";
 import PanelUserMenu from "./PanelUserMenu";
 
-/* El nombre legible de cada segmento de ruta. Un mapa y no una transformación
-   automática del slug: "posts" no se convierte solo en "Artículos", y mostrar el
-   slug crudo en una miga sería filtrar la URL a la interfaz. */
+// Mapa y no transformación automática del slug: mostrar el slug crudo en la miga filtraría la URL a la interfaz.
 const SEGMENTS: Record<string, string> = {
   admin: "Inicio",
   posts: "Artículos",
@@ -28,10 +26,7 @@ function buildCrumbs(pathname: string): Crumb[] {
 
   for (const part of parts) {
     href += `/${part}`;
-    /* Los identificadores no son navegación: en /admin/posts/<id>/edit, el id no
-       tiene nombre que mostrar ni pantalla propia a la que ir. Se saltea y la
-       miga queda "Inicio / Artículos / Editar", que es lo que el que opera
-       necesita saber. */
+    // Los ids no son navegación (no tienen pantalla propia): se saltean y la miga queda "Inicio / Artículos / Editar".
     const label = SEGMENTS[part];
     if (!label) continue;
     crumbs.push({ label, href });
@@ -40,9 +35,7 @@ function buildCrumbs(pathname: string): Crumb[] {
   return crumbs;
 }
 
-/* La barra superior del panel. Tiene dos trabajos y nada más: manejar el ancho
-   del riel y decir dónde estás. Es el lugar del cromo — por eso el botón de
-   plegar vive acá y no duplicado adentro del riel. */
+// Tiene dos trabajos: manejar el ancho del riel y decir dónde estás; por eso el botón de plegar vive acá y no duplicado en el riel.
 export default function PanelTopbar({
   name,
   email,
@@ -68,8 +61,7 @@ export default function PanelTopbar({
         aria-controls={panelId}
         aria-label={open ? "Plegar el menú" : "Desplegar el menú"}
         title={open ? "Plegar el menú" : "Desplegar el menú"}
-        /* Sólo en escritorio: en móvil el riel no se angosta, se abre encima, y
-           ese control ya está en la cabecera del propio riel. */
+        // Solo en escritorio: en móvil el riel se abre encima y ese control ya está en su propia cabecera.
         className="cq-topbar-btn hidden lg:inline-flex"
       >
         <IconPanelLeft size={18} />
@@ -88,8 +80,7 @@ export default function PanelTopbar({
                 )}
                 <li className="min-w-0">
                   {isLast ? (
-                    /* El último no es un enlace: llevaría a la página en la que
-                       ya estás. `aria-current` lo dice para el lector. */
+                    // El último no es enlace porque llevaría a la página en la que ya estás; aria-current lo indica para el lector.
                     <span
                       aria-current="page"
                       className="block truncate font-semibold text-foreground"

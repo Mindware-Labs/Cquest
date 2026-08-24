@@ -6,16 +6,11 @@ import { IconArrowDown, IconArrowUp, IconClose } from "@/components/admin/ui/ico
 import { COLUMN_TYPES, TYPE_LABEL, type ColumnType } from "./blockFactory";
 import { MOVE_BLOCK_MIME, NEW_BLOCK_MIME } from "./BlockPalette";
 
-/* Lienzo del editor (AD-8). Hace tres cosas que el plan pide por separado:
-   reordenar arrastrando (AD-9), insertar desde la paleta en una posición
-   concreta (AD-10), y todo eso con equivalente por teclado (RNF-5) — los
-   botones ↑↓ no son un extra, son la ruta accesible del mismo gesto. */
+// Lienzo del editor (AD-8): reordenar arrastrando (AD-9), insertar desde la paleta (AD-10) y sus equivalentes por teclado (RNF-5) — los botones ↑↓ son la ruta accesible del mismo gesto.
 
 const ICON_BUTTON = "cq-icon-btn";
 
-/* Una imagen subida sin describir bloquea el guardado (RNF-5, comprobado en
-   blockArraySchema). Marcarlo en el lienzo evita que el admin lo descubra
-   recién al apretar "Publicar", con el error a diez bloques de distancia. */
+// Una imagen subida sin describir bloquea el guardado (RNF-5, blockArraySchema); marcarlo acá evita que el admin lo descubra recién al apretar "Publicar".
 function missingAltText(block: Block): boolean {
   if (block.type === "image") return Boolean(block.src) && block.alt.length === 0;
   if (block.type === "gallery") return block.images.some((image) => image.src && !image.alt);
@@ -74,8 +69,7 @@ export default function BlockCanvas({
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   function handleDragOver(event: React.DragEvent, index: number) {
-    /* Sin preventDefault el navegador no considera el elemento una zona válida
-       y nunca dispara el drop. */
+    // Sin preventDefault el navegador no considera el elemento una zona válida y nunca dispara el drop.
     event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();
     const isTopHalf = event.clientY < rect.top + rect.height / 2;
@@ -100,9 +94,7 @@ export default function BlockCanvas({
     const from = blocks.findIndex((block) => block.id === movedId);
     if (from === -1) return;
 
-    /* Al mover hacia abajo, quitar el bloque de su posición corre el índice de
-       destino un lugar: sin este ajuste, arrastrar un bloque una posición hacia
-       abajo lo deja donde estaba. */
+    // Al mover hacia abajo, quitar el bloque de su posición corre el índice de destino un lugar; sin este ajuste el bloque queda donde estaba.
     const to = target > from ? target - 1 : target;
     onMove(from, to);
     onAnnounce(`Bloque movido a la posición ${to + 1} de ${blocks.length}.`);
@@ -119,7 +111,7 @@ export default function BlockCanvas({
         data-over={dropIndex === 0 ? "true" : undefined}
         className="cq-ghost cq-body mt-4 py-12 text-center data-[over=true]:border-[var(--p-accent)] data-[over=true]:bg-[var(--p-accent-tint)] data-[over=true]:text-[var(--p-accent)]"
       >
-        Arrastrá un bloque acá, o hacé clic en uno de la paleta.
+        Arrastra un bloque acá, o haz clic en uno de la paleta.
       </div>
     );
   }
@@ -128,9 +120,7 @@ export default function BlockCanvas({
     <ul
       className="mt-4"
       onDragLeave={(event) => {
-        /* dragleave burbujea desde cada hijo: sin esta comprobación, pasar el
-           cursor de un bloque al siguiente borraría el indicador y volvería a
-           pintarlo en cada movimiento. Solo cuenta salir de la lista entera. */
+        // dragleave burbujea desde cada hijo: sin esta comprobación, pasar el cursor entre bloques borraría y repintaría el indicador en cada movimiento.
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
           setDropIndex(null);
         }
@@ -142,8 +132,7 @@ export default function BlockCanvas({
 
         return (
           <li key={block.id} onDragOver={(event) => handleDragOver(event, index)}>
-            {/* Indicador de inserción: una línea, no un hueco que desplace todo
-                el lienzo mientras se arrastra. */}
+            {/* Indicador de inserción: una línea, no un hueco que desplace todo el lienzo mientras se arrastra. */}
             <div
               aria-hidden
               className={`h-0.5 rounded-full transition-colors ${dropIndex === index ? "bg-[var(--p-accent)]" : "bg-transparent"}`}
@@ -172,9 +161,7 @@ export default function BlockCanvas({
                   <span className="cq-body mt-0.5 block truncate text-[var(--p-ink)]">
                     {summarize(block)}
                   </span>
-                  {/* El aviso de accesibilidad faltante va en la propia fila del
-                      bloque y no en un resumen al final: quien puede arreglarlo
-                      es quien está mirando ese bloque, ahora. */}
+                  {/* El aviso de accesibilidad va en la propia fila del bloque y no en un resumen final: quien puede arreglarlo es quien lo está mirando ahora. */}
                   {missingAltText(block) && (
                     <span className="cq-badge mt-1" data-tone="hidden" style={{ color: "var(--p-danger)" }}>
                       Falta texto alternativo
@@ -237,8 +224,7 @@ export default function BlockCanvas({
         );
       })}
 
-      {/* Zona final: sin esto no hay forma de soltar un bloque DESPUÉS del
-          último, solo antes. */}
+      {/* Zona final: sin esto no hay forma de soltar un bloque después del último, solo antes. */}
       <li
         onDragOver={(event) => {
           event.preventDefault();
@@ -334,8 +320,7 @@ function ColumnsEditor({
             ))}
           </ul>
 
-          {/* Solo los 5 tipos que el schema admite dentro de una columna: la
-              restricción se ve en la interfaz, no se descubre al guardar. */}
+          {/* Solo los 5 tipos que el schema admite dentro de una columna: la restricción se ve en la interfaz, no se descubre al guardar. */}
           <div className="mt-2 flex flex-wrap gap-1">
             {COLUMN_TYPES.map((type) => (
               <button

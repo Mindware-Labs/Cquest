@@ -7,18 +7,13 @@ export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example"
 ).replace(/\/$/, "");
 
-/* @id estables y absolutos. Sin ellos cada bloque JSON-LD es una isla y Google
-   no puede saber que el editor del sitio y el negocio local son la misma
-   entidad; con ellos, los nodos de cualquier página se referencian entre sí. */
+// @id estables y absolutos: sin ellos cada bloque JSON-LD es una isla y Google no puede unir el sitio con el negocio local.
 export const ORG_ID = `${SITE_URL}/#organization`;
 export const SITE_ID = `${SITE_URL}/#website`;
 
 const ORG_NAME = "Center Quest";
 
-/* Regla heredada del layout y que se mantiene: solo campos que existen de
-   verdad. Sin sameAs (no hay perfiles sociales confirmados), sin openingHours
-   ni priceRange (nadie los ha dado). Un dato inventado en JSON-LD es una
-   penalización esperando, no un campo de más. */
+// Solo campos que existen de verdad (sin sameAs, openingHours ni priceRange sin confirmar): un dato inventado en JSON-LD es una penalización esperando.
 export function organizationNode(lang: Locale) {
   return {
     "@type": "ProfessionalService",
@@ -40,15 +35,13 @@ export function organizationNode(lang: Locale) {
       addressLocality: CONTACT.city,
       addressCountry: CONTACT.countryCode,
     },
-    /* Las mismas coordenadas que pinta el mapa de /location. Una sola fuente:
-       si se mueve la sede, el mapa y el dato estructurado se mueven juntos. */
+    // Mismas coordenadas que pinta el mapa de /location: una sola fuente, se mueven juntos.
     geo: {
       "@type": "GeoCoordinates",
       latitude: HQ.lat,
       longitude: HQ.lng,
     },
-    /* República Dominicana como mercado primario y Estados Unidos como
-       secundario — es lo que declara el documento de requisitos. */
+    // República Dominicana como mercado primario y Estados Unidos como secundario, según el documento de requisitos.
     areaServed: [
       { "@type": "Country", name: "Dominican Republic" },
       { "@type": "Country", name: "United States" },
@@ -74,18 +67,14 @@ export function websiteNode(lang: Locale) {
   };
 }
 
-/* Categoría del servicio en términos de industria, no de marca: es lo que
-   ayuda a Google a encajar la página en una vertical. */
+// Categoría del servicio en términos de industria, no de marca: ayuda a Google a encajar la página en una vertical.
 const SERVICE_TYPE: Record<string, string> = {
   "call-center": "Call Center",
   bpo: "Business Process Outsourcing",
   systems: "Systems Development",
 };
 
-/* Una línea de negocio. `provider` apunta al nodo del layout en vez de
-   repetirlo: el grafo se cose entre páginas por @id. Antes cada página
-   declaraba su propio Organization suelto y Google veía tres «Center Quest»
-   distintos, ninguno conectado con el negocio local del layout. */
+// `provider` apunta al nodo del layout en vez de repetirlo: antes cada página declaraba su propio Organization suelto y Google veía tres «Center Quest» distintos.
 export function serviceNode(serviceId: string, lang: Locale) {
   const service = SERVICES.find((entry) => entry.id === serviceId);
   if (!service) return null;
@@ -102,8 +91,7 @@ export function serviceNode(serviceId: string, lang: Locale) {
       { "@type": "Country", name: "Dominican Republic" },
       { "@type": "Country", name: "United States" },
     ],
-    /* Los servicios concretos de la línea, que es justo lo que la página
-       enumera. El catálogo sale de la misma constante que pinta la UI. */
+    // El catálogo sale de la misma constante que pinta la UI.
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: service.label[lang],
@@ -134,9 +122,7 @@ export function breadcrumbNode(
   };
 }
 
-/* El grafo completo de una página de servicio: la línea de negocio con su
-   catálogo, más su sitio en la jerarquía. Los tres detalles de servicio lo
-   comparten, así que vive aquí y no repetido en cada page.tsx. */
+// Vive acá y no repetido en cada page.tsx: los tres detalles de servicio lo comparten.
 export function servicePageGraph(serviceId: string, lang: Locale) {
   const service = SERVICES.find((entry) => entry.id === serviceId);
   if (!service) return graph();
@@ -160,9 +146,7 @@ type BlogPostForSchema = {
   categoryName: string;
 };
 
-/* Sin bylines individuales: el blog publica a nombre de Center Quest, no de
-   la persona del equipo que lo redactó, así que author y publisher apuntan
-   al mismo @id de organización del layout en vez de inventar un Person. */
+// Sin bylines individuales: el blog publica a nombre de Center Quest, así que author y publisher apuntan al @id de la organización en vez de inventar un Person.
 export function blogPostingNode(post: BlogPostForSchema, lang: Locale) {
   const url = `${SITE_URL}/${lang}/blog/${post.slug}`;
   return {
@@ -170,8 +154,7 @@ export function blogPostingNode(post: BlogPostForSchema, lang: Locale) {
     "@id": `${url}#article`,
     headline: post.title,
     description: post.excerpt,
-    /* post.coverImageUrl es relativa (/api/images/...) — Google/schema.org
-       esperan una URL absoluta en este campo. */
+    // post.coverImageUrl es relativa (/api/images/...); Google/schema.org esperan URL absoluta acá.
     image: `${SITE_URL}${post.coverImageUrl}`,
     datePublished: post.publishedAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
@@ -184,9 +167,7 @@ export function blogPostingNode(post: BlogPostForSchema, lang: Locale) {
   };
 }
 
-/* El grafo de una página de artículo: el BlogPosting más su lugar en la
-   jerarquía. Mismo patrón que servicePageGraph — vive aquí para no repetirse
-   cuando exista la página real de /blog/[slug]. */
+// Mismo patrón que servicePageGraph: vive acá para no repetirse en cada página de /blog/[slug].
 export function blogPostPageGraph(post: BlogPostForSchema, lang: Locale) {
   return graph(
     blogPostingNode(post, lang),
@@ -198,8 +179,7 @@ export function blogPostPageGraph(post: BlogPostForSchema, lang: Locale) {
   );
 }
 
-/* Un único <script> por página. Varios bloques sueltos son válidos, pero el
-   grafo deja explícito que todos los nodos son de la misma página. */
+// Un único <script> por página: el grafo deja explícito que todos los nodos son de la misma página.
 export function graph(...nodes: ReadonlyArray<object | null>) {
   return {
     "@context": "https://schema.org",

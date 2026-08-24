@@ -11,35 +11,18 @@ import { blogHref } from "@/lib/blogParams";
 import { localizeCategory, type NamedCategory } from "@/lib/categoryName";
 import { readingTimeLabel } from "@/lib/readingTime";
 
-/* El artículo, como vista.
-   ---------------------------------------------------------------------------
-
-   Vive aparte de la página por una razón concreta: la previsualización tiene su
-   propia ruta (/blog/[slug]/preview) y no un parámetro en la URL pública.
-
-   La diferencia importa y no es de estilo. Leer `searchParams` en un Server
-   Component lo vuelve dinámico, o sea que la página de CADA artículo pasaría a
-   consultar la base en cada visita en vez de servirse cacheada. Pagar eso en la
-   página más visitada del blog para habilitar una función que usan tres
-   personas del panel es el peor intercambio posible. Con dos rutas, la pública
-   se cachea como antes y la dinámica es la que nadie visita.
-
-   Las dos rutas renderizan LITERALMENTE esto, así que la previa no se puede
-   desincronizar de lo que se publica — que es el único requisito que una previa
-   tiene que cumplir. */
+// Vive aparte de la página porque la previa usa su propia ruta (/blog/[slug]/preview) en vez de un searchParam: leer searchParams en el Server Component volvería dinámica (sin caché) también a la página pública, la más visitada del blog. Las dos rutas renderizan esto mismo, así que la previa nunca se desincroniza de lo publicado.
 
 const BACK_LABEL: Record<Locale, string> = { es: "Blog", en: "Blog" };
 const BREADCRUMB_LABEL: Record<Locale, string> = { es: "Ruta", en: "Breadcrumb" };
-const RELATED_LABEL: Record<Locale, string> = { es: "Seguí leyendo", en: "Keep reading" };
+const RELATED_LABEL: Record<Locale, string> = { es: "Sigue leyendo", en: "Keep reading" };
 
 const PREVIEW_NOTICE: Record<Locale, string> = {
   es: "Previsualización — este artículo todavía no es público.",
   en: "Preview — this article is not public yet.",
 };
 
-/* Función y no plantilla suelta: en inglés el nombre de la categoría va al final
-   y en español al medio. Concatenar cadenas sueltas daría "Más de" + nombre en
-   los dos idiomas y uno de los dos quedaría mal escrito. */
+// Función y no plantilla suelta: el nombre de la categoría va en distinta posición en cada idioma, así que concatenar cadenas sueltas lo escribiría mal en uno de los dos.
 const MORE_LABEL: Record<Locale, (category: string) => string> = {
   es: (category) => `Ver más artículos de ${category}`,
   en: (category) => `See more ${category} articles`,
@@ -87,9 +70,7 @@ export default function PostArticle({
   return (
     <PostMotion>
       <article className="pb-28 pt-32 sm:pt-36">
-        {/* El aviso de previa va ARRIBA de todo y no se puede confundir con el
-            artículo: quien abre el enlace tiene que saber en la primera línea
-            que está mirando algo que el público todavía no ve. */}
+        {/* El aviso de previa va arriba de todo: quien abre el enlace debe saber en la primera línea que el público todavía no ve esto. */}
         {isPreview && (
           <div className="mx-auto mb-10 w-full max-w-[46rem] px-5 sm:px-8">
             <p
@@ -102,10 +83,7 @@ export default function PostArticle({
         )}
 
         <header className="mx-auto w-full max-w-[46rem] px-5 sm:px-8">
-          {/* Ruta en vez de un botón "atrás": una flecha de retroceso repite lo
-              que ya hace el navegador y no dice nada de dónde está uno. El
-              breadcrumb ubica el artículo y da las dos salidas reales — el
-              índice completo y el listado filtrado por su categoría. */}
+          {/* Breadcrumb en vez de botón "atrás": ubica el artículo y da las dos salidas reales (índice completo y listado por categoría). */}
           <nav data-post-line aria-label={BREADCRUMB_LABEL[lang]}>
             <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.82rem] font-medium text-[var(--text-tertiary)]">
               <li>
@@ -130,9 +108,7 @@ export default function PostArticle({
             </ol>
           </nav>
 
-          {/* El límite en `ch` y no en `rem`: lo que hay que acotar es la
-              cantidad de caracteres por línea, y eso no cambia con el tamaño de
-              fuente como sí lo haría una medida fija. */}
+          {/* Límite en ch y no rem: hay que acotar caracteres por línea, no un ancho fijo que no escala con el tamaño de fuente. */}
           <h1
             data-post-title
             className="mt-6 max-w-[20ch] text-balance font-heading text-[clamp(2.1rem,5vw,3.4rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-foreground"
@@ -146,11 +122,7 @@ export default function PostArticle({
             {post.excerpt}
           </p>
 
-          {/* Autor, fecha y duración en una línea sobre una regla fina: la firma
-              cierra la cabecera y separa el preámbulo del cuerpo sin meter otra
-              caja. El tiempo de lectura va acá y no al final porque la pregunta
-              que contesta —¿lo leo ahora o lo guardo?— se hace ANTES de
-              empezar, no después de terminar. */}
+          {/* El tiempo de lectura va acá y no al final: la pregunta que contesta (¿lo leo ahora?) se hace antes de empezar. */}
           <div
             data-post-line
             className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-5 text-[0.85rem] text-[var(--text-tertiary)]"
@@ -167,9 +139,7 @@ export default function PostArticle({
             <span aria-hidden="true">·</span>
             <span>{readingTimeLabel(blocks, lang)}</span>
 
-            {/* Compartir sólo lo que ya es público: el enlace de una previa
-                lleva un token firmado, y ofrecer un botón para mandarlo a
-                LinkedIn es ofrecer publicar un borrador por la puerta de atrás. */}
+            {/* No se comparte una previa: sería publicar un borrador por la puerta de atrás. */}
             {!isPreview && (
               <span className="ms-auto">
                 <ShareLinks lang={lang} title={post.title} path={`/${lang}/blog/${post.slug}`} />
@@ -178,17 +148,13 @@ export default function PostArticle({
           </div>
         </header>
 
-        {/* Portada a ancho completo (BP-6), recortada a una proporción fija: es
-            la única imagen del artículo donde el encuadre lo decide el diseño y
-            no la foto. */}
+        {/* Portada a ancho completo (BP-6), única imagen del artículo donde el encuadre lo decide el diseño y no la foto. */}
         <div className="mx-auto mt-10 w-full max-w-[76rem] px-5 sm:px-8">
           <div
             data-post-cover
             className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-[var(--surface-sunken)]"
           >
-            {/* `priority`: es la imagen más grande sobre el pliegue y casi
-                siempre el LCP de la página. Sin esto entra en la cola de carga
-                diferida y arrastra la métrica que el requisito de "<3s" mide. */}
+            {/* priority: casi siempre es el LCP de la página; sin esto entra en carga diferida y arrastra la métrica de "<3s". */}
             <Image
               data-post-cover-media
               src={post.coverImageUrl}
@@ -201,16 +167,12 @@ export default function PostArticle({
           </div>
         </div>
 
-        {/* Columna de lectura: ~44rem es la medida cómoda para texto largo
-            (RNF-3). Los bloques a ancho completo salen de acá con márgenes
-            negativos propios. */}
+        {/* Columna de lectura: ~44rem es la medida cómoda para texto largo (RNF-3); los bloques a ancho completo usan márgenes negativos propios. */}
         <div data-post-body className="mx-auto mt-14 w-full max-w-[44rem] px-5 sm:px-8">
           <BlockRenderer blocks={blocks} />
         </div>
 
-        {/* Final del artículo: una salida, no un muro. Quien terminó de leer
-            tiene que poder seguir en algo relacionado sin volver con el botón
-            del navegador. */}
+        {/* Final del artículo: una salida, no un muro; se puede seguir en algo relacionado sin usar el botón atrás. */}
         <footer className="mx-auto mt-20 w-full max-w-[46rem] px-5 sm:px-8">
           <div className="border-t border-border pt-8">
             <LocalizedLink
@@ -236,11 +198,7 @@ export default function PostArticle({
           </div>
         </footer>
 
-        {/* ---------- Seguí leyendo ---------- */}
-        {/* Sólo si hay algo REAL que ofrecer. Una sección que dice "seguí
-            leyendo" arriba de dos huecos, porque la categoría tenía un solo
-            artículo, promete y no cumple — de ahí que getRelatedPosts complete
-            con lo más reciente del idioma cuando la categoría no alcanza. */}
+        {/* Sólo si hay algo real que ofrecer; getRelatedPosts completa con lo más reciente del idioma cuando la categoría no alcanza. */}
         {related.length > 0 && (
           <section
             aria-labelledby="post-related"

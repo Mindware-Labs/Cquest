@@ -6,32 +6,12 @@ import { blockArraySchema } from "@/lib/blocks";
 import { getPostBySlug } from "@/lib/posts";
 import { PREVIEW_PARAM, verifyPreviewToken } from "@/lib/previewToken";
 
-/* Previsualización de un artículo que todavía no es público.
-   ---------------------------------------------------------------------------
-
-   Antes no existía, y la alternativa real que quedaba era publicar, mandar el
-   enlace y esconderlo después — o sea sacar a la web algo que nadie revisó.
-
-   Ruta propia y no un `?preview=` sobre la página pública: leer `searchParams`
-   allá la volvería dinámica y cada artículo consultaría la base en cada visita.
-   Acá el costo de ser dinámico no importa, porque a esta ruta entran tres
-   personas del panel y nadie más.
-
-   Renderiza el MISMO componente que la página pública, así que lo que se
-   revisa es literalmente lo que se va a publicar — que es el único requisito
-   que una previa tiene que cumplir.
-
-   El token es un HMAC del id del artículo firmado con el secreto de sesión:
-   autoriza este artículo y nada más, vence en una semana, y revocar todos los
-   enlaces vivos es rotar el secreto. */
+// Ruta propia, no ?preview= en la página pública: leer searchParams ahí la volvería dinámica para todos los visitantes, no sólo estas tres personas del panel. Token: HMAC del id firmado con el secreto de sesión, vence en una semana; rotar el secreto revoca todos los enlaces vivos.
 
 type Params = Promise<{ lang: string; slug: string }>;
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-/* Un borrador NO se indexa, y esto es lo que lo garantiza. Sin el noindex, un
-   enlace compartido por chat o pegado en un ticket puede terminar rastreado, y
-   entonces el borrador acaba en Google — que es exactamente lo que estos
-   enlaces existen para evitar. */
+// Sin noindex, un enlace compartido por chat o pegado en un ticket puede terminar rastreado y el borrador acaba en Google.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
@@ -54,22 +34,15 @@ export default async function BlogPostPreviewPage({
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  /* El idioma se exige incluso con token: el artículo se renderiza con las
-     etiquetas de su propia página, y verlo bajo la URL equivocada mostraría una
-     previa que no se parece a lo que se va a publicar. */
+  // El idioma se exige incluso con token: verlo bajo la URL equivocada mostraría una previa que no se parece a lo publicado.
   if (post.locale !== lang) notFound();
 
-  /* Sin token válido esta ruta no existe. Un 404 y no un 403: decir "no
-     autorizado" confirma que el artículo existe, y el slug de un borrador puede
-     ser información que todavía no se quiere dar. */
+  // 404 y no 403: un "no autorizado" confirmaría que el artículo existe, y el slug de un borrador es información que no se quiere dar.
   if (!verifyPreviewToken(token, post.id)) notFound();
 
   const blocks = blockArraySchema.safeParse(post.content);
   if (!blocks.success) notFound();
 
-  /* Sin relacionados y sin datos estructurados: lo que se está revisando es el
-     artículo, no la navegación, y declararle a Google un BlogPosting que
-     responde 404 a cualquiera sin token es ofrecerle un dato que no puede
-     verificar. */
+  // Sin relacionados ni datos estructurados: declararle a Google un BlogPosting que responde 404 sin token es un dato que no puede verificar.
   return <PostArticle post={post} blocks={blocks.data} lang={lang} isPreview />;
 }

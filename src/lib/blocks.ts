@@ -1,21 +1,15 @@
 import { z } from "zod";
 
-/* Fuente única de verdad del contenido de un Post: el renderer público, el
-   editor del admin y la validación de posts.ts comparten este archivo. */
+// Fuente única de verdad del contenido de un Post: el renderer público, el editor del admin y posts.ts comparten este archivo.
 
 export const spacingSchema = z.enum(["none", "sm", "md", "lg"]);
 export type Spacing = z.infer<typeof spacingSchema>;
 
-/* Todo color de bloque sale de este enum — nunca un picker libre. Mismos
-   tokens que ya vive en tokens.css (celeste/petroleo/verde), más "neutral"
-   para cuando el bloque no necesita acento. */
+// Todo color de bloque sale de este enum — nunca un picker libre. Mismos tokens de tokens.css, más "neutral" para sin acento.
 export const brandAccentSchema = z.enum(["celeste", "petroleo", "verde", "neutral"]);
 export type BrandAccent = z.infer<typeof brandAccentSchema>;
 
-/* Una imagen puede quedar sin subir mientras el post es borrador — por eso
-   "" es válido acá, a diferencia de Post.coverImageUrl (esa sí es obligatoria
-   desde el primer guardado). Con contenido, exige que venga de nuestra propia
-   subida a Blob, nunca una URL externa arbitraria. */
+// "" es válido acá (a diferencia de Post.coverImageUrl) porque una imagen puede quedar sin subir mientras el post es borrador.
 const imageSrcSchema = z
   .string()
   .trim()
@@ -23,10 +17,7 @@ const imageSrcSchema = z
     message: "La imagen debe salir de la subida a Vercel Blob.",
   });
 
-/* Dimensiones reales del archivo, medidas en el servidor al subirlo. Son
-   opcionales porque un bloque guardado antes de que existiera este campo sigue
-   siendo válido — el renderer cae a un contenedor de proporción fija cuando
-   faltan, en vez de rechazar el artículo entero. */
+// Opcionales porque un bloque guardado antes de que existiera este campo sigue siendo válido; el renderer cae a proporción fija si faltan.
 const dimensionSchema = z.number().int().positive().optional();
 
 const blockBase = {
@@ -56,21 +47,7 @@ const imageBlockSchema = z.object({
   ...blockBase,
   type: z.literal("image"),
   src: imageSrcSchema,
-  /* Sin `min(1)` acá, y NO es que el texto alternativo sea opcional: la regla
-     de verdad ("si hay imagen, hay alt") se aplica sobre el arreglo entero en
-     checkAltText(), más abajo.
-
-     La diferencia importa. Con `min(1)` en el campo, un bloque de imagen recién
-     agregado —que nace con `src: ""` y `alt: ""`, ver blockFactory.ts— hacía
-     fallar el guardado del borrador ENTERO antes de que hubiera un archivo que
-     describir. Y las plantillas de arranque traen bloques de imagen vacíos a
-     propósito, así que empezar un artículo desde «Estudio de caso» y apretar
-     "Guardar borrador" daba «El texto alternativo es obligatorio» sobre una
-     imagen que todavía no existía.
-
-     Una imagen sin subir no molesta a nadie; una subida sin describir no se
-     publica. Eso es lo que sostiene la promesa de RNF-5, y se comprueba donde
-     se puede ver el bloque completo. */
+  // Sin `min(1)`: la regla real ("si hay imagen, hay alt") se aplica sobre el arreglo entero en checkAltText(), no acá — si no, un bloque recién agregado con src/alt vacíos rompería el guardado del borrador.
   alt: z.string().trim().max(200, "Máximo 200 caracteres."),
   width: dimensionSchema,
   height: dimensionSchema,
@@ -81,13 +58,9 @@ const imageBlockSchema = z.object({
 
 const galleryImageSchema = z.object({
   src: imageSrcSchema,
-  /* Igual que en imageBlockSchema: la regla vive en checkAltText(). Una galería
-     nace con una imagen vacía, así que exigirlo acá rompía el borrador desde el
-     momento en que se agregaba el bloque. */
+  // Igual que en imageBlockSchema: la regla vive en checkAltText(), porque una galería nace con una imagen vacía.
   alt: z.string().trim().max(200, "Máximo 200 caracteres."),
-  /* La grilla recorta a una altura común, así que acá las dimensiones no
-     deciden el encuadre — se guardan igual para no perder el dato si algún día
-     la galería ofrece un modo que respete la proporción original. */
+  // La grilla recorta a una altura común (las dimensiones no deciden el encuadre); se guardan igual por si algún día se respeta la proporción original.
   width: dimensionSchema,
   height: dimensionSchema,
   caption: z.string().trim().max(200).optional(),
@@ -144,8 +117,7 @@ const ctaBlockSchema = z.object({
   body: z.string().trim().max(300).optional(),
   buttonLabel: z.string().trim().min(1, "Falta el texto del botón."),
   href: z.string().trim().min(1, "Falta el destino del botón."),
-  /* Decide si el renderer envuelve el botón en LocalizedLink (rutas propias,
-     con prefijo de idioma) o en un <a> normal (destinos externos). */
+  // Decide si el renderer envuelve el botón en LocalizedLink (rutas propias) o en un <a> normal (destinos externos).
   hrefKind: z.enum(["internal", "external"]).default("internal"),
   style: z.enum(["primary", "secondary"]).default("primary"),
 });
@@ -156,8 +128,7 @@ const dividerBlockSchema = z.object({
   style: z.enum(["line", "space"]).default("line"),
 });
 
-/* Un solo nivel de anidamiento: una columna solo admite bloques simples,
-   nunca otra columna ni bloques con su propia lista (galería/tabla). */
+// Un solo nivel de anidamiento: una columna solo admite bloques simples, nunca otra columna ni bloques con su propia lista.
 const columnSimpleBlockSchema = z.discriminatedUnion("type", [
   headingBlockSchema,
   paragraphBlockSchema,
@@ -192,14 +163,7 @@ export const blockSchema = z.discriminatedUnion("type", [
 ]);
 export type Block = z.infer<typeof blockSchema>;
 
-/* RNF-5 exige texto alternativo en TODA imagen. No se pone como `min(1)` en
-   el campo `alt` por dos razones: rompería el borrador a medio escribir (una
-   imagen recién agregada todavía no tiene ni archivo ni descripción), y un
-   `.refine()` sobre el objeto lo sacaría del discriminatedUnion.
-
-   Así que la regla es "si hay imagen, hay alt" y se comprueba sobre el
-   arreglo completo, incluidas las imágenes anidadas en columnas. Una imagen
-   sin subir no molesta; una subida sin describir no se publica. */
+// RNF-5 exige alt en toda imagen, pero no como `min(1)` en el campo (rompería el borrador a medio escribir) ni como `.refine()` en el objeto (lo sacaría del discriminatedUnion); se comprueba sobre el arreglo completo, incluidas columnas.
 function checkAltText(blocks: Block[], ctx: z.RefinementCtx): void {
   function check(block: Block, path: (string | number)[]): void {
     if (block.type === "image" && block.src && block.alt.length === 0) {
@@ -240,16 +204,7 @@ export const blockArraySchema = z
   .superRefine(checkAltText);
 export type BlockArray = z.infer<typeof blockArraySchema>;
 
-/* Toda imagen referenciada por un árbol de bloques, incluidas las de galerías
-   y las anidadas en columnas.
-
-   Existe para la recolección de huérfanas: al guardar o borrar un artículo hay
-   que saber qué archivos DEJARON de estar referenciados para borrarlos del
-   store. Sin esto, cada portada reemplazada y cada artículo borrado dejaban su
-   archivo pagando storage para siempre, sin registro de cuál era.
-
-   Devuelve un Set: la misma imagen puede aparecer dos veces en un artículo, y
-   comparar conjuntos es exactamente la operación que hace el recolector. */
+// Existe para la recolección de huérfanas al guardar/borrar un artículo. Devuelve un Set porque la misma imagen puede repetirse y comparar conjuntos es lo que necesita el recolector.
 export function collectImageUrls(blocks: readonly Block[]): Set<string> {
   const urls = new Set<string>();
 
@@ -267,9 +222,7 @@ export function collectImageUrls(blocks: readonly Block[]): Set<string> {
   return urls;
 }
 
-/* El texto plano de un artículo — lo que cuenta para el tiempo de lectura y lo
-   que alimenta la descripción del feed cuando no hay extracto. Se salta lo que
-   no se lee corrido: pies de foto, etiquetas de botón, encabezados de tabla. */
+// Texto plano de un artículo, para tiempo de lectura y descripción del feed sin extracto; salta lo que no se lee corrido (pies de foto, botones, encabezados).
 export function extractText(blocks: readonly Block[]): string {
   const parts: string[] = [];
 

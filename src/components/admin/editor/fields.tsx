@@ -2,27 +2,12 @@
 
 import { useId } from "react";
 
-/* Controles compartidos por el formulario del artículo y el panel de
-   propiedades. Existen para que "elegir entre opciones cerradas" se vea igual
-   en todo el editor — que es justo lo que hace cumplir PERS-2 y PERS-3: el
-   admin siempre elige de un conjunto, nunca escribe un color o una fuente. */
+// Controles compartidos por el formulario del artículo y el panel de propiedades: "elegir entre opciones cerradas" se ve igual en todo el editor (PERS-2/PERS-3), el admin nunca escribe un color o fuente a mano.
 
-/* Un alias sobre la clase del sistema, no una copia de sus estilos. Antes acá
-   se redeclaraban borde, relleno, tamaño y foco a mano, y era la razón por la
-   que un campo del editor se veía distinto de uno del formulario de
-   categorías. El vocabulario se declara una sola vez, en admin.css. */
+// Alias sobre la clase del sistema (no copia sus estilos), así el vocabulario se declara una sola vez en admin.css.
 export const INPUT_CLASS = "cq-input mt-1.5";
 
-/* `hint` es una ranura de verdad y no texto metido en la etiqueta.
-
-   Sin ella, la ayuda terminaba escrita adentro del propio rótulo —"Slug
-   (opcional — se genera del título)"— y una etiqueta que explica deja de ser
-   una etiqueta: es lo primero que lee un lector de pantalla al enfocar el
-   campo, y ahí sólo tiene que estar el nombre. La ayuda se conecta por
-   `aria-describedby`, así se lee DESPUÉS del nombre y del tipo de control.
-
-   `required` dibuja la marca y pone el atributo. Antes ningún campo del editor
-   decía cuál era obligatorio hasta que fallaba el envío. */
+// `hint` es una ranura real y no texto en la etiqueta: se conecta por `aria-describedby` para leerse después del nombre del campo, no adentro de él.
 export function TextField({
   label,
   value,
@@ -119,9 +104,7 @@ export function TextAreaField({
   );
 }
 
-/* Grupo de opciones excluyentes como botones y no como <select>: el admin ve
-   todas las alternativas a la vez, que es lo que hace que se anime a probar
-   una en vez de dejar siempre el default. */
+// Botones y no <select>: el admin ve todas las alternativas a la vez y se anima a probar una en vez de dejar el default.
 export function OptionGroup<T extends string>({
   label,
   value,
@@ -145,10 +128,7 @@ export function OptionGroup<T extends string>({
               type="button"
               aria-pressed={isActive}
               onClick={() => onChange(option.value)}
-              /* La opción elegida usa `outline` y no `solid`: el relleno del
-                 sistema está reservado para la acción principal de la pantalla,
-                 y un grupo de seis opciones con una rellena competiría con el
-                 botón Guardar. El borde de acento y el peso alcanzan. */
+              // `outline` y no `solid`: el relleno está reservado a la acción principal de la pantalla (el botón Guardar).
               className="cq-btn"
               data-variant={isActive ? "outline" : "ghost"}
               data-size="sm"

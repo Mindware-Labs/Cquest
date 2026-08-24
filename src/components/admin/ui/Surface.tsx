@@ -3,21 +3,10 @@ import Link from "next/link";
 import clsx from "clsx";
 import { IconWarning } from "./icons";
 
-/* Superficies del panel. Todas son Server Components a propósito: ninguna
-   necesita estado, así que ninguna paga el peso de enviarse al cliente. */
+// Superficies del panel: todas Server Components porque ninguna necesita estado.
 
-/* `PageHeader` vivía acá y no lo usaba nadie: los cuatro módulos arman su
-   encabezado con `ModulePage`, que lo reimplementaba entero en vez de llamarlo.
-   Un componente compartido con cero consumidores no es una abstracción
-   disponible, es una segunda versión del mismo encabezado esperando que alguien
-   la use y quede distinta de la primera. */
+// `PageHeader` se quitó: cero consumidores, todos usan `ModulePage`.
 
-/* ---------------------------------------------------------------------------
-   Section — LA FIRMA
-   Una regla horizontal, el nombre en etiqueta chica, y la cifra en serif
-   apoyada sobre la regla. La cifra es siempre un dato real: cuántas filas hay
-   en esa sección. Nunca un número puesto para llenar.
---------------------------------------------------------------------------- */
 
 export function Section({
   title,
@@ -34,33 +23,22 @@ export function Section({
   icon,
 }: {
   title: string;
-  /* Opcional: una sección que no cuenta nada no dibuja cifra en vez de dibujar
-     un cero que no significa nada. */
+  // Opcional: sin count no se dibuja cero, que no significaría nada.
   count?: number;
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
-  /* Sólo para el retraso del escalonado (`--cq-i`). No es una puerta para
-     estilos sueltos: todo lo visual sale de los tokens. */
+  // Sólo para el retraso del escalonado (`--cq-i`); no es puerta para estilos sueltos.
   style?: CSSProperties;
   as?: "section" | "div" | "aside";
   headingLevel?: "h2" | "h3";
-  /* Cerrada, con filete alrededor. Para gráficos: sin marco, el área pintada
-     flota y no se ve dónde termina el dato. Una tabla larga NO la usa — ahí el
-     marco sólo agrega una línea que compite con las filas. */
+  // Cerrada, con filete: para gráficos. Una tabla larga no la usa, el marco competiría con las filas.
   boxed?: boolean;
-  /* Código de color del bloque. Regla de 3px arriba y título en ese color: es
-     lo que permite reconocer de qué habla cada tarjeta sin leerla, y seguir el
-     recorrido de un artículo por la pantalla. */
+  // Color del bloque: regla de 3px y título en ese color, para reconocer la tarjeta sin leerla.
   accent?: "volume" | "category" | "pending" | "published";
-  /* Oculta la fila de título dejándola en el árbol de accesibilidad.
-     Es para cuando la sección ES la pantalla: repetir "Artículos" arriba de la
-     tabla de artículos, en una vista que no tiene ninguna otra sección, sólo
-     agrega una franja y hace que la tarjeta se lea como parte de algo más
-     grande que no existe. El <h2> se queda para el lector de pantalla. */
+  // Oculta el título visualmente (queda para el lector de pantalla) cuando la sección ES toda la pantalla.
   hideHead?: boolean;
-  /* Icono del bloque, en el color del acento. Va con `hideHead` en falso: si el
-     título no se dibuja, el icono tampoco tiene dónde apoyarse. */
+  // Requiere hideHead=false: sin título el icono no tiene dónde apoyarse.
   icon?: ReactNode;
 }) {
   return (
@@ -70,10 +48,7 @@ export function Section({
       style={style}
       className={clsx("cq-section", className)}
     >
-      {/* La cifra grande sobre la regla se fue. Con cada bloque ya en tarjeta,
-          había cuatro números de 32px compitiendo contra los KPIs de arriba —y
-          los KPIs son los que de verdad hay que leer primero. El conteo sigue,
-          pero como pastilla al lado del título: informa sin gritar. */}
+      {/* La cifra grande sobre la regla se fue: competía con los KPIs de arriba. Ahora es una pastilla junto al título. */}
       {hideHead ? (
         <Heading className="sr-only">
           {title}
@@ -93,23 +68,15 @@ export function Section({
           {actions && <div className="flex shrink-0 flex-wrap items-center gap-1.5">{actions}</div>}
         </div>
       )}
-      {/* `min-h-0` es obligatorio para que un hijo con scroll propio funcione:
-          dentro de un contenedor flex, el mínimo automático de un elemento es
-          su contenido, así que sin esto la lista empuja la tarjeta hasta
-          desbordar en vez de desplazarse adentro. */}
+      {/* `min-h-0` obligatorio: sin esto, el mínimo automático del flex hace que la lista desborde la tarjeta en vez de scrollear adentro. */}
       <div className="cq-section-body flex min-h-0 flex-1 flex-col">{children}</div>
     </Tag>
   );
 }
 
-/* `Panel` y `PanelHead` eran alias de compatibilidad para una migración del
-   editor que ya terminó: cero consumidores. `PanelHead` además había quedado
-   distinto de la cabecera de `Section` —sin `shrink-0` ni `flex-wrap` en las
-   acciones—, o sea que el alias que existía para evitar dos gramáticas ya era
-   la segunda gramática. */
+// `Panel`/`PanelHead` se quitaron: alias de una migración ya terminada, sin consumidores.
 
-/* Tarjeta. Sólo para elementos de una grilla: en una lista vertical separa el
-   filete, no una caja. */
+// Tarjeta: sólo para elementos de una grilla; en lista vertical el filete separa, no una caja.
 export function Card({
   children,
   className,
@@ -129,17 +96,7 @@ export function Card({
   return <div className={clsx("cq-card", className)}>{children}</div>;
 }
 
-/* ---------------------------------------------------------------------------
-   Identificador del sistema
-   ID, conteo, fecha, código. Se muestra en mono porque no se lee: se copia, se
-   pega y se compara carácter por carácter. Que se VEA distinto del texto de
-   interfaz es la mitad de su trabajo.
-
-   La variante `path` —que anteponía una barra para dibujar una ruta— se fue con
-   sus dos consumidores. Las rutas del panel no se muestran: la barra de
-   direcciones ya las tiene, y repetirlas en la pantalla las convierte en un
-   dato del contenido cuando son plomería.
---------------------------------------------------------------------------- */
+// Identificador del sistema (ID, fecha, código): mono porque se copia y compara, no se lee.
 
 export function Ident({
   children,
@@ -155,12 +112,7 @@ export function Ident({
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Cifra del tablero
-   `href` opcional a propósito: con enlace es una puerta a la pantalla que
-   explica el número; sin enlace es sólo un dato. Lo que NO hace es fingir —
-   sin destino no cambia de color ni de cursor.
---------------------------------------------------------------------------- */
+// Cifra del tablero: `href` opcional a propósito — sin destino no finge ser un enlace (ni color ni cursor de link).
 
 export function StatCard({
   label,
@@ -175,12 +127,9 @@ export function StatCard({
   value: number | string;
   hint?: string;
   href?: string;
-  /* Reemplaza al punto de color, no lo acompaña. El punto sólo codificaba el
-     acento; el icono codifica el acento Y qué se cuenta, así que tener los dos
-     es decir la misma cosa dos veces y gastar ancho de la etiqueta. */
+  // Reemplaza al punto de color (no lo acompaña): tener los dos repetiría el mismo dato.
   icon?: ReactNode;
-  /* Variación contra el período anterior. Es lo que convierte una cifra en
-     información: "128" no dice nada solo; "128, +12 en 30 días" sí. */
+  // Variación contra el período anterior: convierte la cifra sola en información.
   delta?: { value: number; label: string };
   accent?: "volume" | "category" | "pending" | "published";
 }) {
@@ -188,9 +137,7 @@ export function StatCard({
 
   const body = (
     <>
-      {/* El punto de color ata esta cifra con el bloque que la desarrolla más
-          abajo. Va antes de la etiqueta, no después: es lo primero que el ojo
-          usa para agrupar. */}
+      {/* El punto de color va antes de la etiqueta, no después: es lo primero que el ojo usa para agrupar. */}
       <span className="flex items-center gap-2">
         {icon ? (
           <span aria-hidden="true" className="cq-stat-icon">
@@ -204,9 +151,7 @@ export function StatCard({
       <span className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="cq-display cq-stat-value">{value}</span>
         {delta && (
-          /* El signo va SIEMPRE, no sólo el color. Verde y rojo son justamente
-             el par que más gente no distingue; sin el signo, para esa persona
-             las dos variaciones dicen lo mismo. */
+          // El signo va siempre, no sólo el color: rojo/verde es el par que más gente no distingue.
           <span className="cq-delta" data-trend={trend}>
             {delta.value > 0 ? "+" : delta.value < 0 ? "−" : "="}
             {Math.abs(delta.value)}
@@ -236,22 +181,15 @@ export function StatCard({
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Estado vacío
-   No es texto centrado en gris: es la FORMA de lo que falta, en filete
-   punteado, con la acción principal encima. Se ve qué iría ahí antes de leer
-   una palabra, y la salida está a un clic.
---------------------------------------------------------------------------- */
+// Estado vacío: no texto centrado en gris, es la forma de lo que falta (filete punteado + acción a un clic).
 
 export function EmptyState({
   title,
   hint,
   action,
-  /* Cuántas filas fantasma dibujar. Tres es el mínimo para que se lea como una
-     lista y no como una caja suelta. */
+  // Tres es el mínimo para que las filas fantasma se lean como lista y no como caja suelta.
   rows = 3,
-  /* Sin silueta: sólo el mensaje, centrado en el alto disponible de la tarjeta.
-     Para bloques donde el fantasma de una lista no aporta nada. */
+  // Sin silueta: sólo el mensaje centrado, para bloques donde el fantasma de lista no aporta nada.
   plain = false,
 }: {
   title: string;
@@ -273,8 +211,7 @@ export function EmptyState({
   return (
     <div className="cq-empty">
       <div className="cq-ghost relative overflow-hidden px-4 py-4">
-        {/* La silueta. `aria-hidden` porque no dice nada que el título no diga:
-            un lector de pantalla no necesita recorrer nueve barras vacías. */}
+        {/* `aria-hidden`: la silueta no dice nada que el título no diga. */}
         <div aria-hidden="true" className="grid gap-4 opacity-70">
           {Array.from({ length: rows }, (_, index) => (
             <div key={index} className="flex items-center gap-3">
@@ -288,12 +225,8 @@ export function EmptyState({
           ))}
         </div>
 
-        {/* El mensaje se apoya ENCIMA de la silueta, no debajo: el vacío es una
-            sola cosa, no un dibujo con un texto de pie. El velo deja ver la
-            forma sin que compita con la lectura. */}
-        {/* El velo se escribe con color-mix y no con la sintaxis de opacidad de
-            Tailwind: `bg-[var(--x)]/85` no resuelve el canal alfa de una
-            variable, y saldría opaco. */}
+        {/* El mensaje se apoya encima de la silueta, no debajo, para que se lea como una sola cosa. */}
+        {/* color-mix y no `bg-[var(--x)]/85`: Tailwind no resuelve el canal alfa de una variable y saldría opaco. */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center"
           style={{ background: "color-mix(in srgb, var(--p-surface) 88%, transparent)" }}
@@ -307,11 +240,7 @@ export function EmptyState({
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Error
-   Un estado, no un accidente. Dice qué pasó, qué se puede hacer, y ofrece
-   reintentar sin recargar la pestaña entera.
---------------------------------------------------------------------------- */
+// Error: un estado, no un accidente. Dice qué pasó y ofrece reintentar sin recargar la pestaña.
 
 export function ErrorState({
   title,
@@ -323,12 +252,7 @@ export function ErrorState({
   action?: ReactNode;
 }) {
   return (
-    /* La caja es `.cq-alert`, no una reimplementación. Estaba escrita con
-       utilidades arbitrarias que repetían el filete, el tinte y el color del
-       alert —y se quedaba sin su radio, así que el mismo error se dibujaba con
-       esquinas distintas según quién lo mostrara. Acá sólo se sobreescribe lo
-       que de verdad cambia: es un estado de página, no una línea de aviso, así
-       que apila en el centro y respira. */
+    // Usa `.cq-alert` en vez de reimplementarla, sólo sobreescribiendo lo que cambia (apila y centra).
     <div className="cq-empty">
       <div className="cq-alert flex-col items-center px-6 py-10 text-center">
         <p className="cq-title text-[var(--p-danger)]">{title}</p>
@@ -339,25 +263,15 @@ export function ErrorState({
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Insignia de estado
---------------------------------------------------------------------------- */
-
 const TONE: Record<string, { tone: string; label: string }> = {
   PUBLISHED: { tone: "published", label: "Publicado" },
-  /* Publicado, pero con fecha futura. No existe como valor en la base —se
-     deriva del reloj, ver displayStatus() en lib/posts.ts— pero sí como estado
-     visible: la columna de estado promete decir si el artículo se ve o no, y
-     un programado no se ve. Tono propio: en verde se confundiría con lo que ya
-     está en la web, que es exactamente el error que hay que evitar. */
+  // No existe como valor en la base (se deriva del reloj, ver displayStatus() en lib/posts.ts); tono propio para no confundirse con "publicado".
   SCHEDULED: { tone: "scheduled", label: "Programado" },
   DRAFT: { tone: "draft", label: "Borrador" },
   HIDDEN: { tone: "hidden", label: "Oculto" },
 };
 
-/* `Badge` genérico se fue: renderizaba exactamente el mismo marcado que
-   `StatusBadge` y no lo llamaba nadie. Un estado del sistema se nombra desde el
-   mapa de arriba, no escribiendo el texto en cada sitio. */
+// `Badge` genérico se quitó: duplicaba el marcado de `StatusBadge` sin consumidores.
 export function StatusBadge({ status }: { status: string }) {
   const entry = TONE[status] ?? TONE.DRAFT;
   return (
@@ -366,10 +280,6 @@ export function StatusBadge({ status }: { status: string }) {
     </span>
   );
 }
-
-/* ---------------------------------------------------------------------------
-   Aviso en línea
---------------------------------------------------------------------------- */
 
 export function Alert({ children }: { children: ReactNode }) {
   return (
@@ -380,11 +290,7 @@ export function Alert({ children }: { children: ReactNode }) {
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Barra de proporción
-   El número es el dato; la barra sólo hace comparable de un vistazo lo que el
-   número ya dice.
---------------------------------------------------------------------------- */
+// Barra de proporción: el número es el dato, la barra sólo lo hace comparable de un vistazo.
 
 export function Meter({ value, total, label }: { value: number; total: number; label: string }) {
   const ratio = total > 0 ? value / total : 0;

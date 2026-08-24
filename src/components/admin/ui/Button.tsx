@@ -2,15 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 
-/* Los botones del panel, en un solo lugar.
-
-   Cuatro variantes y dos tamaños. No hay una quinta: cada variante existe
-   porque responde a una pregunta distinta —¿qué hago acá? ¿qué más puedo
-   hacer? ¿qué hay disponible? ¿qué destruye algo?— y agregar una sexta sin
-   pregunta nueva es lo que convierte un sistema en una paleta.
-
-   `solid` va una sola vez por pantalla. Si hay dos acciones sólidas
-   compitiendo, ninguna de las dos es la principal. */
+// Cuatro variantes, no una quinta sin razón: agregar una sin pregunta nueva convierte el sistema en paleta. "solid" va una sola vez por pantalla.
 
 export type ButtonVariant = "solid" | "outline" | "ghost" | "danger";
 export type ButtonSize = "md" | "sm";
@@ -18,8 +10,7 @@ export type ButtonSize = "md" | "sm";
 type Common = {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /* Icono al principio. Va antes del texto y nunca solo: para eso está
-     IconButton, que además exige el nombre accesible. */
+  // Nunca solo: para eso está IconButton, que exige el nombre accesible.
   icon?: ReactNode;
   className?: string;
   children: ReactNode;
@@ -52,10 +43,7 @@ export function Button({
   );
 }
 
-/* Un enlace que se ve como botón. Existe separado y no como una prop `href` del
-   botón porque son dos elementos distintos para el navegador y para el lector
-   de pantalla: uno navega, el otro ejecuta. Un <button> que navega rompe abrir
-   en pestaña nueva; un <a> que ejecuta no responde a la barra espaciadora. */
+// Separado de Button (no una prop href) porque un <button> que navega rompe abrir en pestaña nueva, y un <a> que ejecuta no responde a la barra espaciadora.
 export function LinkButton({
   variant,
   size,
@@ -72,13 +60,7 @@ export function LinkButton({
   );
 }
 
-/* Botón de sólo icono.
-
-   `label` es obligatorio por tipo, no por convención: un botón sin texto no
-   tiene nombre accesible, y "lo agregamos después" es como se llega a una
-   fila de cinco iconos que un lector de pantalla anuncia como "botón, botón,
-   botón". Se usa como aria-label y como tooltip nativo a la vez — quien ve la
-   pantalla y quien la escucha reciben exactamente lo mismo. */
+// label obligatorio por tipo, no por convención: un botón sin texto no tiene nombre accesible. Se usa como aria-label y tooltip a la vez.
 
 type IconOnly = {
   label: string;

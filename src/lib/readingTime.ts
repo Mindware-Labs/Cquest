@@ -1,18 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import { extractText, type Block } from "@/lib/blocks";
 
-/* Tiempo de lectura estimado.
-   ---------------------------------------------------------------------------
-
-   200 palabras por minuto es la media aceptada para lectura de pantalla en
-   prosa (los estudios sobre papel dan más, entre 240 y 300, pero en pantalla y
-   con imágenes de por medio se lee más lento). No se afina más porque el número
-   no pretende ser exacto: sirve para decidir si se lee ahora o después, y a esa
-   pregunta "4 min" y "4 min 20 s" contestan lo mismo.
-
-   Mínimo un minuto: "0 min de lectura" no es información, es un error visible.
-*/
-
+// 200 palabras/min es la media aceptada para lectura de pantalla (el papel da más, 240-300); no se afina más porque el número solo sirve para decidir si se lee ahora o después. Mínimo un minuto: "0 min de lectura" se lee como error.
 const WORDS_PER_MINUTE = 200;
 
 export function readingMinutes(blocks: readonly Block[]): number {

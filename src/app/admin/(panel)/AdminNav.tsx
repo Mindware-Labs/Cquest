@@ -9,9 +9,7 @@ import {
   IconTemplates,
 } from "@/components/admin/ui/icons";
 
-/* Dos grupos y no una lista de cuatro: "Inicio" es a dónde se vuelve, y los
-   otros tres son las cosas que se editan. Con cuatro enlaces la diferencia es
-   chica; el día que sean ocho, ya está el lugar donde ponerlos. */
+// Dos grupos y no una lista plana: "Inicio" es a dónde se vuelve, los otros tres son lo que se edita.
 const GROUPS = [
   {
     title: "General",
@@ -40,9 +38,7 @@ export default function AdminNav() {
             {group.links.map(({ href, label, Icon }) => (
               <SidebarLink
                 key={href}
-                /* "/admin" solo es exacto; el resto marca activo también en sus
-                   subrutas, para que editar un artículo mantenga iluminada su
-                   sección. */
+                // "/admin" es exacto; el resto marca activo también en subrutas, para que editar un artículo mantenga su sección iluminada.
                 active={href === "/admin" ? pathname === "/admin" : pathname.startsWith(href)}
                 link={{ href, label, icon: <Icon size={17} /> }}
               />

@@ -1,8 +1,6 @@
 import type { Block, ColumnSimpleBlock } from "@/lib/blocks";
 
-/* Los 11 tipos del catálogo (sección 2.3 del plan). El orden es el de la
-   paleta: primero los que se usan en casi todo artículo, después los
-   estructurales. */
+// Orden es el de la paleta: primero los que se usan en casi todo artículo, después los estructurales.
 export const BLOCK_TYPES = [
   "heading",
   "paragraph",
@@ -17,9 +15,7 @@ export const BLOCK_TYPES = [
   "divider",
 ] as const;
 
-/* Los que una columna admite: mismo conjunto que columnSimpleBlockSchema en
-   blocks.ts. Si divergen, Zod rechaza al guardar — por eso sale del mismo
-   lugar conceptual y se verifica con el tipo de abajo. */
+// Mismo conjunto que columnSimpleBlockSchema en blocks.ts: si divergen, Zod rechaza al guardar.
 export const COLUMN_TYPES = ["heading", "paragraph", "image", "list", "cta"] as const;
 export type ColumnType = (typeof COLUMN_TYPES)[number];
 
@@ -41,10 +37,7 @@ function newId(): string {
   return crypto.randomUUID();
 }
 
-/* Cada bloque nace con TODOS los campos que pide el schema, incluidos los que
-   tienen default. Zod los completaría al validar, pero entonces el panel de
-   propiedades arrancaría mostrando valores que no son los que se van a
-   guardar. */
+// Nace con TODOS los campos del schema, incluidos los que tienen default: si no, el panel de propiedades mostraría valores distintos a los que se van a guardar.
 export function createBlock(type: Block["type"]): Block {
   const base = { id: newId(), spacingTop: "md", spacingBottom: "md" } as const;
 
@@ -87,9 +80,7 @@ export function createBlock(type: Block["type"]): Block {
   }
 }
 
-/* Misma fábrica, acotada a lo que una columna acepta. El tipo de retorno lo
-   garantiza: si alguien agrega un tipo a COLUMN_TYPES que el schema anidado no
-   admite, esto deja de compilar. */
+// El tipo de retorno garantiza que si se agrega un tipo a COLUMN_TYPES que el schema anidado no admite, esto deja de compilar.
 export function createColumnBlock(type: ColumnType): ColumnSimpleBlock {
   return createBlock(type) as ColumnSimpleBlock;
 }

@@ -8,28 +8,14 @@ export type TemplateChoice = {
   key: string;
   name: string;
   blocks: Block[];
-  /* Las 4 fijas viven en código; las propias, en la tabla Template. Se
-     distinguen para que el admin sepa cuál puede borrar. */
+  // Las 4 fijas viven en código; las propias, en la tabla Template. Se distinguen para que el admin sepa cuál puede borrar.
   origin: "starter" | "saved";
   authorName?: string;
-  /* La miniatura, YA RENDERIZADA desde el servidor.
-
-     Es el mismo render real que usa la pantalla de Plantillas —`TemplateThumb`,
-     que monta `BlockRenderer` a escala— y no la silueta de barras que había
-     acá. Dos motivos para unificar: la silueta se leía como esqueleto de carga
-     (mismo material que `.cq-skeleton`), y era un segundo mapa de siluetas que
-     había que ampliar a mano con cada tipo de bloque nuevo.
-
-     Llega como `ReactNode` y no se construye acá porque `BlockRenderer` es un
-     server component y este selector es de cliente: importarlo arrastraría los
-     once renderers de bloque al bundle del navegador. */
+  // Miniatura ya renderizada desde el servidor (TemplateThumb) y no construida acá: BlockRenderer es server component, importarlo arrastraría los once renderers de bloque al bundle del navegador.
   thumb?: ReactNode;
 };
 
-/* Los ids de una plantilla son fijos (vienen de un archivo o de la base). Si se
-   aplicaran tal cual, aplicar la misma plantilla dos veces produciría bloques
-   con ids repetidos — y el editor los trata como el mismo bloque, así que
-   seleccionar uno seleccionaría los dos. */
+// Los ids de una plantilla son fijos; aplicarlos tal cual dos veces produciría bloques con ids repetidos y el editor los trataría como el mismo bloque.
 export function withFreshIds(blocks: Block[]): Block[] {
   return blocks.map((block) => {
     const next = { ...block, id: crypto.randomUUID() };
@@ -76,9 +62,7 @@ export default function TemplatePicker({
             style={{ "--cq-i": Math.min(index, 8) } as React.CSSProperties}
           >
             {template.thumb}
-            {/* El cuerpo lleva su propio relleno: la lámina va al ras del borde
-                de la tarjeta —es una hoja apoyada, no una imagen con marco— así
-                que el respiro tiene que vivir acá abajo y no en la tarjeta. */}
+            {/* El cuerpo lleva su propio relleno: la lámina va al ras del borde de la tarjeta (hoja apoyada, no imagen con marco), así que el respiro vive acá y no en la tarjeta. */}
             <div className="cq-tcard-body">
               <p className="cq-title truncate" title={template.name}>
                 {template.name}

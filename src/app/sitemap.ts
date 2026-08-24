@@ -2,21 +2,12 @@ import { execFileSync } from "node:child_process";
 import type { MetadataRoute } from "next";
 import { locales, defaultLocale } from "@/i18n/config";
 import { getAllPublishedPosts } from "@/lib/posts";
-// Careers está fuera del alcance de esta entrega: la sección vive en
-// src/app/[lang]/_careers (carpeta privada, no enrutable). Descomentar este
-// import y las rutas /careers de abajo cuando se vuelva a publicar.
+// Careers fuera de alcance: la carpeta es privada (_careers, no enrutable). Descomentar este import y las rutas /careers de abajo al republicar.
 // import { ACTIVE_POSITIONS } from "./[lang]/_careers/data/positions";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
 
-/* Cada ruta canónica indexable, con los archivos que REALMENTE la componen.
-   La segunda mitad no es decorativa: el `lastmod` sale de la última fecha de
-   commit de esos paths, así que una home cuyo copy vive en components/about
-   tiene que declararlo o su fecha se quedaría congelada en el día que se tocó
-   page.tsx por última vez.
-
-   Fuera del sitemap a propósito: /services (redirige a /#services) y el
-   catch-all (404). Un sitemap solo lleva URLs canónicas e indexables. */
+// "sources" alimenta el lastmod (última fecha de commit de esos paths); si un componente no se declara, su fecha queda congelada en la última vez que se tocó page.tsx. /services y el catch-all quedan fuera a propósito.
 const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   {
     path: "",
@@ -35,32 +26,25 @@ const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   { path: "/team", sources: ["src/app/[lang]/team"] },
   // { path: "/careers", sources: ["src/app/[lang]/_careers"] },
   // { path: "/careers/apply", sources: ["src/app/[lang]/_careers/apply"] },
-  /* Cada vacante abierta es su propia página indexable con datos estructurados
-     JobPosting — derivada del mismo array que renderiza el listado, así que
-     una requisición retirada (active: false) sale del sitemap con ella. */
+  // Cada vacante es su propia página con datos estructurados JobPosting, derivada del mismo array que el listado: una requisición retirada (active: false) sale del sitemap con ella.
   // ...ACTIVE_POSITIONS.map((position) => ({
   //   path: `/careers/${position.slug}`,
   //   sources: ["src/app/[lang]/_careers/data/positions.ts"],
   // })),
-  /* El listado sí existe en los dos idiomas (cada uno lista sus propios
-     artículos), así que mantiene su clúster hreflang. Los artículos, no. */
+  // El listado del blog existe en los dos idiomas y mantiene su clúster hreflang; los artículos individuales no.
   { path: "/blog", sources: ["src/app/[lang]/blog", "src/components/blog"] },
   { path: "/quote", sources: ["src/app/[lang]/quote"] },
   {
     path: "/location",
     sources: ["src/app/[lang]/location", "src/components/about/locationData.ts"],
   },
-  /* Es indexable (robots: index en su generateMetadata) y hasta ahora no
-     estaba listada: Google solo podía llegar por enlace interno. */
+  // Es indexable (robots: index) y no estaba listada; Google solo podía llegar por enlace interno.
   { path: "/partnerships/mindware-labs", sources: ["src/app/[lang]/partnerships"] },
   { path: "/legal/terms", sources: ["src/app/[lang]/legal/terms"] },
   { path: "/legal/privacy", sources: ["src/app/[lang]/legal/privacy"] },
 ];
 
-/* Fecha real del último commit que tocó esos paths. Google ignora `lastmod`
-   en cuanto lo pilla mintiendo, así que la alternativa a un dato de verdad no
-   es `new Date()` — es omitirlo. Si no hay git en el build (checkout sin .git,
-   tarball), esto devuelve undefined y la etiqueta simplemente no se emite. */
+// Google ignora lastmod en cuanto lo pilla mintiendo, así que la alternativa a un dato real es omitirlo, no new Date(). Sin git en el build, devuelve undefined y la etiqueta no se emite.
 function lastCommit(paths: readonly string[]): Date | undefined {
   try {
     const stdout = execFileSync(
@@ -76,44 +60,29 @@ function lastCommit(paths: readonly string[]): Date | undefined {
   }
 }
 
-/* El sitemap ya no es puramente estático: la mitad editorial sale de la base.
-   Se recalcula cada hora en vez de en cada request — publicar un artículo no
-   justifica una consulta por cada visita del rastreador. */
+// Se recalcula cada hora y no en cada request: publicar un artículo no justifica una consulta por cada visita del rastreador.
 export const revalidate = 3600;
 
-/* Y no se prerenderiza durante el build. Sin esto, Next lo genera al compilar
-   y el despliegue entero falla si la base no está disponible en ese momento
-   — que es justo lo que pasó la primera vez que este archivo consultó
-   Postgres. Un sitemap es contenido, no código: su indisponibilidad
-   momentánea no puede tumbar un deploy. */
+// force-dynamic: sin esto Next prerenderiza en build y el deploy entero falla si la base no está disponible (ya pasó). El sitemap es contenido, no código.
 export const dynamic = "force-dynamic";
 
-/* Los artículos publicados, leídos de la base y no del historial de git
-   (SEO-1). Dos fuentes distintas en el mismo archivo porque son dos cosas
-   distintas: el código versionado y el contenido editorial. */
+// Los artículos se leen de la base y no del historial de git (SEO-1): son contenido editorial, no código versionado.
 async function postEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const byLocale = await Promise.all(
       locales.map(async (locale) => {
-        /* Sin recorte: el listado del blog pagina, el sitemap no. Declararle a
-           Google sólo la primera página sería esconderle justo lo que el
-           sitemap existe para mostrarle. */
+        // Sin recorte: el listado del blog pagina pero el sitemap no, para no esconderle a Google justo lo que existe para mostrarle.
         const posts = await getAllPublishedPosts(locale);
         return posts.map((post) => ({
           url: `${SITE_URL}/${locale}/blog/${post.slug}`,
           lastModified: post.updatedAt,
-          /* Sin `alternates`: un artículo vive en un solo idioma y no tiene
-             traducción. Declarar un clúster hreflang hacia una URL que sirve
-             otro contenido es peor que no declarar ninguno. */
+          // Sin alternates: un artículo vive en un solo idioma; declarar hreflang hacia una URL con otro contenido es peor que no declarar ninguno.
         }));
       }),
     );
     return byLocale.flat();
   } catch (error) {
-    /* Segunda red: si la base falla en tiempo de request, se sirve el sitemap
-       con las rutas estáticas en vez de devolver un 500. Un sitemap incompleto
-       se corrige en la próxima revalidación; uno que no responde le enseña a
-       Google que la URL está rota. */
+    // Si la base falla, se sirve el sitemap con solo las rutas estáticas en vez de un 500: incompleto se corrige en la próxima revalidación, pero un 500 le enseña a Google que la URL está rota.
     console.error("No se pudieron leer los artículos para el sitemap:", error);
     return [];
   }
@@ -126,8 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: {
       languages: {
         ...Object.fromEntries(locales.map((locale) => [locale, `${SITE_URL}/${locale}${path}`])),
-        /* En sincronía con el x-default de src/i18n/alternates.ts: si el clúster
-           hreflang del sitemap no cuadra con los <link> del HTML, Google lo descarta. */
+        // Debe estar en sincronía con el x-default de src/i18n/alternates.ts: si el hreflang del sitemap no cuadra con el HTML, Google lo descarta.
         "x-default": `${SITE_URL}/${defaultLocale}${path}`,
       },
     },
@@ -136,5 +104,4 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [...staticEntries, ...(await postEntries())];
 }
 
-/* Sin `priority` ni `changefreq`: Google confirmó hace años que los ignora por
-   completo. Emitirlos solo añade ruido que hay que mantener sincronizado. */
+// Sin priority ni changefreq: Google confirmó que los ignora por completo; emitirlos solo añade ruido que mantener.

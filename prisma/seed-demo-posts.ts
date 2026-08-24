@@ -2,20 +2,10 @@ import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 import { PostStatus, PostLocale } from "../src/generated/prisma/client";
 
-/* Artículos de prueba para ver el índice del blog con contenido real.
- *
- *   npx tsx prisma/seed-demo-posts.ts           crea o actualiza los artículos
- *   npx tsx prisma/seed-demo-posts.ts --clean    los borra todos
- *
- * Todos los slugs llevan el prefijo DEMO_PREFIX: es lo que hace que borrarlos
- * sea una sola consulta y que nunca se pueda llevar por delante un artículo
- * real escrito desde el panel. */
+// Artículos de prueba (npx tsx prisma/seed-demo-posts.ts [--clean]); el prefijo evita borrar artículos reales.
 const DEMO_PREFIX = "demo-";
 
-/* Portadas que ya viven en /public. No se suben a Blob a propósito: estos
-   artículos son andamiaje, y dejarlos apuntando a archivos del repo evita
-   ensuciar el almacenamiento con imágenes que hay que salir a buscar después
-   para borrarlas. */
+// Portadas ya existentes en /public: evita subir a Blob imágenes de andamiaje que luego habría que limpiar.
 const COVERS = [
   { url: "/bpo-services/bpo-floor.jpeg", alt: "Piso de operaciones de Center Quest durante un turno." },
   { url: "/hero-callcenter.jpg", alt: "Puesto de trabajo con headset y teclado en el piso de call center." },

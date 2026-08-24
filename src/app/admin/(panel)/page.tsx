@@ -29,15 +29,7 @@ const dateFormat = new Intl.DateTimeFormat("es-DO", {
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/* Últimos 30 días contra los 30 anteriores. Es la comparación mínima que hace
-   útil una cifra: sin ella, "128 publicados" es un número que nadie usa para
-   decidir nada.
-
-   Vive fuera del componente a propósito. Lee el reloj, y el reloj es una fuente
-   impura: React exige que el cuerpo de un componente sea idempotente, y su
-   linter marca `Date.now()` ahí aunque acá sea un Server Component asíncrono
-   que corre una vez por pedido. Sacarlo a una función deja explícito dónde está
-   el efecto en vez de esconderlo entre el resto del render. */
+// Últimos 30 días contra los 30 anteriores, para que la cifra sirva para decidir algo. Vive fuera del componente porque lee el reloj (fuente impura) y el linter marca Date.now() en el cuerpo del componente.
 function comparePeriods(dates: Date[]) {
   const now = new Date();
   const stamp = now.getTime();
@@ -47,31 +39,16 @@ function comparePeriods(dates: Date[]) {
       const age = stamp - date.getTime();
       return age > 30 * DAY && age <= 60 * DAY;
     }).length,
-    /* La serie del gráfico también depende del reloj, así que se calcula acá
-       mismo: un solo `new Date()` para toda la pantalla evita que la ventana de
-       comparación y la del gráfico caigan en meses distintos si el render cae
-       justo en el cambio de mes. */
+    // Un solo new Date() para toda la pantalla: evita que la ventana de comparación y la del gráfico caigan en meses distintos si el render cae justo en el cambio de mes.
     volume: buildVolumeSeries(dates, now),
   };
 }
 
-/* El tablero.
-
-   La estructura es la de un panel denso de KPIs: cifras arriba, la serie
-   temporal ocupando el bloque principal, el reparto al costado, y debajo las
-   dos listas de trabajo. Cada bloque muestra un dato que este panel realmente
-   tiene — no hay ninguno puesto para completar la grilla.
-
-   El orden de lectura sigue siendo el mismo de antes y es deliberado: primero
-   qué falta hacer, después cómo viene el ritmo. Un tablero que abre con el
-   total de artículos publicados informa; uno que abre con lo que está a medio
-   escribir sirve. */
+// El orden de lectura es deliberado: primero qué falta hacer, después cómo viene el ritmo — un tablero que abre con lo pendiente sirve más que uno que abre con lo ya publicado.
 export default async function AdminHomePage() {
   const [categories, posts] = await Promise.all([getCategories(), getPosts()]);
 
-  /* El estado VISIBLE, igual que en la tabla: un artículo publicado con fecha
-     futura está programado, no publicado. Contarlo entre los publicados haría
-     que el tablero diga que hay algo en la web que el público no ve. */
+  // El estado VISIBLE, igual que en la tabla: un artículo publicado con fecha futura está programado, no publicado.
   const now = new Date();
   const withStatus = posts.map((post) => ({ ...post, display: displayStatus(post, now) }));
 
@@ -80,8 +57,7 @@ export default async function AdminHomePage() {
   const drafts = withStatus.filter((post) => post.display === "DRAFT");
   const hidden = withStatus.filter((post) => post.display === "HIDDEN");
 
-  /* Lo programado entra en "pendiente" y no en "publicado": todavía es trabajo
-     que puede cambiar de opinión, y el tablero abre con lo que falta hacer. */
+  // Lo programado entra en "pendiente" y no en "publicado": todavía es trabajo que puede cambiar de opinión.
   const pending = [...drafts, ...scheduled, ...hidden].sort(
     (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
   );
@@ -90,17 +66,7 @@ export default async function AdminHomePage() {
     (a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0),
   );
 
-  /* Las dos listas se acotan por CANTIDAD, no por altura.
-     ---------------------------------------------------------------------------
-     Antes cada tarjeta tenía un tope de 22rem y su propio desplazamiento: el
-     tablero entraba en una pantalla, sí, pero a costa de tres barras
-     compitiendo —la de la página y una por lista— donde la rueda hacía una cosa
-     u otra según dónde estuviera el puntero. Y una lista recortada por píxeles
-     no dice cuánto falta: la última fila queda cortada al medio, que se lee
-     como un error de dibujo antes que como "hay más".
-
-     Seis filas y un enlace que dice cuántas hay en total. El tope es explícito,
-     la salida es explícita, y la tarjeta mide siempre lo mismo. */
+  // Las listas se acotan por CANTIDAD y no por altura con scroll propio: antes competían con la barra de la página y una fila cortada a medias se leía como error de dibujo.
   const PREVIEW = 6;
 
   const byCategory = categories
@@ -117,14 +83,7 @@ export default async function AdminHomePage() {
   const { lastPeriod, previousPeriod, volume } = comparePeriods(publishedDates);
 
   return (
-    /* Sin acción primaria. El tablero es una pantalla de LECTURA: dice qué está
-       publicado, qué quedó en borrador y qué se movió en el período. Escribir un
-       artículo se hace en Artículos, que está a un clic en el riel y ya tiene su
-       propio botón — y el mismo «Nuevo artículo» repetido en cuatro módulos
-       enseña a no mirar la franja del encabezado.
-
-       Con `actions` ausente, `ModulePage` ya no dibuja la franja: el tablero
-       arranca directamente en sus cifras, que es lo que se viene a ver. */
+    // Sin acción primaria a propósito: el tablero es de LECTURA, escribir un artículo se hace en Artículos. Sin `actions`, ModulePage no dibuja la franja.
     <ModulePage
       title="Inicio"
       description="Qué falta hacer"
@@ -134,11 +93,7 @@ export default async function AdminHomePage() {
           value: published.length,
           href: "/admin/posts?estado=publicado",
           accent: "published",
-          /* Un icono por cifra, y cada uno dice lo suyo: visible, a medio
-             escribir, retirado, y el archivo. El punto de acento que había antes
-             sólo repetía el color de la tarjeta de abajo; el icono hace eso y
-             además nombra el dato de un vistazo, que es lo que hace legible una
-             tira de cuatro números iguales en tipografía y tamaño. */
+          // Un icono por cifra en vez del punto de acento anterior: nombra el dato de un vistazo en una tira de números iguales en tipografía y tamaño.
           icon: <IconCheckCircle size={15} />,
           delta: {
             value: lastPeriod - previousPeriod,
@@ -171,15 +126,8 @@ export default async function AdminHomePage() {
         },
       ]}
     >
-      {/* `items-stretch` y no `items-start`: así las dos tarjetas de la fila
-          miden lo mismo aunque su contenido no. Con `items-start` cada una
-          medía lo que ocupaba adentro y quedaban desparejas al mismo nivel, que
-          es lo que se veía mal. Lo mismo en la fila de abajo. */}
-      {/* El escalonado se declara elemento por elemento y NO en el contenedor:
-          animar la grilla y sus hijos a la vez encadena dos transformaciones
-          sobre la misma caja y el resultado tiembla. Los índices siguen a los
-          cuatro KPIs, así que la pantalla entra en un solo barrido de arriba
-          abajo en vez de aparecer de golpe. */}
+      {/* items-stretch y no items-start: así las dos tarjetas miden lo mismo aunque su contenido no. */}
+      {/* El escalonado se declara elemento por elemento y no en el contenedor: animar la grilla y sus hijos a la vez encadena dos transformaciones y tiembla. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-stretch">
         <Section
           title="Volumen publicado"
@@ -215,13 +163,7 @@ export default async function AdminHomePage() {
         </Section>
       </div>
 
-      {/* Las dos listas de trabajo, en la MISMA caja que los gráficos.
-
-          Antes iban abiertas, con su regla arriba, mientras los gráficos iban
-          en tarjeta. Eran dos lenguajes en una sola pantalla, y eso es lo que
-          hacía que el tablero se leyera como secciones sueltas en vez de como
-          un módulo. Una sola gramática: todo lo que es un bloque de datos vive
-          en una tarjeta, y el aire entre tarjetas es el que separa. */}
+      {/* Las listas de trabajo van en tarjeta, igual que los gráficos: antes iban abiertas con regla arriba y el tablero se leía como secciones sueltas en vez de un módulo. */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2 lg:items-stretch">
         <Section
           title="Sin publicar"
@@ -272,15 +214,7 @@ export default async function AdminHomePage() {
                   </span>
                   <StatusBadge status={post.display} />
                   <span className="cq-row-actions">
-                    {/* El lápiz abre la ficha en un cajón; el TÍTULO sigue
-                        llevando al editor de bloques. Es la misma división que
-                        en la tabla de Artículos: el nombre lleva al contenido,
-                        el lápiz a los datos del artículo.
-
-                        Desde el tablero esto es lo que más se nota: se entra a
-                        ver qué falta, se ve un borrador con la categoría mal
-                        puesta, y arreglarlo obligaba a cargar el editor entero
-                        y volver. */}
+                    {/* El lápiz abre la ficha en un cajón; el título sigue llevando al editor de bloques — misma división que en la tabla de Artículos. */}
                     <PostQuickEdit
                       label={`Editar la ficha de «${post.title}»`}
                       categories={categories}
@@ -294,10 +228,7 @@ export default async function AdminHomePage() {
                         locale: post.locale,
                         seoTitle: post.seoTitle ?? "",
                         seoDescription: post.seoDescription ?? "",
-                        /* Guarda de concurrencia: el servidor compara esta
-                           marca antes de escribir. El tablero es justo donde
-                           más falta —se entra a corregir algo de paso, sin
-                           saber si alguien más lo está editando. */
+                        // Guarda de concurrencia: el servidor compara esta marca antes de escribir.
                         updatedAtIso: post.updatedAt.toISOString(),
                         status: post.status,
                       }}

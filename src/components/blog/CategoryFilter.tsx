@@ -5,9 +5,7 @@ import { blogHref } from "@/lib/blogParams";
 const ALL_LABEL: Record<Locale, string> = { es: "Todos", en: "All" };
 const NAV_LABEL: Record<Locale, string> = { es: "Filtrar por categoría", en: "Filter by category" };
 
-/* Filtro por categoría (BP-2). Enlaces reales, no botones con estado: cada
-   filtro es una URL que se puede compartir, marcar y rastrear, y funciona sin
-   JavaScript. Un <select> con onChange no tendría ninguna de esas tres cosas. */
+// Filtro por categoría (BP-2): enlaces reales y no un <select> con onChange, para que cada filtro sea una URL compartible y funcione sin JavaScript.
 export default function CategoryFilter({
   categories,
   activeSlug,
@@ -26,15 +24,10 @@ export default function CategoryFilter({
   ];
 
   return (
-    /* Texto plano y no pastillas: en una hoja sin color, una fila de pastillas
-       rellenas sería el elemento más pesado de la página y ganaría por encima
-       de los títulos, que es lo que en un índice tiene que ganar. Lo activo se
-       marca con peso y con negro pleno; lo inactivo, en gris. */
+    // Texto plano y no pastillas: en una hoja sin color, pastillas rellenas ganarían visualmente por encima de los títulos.
     <nav
       aria-label={NAV_LABEL[lang]}
-      /* El padding derecho extra deja la última categoría fuera del desvanecido:
-         sin él, con pocas categorías que entran todas, la máscara igual apagaba
-         la última y parecía un recorte y no una señal de scroll. */
+      // El padding derecho extra deja la última categoría fuera del desvanecido: sin él la máscara apagaba la última aunque entraran todas.
       className="cq-blog-rail -mx-5 flex gap-7 pl-5 pr-12 sm:-mx-8 sm:pl-8 sm:pr-14 md:mx-0 md:px-0"
     >
       {options.map((option) => {
@@ -42,11 +35,7 @@ export default function CategoryFilter({
         return (
           <LocalizedLink
             key={option.slug ?? "all"}
-            /* El nombre del parámetro también se traduce: `?categoria=` en una
-               URL inglesa era la única parte del sitio en inglés que seguía
-               hablando español, y en el lugar más visible que hay. Cambiar de
-               categoría vuelve a la página 1 a propósito — la página 3 de una
-               categoría no es la página 3 de otra. */
+            // El nombre del parámetro también se traduce (evita "?categoria=" en una URL inglesa); cambiar de categoría vuelve a la página 1 a propósito, porque la página 3 de una categoría no es la de otra.
             href={blogHref(lang, { category: option.slug })}
             aria-current={isActive ? "page" : undefined}
             className={`relative shrink-0 whitespace-nowrap py-4 text-[0.92rem] transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground ${
@@ -56,9 +45,7 @@ export default function CategoryFilter({
             }`}
           >
             {option.name}
-            {/* La línea la dibuja un hijo y no un border-bottom en el enlace:
-                así el ancho del subrayado no depende del padding y la fila
-                completa mantiene la misma altura esté activa o no. */}
+            {/* La línea es un hijo y no un border-bottom: así el ancho no depende del padding y la fila mantiene su altura esté activa o no. */}
             <span
               aria-hidden="true"
               className={`absolute inset-x-0 -bottom-px h-[2px] bg-foreground transition-opacity duration-200 ${

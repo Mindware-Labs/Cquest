@@ -17,14 +17,12 @@ export default async function NewPostPage({
   const { plantilla } = await searchParams;
   const [categories, templates] = await Promise.all([getCategories(), getTemplateChoices()]);
 
-  /* Sin categorías no hay artículo posible: categoryId es obligatorio en el
-     schema. Mejor decirlo acá que dejar que el formulario falle al guardar. */
+  // Sin categorías no hay artículo posible (categoryId es obligatorio en el schema); mejor decirlo acá que dejar fallar el guardado.
   if (categories.length === 0) {
     return (
       <div>
         <h1 className="sr-only">Nuevo artículo</h1>
-        {/* No es un error: es un requisito previo. Por eso se dibuja como un
-            vacío con su salida a un clic y no como un cartel rojo. */}
+        {/* No es un error, es un requisito previo: se dibuja como un vacío con salida a un clic, no como un cartel rojo. */}
         <EmptyState
           title="Primero hace falta una categoría"
           hint="Un artículo tiene que pertenecer a una categoría, y todavía no hay ninguna creada."
@@ -39,24 +37,7 @@ export default async function NewPostPage({
     );
   }
 
-  /* «Usar» desde la pantalla de Plantillas llega acá con la plantilla elegida en
-     la URL, y el editor abre YA con esos bloques puestos en vez de mostrar el
-     selector. Antes ese botón no podía existir: la única forma de aplicar una
-     plantilla era entrar al editor en blanco y elegirla de nuevo adentro, así
-     que la pantalla de Plantillas listaba cosas que no se podían usar desde ahí.
-
-     Los ids se renuevan ACÁ, en el servidor, y no dentro del editor. Es la parte
-     que no es obvia: `withFreshIds` usa `crypto.randomUUID()`, y llamarlo en el
-     estado inicial de un componente de cliente da un id en el render del
-     servidor y otro en la hidratación — o sea, un desajuste de hidratación en la
-     pantalla más pesada del panel. Resuelto acá, `PostEditor` no se entera de
-     que existe el parámetro: recibe bloques iniciales como en cualquier otro
-     caso, y su propia regla («el selector sólo aparece si el artículo está
-     vacío») hace sola lo correcto.
-
-     Una clave que no existe —plantilla borrada, URL vieja, algo mal tipeado— no
-     es un error: se cae al editor en blanco, que es exactamente donde el
-     selector aparece y ofrece las que sí están. */
+  // Los ids se renuevan ACÁ, en el servidor: withFreshIds usa crypto.randomUUID(), y llamarlo en el estado inicial de un componente de cliente daría un id distinto en servidor e hidratación. Una clave inexistente cae al editor en blanco sin error.
   const picked = plantilla ? templates.find((template) => template.key === plantilla) : undefined;
 
   return (

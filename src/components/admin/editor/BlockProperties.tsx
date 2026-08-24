@@ -6,12 +6,7 @@ import { GalleryEditor, StringListEditor, TableEditor } from "./arrayFields";
 import { OptionGroup, SPACING_OPTIONS, TextAreaField, TextField } from "./fields";
 import { TYPE_LABEL } from "./blockFactory";
 
-/* Panel de propiedades (AD-11): contenido y personalización del bloque
-   seleccionado. Los dos juntos y no en pestañas separadas — terminar un bloque
-   no debería obligar a saltar entre dos lugares.
-
-   Todo control de color y tipografía es un OptionGroup sobre un conjunto
-   cerrado: eso es PERS-2 y PERS-3 hechos estructura, no una recomendación. */
+// Panel de propiedades (AD-11): contenido y personalización juntos, no en pestañas separadas. Color/tipografía siempre vía OptionGroup sobre un conjunto cerrado (PERS-2/PERS-3).
 
 const ALIGN_OPTIONS = [
   { value: "left", label: "Izquierda" },
@@ -89,8 +84,7 @@ export default function BlockProperties({
 
       {block.type === "image" && (
         <>
-          {/* Las dimensiones se guardan con la imagen: son lo que permite que
-              next/image reserve el espacio exacto en el artículo publicado. */}
+          {/* Las dimensiones se guardan con la imagen para que next/image reserve el espacio exacto en el artículo publicado. */}
           <ImageUploadField
             label="Imagen"
             value={block.src}
@@ -161,8 +155,7 @@ export default function BlockProperties({
             ]}
             onChange={(provider) => patch({ provider })}
           />
-          {/* Se pide el id, no la URL ni el embed: pegar código externo sería un
-              agujero de inyección, y el schema ya valida el formato del id. */}
+          {/* Se pide el id, no la URL ni el embed: pegar código externo sería un agujero de inyección. */}
           <TextField
             label="ID del video"
             value={block.videoId}

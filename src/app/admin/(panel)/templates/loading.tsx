@@ -1,18 +1,6 @@
 import { LoadingAnnouncement, SkeletonLine } from "@/components/admin/ui/Skeleton";
 
-/* Espeja `templates/page.tsx` caja por caja: la barra de herramientas y la
-   grilla de tarjetas, con las MISMAS medidas.
-
-   Sin `SkeletonPageHeader`: esta pantalla ancla su acción primaria dentro de la
-   barra, así que no tiene franja de módulo. Reservar espacio para una franja que
-   no va a llegar nunca es el mismo salto que el esqueleto existe para evitar,
-   sólo que al revés.
-
-   La lámina de cada tarjeta se reserva ENTERA —8.5rem, el alto de `.cq-thumb`—
-   en vez de dibujarle barritas adentro. La miniatura real es una página de papel
-   con filete y sombra; imitarla con barras de esqueleto reintroduciría
-   exactamente la ambigüedad que la miniatura nueva vino a resolver. Acá el
-   esqueleto es un bloque liso, y cuando llegan los datos aparece un documento. */
+// Espeja templates/page.tsx caja por caja, con las mismas medidas. Sin SkeletonPageHeader porque esta pantalla no tiene franja de módulo. La lámina de cada tarjeta se reserva entera (8.5rem, el alto de .cq-thumb) en vez de dibujarle barritas adentro, para no reintroducir la ambigüedad que la miniatura real vino a resolver.
 
 const NAME_WIDTHS = ["58%", "42%", "67%", "38%", "51%", "46%", "62%", "35%"];
 

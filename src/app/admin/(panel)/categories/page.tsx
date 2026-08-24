@@ -4,24 +4,8 @@ import { Section } from "@/components/admin/ui/Surface";
 import CategoryCard from "./CategoryCard";
 import CategoryCreateDrawer from "./CategoryCreateDrawer";
 
-/* Categorías, en grilla de tarjetas.
-
-   Antes era una tabla. Una tabla existe para comparar muchas filas en vertical
-   por varias columnas a la vez, y acá hay tres o cinco categorías con dos datos
-   cada una: lo único que aportaba eran líneas. Peor, la fila desperdiciaba el
-   ancho —nombre, slug y conteo ocupaban un tercio y el resto quedaba en blanco.
-
-   La grilla usa ese ancho para la cifra de artículos, que es el único dato con
-   el que se decide algo sobre una categoría: si tiene contenido o está vacía, y
-   por lo tanto si se puede borrar.
-
-   El azulejo punteado "Nueva categoría" quedó SÓLO para la grilla vacía, que es
-   donde de verdad trabaja: con cero categorías es el estado vacío y dice qué
-   hacer sin necesitar un componente aparte. Como última casilla permanente
-   dejaba de funcionar apenas la lista crecía —con veinte categorías la acción
-   de crear se iba abajo de todo— y además era el cuarto lugar distinto donde
-   este panel ponía su acción principal. Ahora está en el encabezado, como en
-   los otros tres módulos. */
+// Grilla de tarjetas y no tabla: con tres/cinco categorías una tabla sólo aportaba líneas y desperdiciaba ancho.
+// El azulejo "Nueva categoría" quedó sólo para la grilla vacía (estado vacío); como última casilla permanente se perdía de vista con la lista larga, así que la acción de crear se movió al encabezado.
 export default async function AdminCategoriesPage() {
   const categories = await getCategories();
 

@@ -1,18 +1,6 @@
 import type { Locale } from "@/i18n/config";
 
-/* Los parámetros de la URL del blog, en el idioma de la página.
-   ---------------------------------------------------------------------------
-
-   `/en/blog?categoria=onboarding` era la única parte del sitio en inglés que
-   seguía hablando español, y encima en el lugar más visible que tiene una
-   página: la barra de direcciones.
-
-   La lectura acepta LOS DOS nombres en los dos idiomas, siempre. No es
-   indulgencia: los enlaces en español ya publicados y compartidos tienen que
-   seguir funcionando, y un filtro que se cae porque alguien pegó la URL vieja
-   se ve exactamente igual que un artículo borrado. Se escribe el localizado, se
-   lee cualquiera. */
-
+// La lectura acepta los dos nombres en los dos idiomas: los enlaces en español ya publicados tienen que seguir funcionando aunque se escriba el localizado.
 const CATEGORY_PARAM: Record<Locale, string> = { es: "categoria", en: "category" };
 const PAGE_PARAM: Record<Locale, string> = { es: "pagina", en: "page" };
 
@@ -41,17 +29,14 @@ export function readPage(search: BlogSearchParams, lang: Locale): number {
   return Number.isFinite(page) && page > 0 ? page : 1;
 }
 
-/** El href del listado con el recorte puesto. Sin prefijo de idioma: lo agrega
- *  LocalizedLink, que es quien sabe de idiomas en el resto del sitio. */
+/** El href del listado con el recorte puesto, sin prefijo de idioma: lo agrega LocalizedLink. */
 export function blogHref(
   lang: Locale,
   { category, page }: { category?: string | null; page?: number } = {},
 ): string {
   const params = new URLSearchParams();
   if (category) params.set(categoryParam(lang), category);
-  /* La página 1 no se escribe: es el default, y `?pagina=1` es la misma
-     pantalla bajo otra URL — dos direcciones para un solo contenido es lo que
-     Google llama duplicado. */
+  // Página 1 no se escribe: `?pagina=1` sería contenido duplicado para Google.
   if (page && page > 1) params.set(pageParam(lang), String(page));
   const query = params.toString();
   return query ? `/blog?${query}` : "/blog";

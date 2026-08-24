@@ -4,23 +4,7 @@ import type { Block } from "@/lib/blocks";
 import { TYPE_LABEL } from "./blockFactory";
 import { canLiveInColumn, locateBlock } from "./blockTree";
 
-/* "Mover a…" — el destino de un bloque, como lista desplegable.
-
-   Reemplaza a nada: hasta ahora mover un bloque entre el cuerpo y una columna
-   era imposible por cualquier vía, y reordenar sólo se podía arrastrando o con
-   ↑↓ dentro del mismo nivel.
-
-   Por qué un <select> nativo y no arrastrar-y-soltar entre columnas:
-
-   1. El arrastre HTML5 no existe en táctil. En una tablet, la función entera
-      quedaba sin ninguna alternativa.
-   2. Con teclado tampoco hay arrastre. Un <select> se abre con la barra
-      espaciadora y se recorre con flechas, sin nada que programar.
-   3. En un teléfono el nativo abre la rueda del sistema, que es más grande y
-      más precisa que cualquier menú propio.
-
-   El arrastre se queda para reordenar dentro del cuerpo, donde funciona bien y
-   es rápido con mouse. Esto cubre lo que aquello no puede. */
+// <select> nativo (no arrastrar-y-soltar) para mover un bloque entre cuerpo y columna: el arrastre HTML5 no existe en táctil ni con teclado.
 
 export type MoveTarget =
   | { scope: "root" }
@@ -40,14 +24,11 @@ export default function MoveBlockControl({
   const location = locateBlock(blocks, block.id);
   if (!location) return null;
 
-  /* Sólo los bloques de columnas del NIVEL RAÍZ son destinos. El árbol tiene
-     dos niveles exactos, así que no hay columnas dentro de columnas. */
+  // Sólo los bloques de columnas del NIVEL RAÍZ son destinos: el árbol tiene dos niveles exactos, no hay columnas dentro de columnas.
   const columnsBlocks = blocks.filter((candidate) => candidate.type === "columns");
   const admitted = canLiveInColumn(block);
 
-  /* Sin bloques de columnas —o con un tipo que no entra en una— no hay a dónde
-     mover: el control no se dibuja en vez de dibujarse con una sola opción,
-     que es un control que no hace nada. */
+  // Sin destinos válidos el control no se dibuja, en vez de dibujarse con una sola opción que no hace nada.
   if (!admitted || columnsBlocks.length === 0) return null;
 
   const current =
@@ -82,9 +63,7 @@ export default function MoveBlockControl({
               key={`${columnsBlock.id}:${columnIndex}`}
               value={`${columnsBlock.id}:${columnIndex}`}
             >
-              {/* El número de orden y no el id: el id es un UUID y no le dice
-                  nada a nadie. Si hay tres bloques de columnas en el artículo,
-                  "Columnas 2" es lo que permite distinguirlos. */}
+              {/* Número de orden, no el id (UUID ilegible): así se distinguen "Columnas 2" de "Columnas 3" en el mismo artículo. */}
               {TYPE_LABEL.columns} {blockIndex + 1} · Columna {columnIndex + 1}
             </option>
           ));

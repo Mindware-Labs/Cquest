@@ -1,17 +1,6 @@
 import { LoadingAnnouncement, SkeletonLine } from "@/components/admin/ui/Skeleton";
 
-/* Las dos rutas del editor —crear y editar— no tenían `loading.tsx`. La de
-   edición corre tres consultas en paralelo antes de pintar nada, así que al
-   entrar desde la tabla la pantalla se quedaba con el artículo anterior hasta
-   que llegaba el nuevo: ninguna señal de que algo estaba pasando, en la
-   transición más lenta del panel.
-
-   Es un archivo compartido y no dos copias porque el editor es el mismo en
-   ambas rutas; lo único que cambia es qué se está esperando.
-
-   Espeja la anatomía real: barra pegada con salida, título y los dos botones de
-   guardado; la sección de datos en dos columnas; y el lienzo con su riel de
-   propiedades a la derecha en pantalla ancha. */
+// Compartido entre crear y editar (el editor es el mismo en ambas rutas): sin esto, la edición se quedaba con el artículo anterior en pantalla mientras cargaban sus tres consultas en paralelo.
 export default function EditorLoading({ title }: { title: string }) {
   return (
     <div>

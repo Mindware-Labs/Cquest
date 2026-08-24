@@ -7,18 +7,11 @@ import { DeleteAction } from "@/components/admin/ui/DeleteAction";
 import { Alert } from "@/components/admin/ui/Surface";
 import { IconArrowRight } from "@/components/admin/ui/icons";
 
-/* La tarjeta de plantilla — una sola, para las del sistema y las del equipo.
-
-   De dónde viene una plantilla es un DATO de la tarjeta, no una arquitectura de
-   página: va en la línea de metadatos y en el filtro de la barra. Antes eran dos
-   secciones con dos representaciones distintas del mismo objeto, y el ojo tenía
-   que reaprender la pantalla a mitad de camino. */
+// Una sola tarjeta para plantillas del sistema y del equipo: el origen es un DATO (metadatos + filtro), no dos secciones con representaciones distintas.
 
 export type TemplateItem = {
   key: string;
-  /* La clave con la que el editor conoce esta plantilla — `starter:<id>` o
-     `saved:<id>`, igual que en `lib/templateChoices.ts`. Es lo que viaja en la
-     URL al aplicarla. Vacía si la plantilla no se puede aplicar. */
+  // Clave con la que el editor conoce esta plantilla (`starter:<id>` o `saved:<id>`, igual que lib/templateChoices.ts); null si no se puede aplicar.
   choiceKey: string | null;
   name: string;
   types: string[];
@@ -51,23 +44,13 @@ export default function TemplateCard({
   index = 0,
 }: {
   template: TemplateItem;
-  /* La miniatura llega ARMADA desde el servidor, no se construye acá.
-
-     `BlockRenderer` es un server component y esta tarjeta es de cliente —lleva
-     el estado optimista del borrado—, así que no puede importarlo: hacerlo lo
-     arrastraría entero al bundle del navegador junto con los once renderers de
-     bloque. Pasarlo como `ReactNode` lo deja renderizado en el servidor y acá
-     sólo se acomoda en su lugar. */
+  // Llega ARMADA desde el servidor: BlockRenderer es un server component y esta tarjeta es de cliente, así que importarlo arrastraría los once renderers de bloque al bundle del navegador.
   thumb: ReactNode;
-  /* Ausente en las del sistema: viven en `src/lib/templates.ts`, no en la base.
-     La tarjeta no dibuja un botón apagado — un control que nunca se puede usar
-     es ruido que hay que aprender a ignorar. */
+  // Ausente en las del sistema (viven en src/lib/templates.ts, no en la base): la tarjeta no dibuja un botón apagado que nunca se puede usar.
   deleteAction?: (state: TemplateActionState, formData: FormData) => Promise<TemplateActionState>;
   index?: number;
 }) {
-  /* Mientras corre la ventana de deshacer la tarjeta desaparece de la grilla. No
-     se desmonta: si se desmontara, deshacer no tendría a quién devolverle el
-     estado. */
+  // Mientras corre la ventana de deshacer, la tarjeta se oculta pero no se desmonta: deshacer necesita a quién devolverle el estado.
   const [removed, setRemoved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,8 +61,7 @@ export default function TemplateCard({
   return (
     <li
       className="cq-tcard cq-enter"
-      /* El escalonado se corta en 8: a partir de ahí la última tarjeta arranca
-         medio segundo tarde y el que opera ya está leyendo la primera. */
+      // El escalonado se corta en 8: más allá la última tarjeta arranca medio segundo tarde y ya se está leyendo la primera.
       style={{ "--cq-i": Math.min(index, 8) } as CSSProperties}
     >
       {thumb}
@@ -89,8 +71,7 @@ export default function TemplateCard({
           {template.name}
         </h3>
 
-        {/* La estructura, en texto, para quien no ve la miniatura. Es lo que
-            hace que la lámina pueda ir `aria-hidden` sin perder información. */}
+        {/* La estructura en texto permite que la miniatura vaya aria-hidden sin perder información. */}
         <p className="sr-only">
           Estructura: {template.types.map((type) => BLOCK_LABEL[type] ?? type).join(", ")}.
         </p>
@@ -107,12 +88,11 @@ export default function TemplateCard({
           )}
         </p>
 
-        {/* Una plantilla guardada con un esquema viejo no se puede aplicar, y el
-            admin tiene que enterarse ACÁ y no al abrir el editor. */}
+        {/* Un esquema viejo no se puede aplicar; el admin debe enterarse ACÁ, no al abrir el editor. */}
         {template.isBroken && (
           <div className="mt-2">
             <Alert>
-              Se guardó con una estructura que ya no es válida. Eliminala y volvé a guardarla desde
+              Se guardó con una estructura que ya no es válida. Elimínala y vuelve a guardarla desde
               el editor.
             </Alert>
           </div>
@@ -124,17 +104,7 @@ export default function TemplateCard({
           </div>
         )}
 
-        {/* Las acciones están SIEMPRE visibles, no al apuntar.
-
-            Es la misma regla que ya gobierna las filas de Artículos, y por el
-            mismo motivo: lo que aparece con el puntero no se descubre —alguien
-            que entra por primera vez no tiene forma de saber que existe— y en
-            pantalla táctil directamente no hay hover. Lo que el puntero agrega
-            acá es énfasis sobre la tarjeta entera, no revelación.
-
-            Sin menú de overflow: guarda exactamente un elemento. Un `⋯` que
-            esconde una sola acción es un clic de más y una acción menos visible.
-            Cuando existan Duplicar y Renombrar, ahí se gana el menú. */}
+        {/* Acciones SIEMPRE visibles, no al apuntar (misma regla que las filas de Artículos): en táctil no hay hover, y algo que solo aparece con el puntero no se descubre. Sin menú de overflow porque solo hay una acción; se gana cuando existan Duplicar/Renombrar. */}
         <div className="cq-tcard-foot">
           {canApply ? (
             <Link
@@ -143,15 +113,11 @@ export default function TemplateCard({
             >
               Usar plantilla
               <IconArrowRight size={14} aria-hidden="true" />
-              {/* El enlace cubre la tarjeta entera, así que su nombre accesible
-                  tiene que decir CUÁL: veinte enlaces que dicen "Usar plantilla"
-                  en la lista de enlaces de un lector de pantalla son veinte
-                  destinos indistinguibles. */}
+              {/* El nombre accesible dice CUÁL plantilla: veinte enlaces "Usar plantilla" en un lector de pantalla serían indistinguibles. */}
               <span className="sr-only">: {template.name}</span>
             </Link>
           ) : (
-            /* Sin destino no se finge un botón: un control que no lleva a
-               ningún lado enseña a desconfiar de los que sí funcionan. */
+            // Sin destino no se finge un botón: un control que no lleva a ningún lado enseña a desconfiar de los que sí funcionan.
             <span className="cq-meta">No se puede aplicar</span>
           )}
 

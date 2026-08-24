@@ -14,13 +14,10 @@ export default function GalleryBlock({
   block: BlockOf<"gallery">;
   preview?: boolean;
 }) {
-  /* Las imágenes sin subir se descartan; si no queda ninguna, la galería
-     entera desaparece en vez de dejar una grilla vacía. */
+  // Las imágenes sin subir se descartan; si no queda ninguna, la galería entera desaparece en vez de dejar una grilla vacía.
   const images = block.images.filter((image) => image.src);
 
-  /* En previa, una galería vacía dibuja sus huecos en la grilla que le
-     corresponde. Es el dato que importa de este bloque: cuántas columnas ocupa
-     y qué ritmo le da a la página. */
+  // En previa, una galería vacía dibuja sus huecos en la grilla que le corresponde, para mostrar cuántas columnas ocupa.
   if (images.length === 0) {
     if (!preview) return null;
     const slots = Math.max(block.images.length, block.layout === "grid-3" ? 3 : 2);
@@ -40,9 +37,7 @@ export default function GalleryBlock({
       <div className={`grid grid-cols-1 gap-4 ${LAYOUT[block.layout]}`}>
         {images.map((image, index) => (
           <figure key={`${image.src}-${index}`}>
-            {/* La grilla recorta a una altura común para que las filas no
-                queden dentadas: el encuadre lo decide el diseño, no la foto.
-                Por eso `fill` — no hacen falta las dimensiones del archivo. */}
+            {/* Recorta a una altura común para que las filas no queden dentadas; por eso `fill` y no las dimensiones del archivo. */}
             <div className="relative h-56 w-full overflow-hidden rounded-lg">
               <Image
                 src={image.src}

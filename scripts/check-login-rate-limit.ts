@@ -1,14 +1,4 @@
-/* Comprobación end-to-end del freno de fuerza bruta, contra la base real.
-   ---------------------------------------------------------------------------
-
-   Las pruebas de vitest cubren la POLÍTICA (la escalera, los umbrales, los
-   mensajes) sin tocar Postgres. Lo que no pueden cubrir es lo que pasa cuando
-   el contador vive en una tabla: que el upsert acumule, que la ventana olvide
-   la racha, que un login correcto la borre.
-
-   Se ejecuta a mano: `npx tsx scripts/check-login-rate-limit.ts`
-   Usa claves con prefijo "check:" y las borra al terminar, así no ensucia los
-   contadores reales de nadie. */
+// Comprueba contra Postgres real lo que vitest no puede (upsert acumulando, ventana de olvido, borrado tras login correcto). Ejecutar a mano: `npx tsx scripts/check-login-rate-limit.ts`. Usa claves "check:" y las borra al terminar.
 
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -37,9 +27,7 @@ function check(label: string, condition: boolean, detail = "") {
   }
 }
 
-/* Réplica exacta de registerLoginFailure(), pero con `now` inyectable: probar
-   la ventana de olvido exige poder mover el reloj, y esperar quince minutos
-   reales no es una prueba, es una siesta. */
+// Réplica de registerLoginFailure() con `now` inyectable: probar la ventana de olvido exige poder mover el reloj.
 async function failOnce(now: Date) {
   let longest = 0;
   for (const { scope, key } of KEYS) {

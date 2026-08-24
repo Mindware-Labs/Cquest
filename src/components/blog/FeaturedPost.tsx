@@ -13,11 +13,7 @@ type FeaturedPostData = {
   category: { name: string };
 };
 
-/* La portada: el artículo más reciente del listado (o de la categoría filtrada).
-   Misma anatomía que una tarjeta de la grilla —imagen arriba, categoría, título,
-   fecha— pero a ancho completo y con el título al doble de tamaño. La jerarquía
-   sale de la escala, no de un tratamiento distinto: si la portada se compusiera
-   de otra forma dejaría de leerse como el primero de la misma lista. */
+// Misma anatomía que una tarjeta de la grilla, a ancho completo y título al doble: la jerarquía sale de la escala, no de un tratamiento distinto.
 export default function FeaturedPost({
   post,
   lang,
@@ -31,10 +27,7 @@ export default function FeaturedPost({
         href={`/blog/${post.slug}`}
         className="block rounded-[12px] focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-foreground"
       >
-        {/* `data-blog-cover` es la ventana que se abre; `data-blog-cover-media`
-            es la imagen que vuelve de una escala mayor por detrás. Van en dos
-            elementos distintos porque el recorte y la escala tienen que poder
-            moverse en sentidos opuestos. */}
+        {/* Dos elementos distintos (ventana + imagen) porque el recorte y la escala tienen que poder moverse en sentidos opuestos. */}
         <div
           data-blog-cover
           className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[var(--surface-sunken)] sm:aspect-[2/1]"

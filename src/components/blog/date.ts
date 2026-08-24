@@ -5,9 +5,7 @@ const TAG: Record<Locale, string> = {
   en: "en-US",
 };
 
-/* timeZone fijo: sin él, el servidor formatea en UTC y el navegador en la zona
-   del visitante, y React marca el desajuste al hidratar. Santo Domingo no
-   tiene horario de verano, así que la fecha publicada es siempre la misma. */
+// timeZone fijo: sin él el servidor formatea en UTC y el navegador en la zona del visitante, causando un desajuste de hidratación en React.
 export function formatPostDate(date: Date, lang: Locale): string {
   return new Intl.DateTimeFormat(TAG[lang], {
     day: "numeric",

@@ -7,25 +7,12 @@ import {
   type LoginKey,
 } from "@/lib/loginPolicy";
 
-/* La mitad del freno de fuerza bruta que habla con la base. La política
-   —umbrales, escalera de espera, mensajes— vive en lib/loginPolicy.ts, sin
-   Prisma, para poder probarla sin levantar un pool de conexiones.
-
-   El contador vive en Postgres y no en memoria del proceso a propósito. En un
-   despliegue serverless cada instancia tiene su propia memoria: un contador
-   local se reparte entre instancias —así que el atacante obtiene N veces los
-   intentos permitidos— y se borra entero en cada despliegue o cada vez que la
-   función se enfría. Un contador que se reinicia solo no es un límite. */
+// Contador en Postgres y no en memoria: en serverless cada instancia tiene la suya, así que un contador local le regalaría al atacante N veces los intentos permitidos.
 
 export { loginKeys, blockedMessage } from "@/lib/loginPolicy";
 export type { LoginGate } from "@/lib/loginPolicy";
 
-/** ¿Se puede intentar el login ahora?
- *
- *  Falla ABIERTO si la base no responde: un Postgres caído no puede convertirse
- *  en "nadie entra al panel". El riesgo aceptado es que durante una caída no
- *  haya freno; la alternativa es que una caída sea también un bloqueo total del
- *  panel, justo cuando probablemente haga falta entrar. */
+// Falla ABIERTO si la base no responde: un Postgres caído no puede convertirse en "nadie entra al panel".
 export async function checkLoginAllowed(keys: LoginKey[], now = new Date()): Promise<LoginGate> {
   try {
     const rows = await prisma.loginAttempt.findMany({
@@ -33,8 +20,7 @@ export async function checkLoginAllowed(keys: LoginKey[], now = new Date()): Pro
       select: { blockedUntil: true },
     });
 
-    /* Gana el bloqueo más largo de los que estén vigentes: si la IP está
-       frenada una hora y el email un minuto, la respuesta es una hora. */
+    // Gana el bloqueo más largo vigente: si la IP está frenada una hora y el email un minuto, la respuesta es una hora.
     let longest = 0;
     for (const row of rows) {
       if (!row.blockedUntil) continue;
@@ -75,19 +61,13 @@ export async function registerLoginFailure(
 
     return longest > 0 ? { allowed: false, retryAfterSeconds: longest } : { allowed: true };
   } catch (error) {
-    /* Si no se pudo contar, el login ya falló igual por credenciales. No se
-       convierte un problema de base en un error visible del formulario. */
+    // Si no se pudo contar, el login ya falló igual por credenciales; no se convierte un problema de base en un error visible.
     console.error("No se pudo registrar el intento fallido de login:", error);
     return { allowed: true };
   }
 }
 
-/** Un login correcto borra el rastro: quien entró bien no arrastra su racha.
- *
- *  Aprovecha el viaje para barrer filas viejas. Va acá y no en cada intento
- *  fallido porque los logins correctos son raros y los fallidos son justamente
- *  lo que un ataque produce en masa — limpiar ahí sería regalarle trabajo extra
- *  a la base en el peor momento. */
+// Aprovecha el login correcto para barrer filas viejas: hacerlo en cada intento fallido regalaría trabajo extra a la base durante un ataque.
 export async function clearLoginFailures(keys: LoginKey[], now = new Date()): Promise<void> {
   try {
     await prisma.loginAttempt.deleteMany({ where: { key: { in: keys.map((e) => e.key) } } });

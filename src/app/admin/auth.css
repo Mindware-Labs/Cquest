@@ -1,25 +1,33 @@
 /* ============================================================================
-   LOGIN — vocabulario propio
+   AUTENTICACIÓN — vocabulario propio del login y de "olvidé mi contraseña"
    ============================================================================
 
    admin.css es el "libro mayor" del panel: filete en vez de sombra, radio
-   grande en las superficies, ninguna caja flotando sin motivo. Esta pantalla
-   ya rompía esa regla a propósito —es la única con sombra, ver el comentario
-   en page.tsx— porque es la ÚNICA que flota de verdad, antes de que exista
-   sesión y sin nada de cromo del panel alrededor.
+   grande en las superficies, ninguna caja flotando sin motivo. Estas dos
+   pantallas rompen esa regla a propósito —son las únicas con sombra, ver el
+   comentario en login/page.tsx— porque son las ÚNICAS que flotan de verdad,
+   antes de que exista sesión y sin nada de cromo del panel alrededor.
 
    Esta hoja extiende esa excepción al resto de la forma —sin filete, esquina
    recta de 2px, el mismo radio que `.cq-rect-cta` del sitio público, y sombra
-   con el color de marca en vez de tinta neutra— y ahora también a la
-   tipografía: el panel corre en Geist/Inter Tight (admin/layout.tsx) a
-   propósito, pero esta pantalla es la puerta de entrada y tiene que
-   anunciar la marca antes que la herramienta interna, así que corre en
-   Josefin Sans, la misma familia que el sitio público (cargada en
-   login/page.tsx, no en el layout — el panel no la ve).
+   con el color de marca en vez de tinta neutra— y también a la tipografía:
+   el panel corre en Geist/Inter Tight (admin/layout.tsx) a propósito, pero
+   estas dos pantallas son la puerta de entrada y tienen que anunciar la
+   marca antes que la herramienta interna, así que corren en Josefin Sans, la
+   misma familia que el sitio público (cargada en admin/authFont.ts, no en el
+   layout — el resto del panel no la ve).
 
-   Se importa SOLO desde login/page.tsx. No define un token nuevo en
-   panel-tokens.css porque no es vocabulario del panel: es la cita puntual de
-   otro sistema en la única pantalla que los toca a los dos.
+   Este archivo vivía en login/login.css cuando sólo existía el login; se
+   movió acá cuando /admin/reset-password sumó una segunda pantalla que
+   necesita exactamente el mismo lenguaje visual. Las clases siguen con el
+   prefijo `cq-login-` a propósito —no `cq-auth-`— para no renombrar una
+   docena de referencias ya probadas en login/ por pura prolijidad de nombre;
+   el prefijo dice de dónde nació el vocabulario, no quién puede usarlo.
+
+   Se importa desde login/page.tsx Y reset-password/page.tsx. No define un
+   token nuevo en panel-tokens.css porque no es vocabulario del panel: es la
+   cita puntual de otro sistema en las dos únicas pantallas que los tocan a
+   los dos.
 
    Todos los selectores son COMPUESTOS (`.cq-btn.cq-login-submit`, nunca
    `.cq-login-submit` solo): tienen que ganarle a admin.css por especificidad,
@@ -100,7 +108,7 @@
 }
 
 /* La tarjeta. Blanco puro —igual que `.cq-overlay`, para que la marca de éxito
-   (LoginSuccessMark) siga tapando exactamente el mismo color— pero sin filete:
+   (SuccessMark) siga tapando exactamente el mismo color— pero sin filete:
    lo que la separa del fondo es la sombra y el halo de arriba, no una línea.
 
    Sin `overflow: hidden`: el halo de `::before` vive a propósito FUERA de la
@@ -259,5 +267,148 @@
 @media (prefers-reduced-motion: reduce) {
   .cq-btn.cq-login-submit::after {
     display: none;
+  }
+}
+
+/* ============================================================================
+   RESET-PASSWORD — código de 6 casillas y checklist de contraseña en vivo
+   ============================================================================ */
+
+/* Las seis casillas del código. Mismo tratamiento que `.cq-login-input`
+   —esquina recta, relleno hundido, mismo anillo de foco— pero cuadradas y
+   con la cifra grande: es un campo de UN carácter, no de una frase, y tiene
+   que leerse como tal a la distancia.
+
+   La cifra va en la fuente de identificadores del panel (JetBrains Mono,
+   `--p-font-ident`), no en Josefin: un código que se copia y se pega es
+   exactamente el caso para el que existe esa fuente — ver el criterio en
+   admin.css, `.cq-ident`. Es la única cita al vocabulario del panel en toda
+   esta hoja, porque es la única vez que hace falta esa distinción. */
+.cq-otp-group {
+  display: flex;
+  gap: var(--p-space-2);
+  justify-content: center;
+}
+
+.cq-input.cq-otp-box {
+  width: 2.75rem;
+  padding-inline: 0;
+  border-radius: 2px;
+  text-align: center;
+  font-family: var(--p-font-ident);
+  font-size: 1.375rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 24rem) {
+  .cq-input.cq-otp-box {
+    width: 3rem;
+  }
+}
+
+/* Código rechazado: las seis casillas tiemblan juntas y se tiñen de rojo un
+   instante — el mismo lenguaje de "esto no pasó" que ya usa el empujón
+   lateral de `.cq-login-alert`, adaptado a seis cajas en vez de una línea de
+   texto. */
+.cq-otp-group[data-invalid="true"] .cq-input.cq-otp-box {
+  border-color: var(--p-danger);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cq-otp-group[data-invalid="true"] {
+    animation: cq-otp-shake 400ms var(--p-ease-soft);
+  }
+}
+
+@keyframes cq-otp-shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+/* El checklist de la contraseña nueva. Cada regla es un punto vacío que se
+   llena de petróleo con un tilde apenas se cumple — mismo color que ya usa
+   la marca de éxito del login para decir "correcto" (ver el porqué en
+   SuccessMark.tsx), así que llegar acá con la vista ya entrenada en ese
+   color no hace falta explicarlo dos veces.
+
+   Transición de color/escala pura en CSS, no GSAP: esto cambia en cada
+   tecla, y GSAP es para los momentos grandes de una sola vez —el círculo y
+   el check del login—, no para un estado que se recalcula constantemente. */
+.cq-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-2);
+}
+
+.cq-checklist-row {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  font-size: var(--p-meta-size);
+  color: var(--p-ink-muted);
+  transition: color var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-checklist-row[data-met="true"] {
+  color: var(--p-ink);
+}
+
+.cq-checklist-dot {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--p-line-strong);
+  color: transparent;
+  transition:
+    border-color var(--p-t-base) var(--p-ease-soft),
+    background-color var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-checklist-dot svg {
+  width: 0.6875rem;
+  height: 0.6875rem;
+  transform: scale(0.5);
+  opacity: 0;
+  transition:
+    transform var(--p-t-base) var(--p-ease-soft),
+    opacity var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-checklist-row[data-met="true"] .cq-checklist-dot {
+  border-color: var(--brand-petroleo);
+  background: var(--brand-petroleo);
+  color: var(--p-on-accent);
+}
+
+.cq-checklist-row[data-met="true"] .cq-checklist-dot svg {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-checklist-dot,
+  .cq-checklist-dot svg,
+  .cq-checklist-row {
+    transition: none;
   }
 }

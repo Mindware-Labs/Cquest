@@ -1,9 +1,7 @@
 import { blockSpacing, type BlockOf } from "@/lib/blocks-style";
 import MediaSlot from "./MediaSlot";
 
-/* El admin guarda proveedor + id, nunca un `<iframe>` pegado. La URL se arma
-   acá, del lado del servidor, con un id que el schema ya validó contra
-   /^[a-zA-Z0-9_-]+$/ — así no hay forma de inyectar markup desde el editor. */
+// El admin guarda proveedor + id, nunca un <iframe> pegado; el id ya fue validado por el schema contra /^[a-zA-Z0-9_-]+$/, así no hay forma de inyectar markup desde el editor.
 const EMBED: Record<BlockOf<"video">["provider"], (id: string) => string> = {
   youtube: (id) => `https://www.youtube-nocookie.com/embed/${id}`,
   vimeo: (id) => `https://player.vimeo.com/video/${id}`,
@@ -16,13 +14,7 @@ export default function VideoBlock({
   block: BlockOf<"video">;
   preview?: boolean;
 }) {
-  /* En previa se dibuja el hueco y NO el iframe. Acá el motivo no es que falte
-     contenido —el video existe— sino el costo: la pantalla de Plantillas puede
-     mostrar veinte tarjetas a la vez, y cada iframe de YouTube arrastra su
-     propio documento, sus scripts y sus pedidos de red. Veinte reproductores
-     montados para dibujar veinte rectángulos negros de 40px es media pantalla
-     de red gastada en algo que nadie va a mirar, y menos aún reproducir dentro
-     de una miniatura de un tercio de escala. */
+  // En preview se dibuja el hueco y no el iframe: por costo, no por falta de contenido — veinte tarjetas de Plantillas cargando veinte iframes de YouTube sería media pantalla de red gastada en rectángulos de 40px.
   if (preview) {
     return (
       <figure className={blockSpacing(block.spacingTop, block.spacingBottom)}>

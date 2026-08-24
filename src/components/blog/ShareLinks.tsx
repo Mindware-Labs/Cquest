@@ -27,23 +27,7 @@ const COPY: Record<
   },
 };
 
-/* Compartir un artículo.
-   ---------------------------------------------------------------------------
-
-   Las tres redes son las que importan para este negocio y no las diez de
-   siempre: LinkedIn porque el comprador de BPO y call center vive ahí, X porque
-   es donde circula el contenido de industria, y WhatsApp porque en República
-   Dominicana es como se pasa un enlace de verdad — más de la mitad del tráfico
-   es móvil y el reenvío por WhatsApp es el canal real de recomendación.
-
-   La URL se arma en el CLIENTE con `location.origin` y no se pasa desde el
-   servidor: NEXT_PUBLIC_SITE_URL no está garantizada en preview, y un enlace de
-   compartir que apunta a producción desde una rama de prueba es un enlace roto
-   que nadie nota hasta que alguien lo abre.
-
-   Todo detrás de un `mounted`: antes de hidratar no hay `location`, y renderizar
-   los enlaces con una URL vacía en el servidor sería un desajuste de hidratación
-   en cada artículo. */
+// LinkedIn, X y WhatsApp: los canales reales de este negocio en RD, no las diez redes de siempre. La URL se arma en cliente con location.origin (NEXT_PUBLIC_SITE_URL no está garantizada en preview) detrás de un mounted para no desajustar la hidratación.
 export default function ShareLinks({
   lang,
   title,
@@ -56,17 +40,7 @@ export default function ShareLinks({
   const copy = COPY[lang];
   const [copied, setCopied] = useState(false);
 
-  /* El origen del sitio, leído del navegador.
-     -------------------------------------------------------------------------
-     `useSyncExternalStore` y no un `useState` + `useEffect`: es la herramienta
-     hecha para leer un valor que sólo existe en el cliente. El tercer argumento
-     es la instantánea del SERVIDOR (cadena vacía), así que el HTML que se
-     entrega y el que React hidrata coinciden, y recién después aparece el
-     valor real. Con estado y efecto, lo mismo cuesta un render en cascada que
-     la regla `set-state-in-effect` marca con razón.
-
-     `subscribe` no se suscribe a nada porque el origen no cambia mientras la
-     página vive; devuelve una función de baja vacía, que es el contrato. */
+  // useSyncExternalStore y no useState+useEffect: el tercer argumento es la instantánea del servidor (cadena vacía), así que el HTML entregado y el hidratado coinciden.
   const origin = useSyncExternalStore(
     () => () => {},
     () => window.location.origin,
@@ -74,9 +48,7 @@ export default function ShareLinks({
   );
   const url = origin ? `${origin}${path}` : "";
 
-  /* El aviso de "copiado" se apaga solo. Sin el `clearTimeout` del cleanup, dos
-     clics seguidos dejan dos relojes corriendo y el segundo apaga el aviso del
-     primero antes de tiempo. */
+  // Sin el clearTimeout del cleanup, dos clics seguidos dejan dos relojes corriendo y el segundo apaga el aviso del primero antes de tiempo.
   useEffect(() => {
     if (!copied) return;
     const timer = window.setTimeout(() => setCopied(false), 2000);
@@ -89,8 +61,7 @@ export default function ShareLinks({
       await navigator.clipboard.writeText(url);
       setCopied(true);
     } catch {
-      /* Sin permiso de portapapeles no hay nada útil que decir: los otros tres
-         botones siguen funcionando y el usuario puede copiar de la barra. */
+      // Sin permiso de portapapeles no hay nada útil que decir: los otros botones siguen funcionando.
     }
   }, [url]);
 
@@ -125,18 +96,14 @@ export default function ShareLinks({
     "inline-flex size-8 items-center justify-center rounded-full text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
   return (
-    /* `group` y no `navigation`: son acciones sobre este artículo, no rutas del
-       sitio. Un lector de pantalla que salta por landmarks no tiene por qué
-       encontrar "compartir" en la misma lista que el menú principal. */
+    // role="group" y no "navigation": son acciones sobre el artículo, no rutas del sitio.
     <span role="group" aria-label={copy.group} className="flex items-center gap-0.5">
       {links.map((link) => (
         <a
           key={link.label}
           href={link.href}
           target="_blank"
-          /* `noopener` es lo que impide que la página abierta pueda manipular
-             esta por `window.opener`. Los navegadores modernos ya lo aplican
-             solos con `target="_blank"`, pero escribirlo no depende de eso. */
+          // noopener impide que la página abierta manipule esta por window.opener.
           rel="noopener noreferrer"
           className={buttonClass}
           title={link.label}
@@ -182,8 +149,7 @@ export default function ShareLinks({
         <span className="sr-only">{copy.copy}</span>
       </button>
 
-      {/* La confirmación se ANUNCIA, no sólo cambia el icono: quien no ve la
-          pantalla necesita saber que el clic hizo algo. */}
+      {/* La confirmación se anuncia, no solo cambia el icono: quien no ve la pantalla necesita saber que el clic hizo algo. */}
       <span aria-live="polite" className="sr-only">
         {copied ? copy.copied : ""}
       </span>

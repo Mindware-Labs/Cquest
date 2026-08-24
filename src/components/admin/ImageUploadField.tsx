@@ -10,17 +10,10 @@ import {
 import { Alert } from "./ui/Surface";
 import { Button } from "./ui/Button";
 
-/* Sube por /api/admin/upload y devuelve la ruta /api/images/... que espera el
-   schema. Es un endpoint y no una Server Action a propósito: el archivo va
-   como multipart y el límite de body de las actions (6mb) es para el CV de
-   empleos, no para cada imagen del blog. */
+// Es un endpoint y no una Server Action: el límite de body de las actions (6mb) es para el CV de empleos, no para cada imagen del blog.
 export type UploadResult = { url: string; width?: number; height?: number };
 
-/* El tope y los tipos salen del MISMO archivo que valida el servidor. Rechazar
-   acá evita subir cinco megas por una conexión de oficina para recibir el error
-   al final, pero sólo sirve si los dos números coinciden: un límite de cliente
-   más permisivo que el del servidor no evita nada, sólo mueve el rechazo al
-   peor momento posible. */
+// El tope sale del mismo archivo que valida el servidor: un límite de cliente más permisivo que el del servidor no evita nada, solo mueve el rechazo al peor momento.
 const MAX_BYTES = MAX_UPLOAD_BYTES;
 const ACCEPTED = ACCEPT_ATTRIBUTE;
 const formatSize = formatUploadSize;
@@ -33,28 +26,22 @@ export default function ImageUploadField({
 }: {
   label: string;
   value: string;
-  /* Devuelve las dimensiones junto con la URL: quien las necesite (el bloque
-     de imagen del cuerpo) las guarda, y quien recorta a proporción fija (la
-     portada) las ignora. */
+  // Devuelve las dimensiones junto con la URL: el bloque de imagen las guarda, la portada (proporción fija) las ignora.
   onChange: (result: UploadResult) => void;
   required?: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
-  /* `null` = no hay subida en curso. Un número = porcentaje. Se distingue de 0
-     a propósito: 0 es "empezó y todavía no viajó nada", que es información. */
+  // null = no hay subida en curso; 0 es distinto: "empezó y todavía no viajó nada" es información.
   const [progress, setProgress] = useState<number | null>(null);
   const request = useRef<XMLHttpRequest | null>(null);
 
-  /* XMLHttpRequest y no fetch. No es nostalgia: `fetch` no expone el progreso
-     de SUBIDA en ningún navegador —`ReadableStream` en el body es de bajada—,
-     así que con fetch lo único que se puede mostrar es "Subiendo…" y esperar.
-     XHR tiene `upload.onprogress` desde siempre. */
+  // XMLHttpRequest y no fetch: fetch no expone progreso de SUBIDA en ningún navegador (solo de bajada), XHR sí lo tiene desde siempre.
   function upload(file: File) {
     setError(null);
 
     if (file.size > MAX_BYTES) {
       setError(
-        `La imagen pesa ${formatSize(file.size)} y el máximo es ${formatSize(MAX_BYTES)}. Probá exportarla más chica o en WebP.`,
+        `La imagen pesa ${formatSize(file.size)} y el máximo es ${formatSize(MAX_BYTES)}. Prueba exportarla más chica o en WebP.`,
       );
       return;
     }
@@ -67,9 +54,7 @@ export default function ImageUploadField({
     setProgress(0);
 
     xhr.upload.addEventListener("progress", (event) => {
-      /* `lengthComputable` es false cuando el servidor no informa el tamaño.
-         En ese caso el porcentaje sería inventado, así que se deja en 0 y la
-         barra queda indeterminada en vez de mentir. */
+      // lengthComputable es false cuando el servidor no informa el tamaño; se deja en 0 en vez de inventar un porcentaje.
       if (!event.lengthComputable) return;
       setProgress(Math.round((event.loaded / event.total) * 100));
     });
@@ -93,11 +78,10 @@ export default function ImageUploadField({
     xhr.addEventListener("error", () => {
       request.current = null;
       setProgress(null);
-      setError("No se pudo subir la imagen. Revisá la conexión.");
+      setError("No se pudo subir la imagen. Revisa la conexión.");
     });
 
-    /* Cancelar no es un error: no se muestra ningún aviso rojo por algo que la
-       persona pidió a propósito. */
+    // Cancelar no es un error: no se muestra aviso rojo por algo que la persona pidió a propósito.
     xhr.addEventListener("abort", () => {
       request.current = null;
       setProgress(null);
@@ -139,10 +123,8 @@ export default function ImageUploadField({
         </div>
       )}
 
+      {/* El selector desaparece mientras sube: dejarlo invita a elegir una segunda imagen en curso, y cuál gana dependería de cuál termine antes. */}
       {isUploading ? (
-        /* Mientras sube, el selector de archivo desaparece: dejarlo disponible
-           invita a elegir una segunda imagen encima de una subida en curso, y
-           entonces cuál gana depende de cuál termine antes. */
         <div className="mt-2">
           <div className="flex items-center justify-between gap-3">
             <span role="status" className="cq-meta">
@@ -157,8 +139,7 @@ export default function ImageUploadField({
             </Button>
           </div>
 
-          {/* La barra se anima por `transform`, no por `width`: animar el ancho
-              obliga a recalcular la maquetación en cada evento de progreso. */}
+          {/* La barra anima por transform y no por width: width obliga a recalcular la maquetación en cada evento de progreso. */}
           <div className="cq-meter mt-2" role="progressbar" aria-label="Progreso de la subida" aria-valuenow={progress ?? 0} aria-valuemin={0} aria-valuemax={100}>
             <span
               style={{
@@ -174,14 +155,11 @@ export default function ImageUploadField({
           accept={ACCEPTED}
           onChange={(event) => {
             const file = event.target.files?.[0];
-            /* El input se limpia siempre: si no, subir la misma imagen dos
-               veces seguidas no dispara onChange la segunda vez. */
+            // El input se limpia siempre: si no, subir la misma imagen dos veces seguidas no dispara onChange la segunda vez.
             event.target.value = "";
             if (file) upload(file);
           }}
-          /* El botón interno del selector de archivo se dibuja con el mismo
-             vocabulario que el resto: es el único control del panel que el
-             navegador pinta por su cuenta si no se lo pisa. */
+          // El botón interno del selector se pisa con el mismo vocabulario: es el único control que el navegador pintaría por su cuenta.
           className="cq-meta mt-2 block w-full file:mr-3 file:cursor-pointer file:rounded-[var(--p-radius-sm)] file:border file:border-[var(--p-line-strong)] file:bg-[var(--p-surface)] file:px-3 file:py-1.5 file:text-[var(--p-meta-size)] file:font-semibold file:text-[var(--p-ink)]"
         />
       )}

@@ -3,13 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import gsap from "gsap";
 
-/* La tarjeta se asienta: sube unos pocos píxeles y aparece. Nada de escala ni
-   de desenfoque disolviéndose — eso era parte de lo que hacía ver esto como una
-   landing. El logo y el título la siguen, escalonados, para que el ojo lea de
-   arriba hacia abajo, y ahí termina el movimiento de la página.
-
-   Es un wrapper de cliente sobre una página de servidor: la sesión se sigue
-   resolviendo en el servidor, acá solo vive la animación. */
+// Wrapper de cliente sobre una página de servidor: la sesión se sigue resolviendo en el servidor, acá sólo vive la animación.
 export default function LoginReveal({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null);
 

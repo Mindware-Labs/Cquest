@@ -2,39 +2,9 @@
 
 import { useState } from "react";
 
-/* Dona por categoría, interactiva.
-
-   Dona y no torta: el agujero del centro no es estético, es donde va el total.
-   Y el total es el dato que una torta nunca da — sin él hay porcentajes sin
-   referencia.
-
-   Es cliente porque acá hay interacción real, del mismo tipo que ofrece un
-   tablero de BI y por las mismas razones:
-
-   1. RESALTADO CRUZADO. Apuntar una porción atenúa las demás y marca su fila en
-      la leyenda; apuntar la fila hace lo mismo con la porción. Las dos mitades
-      del gráfico son el mismo dato mostrado de dos formas, así que tienen que
-      responder juntas o el ojo tiene que emparejarlas a mano por color.
-
-   2. EL CENTRO ES EL DETALLE. Al apuntar, el agujero deja de mostrar el total y
-      muestra esa categoría: cuántos y qué parte. Ese es el "tooltip" — y va en
-      el centro y no flotando junto al cursor a propósito: una caja que sigue al
-      puntero tapa justo las porciones que uno está comparando, y con teclado no
-      tiene dónde aparecer.
-
-   3. SELECCIÓN QUE SE QUEDA. Un clic fija la porción y el detalle no se va al
-      retirar el mouse, que es lo que hace falta para leer la cifra, mirar otra
-      cosa y volver. Otro clic —o Escape— la suelta.
-
-   Sin librería: el estado es un índice. `recharts` pesa ~100 kB comprimidos y
-   trae su propio sistema de color y tipografía que habría que envolver para que
-   respete los tokens; esto son doscientas líneas que leen las variables directo.
-
-   Regla que no se negocia: el dibujo va `aria-hidden` y al lado hay una tabla
-   real, oculta a la vista, con los mismos números. Un gráfico que sólo existe
-   como dibujo no se puede leer con un lector de pantalla ni copiar a una
-   planilla. La leyenda, además, son botones: se recorre con tabulación y el
-   detalle aparece al enfocar, no sólo al pasar el mouse. */
+// Dona (no torta) por categoría: el agujero central muestra el total, y al apuntar/fijar una porción muestra su detalle ahí mismo (no en un tooltip flotante, que taparía lo que se compara y no funciona con teclado).
+// Sin librería (recharts pesa ~100kB y trae su propio sistema de color): el estado es sólo un índice.
+// El dibujo es `aria-hidden`; al lado hay una tabla real oculta con los mismos números, y la leyenda son botones tabulables, para que sea accesible.
 
 const SERIES = [
   "var(--p-series-1)",
@@ -48,15 +18,11 @@ const PERCENT = new Intl.NumberFormat("es-DO", { style: "percent", maximumFracti
 
 export type Slice = { name: string; count: number };
 
-/* Cinco porciones y el resto agrupado en "Otras". No es un límite arbitrario:
-   pasadas cinco, las últimas quedan tan finas que no se distinguen entre sí ni
-   se les puede apuntar. */
+// Cinco porciones y el resto en "Otras": pasadas cinco, las últimas quedan tan finas que no se distinguen ni se les puede apuntar.
 const MAX_SLICES = 5;
 
 export function CategoryDonut({ data }: { data: Slice[] }) {
-  /* Dos estados y no uno: `hovered` es lo que se está apuntando y `pinned` lo
-     que quedó fijado con un clic. Fusionarlos haría que retirar el mouse borre
-     la selección, que es exactamente lo que la selección existe para evitar. */
+  // Dos estados y no uno: fusionar hovered y pinned haría que retirar el mouse borre la selección fijada.
   const [hovered, setHovered] = useState<number | null>(null);
   const [pinned, setPinned] = useState<number | null>(null);
 
@@ -84,12 +50,9 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
       : []),
   ];
 
-  /* La dona se dibuja con UN círculo por porción y `stroke-dasharray`, no con
-     arcos calculados a mano: el navegador resuelve la curva, no hay
-     trigonometría que revisar, y el grosor sale del trazo. El desfase acumulado
-     es lo que encadena una porción con la siguiente. */
-  const radius = 15.9155; /* circunferencia = 100, así el dasharray es el % */
-  let offset = 25; /* arranca arriba, a las 12, no a las 3 */
+  // Un círculo por porción con `stroke-dasharray`, no arcos calculados a mano: el navegador resuelve la curva.
+  const radius = 15.9155; // circunferencia = 100, así el dasharray es el %
+  let offset = 25; // arranca arriba, a las 12, no a las 3
 
   const arcs = slices.map((slice) => {
     const percent = (slice.count / total) * 100;
@@ -98,8 +61,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
     return arc;
   });
 
-  /* Lo apuntado gana sobre lo fijado: con una porción fija, recorrer las otras
-     tiene que mostrar la que se recorre. Al soltar el puntero vuelve la fija. */
+  // Lo apuntado gana sobre lo fijado: recorrer otras porciones las muestra; al soltar, vuelve la fija.
   const active = hovered ?? pinned;
   const shown = active === null ? null : arcs[active];
 
@@ -108,24 +70,18 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
   }
 
   return (
-    /* `justify-center` y `flex-1`: la tarjeta mide lo mismo que la de volumen
-       por la grilla, así que el contenido se centra en ese alto en vez de
-       quedar pegado arriba con un hueco abajo. */
+    // La tarjeta mide lo mismo que la de volumen por la grilla, así que se centra en ese alto en vez de quedar con un hueco abajo.
     <div
       className="flex flex-1 flex-col justify-center pb-5"
       onPointerLeave={() => setHovered(null)}
-      /* Escape suelta la selección. Es la salida que espera cualquiera que haya
-         fijado algo sin querer, y no obliga a acertarle otra vez a la porción. */
+      // Escape suelta la selección fijada sin obligar a acertarle otra vez a la porción.
       onKeyDown={(event) => {
         if (event.key === "Escape" && pinned !== null) setPinned(null);
       }}
     >
       <div className="flex flex-wrap items-center gap-5">
         <div className="relative shrink-0">
-          {/* 10rem para empatar la altura del gráfico de barras (8rem de barras
-              más su cifra y su eje). Una dona chica al lado de un gráfico alto
-              se lee como el dato secundario, y el reparto por categoría no lo
-              es: responde una pregunta distinta, no una menos importante. */}
+          {/* 10rem para empatar la altura del gráfico de barras: una dona chica al lado se leería como dato secundario. */}
           <svg aria-hidden="true" viewBox="0 0 40 40" className="size-[10rem] overflow-visible">
             {arcs.map((arc, index) => {
               const isActive = active === index;
@@ -139,10 +95,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
                   r={radius}
                   fill="none"
                   stroke={arc.color}
-                  /* La porción activa engorda en vez de cambiar de color: el
-                     color ES la identidad de la categoría en la leyenda, y
-                     alterarlo al resaltar rompe justamente el emparejamiento
-                     que el resaltado existe para ayudar. */
+                  // La porción activa engorda en vez de cambiar de color: el color es la identidad de la categoría en la leyenda.
                   strokeWidth={isActive ? 8.6 : 7}
                   strokeDasharray={arc.dash}
                   strokeDashoffset={arc.offset}
@@ -155,8 +108,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
             })}
           </svg>
 
-          {/* El agujero: total en reposo, detalle de la porción al apuntarla.
-              Misma caja siempre, así nada se mueve de lugar al recorrer. */}
+          {/* El agujero usa siempre la misma caja (total o detalle) para que nada se mueva al recorrer. */}
           <div className="pointer-events-none absolute inset-0 grid place-content-center text-center">
             <span className="cq-display block leading-none">{shown ? shown.count : total}</span>
             <span className="cq-meta mt-1 block max-w-[6.5rem] truncate">
@@ -174,10 +126,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
               <li key={arc.name}>
                 <button
                   type="button"
-                  /* Botón y no una fila muerta: la leyenda es el control con el
-                     que se recorre el gráfico sin mouse. `aria-pressed` dice si
-                     esta categoría quedó fijada — sin él, la selección existe
-                     sólo como un cambio de fondo que un lector no anuncia. */
+                  // Botón (no fila muerta): la leyenda recorre el gráfico sin mouse; aria-pressed anuncia la fijación a un lector.
                   aria-pressed={isPinned}
                   aria-label={`${arc.name}: ${arc.count} ${
                     arc.count === 1 ? "artículo" : "artículos"
@@ -189,8 +138,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
                   data-active={isActive ? "true" : undefined}
                   className="cq-legend-row"
                 >
-                  {/* La muestra de color va pegada al nombre. Sin ella la
-                      leyenda obliga a comparar porciones por posición. */}
+                  {/* La muestra de color va pegada al nombre: sin ella la leyenda obliga a comparar por posición. */}
                   <span
                     aria-hidden="true"
                     className="size-3 shrink-0 rounded-[var(--p-radius-xs)] transition-transform duration-[var(--p-t-micro)]"
@@ -203,8 +151,7 @@ export function CategoryDonut({ data }: { data: Slice[] }) {
                     {arc.name}
                   </span>
                   <span className="cq-ident shrink-0">{arc.count}</span>
-                  {/* El porcentaje además del valor: uno responde "cuántos" y
-                      el otro "qué parte del total", y son preguntas distintas. */}
+                  {/* El porcentaje además del valor: "cuántos" y "qué parte del total" son preguntas distintas. */}
                   <span className="cq-ident w-12 shrink-0 text-right text-[var(--p-line-strong)]">
                     {PERCENT.format(arc.count / total)}
                   </span>

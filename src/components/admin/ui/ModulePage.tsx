@@ -1,21 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { StatCard } from "./Surface";
 
-/* El modelo de página que comparten TODOS los módulos.
-
-   Existe para responder al problema real: hoy cada vista arma su encabezado a
-   mano, y por eso el tablero tiene título grande, artículos no tiene ninguno y
-   categorías tiene uno distinto. Con un solo componente, agregar un módulo
-   nuevo no es una decisión de diseño — es completar tres props.
-
-   La estructura es siempre la misma, de arriba abajo:
-     1. Nombre del módulo y su ruta real, con las acciones a la derecha.
-     2. Tira de cifras (opcional). El resumen del módulo en números.
-     3. El trabajo.
-
-   La tira de cifras es lo que hace que un módulo se lea como un tablero y no
-   como una tabla suelta. Es opcional a propósito: un módulo sin números que
-   valga la pena resumir no debe inventar tres para llenar el espacio. */
+// Modelo de página compartido por todos los módulos: antes cada vista armaba su encabezado a mano de forma distinta; ahora agregar un módulo es completar tres props. La tira de cifras es opcional para no inventar números que no valen la pena.
 
 export type ModuleStat = {
   label: string;
@@ -23,9 +9,7 @@ export type ModuleStat = {
   hint?: string;
   href?: string;
   delta?: { value: number; label: string };
-  /* El mismo código de color que usan las tarjetas del tablero, para que la
-     cifra de arriba y el bloque que la desarrolla abajo se reconozcan como lo
-     mismo. */
+  // El mismo código de color que las tarjetas del tablero, para que la cifra de arriba y el bloque de abajo se reconozcan como lo mismo.
   accent?: "volume" | "category" | "pending" | "published";
   /* Qué se cuenta, en un glifo. Reemplaza al punto de acento en la tarjeta. */
   icon?: ReactNode;
@@ -46,39 +30,11 @@ export function ModulePage({
 }) {
   return (
     <div>
-      {/* La franja de encabezado se queda; el título VISIBLE no.
-
-          El nombre del módulo se decía tres veces en la misma pantalla: el
-          ítem marcado del riel, el último tramo de la miga en la barra superior
-          —en negrita y en color de tinta plena— y este `<h1>`. Tres es dos de
-          más. La miga es la que gana: está siempre, sobrevive al riel plegado,
-          y es la única de las tres que además dice de dónde venís.
-
-          Pero la franja NO se borra, y esa es la parte que no es obvia. Su otro
-          trabajo es ser la ranura de la acción principal, y ese trabajo es
-          real: antes de que existiera, cada módulo puso su botón donde pudo
-          —el tablero arriba a la derecha, artículos dentro de la barra de la
-          tabla, categorías como último azulejo de la grilla—. Cuatro módulos,
-          tres lugares. Sacar la franja con el título devolvería ese problema.
-
-          Así que queda la franja con la acción sola contra el margen derecho, y
-          el `<h1>` se va a `sr-only`: el documento sigue teniendo su
-          encabezado de primer nivel —un lector de pantalla y el esquema del
-          documento lo necesitan— y la pantalla gana la línea.
-
-          La bajada sigue sin dibujarse: describe el módulo a quien todavía no
-          lo conoce, y quien opera esto lo hace todos los días. */}
+      {/* El h1 va a sr-only (queda como encabezado del documento para lectores de pantalla) porque el nombre del módulo ya se repetía tres veces en pantalla; la miga gana. La franja se conserva porque es la ranura de la acción principal — sin ella, cada módulo volvía a poner su botón en un lugar distinto. */}
       <h1 className="sr-only">{title}</h1>
       {description && <p className="sr-only">{description}</p>}
 
-      {/* La franja sólo existe si hay algo que poner en ella. Con el título ya
-          en `sr-only`, un `<header>` sin acciones era 16px de relleno vacío
-          empujando el trabajo hacia abajo en cada módulo que no tuviera botón.
-
-          Un módulo puede además anclar su acción DENTRO de su propia barra de
-          herramientas y no pasar `actions` —es lo que hace Plantillas—: ahí el
-          botón pertenece a la barra que filtra y busca, en vez de flotar solo
-          sobre el contenido. */}
+      {/* La franja solo existe si hay acciones: con el título en sr-only, un header vacío era relleno inútil. Un módulo puede anclar su botón en su propia barra de herramientas y no pasar "actions" (como Plantillas). */}
       {actions && (
         <header className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 pb-4">
           <div className="flex flex-wrap items-center gap-2">{actions}</div>
@@ -87,21 +43,15 @@ export function ModulePage({
 
       {stats && stats.length > 0 && (
         <div
-          /* Las tarjetas ahora son cajas cerradas, así que necesitan separación
-             también en vertical: antes eran columnas abiertas y el `gap-x`
-             solo alcanzaba. */
+          // Las tarjetas son cajas cerradas y necesitan separación vertical también; antes eran columnas abiertas y gap-x solo alcanzaba.
           className="mb-8 grid gap-3"
           style={{
-            /* La grilla se arma por cantidad real de cifras y no con una
-               cascada de clases condicionales: tres cifras en una grilla de
-               cuatro columnas dejan un hueco que se lee como un dato que falta. */
+            // auto-fit arma la grilla por cantidad real de cifras: una grilla fija de cuatro columnas con tres cifras dejaría un hueco que se lee como un dato que falta.
             gridTemplateColumns: `repeat(auto-fit, minmax(9rem, 1fr))`,
           }}
         >
           {stats.map((stat, index) => (
-            /* Entrada escalonada. El envoltorio existe para no meter la
-               animación dentro de StatCard: así el mismo componente sirve
-               dentro y fuera de una grilla animada. */
+            // El envoltorio de animación existe para no meterla dentro de StatCard, así el mismo componente sirve dentro y fuera de una grilla animada.
             <div
               key={stat.label}
               className="cq-enter"

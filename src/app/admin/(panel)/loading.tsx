@@ -6,15 +6,12 @@ import {
   SkeletonStatCard,
 } from "@/components/admin/ui/Skeleton";
 
-/* Espeja la forma real del tablero: cuatro columnas de cifra arriba, dos
-   secciones a la izquierda y una al costado. Cuando llegan los datos, nada se
-   mueve de lugar. */
+// Espeja la forma real del tablero para que, cuando llegan los datos, nada se mueva de lugar.
 export default function AdminHomeLoading() {
   return (
     <div>
       <LoadingAnnouncement>Cargando el tablero</LoadingAnnouncement>
-      {/* El tablero ya no tiene acción primaria en la franja, así que tampoco
-          tiene franja: arranca en las cifras. */}
+      {/* El tablero ya no tiene acción primaria en la franja, así que tampoco tiene franja: arranca en las cifras. */}
       <SkeletonPageHeader withAction={false} />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -23,8 +20,7 @@ export default function AdminHomeLoading() {
         ))}
       </div>
 
-      {/* Espeja la grilla real: volumen ancho con el reparto al costado, los dos
-          en caja cerrada, y debajo las dos listas en dos columnas. */}
+      {/* Espeja la grilla real: volumen ancho con el reparto al costado en caja cerrada, y debajo dos listas en dos columnas. */}
       <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
         <div className="cq-section" data-boxed="true">
           <div className="cq-section-head">

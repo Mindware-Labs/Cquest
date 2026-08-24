@@ -4,15 +4,8 @@ import ImageUploadField from "../ImageUploadField";
 import { IconClose } from "@/components/admin/ui/icons";
 import { INPUT_CLASS } from "./fields";
 
-/* Editores para los bloques que guardan listas: lista, tabla y galería. Van
-   aparte de BlockProperties porque son los únicos controles con lógica propia
-   (agregar, quitar, reordenar filas) y mezclarlos ahí volvía ese archivo
-   imposible de leer. */
-
-/* Antes acá se redeclaraban a mano borde, relleno, tipografía y foco de un
-   botón. Es el mismo botón `ghost` chico del sistema: se apunta a la clase en
-   vez de copiar sus valores, que es lo que hacía que el control de "agregar
-   fila" se viera distinto del de al lado. */
+// Editores para bloques con listas (lista/tabla/galería), separados de BlockProperties porque su lógica propia (agregar/quitar/reordenar) lo volvía ilegible.
+// Apunta a la clase del botón `ghost` chico del sistema en vez de copiar sus valores, que es lo que hacía que "agregar fila" se viera distinto del de al lado.
 const SMALL_BUTTON = "cq-btn";
 const SMALL_BUTTON_ATTRS = { "data-variant": "ghost", "data-size": "sm" } as const;
 
@@ -79,9 +72,7 @@ export function TableEditor({
   rows: string[][];
   onChange: (value: { headers: string[]; rows: string[][] }) => void;
 }) {
-  /* Agregar o quitar una columna toca la cabecera Y todas las filas a la vez.
-     Si se desincronizan, el schema rechaza el guardado — por eso nunca se
-     modifica una sola de las dos estructuras. */
+  // Agregar/quitar columna toca cabecera Y filas a la vez: si se desincronizan, el schema rechaza el guardado.
   function addColumn() {
     onChange({ headers: [...headers, ""], rows: rows.map((row) => [...row, ""]) });
   }

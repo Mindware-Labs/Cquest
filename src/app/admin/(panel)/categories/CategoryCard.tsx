@@ -14,29 +14,13 @@ type Action = (state: CategoryActionState, formData: FormData) => Promise<Catego
 export type CategoryCardData = {
   id: number;
   name: string;
-  /* Vacío significa "sin traducir": el blog en inglés cae al nombre de arriba.
-     Ver categoryName() en lib/categoryName.ts. */
+  // Vacío significa "sin traducir": el blog en inglés cae al nombre de arriba (ver categoryName() en lib/categoryName.ts).
   nameEn: string;
   slug: string;
   postCount: number;
 };
 
-/* Una categoría, como tarjeta.
-
-   Por qué tarjetas y no una tabla: hay tres o cinco categorías, no cuarenta.
-   Una tabla existe para comparar muchas filas en vertical por varias columnas
-   a la vez; con cinco filas y dos datos por fila, lo único que aporta son
-   líneas. Y la fila de una tabla desperdicia el ancho: nombre, slug y conteo
-   ocupaban un tercio de la pantalla y los dos tercios restantes quedaban en
-   blanco.
-
-   La tarjeta usa ese ancho para lo que sí importa acá: la CIFRA de artículos,
-   grande, que es el único dato con el que se decide algo sobre una categoría
-   —si tiene contenido o está vacía, y por lo tanto si se puede borrar—.
-
-   La tarjeta entera es un enlace al listado filtrado por esa categoría. Es la
-   acción más frecuente por lejos: uno entra a Categorías para ver qué hay
-   adentro de una, no para renombrarla. */
+// Tarjetas y no tabla: con tres o cinco categorías una tabla sólo desperdicia ancho; la tarjeta usa ese espacio para destacar la cifra de artículos, el dato que importa para decidir si se puede borrar.
 export default function CategoryCard({
   category,
   renameAction,
@@ -55,20 +39,7 @@ export default function CategoryCard({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { notify } = useToast();
 
-  /* Cierre y confirmación del renombrado.
-
-     Faltaban las dos cosas. Al guardar, la tarjeta se QUEDABA en modo edición y
-     el campo seguía mostrando el texto anterior —es un input no controlado, así
-     que `defaultValue` no se vuelve a leer—, mientras el nombre nuevo ya estaba
-     guardado detrás. O sea: la única lectura posible era "no pasó nada", con el
-     dato viejo a la vista. Y era además la única mutación del panel sin aviso;
-     crear, borrar y guardar plantilla avisan las tres.
-
-     Va con `useTransition` y la acción llamada directo, como hace DeleteAction,
-     y no con `useActionState` más un efecto que cierre al ver el resultado: el
-     resultado acá se necesita como VALOR para decidir si cerrar, y esperar la
-     promesa lo da en el mismo lugar donde se decide. Un efecto que mira el
-     estado devuelto y hace `setState` encadena un render por guardado. */
+  // useTransition + acción directa (como DeleteAction), no useActionState + efecto: el resultado se necesita como valor para decidir si cerrar, ahí mismo, sin encadenar un render extra.
   function submitRename(formData: FormData) {
     startRename(async () => {
       const result = await renameAction({ error: null }, formData);
@@ -82,9 +53,7 @@ export default function CategoryCard({
     });
   }
 
-  /* Una categoría con artículos no se puede borrar (AD-4). El backend ya lo
-     impide; deshabilitar el botón acá es para que se sepa ANTES de hacer clic,
-     no después de recibir un error. */
+  // Una categoría con artículos no se puede borrar (AD-4); se deshabilita el botón para avisar antes del clic, no después del error.
   const hasPosts = category.postCount > 0;
 
   if (removed) return null;
@@ -113,10 +82,7 @@ export default function CategoryCard({
             maxLength={60}
             className="cq-input"
           />
-          {/* El nombre en inglés se edita JUNTO al español y no en otra
-              pantalla: son el mismo dato en dos idiomas, y separarlos garantiza
-              que uno de los dos quede desactualizado. Sin `required` — vacío es
-              una respuesta válida y significa "usá el de arriba". */}
+          {/* Se edita junto al español, no en otra pantalla, para que no queden desincronizados. Sin required: vacío es válido, significa "usá el de arriba". */}
           <label htmlFor={`rename-en-${category.id}`} className="cq-label">
             Nombre en inglés <span className="cq-meta">(opcional)</span>
           </label>
@@ -149,34 +115,22 @@ export default function CategoryCard({
   return (
     <li className="cq-card cq-enter relative" style={{ "--cq-i": index } as CSSProperties}>
       <Link
-        /* `categoria=<slug>`, no `q=<nombre>`. La búsqueda es coincidencia de
-           texto sobre título, slug y nombre de categoría: una categoría
-           llamada "Blog" devolvía todo artículo cuyo título dijera "blog", y
-           una llamada "Casos" no devolvía los suyos si el título no repetía la
-           palabra. El slug compara contra la relación real. */
+        // categoria=<slug> y no q=<nombre>: la búsqueda por texto sobre título/slug/nombre daba falsos positivos y negativos; el slug compara contra la relación real.
         href={`/admin/posts?categoria=${encodeURIComponent(category.slug)}`}
-        /* El enlace se estira sobre toda la tarjeta con un pseudo-elemento, así
-           que el área de clic es la tarjeta completa pero el nombre accesible
-           sigue siendo sólo el título — no el título más el slug más la cifra
-           más los botones, que es lo que pasa al envolver todo en un <a>. */
+        // Enlace estirado con pseudo-elemento: el área de clic cubre la tarjeta entera sin que el nombre accesible incluya slug, cifra y botones.
         className="after:absolute after:inset-0 after:content-['']"
       >
         <p className="cq-title truncate">{category.name}</p>
       </Link>
 
-      {/* El nombre en inglés, cuando existe. Es el único lugar donde se puede
-          ver de un vistazo qué categorías quedaron sin traducir — y una sin
-          traducir es una que sale en español dentro del blog en inglés. */}
+      {/* Único lugar donde se ve de un vistazo qué categorías quedaron sin traducir (y por lo tanto salen en español en el blog en inglés). */}
       {category.nameEn && (
         <p className="cq-meta truncate">
           <span className="cq-ident">EN</span> {category.nameEn}
         </p>
       )}
 
-      {/* El slug se fue de acá también. En una tarjeta de categoría el nombre
-          es el dato, y la versión en minúsculas con guiones debajo era el mismo
-          nombre escrito dos veces —"Casos de éxito" / "casos-de-exito"— con la
-          segunda en tipografía de sistema. */}
+      {/* El slug se sacó de acá: era el mismo nombre repetido dos veces ("Casos de éxito" / "casos-de-exito"). */}
       <p className="mt-4 flex items-baseline gap-2">
         <span className="cq-display leading-none">{category.postCount}</span>
         <span className="cq-meta">
@@ -184,12 +138,7 @@ export default function CategoryCard({
         </span>
       </p>
 
-      {/* Las acciones van por encima del enlace estirado (`relative z-10`), o
-          el clic en Renombrar navegaría al listado.
-
-          Siempre visibles: aparecer al apuntar la tarjeta obligaba a dos
-          movimientos —apuntar, esperar, apuntar el botón— y escondía que la
-          categoría se puede renombrar de quien nunca pasó el mouse por ahí. */}
+      {/* relative z-10: sin esto el clic en Renombrar navegaría al listado por el enlace estirado. Siempre visibles, no sólo al hover, para no esconder que se puede renombrar. */}
       <div className="relative z-10 mt-3 flex items-center gap-1 border-t border-[var(--p-line)] pt-2">
         <IconButton
           label={`Renombrar «${category.name}»`}

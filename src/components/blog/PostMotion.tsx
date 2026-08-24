@@ -10,16 +10,7 @@ import {
   useIsoLayoutEffect,
 } from "./motion";
 
-/* Coreografía del artículo.
- *
- * Tres cosas, y ninguna decorativa:
- *   1. La cabecera entra en orden de lectura — categoría, título, extracto,
- *      firma— para que el ojo empiece donde tiene que empezar.
- *   2. La portada se descubre como en el índice: es el mismo gesto, y repetirlo
- *      es lo que hace que la sección se sienta una sola.
- *   3. La barra de progreso dice cuánto falta. En una página de lectura larga
- *      esa es información, no adorno: es lo único que responde "¿me meto ahora
- *      o lo dejo para después?". */
+// Coreografía del artículo: cabecera en orden de lectura, portada con el mismo gesto de descubrimiento que el índice, y barra de progreso como información (no adorno).
 export default function PostMotion({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -31,10 +22,7 @@ export default function PostMotion({ children }: { children: ReactNode }) {
     const context = gsap.context(() => {
       const media = gsap.matchMedia();
 
-      /* La barra de progreso vive fuera de la condición de movimiento reducido:
-         no es una animación, es un indicador de posición. Alguien que pidió
-         menos movimiento sigue queriendo saber cuánto le falta del artículo, y
-         la barra no se mueve sola — la mueve el scroll de la persona. */
+      // Fuera de la condición de movimiento reducido: es un indicador de posición, no una animación; la mueve el scroll de la persona.
       const progress = progressRef.current;
       const body = root.querySelector<HTMLElement>("[data-post-body]");
 
@@ -109,9 +97,7 @@ export default function PostMotion({ children }: { children: ReactNode }) {
           timeline.eventCallback("onComplete", () => split?.revert());
         });
 
-        /* Los bloques del cuerpo entran al llegar a pantalla, uno por uno y sin
-           escalonado: no son una lista, son párrafos sueltos, y escalonarlos
-           haría esperar al que ya está leyendo el primero. */
+        // Los bloques del cuerpo entran sin escalonado: son párrafos sueltos, escalonarlos haría esperar al que ya lee el primero.
         const blocks = gsap.utils.toArray<HTMLElement>("[data-post-body] > *", root);
         if (blocks.length) {
           gsap.set(blocks, { opacity: 0, y: 18 });
@@ -145,10 +131,7 @@ export default function PostMotion({ children }: { children: ReactNode }) {
 
   return (
     <div ref={rootRef}>
-      {/* Fija arriba de todo, por encima del navbar. 2px: suficiente para
-          leerse de reojo, insuficiente para competir con nada.
-          aria-hidden porque duplica información que ya da la barra de scroll
-          del navegador; anunciarla en cada scroll sería ruido. */}
+      {/* aria-hidden: duplica la barra de scroll del navegador, anunciarla en cada scroll sería ruido. */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] bg-transparent"

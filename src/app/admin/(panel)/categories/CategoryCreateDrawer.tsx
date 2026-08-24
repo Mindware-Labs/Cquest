@@ -10,22 +10,10 @@ import { useToast } from "@/components/admin/ui/Toast";
 
 type Action = (state: CategoryActionState, formData: FormData) => Promise<CategoryActionState>;
 
-/* El alta de categorías se mudó a un cajón.
-
-   Antes era una columna fija de 18rem al costado de la lista. Crear una
-   categoría es de las acciones MENOS frecuentes del panel —se hacen tres o
-   cuatro y no se tocan más—, y esa columna se llevaba un quinto del ancho de la
-   pantalla todo el tiempo para eso. Ahora la lista usa el ancho completo y el
-   formulario aparece cuando se lo pide. */
+// Cajón en vez de columna fija de 18rem: crear categorías es de las acciones menos frecuentes del panel y no justifica ese ancho permanente.
 export default function CategoryCreateDrawer({
   action,
-  /* `tile` lo dibuja como la última casilla de la grilla, en filete punteado.
-     Es el patrón de "agregar" que no ocupa un lugar propio en la pantalla: vive
-     donde van las categorías, después de la última, así que la acción está
-     exactamente donde el ojo terminó de recorrer la lista.
-
-     Además resuelve el estado vacío sin un componente aparte: con cero
-     categorías, la grilla es esta sola casilla y ya dice qué hacer. */
+  // tile: casilla punteada al final de la grilla, exactamente donde el ojo terminó de recorrer la lista; con cero categorías resuelve el estado vacío sin componente aparte.
   tile = false,
 }: {
   action: Action;
@@ -37,15 +25,7 @@ export default function CategoryCreateDrawer({
   const formRef = useRef<HTMLFormElement>(null);
   const { notify } = useToast();
 
-  /* El envío se maneja a mano en vez de con `useActionState` + un efecto que
-     mire el resultado. La diferencia no es de estilo: con el efecto, cerrar el
-     cajón era un setState disparado por un render, y hay que distinguir "error
-     null porque nadie envió nada" de "error null porque salió bien" con una
-     bandera extra. Acá el resultado se lee donde se produce, y el cajón se
-     cierra únicamente cuando la creación funcionó.
-
-     Si falla, el cajón se queda abierto con lo escrito: cerrar y perder lo
-     tipeado es la forma más rápida de que alguien abandone el formulario. */
+  // A mano en vez de useActionState + efecto: evita distinguir "error null porque nadie envió" de "error null porque salió bien" con una bandera extra. Si falla, el cajón queda abierto con lo escrito.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -93,10 +73,7 @@ export default function CategoryCreateDrawer({
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            {/* El botón vive en el pie del cajón pero envía el formulario del
-                cuerpo: los une el atributo `form`, que es lo que permite tener
-                el control de guardar siempre a la vista aunque el formulario
-                crezca y haya que desplazarse. */}
+            {/* El atributo form une este botón (en el pie) con el formulario del cuerpo: el control de guardar queda siempre a la vista aunque haya que desplazarse. */}
             <Button type="submit" form="category-create" variant="solid" disabled={isPending}>
               {isPending ? "Creando…" : "Crear categoría"}
             </Button>
@@ -115,16 +92,7 @@ export default function CategoryCreateDrawer({
             hint="Es el nombre que se ve en el blog público, arriba del título del artículo."
             error={error ?? undefined}
           />
-          {/* El nombre en inglés, OPCIONAL.
-              ---------------------------------------------------------------
-              El blog está partido por idioma —un artículo vive en uno solo— pero
-              la categoría era una fila con un solo nombre, así que /en/blog
-              mostraba «Operaciones» en la miga y en el filtro de un artículo
-              escrito en inglés.
-
-              Opcional y no obligatorio: hacerlo obligatorio sería un peaje en
-              inglés para quien sólo publica en español. Vacío usa el nombre de
-              arriba, que es feo pero legible. */}
+          {/* Opcional y no obligatorio: exigirlo sería un peaje en inglés para quien sólo publica en español. Vacío usa el nombre de arriba. */}
           <Input
             id="new-category-en"
             name="nameEn"

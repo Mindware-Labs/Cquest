@@ -12,10 +12,7 @@ export type StarterTemplate = {
   blocks: Block[];
 };
 
-/* Catálogo fijo, estilo los archivos de datos de SERVICES — vive en código,
-   no en base de datos. Los bloques de tipo "image" quedan con src/alt vacíos
-   a propósito: no hay ninguna imagen real que darles hasta que el admin suba
-   una desde el editor. */
+// Catálogo fijo en código (no en base de datos). Los bloques "image" quedan con src/alt vacíos a propósito: no hay imagen real hasta que el admin suba una.
 export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: "case-study",
@@ -349,9 +346,7 @@ export async function createTemplateFromBlocks(
     throw error;
   }
 
-  /* Las plantillas propias quedan disponibles para todo el equipo (AD-16), así
-     que invalidar solo la pantalla propia no alcanza: cualquier admin que esté
-     creando un artículo tiene que verla aparecer. */
+  // Las plantillas quedan disponibles para todo el equipo (AD-16): invalidar sólo la pantalla propia no alcanza.
   revalidateTemplates();
   return { error: null };
 }

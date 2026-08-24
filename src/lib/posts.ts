@@ -9,15 +9,12 @@ import { blockArraySchema, collectImageUrls, type Block } from "@/lib/blocks";
 import { deleteUploads, orphanedUrls } from "@/lib/blob";
 import { fromEditorDateTime } from "@/lib/postDates";
 
-/* Se reexporta para que las pantallas del admin no tengan que saber que la
-   conversión vive en otro módulo — es parte de la misma superficie. */
+// Se reexporta para que el admin no tenga que saber que la conversión vive en otro módulo.
 export { toEditorDateTime } from "@/lib/postDates";
 
 export type PostActionState = { error: string | null; id?: number };
 
-/* El editor manda el arreglo de bloques serializado en un input oculto —
-   se parsea como JSON y se valida con el mismo schema que usan el renderer
-   público y el editor, así los tres nunca pueden divergir. */
+// Se valida con el mismo schema que el renderer público y el editor, así los tres nunca pueden divergir.
 const contentSchema = z.string().transform((value, ctx) => {
   let parsed: unknown;
   try {
@@ -34,11 +31,7 @@ const contentSchema = z.string().transform((value, ctx) => {
   return result.data;
 });
 
-/* `<input type="datetime-local">` manda "2026-09-01T08:30" — sin segundos y sin
-   zona. La conversión vive en lib/postDates.ts (funciones puras, con pruebas).
-
-   Vacío significa "ahora" y se resuelve en cada acción, no acá: el valor
-   depende de si el artículo ya tenía fecha. */
+// datetime-local manda "2026-09-01T08:30" sin zona; vacío significa "ahora" y se resuelve en cada acción, no acá.
 const scheduledAtSchema = z
   .string()
   .trim()
@@ -57,9 +50,7 @@ const postFieldsSchema = z.object({
   title: z.string().trim().min(4, "El título debe tener al menos 4 caracteres.").max(120, "Máximo 120 caracteres."),
   excerpt: z.string().trim().min(10, "El extracto debe tener al menos 10 caracteres.").max(300, "Máximo 300 caracteres."),
   content: contentSchema,
-  /* Siempre sale de uploadCoverImage() (src/lib/blob.ts): una ruta relativa
-     a /api/images/..., no una URL absoluta — así no queda atada a un dominio
-     fijo entre local, preview y producción. */
+  // Siempre sale de uploadCoverImage(): ruta relativa a /api/images/..., no URL absoluta, para no atarse a un dominio fijo.
   coverImageUrl: z
     .string()
     .trim()
@@ -67,25 +58,13 @@ const postFieldsSchema = z.object({
     .startsWith("/api/images/", "La portada debe salir de la subida a Vercel Blob."),
   coverImageAlt: z.string().trim().min(1, "Falta el texto alternativo de la portada.").max(200, "Máximo 200 caracteres."),
   categoryId: z.coerce.number().int("Categoría inválida."),
-  /* Un artículo vive en un idioma, no es la traducción de otro: el listado
-     público filtra por acá. Sale del mismo `locales` que el resto del sitio
-     para que agregar un idioma sea un solo cambio. */
+  // Un artículo vive en un idioma, no es traducción de otro; sale del mismo `locales` que el resto del sitio.
   locale: z.enum(locales).default("es"),
   seoTitle: z.string().trim().max(70, "Máximo 70 caracteres.").optional().or(z.literal("")),
   seoDescription: z.string().trim().max(160, "Máximo 160 caracteres.").optional().or(z.literal("")),
-  /* Los dos botones del editor ("Guardar borrador" / "Publicar") mandan esto
-     directo — así publicar es un solo submit, sin una segunda llamada a
-     setPostStatus. */
+  // Publicar es un solo submit desde el editor, sin una segunda llamada a setPostStatus.
   intent: z.enum(["draft", "publish"]),
-  /* Fecha de publicación elegida en el editor, como la manda un
-     `<input type="datetime-local">`: "2026-09-01T08:30", sin zona.
-
-     Con una fecha futura el artículo queda PROGRAMADO — el estado sigue siendo
-     PUBLISHED y lo que lo mantiene invisible es la condición `publishedAt <=
-     ahora` que el listado público y la página del artículo ya aplicaban. Esa
-     condición existía desde el principio pero era letra muerta: las acciones
-     siempre escribían `new Date()`, así que nunca había una fecha futura que
-     filtrar. Acá es donde deja de serlo. */
+  // Con fecha futura el artículo queda PROGRAMADO: sigue PUBLISHED, pero publishedAt > ahora lo mantiene invisible.
   publishedAt: scheduledAtSchema,
 });
 
@@ -108,14 +87,7 @@ function isForeignKeyConstraintError(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";
 }
 
-/* Un artículo toca varias superficies cacheadas: la tabla del admin, el listado
-   público, su propia página y el feed. Publicar sin invalidarlas deja el
-   artículo "publicado" en la base pero invisible en el sitio.
-
-   El sitemap NO está en la lista, y no es un olvido: su route es
-   `force-dynamic` con `revalidate = 3600`, o sea que no hay entrada cacheada
-   que invalidar. La llamada que había ahí no hacía nada y daba la falsa
-   seguridad de que sí. */
+// El sitemap no está en la lista a propósito: es force-dynamic con revalidate=3600, no hay entrada cacheada que invalidar.
 function revalidatePost(slug?: string): void {
   revalidatePath("/admin/posts");
   revalidatePath("/admin");
@@ -124,18 +96,7 @@ function revalidatePost(slug?: string): void {
   revalidatePath("/[lang]/blog/rss.xml", "page");
 }
 
-/* ---------------------------------------------------------------------------
-   Estado visible
-   ---------------------------------------------------------------------------
-
-   En la base hay tres estados; en pantalla hay cuatro. Un artículo PUBLISHED
-   con fecha futura está PROGRAMADO: no se ve en el blog, pero decir "Publicado"
-   en la tabla del admin sería mentir sobre lo único que esa columna promete.
-
-   Se DERIVA en vez de guardarse como un cuarto valor del enum: un estado
-   guardado que depende del reloj hay que ir a corregirlo cuando el reloj pasa,
-   y ese es exactamente el trabajo de fondo que nadie recuerda escribir.
---------------------------------------------------------------------------- */
+// Estado visible: se DERIVA en vez de guardarse como cuarto valor del enum, para no depender de un job que corrija el reloj.
 
 export type DisplayStatus = "DRAFT" | "PUBLISHED" | "SCHEDULED" | "HIDDEN";
 
@@ -159,10 +120,7 @@ export function isPubliclyVisible(
   return post.publishedAt !== null && post.publishedAt <= now;
 }
 
-/** Listado completo para el panel admin — todos los estados.
- *
- *  Se mantiene para quien necesite el conjunto entero (hoy, el tablero). La
- *  TABLA de artículos ya no lo usa: ver getAdminPosts. */
+/** Listado completo para el panel admin — todos los estados. La TABLA de artículos ya no lo usa, ver getAdminPosts. */
 export async function getPosts() {
   return prisma.post.findMany({
     orderBy: { createdAt: "desc" },
@@ -170,26 +128,11 @@ export async function getPosts() {
   });
 }
 
-/* ---------------------------------------------------------------------------
-   Listado paginado de la tabla del admin
-   ---------------------------------------------------------------------------
-
-   Antes la tabla llamaba a getPosts() y filtraba en memoria. Con veinte
-   artículos daba igual; con quinientos son quinientas filas montadas de una,
-   cada una un componente de cliente con su propio useActionState y su <Image>,
-   sobre quinientas filas traídas de la base para mostrar veinticinco.
-
-   Acá el recorte, el orden y la página los hace Postgres. Los tres controles
-   —estado, búsqueda, categoría— viven en la URL igual que antes, así que una
-   pestaña con "borradores de onboarding, página 2" se sigue pudiendo compartir
-   y sigue funcionando con el botón de atrás.
---------------------------------------------------------------------------- */
+// Listado paginado de la tabla admin: el recorte, orden y página los hace Postgres (antes se filtraba en memoria sobre todo el listado).
 
 export const ADMIN_POSTS_PAGE_SIZE = 25;
 
-/* El orden es un conjunto cerrado y no un par campo+dirección libre: dejar que
-   la URL nombre una columna arbitraria es dejar que la URL nombre una columna
-   de la base. */
+// Conjunto cerrado de órdenes: dejar que la URL nombre una columna arbitraria es dejar que nombre una columna de la base.
 export const ADMIN_POSTS_SORTS = {
   reciente: { label: "Más recientes", orderBy: { createdAt: "desc" } },
   antiguo: { label: "Más antiguos", orderBy: { createdAt: "asc" } },
@@ -204,10 +147,7 @@ export function isAdminPostsSort(value: string | undefined): value is AdminPosts
   return value !== undefined && value in ADMIN_POSTS_SORTS;
 }
 
-/* Las cuatro pestañas de la tabla. Son cuatro y no tres porque "Programado" no
-   es un valor del enum sino PUBLISHED con fecha futura — ver displayStatus().
-   Se define acá y no en la página para que el conteo y el recorte salgan de la
-   MISMA fuente: eran dos listas paralelas esperando a divergir. */
+// Cuatro pestañas (no tres) porque "Programado" no es un valor del enum, ver displayStatus(). Se define acá para que conteo y recorte compartan fuente.
 export const ADMIN_POSTS_FILTERS = [
   { key: "todos", label: "Todos" },
   { key: "borrador", label: "Borradores" },
@@ -228,9 +168,7 @@ function filterWhere(filter: AdminPostsFilter, now: Date): Prisma.PostWhereInput
       return { status: PostStatus.DRAFT };
     case "oculto":
       return { status: PostStatus.HIDDEN };
-    /* Publicado significa VISIBLE en el blog. Antes "Publicados" habría contado
-       también los programados, y la pestaña habría prometido un conjunto que el
-       público no ve. Las cuatro pestañas parten el total sin solaparse. */
+    // "Publicado" significa VISIBLE en el blog, no incluye programados; las cuatro pestañas parten el total sin solaparse.
     case "publicado":
       return { status: PostStatus.PUBLISHED, publishedAt: { lte: now } };
     case "programado":
@@ -253,21 +191,12 @@ export async function getAdminPosts({
   sort?: AdminPostsSort;
   page?: number;
 }) {
-  /* Un solo `now` para toda la función. Con `new Date()` en cada consulta, el
-     recorte de la página y los conteos de las pestañas se evalúan con relojes
-     distintos, y un artículo programado justo en ese milisegundo aparecería en
-     una y no en la otra. */
+  // Un solo `now` para toda la función: con new Date() por consulta, un artículo programado justo en ese milisegundo divergiría entre recorte y conteos.
   const now = new Date();
-  /* El recorte que NO depende del estado. Se separa porque los conteos de las
-     pestañas tienen que contar dentro de la búsqueda y la categoría actuales
-     —si dijeran el total, "Borradores 12" al lado de una lista de 2 sería una
-     contradicción en la misma fila— pero obviamente no dentro del estado que
-     esa misma pestaña representa. */
+  // Recorte que NO depende del estado: los conteos de pestañas deben respetar la búsqueda/categoría actual, pero no el estado que cada pestaña representa.
   const scope: Prisma.PostWhereInput = {
     ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-    /* Se busca sobre título, identificador de URL y nombre de categoría. El
-       slug entra porque es lo que se ve en la URL pública y a veces es lo único
-       que se recuerda de un artículo viejo. */
+    // Busca también por slug: es lo que se ve en la URL pública y a veces lo único que se recuerda de un artículo viejo.
     ...(term
       ? {
           OR: [
@@ -282,16 +211,7 @@ export async function getAdminPosts({
   const where: Prisma.PostWhereInput = { ...scope, ...filterWhere(filter, now) };
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
 
-  /* El conteo va ANTES de traer las filas, no en paralelo: con `?pagina=99`
-     sobre tres páginas, un `skip` calculado con la página cruda devuelve vacío,
-     y la vista termina dibujando una paginación que dice "página 3 de 3" arriba
-     de una lista sin nada. Cuesta un viaje más y a cambio la página pedida
-     siempre se puede acotar a una que existe.
-
-     Los conteos de las pestañas ya no salen de un groupBy por estado: con
-     "Programado" partiendo PUBLISHED en dos según el reloj, el agrupado por
-     columna no puede expresarlo. Son cuatro `count` con el mismo recorte de
-     búsqueda y categoría, que Postgres resuelve sobre el índice. */
+  // Conteo ANTES de traer filas, para acotar una página fuera de rango en vez de servir una lista vacía. Cuatro counts (no groupBy) porque "Programado" parte PUBLISHED según el reloj.
   const [total, draft, published, scheduled, hidden] = await Promise.all([
     prisma.post.count({ where }),
     prisma.post.count({ where: { ...scope, ...filterWhere("borrador", now) } }),
@@ -308,8 +228,7 @@ export async function getAdminPosts({
     orderBy: ADMIN_POSTS_SORTS[sort].orderBy,
     skip: (currentPage - 1) * ADMIN_POSTS_PAGE_SIZE,
     take: ADMIN_POSTS_PAGE_SIZE,
-    /* `updatedBy` viaja con la fila: la tabla dice "editado hace 5 minutos" y
-       sin un nombre al lado eso no alcanza para saber a quién preguntarle. */
+    // updatedBy viaja con la fila: "editado hace 5 minutos" sin nombre no alcanza para saber a quién preguntarle.
     include: { category: true, updatedBy: { select: { name: true } } },
   });
 
@@ -329,16 +248,7 @@ export async function getAdminPosts({
   };
 }
 
-/* ---------------------------------------------------------------------------
-   El blog público
-   ---------------------------------------------------------------------------
-
-   Antes esto era un `take: 60` y nada más — un techo, no paginación. El
-   artículo número 61 simplemente desaparecía del sitio mientras el sitemap
-   seguía declarándolo, así que Google encontraba una página a la que ninguna
-   ruta del propio blog llevaba. Ahora hay páginas de verdad, en la URL, y el
-   sitemap y el feed siguen leyendo TODO por su cuenta.
---------------------------------------------------------------------------- */
+// El blog público: antes era un take:60 sin paginación real, el artículo 61 desaparecía aunque el sitemap lo siguiera declarando.
 
 export const PUBLIC_POSTS_PAGE_SIZE = 12;
 
@@ -361,9 +271,7 @@ export async function getPublishedPosts(
   const where = publicWhere(locale, categorySlug, now);
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
 
-  /* Mismo orden que en el admin: contar primero para poder acotar la página
-     pedida a una que existe, en vez de servir una lista vacía bajo un
-     "página 4 de 2". */
+  // Mismo orden que en el admin: contar primero para acotar la página pedida a una que existe.
   const total = await prisma.post.count({ where });
   const pageCount = Math.max(1, Math.ceil(total / PUBLIC_POSTS_PAGE_SIZE));
   const currentPage = Math.min(safePage, pageCount);
@@ -379,9 +287,7 @@ export async function getPublishedPosts(
   return { posts, total, page: currentPage, pageCount };
 }
 
-/** Todos los publicados, sin recorte. Lo usan el sitemap y el feed RSS, que por
- *  definición declaran el conjunto entero — paginar ahí sería esconderle a
- *  Google justo lo que el sitemap existe para mostrarle. */
+/** Todos los publicados, sin recorte — lo usan el sitemap y el feed RSS, que declaran el conjunto entero. */
 export async function getAllPublishedPosts(locale: Locale) {
   return prisma.post.findMany({
     where: publicWhere(locale),
@@ -390,11 +296,7 @@ export async function getAllPublishedPosts(locale: Locale) {
   });
 }
 
-/** Artículos para seguir leyendo al final de uno.
- *
- *  Primero los de su misma categoría, y si no alcanzan se completa con los más
- *  recientes del idioma. Un pie que dice "seguí leyendo" y muestra dos huecos
- *  porque la categoría tenía un solo artículo es peor que no ofrecer nada. */
+/** Artículos para seguir leyendo: primero de la misma categoría, completa con los más recientes si no alcanzan. */
 export async function getRelatedPosts(
   post: { id: number; locale: PostLocale; categoryId: number },
   take = 3,
@@ -427,8 +329,7 @@ export async function getRelatedPosts(
   return [...sameCategory, ...filler];
 }
 
-/* Solo las categorías que tienen al menos un artículo publicado en este idioma.
-   Ofrecer un filtro que lleva a una lista vacía es peor que no ofrecerlo. */
+// Solo categorías con al menos un artículo publicado: un filtro que lleva a una lista vacía es peor que no ofrecerlo.
 export async function getPublishedCategories(locale: Locale) {
   return prisma.category.findMany({
     where: {
@@ -487,8 +388,7 @@ export async function createPost(
   const authorId = await getCurrentAdminId();
   const status = parsed.data.intent === "publish" ? PostStatus.PUBLISHED : PostStatus.DRAFT;
 
-  /* La fecha elegida en el editor, o ahora mismo si no se eligió ninguna. Un
-     borrador no lleva fecha: se la pone la primera publicación. */
+  // Fecha elegida en el editor, o ahora si no se eligió ninguna; un borrador no lleva fecha hasta la primera publicación.
   const publishedAt =
     status === PostStatus.PUBLISHED ? (parsed.data.publishedAt ?? new Date()) : null;
 
@@ -555,42 +455,20 @@ export async function updatePost(
     return { error: "Artículo inválido." };
   }
 
-  /* Control de concurrencia.
-     -------------------------------------------------------------------------
-
-     El editor tenía exactamente el problema que motivó separar la ficha en su
-     propio esquema: dos pestañas abiertas sobre el mismo artículo, la que
-     guarda segunda pisa el trabajo de la primera sin decir una palabra. Con
-     bloques de por medio eso puede ser media hora de escritura.
-
-     El formulario reenvía el `updatedAt` que tenía cuando cargó. Si ya no
-     coincide, alguien guardó en el medio y esta escritura se rechaza. No se
-     intenta fusionar: fusionar dos árboles de bloques sin preguntar es una
-     forma más creativa de perder trabajo. Se avisa y la persona decide.
-
-     Es opcional a propósito: un formulario viejo, o cualquier otro llamador que
-     no lo mande, sigue funcionando como antes en vez de quedar bloqueado. */
+  // Control de concurrencia: compara el updatedAt reenviado por el formulario; si no coincide, alguien guardó en el medio y se rechaza sin fusionar. Opcional para no romper llamadores viejos.
   const guard = formData.get("expectedUpdatedAt");
   if (typeof guard === "string" && guard.length > 0) {
     if (new Date(guard).getTime() !== existing.updatedAt.getTime()) {
       return {
         error:
-          "Alguien más guardó este artículo mientras lo editabas. Abrí una copia en otra pestaña para no perder lo tuyo, recargá esta, y volvé a aplicar tus cambios.",
+          "Alguien más guardó este artículo mientras lo editabas. Abre una copia en otra pestaña para no perder lo tuyo, recarga esta, y vuelve a aplicar tus cambios.",
       };
     }
   }
 
   const status = parsed.data.intent === "publish" ? PostStatus.PUBLISHED : PostStatus.DRAFT;
 
-  /* La fecha de publicación ahora la manda el editor y puede ser futura
-     (programado). Reglas, en orden:
-
-     - Si el editor mandó una fecha explícita, esa manda — así se corrige una
-       programación o se antedata un artículo importado.
-     - Si no mandó y el artículo nunca se publicó, es la primera publicación:
-       ahora.
-     - Si no mandó y ya tenía fecha, no se toca. Ocultar y republicar no vuelve
-       a mover la fecha original, igual que en setPostStatus. */
+  // Prioridad de publishedAt: fecha explícita del editor > primera publicación (ahora) > fecha existente sin tocar (ocultar/republicar no la mueve).
   const publishedAt =
     status === PostStatus.PUBLISHED
       ? (parsed.data.publishedAt ?? existing.publishedAt ?? new Date())
@@ -616,8 +494,7 @@ export async function updatePost(
       },
     });
 
-    /* Las imágenes que este guardado dejó sin referencia. Va DESPUÉS del update
-       y no antes: si la escritura falla, los archivos tienen que seguir ahí. */
+    // Va DESPUÉS del update: si la escritura falla, los archivos huérfanos tienen que seguir ahí.
     await collectOrphans(existing, parsed.data.content, parsed.data.coverImageUrl);
 
     if (existing.slug !== slug) revalidatePost(existing.slug);
@@ -634,15 +511,7 @@ export async function updatePost(
   }
 }
 
-/* Las imágenes del artículo ANTES contra las de AHORA: lo que salió se borra
-   del store. Cubre las tres formas de dejar un archivo huérfano —cambiar la
-   portada, quitar un bloque de imagen, vaciar una galería— con la misma
-   comparación, en vez de una regla por caso.
-
-   El contenido viejo se lee como Json crudo y se valida antes de recorrerlo: un
-   artículo guardado con una versión anterior del schema puede no encajar, y en
-   ese caso lo correcto es NO borrar nada. Un archivo de más cuesta centavos;
-   uno de menos es una imagen rota en un artículo publicado. */
+// Compara imágenes ANTES vs AHORA para borrar huérfanas; si el contenido viejo no valida contra el schema actual, no se borra nada (mejor un archivo de más que una imagen rota).
 async function collectOrphans(
   before: { content: unknown; coverImageUrl: string },
   afterBlocks: readonly Block[],
@@ -659,19 +528,7 @@ async function collectOrphans(
   await deleteUploads(orphanedUrls(previous, current));
 }
 
-/* La FICHA del artículo: todo lo que lo identifica y lo hace encontrable, sin
-   una sola línea de su contenido.
-
-   Se separa de `postFieldsSchema` a propósito y no se reusa entero. Ese pide
-   `content`, `coverImageUrl` y `coverImageAlt` como obligatorios, que es
-   correcto para el editor —un artículo sin portada no se publica— pero haría
-   imposible corregir una tilde del título desde la tabla sin reenviar el árbol
-   de bloques y la portada en el mismo formulario. Y reenviar el contenido para
-   editar el título es exactamente cómo se pierde el trabajo de otro: dos
-   pestañas abiertas, la que guarda segunda pisa los bloques de la primera.
-
-   Acá se escriben SÓLO los campos que el cajón muestra. Los bloques, la portada
-   y el estado no se tocan ni se leen. */
+// Ficha del artículo, separada de postFieldsSchema: ese exige content/coverImageUrl como obligatorios, lo que forzaría reenviar bloques y portada solo para corregir el título.
 const postMetaSchema = postFieldsSchema.pick({
   title: true,
   excerpt: true,
@@ -705,9 +562,7 @@ export async function updatePostMeta(
     return { error: "Ese título no genera un slug válido — usa al menos una letra o número." };
   }
 
-  /* El slug ANTERIOR hay que invalidarlo además del nuevo: si se renombra la
-     URL de un artículo publicado, la página vieja se queda cacheada y servida
-     como si siguiera existiendo. */
+  // El slug ANTERIOR también se invalida: si se renombra la URL, la página vieja quedaría cacheada como si siguiera existiendo.
   const existing = await prisma.post.findUnique({
     where: { id },
     select: { slug: true, updatedAt: true },
@@ -716,14 +571,12 @@ export async function updatePostMeta(
     return { error: "Artículo inválido." };
   }
 
-  /* Misma guarda que el editor. Acá el riesgo es menor —este cajón nunca toca
-     los bloques— pero pisar el título y la categoría que otro acaba de corregir
-     igual es pisar trabajo ajeno en silencio. */
+  // Misma guarda de concurrencia que el editor: el riesgo es menor pero pisar el título/categoría de otro sigue siendo pisar trabajo ajeno en silencio.
   const guard = formData.get("expectedUpdatedAt");
   if (typeof guard === "string" && guard.length > 0) {
     if (new Date(guard).getTime() !== existing.updatedAt.getTime()) {
       return {
-        error: "Alguien más editó este artículo mientras tenías el cajón abierto. Recargá la tabla y volvé a intentarlo.",
+        error: "Alguien más editó este artículo mientras tenías el cajón abierto. Recarga la tabla y vuelve a intentarlo.",
       };
     }
   }
@@ -756,19 +609,7 @@ export async function updatePostMeta(
   }
 }
 
-/** Alta desde el cajón de ficha: crea el artículo en borrador y devuelve su id.
- *
- *  Usa el MISMO esquema que la edición rápida —los mismos seis campos, las
- *  mismas reglas— porque es el mismo formulario. Lo que no pide es lo que no se
- *  puede pedir en un cajón: los bloques, la portada y el estado. Esos tres
- *  nacen vacíos y se completan en el editor, que es donde se suben imágenes y
- *  se arma el contenido.
- *
- *  Y por eso el artículo nace DRAFT y sin fecha: `postFieldsSchema` sigue
- *  exigiendo portada y contenido para guardar desde el editor, así que un
- *  artículo creado acá no puede publicarse hasta tenerlos. La regla de "no se
- *  publica nada sin portada" no se debilita — sólo se corre el momento en que
- *  se pide. */
+/** Alta desde el cajón de ficha: crea el artículo en DRAFT sin bloques/portada — postFieldsSchema sigue exigiéndolos para publicar desde el editor. */
 export async function createPostMeta(
   _prevState: PostActionState,
   formData: FormData,
@@ -797,8 +638,7 @@ export async function createPostMeta(
         seoTitle: emptyToUndefined(parsed.data.seoTitle ?? ""),
         seoDescription: emptyToUndefined(parsed.data.seoDescription ?? ""),
         slug,
-        /* El árbol de bloques arranca vacío, no con un párrafo de muestra: un
-           bloque puesto por el sistema hay que borrarlo antes de escribir. */
+        // Arranca sin bloques de muestra: uno puesto por el sistema habría que borrarlo antes de escribir.
         content: [],
         coverImageUrl: "",
         coverImageAlt: "",
@@ -823,9 +663,7 @@ export async function createPostMeta(
 
 const statusSchema = z.enum(["DRAFT", "PUBLISHED", "HIDDEN"]);
 
-/** Cambia el estado (publicar/ocultar/volver a borrador) sin borrar el registro.
- *  La primera vez que pasa a PUBLISHED fija publishedAt; ocultarlo y
- *  republicarlo después no vuelve a mover esa fecha. */
+/** Cambia el estado sin borrar el registro; la primera vez que pasa a PUBLISHED fija publishedAt y después no se vuelve a mover. */
 export async function setPostStatus(
   _prevState: PostActionState,
   formData: FormData,
@@ -864,16 +702,7 @@ export async function setPostStatus(
   return { error: null };
 }
 
-/** Cambia el estado de VARIOS artículos de una vez.
- *
- *  No es azúcar sobre setPostStatus en un bucle del cliente: publicar diez
- *  borradores así eran diez viajes al servidor, diez revalidaciones de las
- *  mismas rutas, y un estado a medio aplicar si el tercero fallaba. Acá es una
- *  transacción y una sola revalidación al final.
- *
- *  La fecha de publicación se resuelve por artículo y no en bloque: sólo se
- *  fija en los que nunca se publicaron, igual que en la versión de a uno.
- *  Ocultar y republicar no vuelve a mover esa fecha. */
+/** Cambia el estado de varios artículos en una transacción y una sola revalidación (no un bucle de setPostStatus por cliente). */
 export async function setPostsStatus(
   _prevState: PostActionState,
   formData: FormData,
@@ -909,9 +738,7 @@ export async function setPostsStatus(
 
   const now = new Date();
 
-  /* Una transacción: o cambian todos o no cambia ninguno. Con un bucle suelto,
-     un fallo a la mitad deja una selección aplicada por partes y sin forma de
-     saber cuál sí y cuál no. */
+  // Transacción: o cambian todos o ninguno; un bucle suelto dejaría un fallo a la mitad sin forma de saber qué se aplicó.
   await prisma.$transaction(
     posts.map((post) =>
       prisma.post.update({
@@ -927,8 +754,7 @@ export async function setPostsStatus(
     ),
   );
 
-  /* Una revalidación del listado y del blog, más la página propia de cada
-     artículo tocado: sus URLs son distintas, así que esas sí van una por una. */
+  // La página propia de cada artículo se revalida aparte: sus URLs son distintas.
   revalidatePost();
   for (const post of posts) {
     revalidatePath(`/[lang]/blog/${post.slug}`, "page");
@@ -950,10 +776,7 @@ export async function deletePost(
     return { error: "Artículo inválido." };
   }
 
-  /* El slug y las imágenes se leen ANTES de borrar: después ya no hay registro
-     del que sacarlos. Sin el slug, la página pública de ese artículo se quedaría
-     cacheada sin nadie que la invalide; sin las imágenes, sus archivos quedarían
-     en el store para siempre y sin forma de saber cuáles eran. */
+  // Slug e imágenes se leen ANTES de borrar: después ya no hay registro del que sacarlos.
   const post = await prisma.post.findUnique({
     where: { id },
     select: { slug: true, content: true, coverImageUrl: true },
@@ -964,9 +787,7 @@ export async function deletePost(
 
   await prisma.post.delete({ where: { id } });
 
-  /* Borrado el artículo, TODAS sus imágenes quedaron huérfanas: el conjunto de
-     después está vacío. Va después del delete para que un fallo de la base deje
-     los archivos donde estaban. */
+  // Todas las imágenes quedan huérfanas al borrar; va DESPUÉS del delete para que un fallo de la base deje los archivos donde estaban.
   await collectOrphans(post, [], "");
 
   revalidatePost(post.slug);

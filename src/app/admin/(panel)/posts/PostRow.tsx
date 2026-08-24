@@ -26,27 +26,20 @@ export type PostRowData = {
   slug: string;
   coverImageUrl: string;
   coverImageAlt: string;
-  /* El estado VISIBLE: cuatro valores, porque "Programado" es un publicado con
-     fecha futura y la columna de estado promete decir si el artículo se ve. */
+  // Estado VISIBLE: "Programado" es un publicado con fecha futura, y la columna promete decir si el artículo se ve.
   status: "DRAFT" | "PUBLISHED" | "SCHEDULED" | "HIDDEN";
-  /* El de la base, que sigue teniendo tres. Es el que decide qué hace el
-     interruptor de publicar/ocultar: ese escribe en `status`, no en la fecha. */
+  // El de la base (tres valores): decide qué hace el interruptor de publicar/ocultar, que escribe acá y no en la fecha.
   rawStatus: "DRAFT" | "PUBLISHED" | "HIDDEN";
   publishedAt: string | null;
   locale: string;
   categoryName: string;
   updatedAt: string;
-  /* La misma marca sin formatear. La de arriba es para leer; ésta viaja de
-     vuelta al servidor como guarda de concurrencia, y para eso tiene que ser el
-     valor exacto y no "23/08/2026, 14:05". */
+  // Misma marca sin formatear: viaja de vuelta al servidor como guarda de concurrencia, por eso tiene que ser el valor exacto.
   updatedAtIso: string;
   updatedByName: string | null;
-  /* Sólo para lo que todavía no es público. Un artículo publicado ya tiene su
-     enlace normal al blog. */
+  // Sólo para lo que todavía no es público; lo publicado ya tiene su enlace normal al blog.
   previewHref: string | null;
-  /* La ficha que edita el cajón. Viaja con la fila y no se pide aparte al
-     abrirlo: son campos que la consulta de la tabla ya trae, así que buscarlos
-     de nuevo sería un viaje al servidor para datos que están en memoria. */
+  // Campos que la consulta de la tabla ya trae: pedirlos de nuevo al abrir el cajón sería un viaje al servidor para datos que están en memoria.
   categoryId: number;
   excerpt: string;
   seoTitle: string;
@@ -57,12 +50,7 @@ export default function PostRow({
   post,
   setStatusAction,
   deleteAction,
-  /* Abrir el cajón de ficha. La fila avisa; el cajón lo monta la TABLA.
-
-     Un <dialog> es marcado inválido dentro de un <tbody>, así que no puede
-     vivir acá aunque el estado de "qué fila se está editando" parezca de la
-     fila. Y de paso hay UNA instancia del formulario para toda la tabla en vez
-     de una por fila. */
+  // La fila sólo avisa; el cajón lo monta la TABLA: un <dialog> es marcado inválido dentro de un <tbody>.
   onEdit,
   index = 0,
   selected = false,
@@ -82,36 +70,15 @@ export default function PostRow({
   const [switching, startSwitch] = useTransition();
   const { notify } = useToast();
 
-  /* Publicado ↔ oculto es el interruptor de visibilidad. Un borrador que nunca
-     se publicó no se "oculta": se publica.
-
-     Se mira `rawStatus` y no el estado visible: un artículo PROGRAMADO está
-     publicado en la base, así que su interruptor tiene que ofrecer "Ocultar" —
-     que es exactamente cómo se cancela una programación sin borrar nada. Con el
-     estado visible, el botón habría dicho "Publicar" sobre algo ya publicado. */
+  // Se mira `rawStatus` y no el visible: un PROGRAMADO ya está publicado en la base, así que el interruptor ofrece "Ocultar" para cancelar la programación sin borrar nada.
   const isPublished = post.rawStatus === "PUBLISHED";
   const nextStatus = isPublished ? "HIDDEN" : "PUBLISHED";
   const toggleLabel = isPublished ? "Ocultar" : "Publicar";
-  /* Enlace al blog público sólo si de verdad se ve ahí. Para lo demás está el
-     de previsualización. */
+  // Enlace al blog público sólo si de verdad se ve ahí; para lo demás está el de previsualización.
   const isLive = post.status === "PUBLISHED";
   const error = statusError ?? deleteError;
 
-  /* Publicar desde la fila sigue siendo UN clic, pero ahora deja deshacerlo.
-
-     El panel protegía lo reversible —borrar pedía diálogo y daba cinco
-     segundos— y dejaba abierto lo que sale a producción: este botón mandaba un
-     artículo a la web sin confirmación ni vuelta atrás.
-
-     Acá no va un diálogo, y es a propósito. Este control existe para operar la
-     tabla rápido: sí o sí publicar y esconder de a varios seguidos, y un modal
-     por fila convierte eso en un trámite. El diálogo se reserva para el editor,
-     donde publicar cierra un trabajo largo. En la tabla, la red es el deshacer,
-     que es exactamente el idioma que el panel ya usa para borrar.
-
-     Y a diferencia del borrado, el cambio se aplica YA: publicar es reversible
-     por definición —el botón que lo revierte es el mismo—, así que no hay razón
-     para retener la llamada cinco segundos. */
+  // Sin diálogo a propósito: la tabla necesita publicar/ocultar varios seguidos rápido, así que el deshacer hace de red en vez de un modal por fila. El cambio se aplica YA porque es reversible por definición.
   function toggleStatus() {
     startSwitch(async () => {
       const formData = new FormData();
@@ -142,7 +109,7 @@ export default function PostRow({
     });
   }
 
-  /* Mientras corre la ventana de deshacer, la fila sale de la tabla. */
+  // Mientras corre la ventana de deshacer, la fila sale de la tabla.
   if (removed) return null;
 
   return (
@@ -159,8 +126,7 @@ export default function PostRow({
               className="cq-check"
               checked={selected}
               onChange={(event) => onSelectedChange?.(event.target.checked)}
-              /* El título del artículo en el nombre accesible: "seleccionar
-                 fila 3" no le sirve a nadie que no esté viendo la tabla. */
+              // Título del artículo en el nombre accesible: "seleccionar fila 3" no le sirve a nadie que no esté viendo la tabla.
               aria-label={`Seleccionar «${post.title}»`}
             />
             <IconCheck size={11} className="cq-check-mark" aria-hidden="true" />
@@ -171,11 +137,7 @@ export default function PostRow({
 
         <td>
           <div className="flex items-center gap-2.5">
-            {/* La miniatura acepta que NO haya portada. Un artículo creado
-                desde el cajón de alta nace sin ella —se sube en el editor— y
-                `next/image` con `src=""` no dibuja un hueco: rompe el render de
-                la tabla entera. Acá el vacío es un estado dibujado, y de paso
-                se lee de un vistazo a qué borrador le falta la portada. */}
+            {/* La miniatura acepta que NO haya portada: `next/image` con `src=""` rompe el render de la tabla entera, así que el vacío es un estado dibujado. */}
             <div className="relative h-8 w-11 shrink-0 overflow-hidden rounded-[var(--p-radius-xs)] bg-[var(--p-surface-sunken)]">
               {post.coverImageUrl ? (
                 <Image
@@ -195,13 +157,7 @@ export default function PostRow({
                 </span>
               )}
             </div>
-            {/* Sólo el título. Debajo iba el slug en mono con barra adelante,
-                como identificador de máquina — pero en una tabla de artículos
-                el título ya identifica la fila, y la segunda línea gris de
-                texto técnico agregaba altura y ruido a cada una de las
-                veinticinco. El artículo publicado tiene su enlace al blog
-                público en las acciones de la fila, que es donde de verdad se
-                necesita la URL. */}
+            {/* Sólo el título: el slug ya no va debajo, el enlace al blog público está en las acciones de la fila que es donde de verdad se necesita. */}
             <div className="min-w-0">
               <Link
                 href={`/admin/posts/${post.id}/edit`}
@@ -223,10 +179,7 @@ export default function PostRow({
 
         <td className="whitespace-nowrap">
           <StatusBadge status={post.status} />
-          {/* La fecha, sólo cuando el estado NO se explica solo. Un programado
-              sin decir para cuándo es una promesa sin plazo, y ese es justo el
-              dato que se viene a mirar. En un publicado la fecha ya está en el
-              blog; repetirla acá sería una columna más de ruido. */}
+          {/* La fecha sólo cuando el estado no se explica solo: un programado sin decir para cuándo es una promesa sin plazo. */}
           {post.status === "SCHEDULED" && post.publishedAt && (
             <span className="cq-meta mt-0.5 block">{post.publishedAt}</span>
           )}
@@ -249,14 +202,7 @@ export default function PostRow({
                 icon={<IconExternal size={14} />}
               />
             ) : (
-              /* Previsualización de lo que todavía no es público.
-                 -----------------------------------------------------------
-                 Faltaba, y la alternativa real que quedaba era publicar,
-                 mandar el enlace y esconderlo después — o sea sacar a la web
-                 algo que nadie revisó. El enlace lleva un token firmado que
-                 sólo levanta el filtro de ESTE artículo, vence en una semana y
-                 se sirve con `noindex`, así que compartirlo no lo indexa.
-                 Se abre en otra pestaña para no perder el lugar en la tabla. */
+              // Enlace con token firmado que sólo levanta el filtro de ESTE artículo, vence en una semana y se sirve con `noindex`: compartirlo no lo indexa.
               post.previewHref && (
                 <IconLinkButton
                   href={post.previewHref}
@@ -269,13 +215,7 @@ export default function PostRow({
               )
             )}
 
-            {/* El lápiz abre el cajón de ficha en vez de navegar al editor.
-
-                El noventa por ciento de las ediciones de una redacción son una
-                tilde del título, un extracto que quedó largo o una categoría
-                mal puesta, y todas ellas obligaban a cargar el editor de
-                bloques entero y volver. El editor sigue estando a un clic —
-                desde adentro del cajón— para lo que de verdad lo necesita. */}
+            {/* El lápiz abre el cajón de ficha en vez de navegar al editor: la mayoría de las ediciones no necesitan cargar el editor de bloques entero. */}
             <IconButton
               label={`Editar la ficha de «${post.title}»`}
               size="sm"
@@ -323,8 +263,7 @@ export default function PostRow({
 
       {error && (
         <tr>
-          {/* El error va en su propia fila y no en un globo: queda pegado a la
-              fila que falló y no desaparece al mover el mouse. */}
+          {/* Fila propia y no un globo: queda pegado a la fila que falló y no desaparece al mover el mouse. */}
           <td colSpan={8} className="pt-0">
             <Alert>{error}</Alert>
           </td>

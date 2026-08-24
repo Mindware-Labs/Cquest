@@ -2,10 +2,7 @@ import { blockArraySchema } from "@/lib/blocks";
 import { STARTER_TEMPLATES, getTemplates } from "@/lib/templates";
 import type { TemplateChoice } from "@/components/admin/editor/TemplatePicker";
 
-/* Une los dos orígenes de plantilla en una sola lista para el editor: las 4
-   fijas que viven en código y las que guardó el equipo en la tabla Template.
-   Las dos pantallas del editor (nuevo y edición) lo necesitan igual, así que
-   vive acá y no duplicado en cada page.tsx. */
+// Une los dos orígenes de plantilla (las 4 fijas en código y las guardadas en Template) para no duplicar la lista en cada page.tsx.
 export async function getTemplateChoices(lang: "es" | "en" = "es"): Promise<TemplateChoice[]> {
   const saved = await getTemplates();
 
@@ -16,8 +13,7 @@ export async function getTemplateChoices(lang: "es" | "en" = "es"): Promise<Temp
     origin: "starter",
   }));
 
-  /* Una plantilla guardada con una versión vieja del schema se descarta en vez
-     de romper la pantalla: aplicarla produciría un artículo que no valida. */
+  // Una plantilla guardada con una versión vieja del schema se descarta en vez de romper la pantalla.
   const savedChoices: TemplateChoice[] = saved.flatMap((template) => {
     const parsed = blockArraySchema.safeParse(template.blocks);
     if (!parsed.success) return [];

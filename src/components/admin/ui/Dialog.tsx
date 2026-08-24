@@ -3,18 +3,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Button } from "./Button";
 
-/* Diálogo del panel, sobre el <dialog> nativo.
-
-   Se usa el elemento del navegador y no una capa hecha a mano porque el nativo
-   ya resuelve —bien, y en todos los navegadores actuales— las cinco cosas que
-   se hacen mal cuando esto se reimplementa: la trampa de foco, el cierre con
-   Escape, `aria-modal`, dejar inerte el resto de la página, y aparecer por
-   encima de todo sin pelear con z-index.
-
-   Esto es además lo que reemplaza al `window.confirm`. El del navegador saca al
-   admin de la página, no se puede diseñar, no se puede traducir y en algunos
-   navegadores se puede silenciar — o sea que el paso de seguridad puede
-   desaparecer sin aviso. */
+// Sobre el <dialog> nativo (no una capa hecha a mano): resuelve trampa de foco, Escape, aria-modal, inerte y z-index gratis. Reemplaza a window.confirm, que no se puede diseñar/traducir y algunos navegadores dejan silenciar.
 
 export function Dialog({
   open,
@@ -49,17 +38,13 @@ export function Dialog({
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       className="cq-overlay cq-dialog"
-      /* `cancel` cubre Escape y el gesto de cierre del sistema; `close` cubre
-         cualquier otra vía. Los dos avisan al padre para que su estado no quede
-         diciendo "abierto" con el diálogo ya cerrado. */
+      // `cancel` cubre Escape/gesto del sistema, `close` cualquier otra vía; ambos avisan al padre para que su estado no quede desincronizado.
       onCancel={(event) => {
         event.preventDefault();
         onClose();
       }}
       onClose={onClose}
-      /* Clic en el fondo. El ::backdrop no recibe eventos propios: lo que llega
-         es un clic sobre el <dialog> fuera de su caja de contenido, y se
-         detecta comparando el objetivo con el elemento mismo. */
+      // Clic en el fondo: ::backdrop no recibe eventos propios, se detecta comparando el target con el <dialog> mismo.
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
@@ -80,15 +65,7 @@ export function Dialog({
   );
 }
 
-/* Confirmación de una acción con consecuencia. Un solo componente para todas,
-   con el nombre de aquello sobre lo que se actúa escrito en el título:
-   "¿Eliminar?" a secas obliga a recordar sobre qué fila se hizo clic.
-
-   `tone` existe porque no toda confirmación es un borrado. Publicar también
-   pide una —saca el artículo a la web— pero es la acción PRINCIPAL, no una
-   destructiva: pintarla de rojo enseñaría que el rojo significa "importante"
-   en vez de "esto destruye algo", y a partir de ahí el rojo del borrado deja
-   de avisar nada. */
+// `tone` existe porque no toda confirmación es un borrado (p. ej. publicar): pintar de rojo una acción principal le quitaría significado al rojo de "esto destruye algo".
 export function ConfirmDialog({
   open,
   onClose,
@@ -116,9 +93,7 @@ export function ConfirmDialog({
       description={description}
       footer={
         <>
-          {/* Cancelar va primero en el DOM: es el destino por defecto del foco
-              al abrir el diálogo, y en una confirmación el foco tiene que caer
-              en la salida segura. */}
+          {/* Cancelar va primero en el DOM: es el destino por defecto del foco al abrir, y en una confirmación el foco debe caer en la salida segura. */}
           <Button variant="ghost" onClick={onClose}>
             {cancelLabel}
           </Button>

@@ -15,17 +15,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { IconClose, IconMenu } from "@/components/admin/ui/icons";
 
-/* Riel colapsable.
-
-   Antes se abría con el mouse por encima. Se cambió a un botón explícito por una
-   razón concreta: con hover, el riel se abre solo al cruzar la pantalla camino a
-   otra cosa, y no hay forma de dejarlo abierto mientras se trabaja. Ahora el
-   ancho es una DECISIÓN del que opera, se toma una vez y se recuerda entre
-   sesiones.
-
-   En móvil no hay ancho intermedio: es un panel que entra por izquierda sobre un
-   velo, porque angostar un riel en 360px de pantalla no le devuelve espacio útil
-   a nadie. */
+// Riel colapsable por botón explícito (no hover: abrirse solo al cruzar la pantalla no dejaba forma de mantenerlo abierto). En móvil es un panel deslizante, sin ancho intermedio.
 
 const RAIL_OPEN = "15.5rem";
 const RAIL_CLOSED = "4.5rem";
@@ -48,15 +38,7 @@ export function useSidebar() {
   return context;
 }
 
-/* La preferencia de ancho vive en un store fuera de React, y se lee con
-   useSyncExternalStore.
-
-   Por qué no `useState` + un efecto que lea localStorage: eso encadena un render
-   extra en cada carga y, sobre todo, hace que el riel se dibuje abierto y salte
-   a cerrado a la vista del que ya lo había plegado. Acá el valor guardado ya
-   está presente en el primer render del cliente; el snapshot del servidor
-   devuelve `true` porque en el servidor no hay preferencia que leer, y React
-   sabe reconciliar esa diferencia sin marcar un error de hidratación. */
+// Store fuera de React vía useSyncExternalStore: con useState + efecto el riel se dibujaría abierto y saltaría a cerrado a la vista de quien ya lo había plegado.
 let railOpen = typeof window === "undefined" || window.localStorage.getItem(STORAGE_KEY) !== "closed";
 const railListeners = new Set<() => void>();
 
@@ -121,39 +103,18 @@ export function DesktopSidebar({ className, children }: PanelProps) {
 
 export function MobileSidebar({ className, children }: PanelProps) {
   const { open, setOpen, panelId } = useSidebar();
-  /* Id propio. Los dos rieles se montan siempre —uno se oculta por CSS— y los
-     dos escribían `id={panelId}`: dos elementos con el mismo id en el documento,
-     que es HTML inválido y deja el `aria-controls` del botón apuntando a
-     cualquiera de los dos. Ojo, el landmark NO está duplicado: `display: none`
-     saca el riel de escritorio del árbol de accesibilidad. El problema era el
-     id, no la región. */
+  // Id propio: los dos rieles se montan siempre (uno oculto por CSS) y compartir panelId da dos elementos con el mismo id, HTML inválido.
   const sheetId = `${panelId}-sheet`;
-  /* El estado de apertura es compartido con el escritorio, pero en móvil
-     significa otra cosa: acá arranca CERRADO siempre, porque un panel encima del
-     contenido al entrar es un obstáculo, no una ayuda. */
+  // Comparte el estado "open" con el escritorio pero arranca siempre cerrado: un panel encima del contenido al entrar estorba.
   const [sheet, setSheet] = useState(false);
 
   const panelRef = useRef<HTMLElement | null>(null);
   const openerRef = useRef<HTMLElement | null>(null);
 
-  /* Escape cierra, el foco entra y queda atrapado, y al cerrar vuelve a donde
-     estaba.
-
-     Esta hoja era el ÚNICO overlay del panel sin nada de eso. El cajón y el
-     diálogo van sobre `<dialog>` nativo, así que el navegador les da trampa de
-     foco, Escape, capa superior e inertización del fondo. Acá hay un
-     `motion.aside`, que no es un diálogo para nadie salvo para el ojo: con
-     teclado, Tab se escapaba al contenido de atrás —que se sigue viendo debajo
-     del velo— y al cerrar el foco quedaba en la nada, o sea al principio del
-     documento.
-
-     No se porta a `<dialog>` porque la animación de entrada y el ancho relativo
-     al viewport dependen de que sea un elemento del flujo; se le agrega el
-     comportamiento que le faltaba. */
+  // motion.aside no es <dialog> nativo (la animación y el ancho relativo al viewport necesitan que sea un elemento de flujo), así que se le agrega a mano trampa de foco, Escape y devolución de foco al cerrar.
   useEffect(() => {
     if (!sheet) {
-      /* Restituir el foco al abridor. Sin esto, cerrar con Escape deja el foco
-         en el <body> y el siguiente Tab arranca desde arriba de todo. */
+      // Sin esto, cerrar con Escape deja el foco en <body> y el siguiente Tab arranca desde arriba de todo.
       openerRef.current?.focus();
       return;
     }
@@ -184,8 +145,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
       const last = nodes[nodes.length - 1];
       const active = document.activeElement;
 
-      /* El ciclo se cierra en los dos sentidos, y el `!panel.contains` cubre el
-         caso de entrar a la hoja con el foco ya afuera. */
+      // El !panel.contains cubre el caso de entrar a la hoja con el foco ya afuera.
       if (event.shiftKey && (active === first || !panel?.contains(active))) {
         event.preventDefault();
         last.focus();
@@ -210,8 +170,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
           aria-label="Abrir el menú del panel"
           onClick={() => {
             setSheet(true);
-            /* El panel móvil siempre se muestra desplegado: acá no existe el
-               estado angosto. */
+            // El panel móvil siempre se muestra desplegado: acá no existe el estado angosto.
             if (!open) setOpen(true);
           }}
           className="cq-rail-link -mr-2 px-2"
@@ -235,9 +194,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
             <motion.aside
               ref={panelRef}
               id={sheetId}
-              /* Es un diálogo modal para quien no lo ve, igual que el cajón. Sin
-                 esto un lector de pantalla lo anuncia como una región más y
-                 sigue leyendo la página de atrás como si estuviera disponible. */
+              // Sin esto un lector de pantalla lo anuncia como una región más y sigue leyendo la página de atrás.
               role="dialog"
               aria-modal="true"
               aria-label="Secciones del panel"
@@ -267,11 +224,7 @@ export function MobileSidebar({ className, children }: PanelProps) {
   );
 }
 
-/* Texto que sólo existe con el riel abierto. Colapsado se va a ancho cero
-   además de opacidad cero: si sólo se apagara la opacidad, seguiría ocupando su
-   lugar y el icono no podría centrarse. `aria-hidden` no se toca — el nombre
-   accesible del link tiene que seguir ahí aunque visualmente el riel esté
-   angosto. */
+// Colapsado va a ancho cero además de opacidad cero: sólo opacidad seguiría ocupando lugar y el icono no podría centrarse. aria-hidden no se toca: el nombre accesible del link debe seguir ahí.
 export function SidebarLabel({
   children,
   className,
@@ -297,9 +250,7 @@ export function SidebarLabel({
   );
 }
 
-/* Encabezado de grupo dentro del riel. Colapsado la CSS lo convierte en una
-   línea de 1px, así que el texto sigue en el DOM para los lectores de pantalla
-   y desaparece sólo visualmente. */
+// Colapsado la CSS lo reduce a una línea de 1px: el texto sigue en el DOM para lectores de pantalla y desaparece sólo visualmente.
 export function SidebarGroupLabel({ children }: { children: ReactNode }) {
   return <p className="cq-rail-group">{children}</p>;
 }
@@ -326,8 +277,7 @@ export function SidebarLink({
     <Link
       href={link.href}
       aria-current={active ? "page" : undefined}
-      /* Colapsado el nombre no se ve, así que el tooltip nativo pasa a ser la
-         única forma de saber qué es cada icono con el mouse. */
+      // Colapsado el nombre no se ve: el tooltip nativo es la única forma de identificar el icono con el mouse.
       title={open ? undefined : link.label}
       className={cn("cq-rail-link", className)}
       {...props}

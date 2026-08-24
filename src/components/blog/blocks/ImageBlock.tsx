@@ -7,21 +7,13 @@ export default function ImageBlock({
   preview = false,
 }: {
   block: BlockOf<"image">;
-  /* Sólo lo activan las vistas previas del admin. El artículo público nunca lo
-     pasa, así que su comportamiento no cambia en una coma. */
+  // Solo lo activan las vistas previas del admin; el artículo público nunca lo pasa.
   preview?: boolean;
 }) {
   const accent = block.accent ? ACCENT_RING[block.accent] : "";
   const isFull = block.display === "full";
 
-  /* Un bloque de imagen sin subir todavía (borrador a medio escribir) no
-     renderiza un <img> roto: simplemente no existe en el artículo público.
-
-     En una previa sí se dibuja, como marco vacío. Y no es un parche para la
-     miniatura de plantillas: la previa del editor tenía el mismo agujero. Quien
-     está escribiendo agrega el bloque de imagen, va a mirar cómo queda la página
-     y no ve NADA — ni el hueco—, así que no puede juzgar el ritmo de lo que está
-     armando hasta después de subir el archivo. */
+  // Un bloque de imagen sin subir no renderiza nada en el artículo público (evita un <img> roto); en preview dibuja un marco vacío para poder juzgar el ritmo antes de subir el archivo.
   if (!block.src) {
     if (!preview) return null;
     return (
@@ -33,9 +25,7 @@ export default function ImageBlock({
     );
   }
 
-  /* La columna de lectura mide 44rem (704px); a ancho completo llega a 76rem.
-     Decírselo al optimizador evita que sirva una imagen de 2000px para un
-     hueco de 700 — que es la mitad del presupuesto de carga de la página. */
+  // La columna de lectura mide 44rem (704px), a ancho completo 76rem; decírselo al optimizador evita servir una imagen de 2000px para un hueco de 700.
   const sizes = isFull ? "(max-width: 1216px) 100vw, 1216px" : "(max-width: 704px) 100vw, 704px";
 
   return (
@@ -43,8 +33,7 @@ export default function ImageBlock({
       className={`${isFull ? "-mx-5 sm:-mx-10 lg:-mx-24" : ""} ${blockSpacing(block.spacingTop, block.spacingBottom)}`}
     >
       {block.width && block.height ? (
-        /* Con dimensiones reales, next/image reserva exactamente el espacio que
-           va a ocupar: el texto de abajo no salta cuando la imagen llega. */
+        // Con dimensiones reales, next/image reserva el espacio exacto: el texto de abajo no salta cuando la imagen llega.
         <Image
           src={block.src}
           alt={block.alt}
@@ -54,9 +43,7 @@ export default function ImageBlock({
           className={`h-auto w-full rounded-lg ${accent}`}
         />
       ) : (
-        /* Bloques subidos antes de que se guardaran las dimensiones: se recorta
-           a una proporción fija en vez de adivinar la real. Es una degradación
-           visible pero estable, no un salto de layout. */
+        // Bloques subidos antes de que se guardaran las dimensiones: se recorta a proporción fija en vez de adivinar la real (degradación estable, no salto de layout).
         <div className={`relative aspect-[3/2] w-full overflow-hidden rounded-lg ${accent}`}>
           <Image src={block.src} alt={block.alt} fill sizes={sizes} className="object-cover" />
         </div>

@@ -1,10 +1,6 @@
 import type { Block, ColumnSimpleBlock } from "@/lib/blocks";
 
-/* El contenido dejó de ser una lista plana en cuanto entró el bloque de
-   columnas: ahora es un árbol de dos niveles exactos (un bloque de columnas
-   contiene bloques simples, y nada más). Estas funciones son la única forma
-   en que el editor lo toca, para que la selección por id funcione igual en
-   ambos niveles y no haya dos maneras de mover un bloque. */
+// El contenido es un árbol de dos niveles exactos desde que existe el bloque de columnas; estas funciones son la única vía de acceso, para no tener dos formas de mover un bloque.
 
 export function findBlock(blocks: readonly Block[], id: string): Block | null {
   for (const block of blocks) {
@@ -75,17 +71,7 @@ export function appendToColumn(
   });
 }
 
-/* ---------------------------------------------------------------------------
-   Mover ENTRE niveles
-
-   Era el agujero grande del editor: se podía reordenar dentro del cuerpo y
-   dentro de una columna, pero no pasar un bloque de uno a otro. Para meter un
-   párrafo ya escrito en una columna había que borrarlo y volver a tipearlo.
-
-   Las tres funciones de abajo comparten una idea: se saca el bloque de donde
-   esté y se lo inserta donde va, en una sola pasada. Nunca hay un estado
-   intermedio donde el bloque no exista o exista dos veces.
---------------------------------------------------------------------------- */
+// Mover entre niveles (root <-> columna): sacar e insertar en una sola pasada, sin estado intermedio donde el bloque no exista o exista dos veces.
 
 export type BlockLocation =
   | { scope: "root"; index: number }
@@ -109,9 +95,7 @@ export function locateBlock(blocks: readonly Block[], id: string): BlockLocation
   return null;
 }
 
-/* Sólo cinco de los once tipos entran en una columna, y es el schema el que lo
-   decide (columnSimpleBlockSchema). Preguntarlo acá evita ofrecer un destino
-   que Zod va a rechazar recién al guardar. */
+// Sólo cinco de los once tipos entran en columna (lo decide columnSimpleBlockSchema); se pregunta acá para no ofrecer un destino que Zod rechazaría al guardar.
 export function canLiveInColumn(block: Block): block is ColumnSimpleBlock {
   return (
     block.type === "heading" ||
@@ -131,9 +115,7 @@ export function moveIntoColumn(
 ): Block[] {
   const block = findBlock(blocks, id);
   if (!block || !canLiveInColumn(block)) return [...blocks];
-  /* Un bloque de columnas no puede meterse dentro de sí mismo: el árbol tiene
-     dos niveles exactos y anidarlo lo rompería. `canLiveInColumn` ya lo impide
-     por tipo, pero la comprobación explícita documenta el porqué. */
+  // Un bloque de columnas no puede meterse dentro de sí mismo (rompería el árbol de dos niveles); canLiveInColumn ya lo impide por tipo, esto lo hace explícito.
   if (id === columnsBlockId) return [...blocks];
 
   const without = removeBlock(blocks, id);
@@ -147,8 +129,7 @@ export function moveIntoColumn(
   });
 }
 
-/** Saca un bloque de su columna y lo deja en el cuerpo, justo debajo del
-    bloque de columnas del que salió — que es donde el ojo lo va a buscar. */
+/** Saca un bloque de su columna y lo deja en el cuerpo, justo debajo del bloque de columnas del que salió. */
 export function moveOutOfColumn(blocks: readonly Block[], id: string): Block[] {
   const location = locateBlock(blocks, id);
   if (!location || location.scope !== "column") return [...blocks];
@@ -204,8 +185,7 @@ export function moveWithinColumn(
   });
 }
 
-/* Cambiar la cantidad de columnas no puede perder contenido en silencio: al
-   pasar de 3 a 2, lo que había en la tercera se anexa a la última que queda. */
+// Al reducir columnas no se pierde contenido en silencio: lo que sobra se anexa a la última columna que queda.
 export function setColumnCount(
   blocks: readonly Block[],
   columnsBlockId: string,

@@ -8,8 +8,7 @@ describe("blogHref", () => {
   });
 
   it("omite la página 1", () => {
-    /* `?pagina=1` es la misma pantalla bajo otra URL: dos direcciones para un
-       solo contenido es exactamente lo que Google llama duplicado. */
+    // ?pagina=1 es la misma pantalla bajo otra URL: dos direcciones para un solo contenido es lo que Google llama duplicado.
     expect(blogHref("es", { page: 1 })).toBe("/blog");
     expect(blogHref("es", { page: 2 })).toBe("/blog?pagina=2");
   });
@@ -26,9 +25,7 @@ describe("readCategory", () => {
   });
 
   it("acepta también el del otro idioma", () => {
-    /* Los enlaces en español ya publicados y compartidos tienen que seguir
-       funcionando: un filtro que se cae porque alguien pegó la URL vieja se ve
-       igual que un artículo borrado. */
+    // Los enlaces en español ya publicados y compartidos tienen que seguir funcionando: un filtro que se cae con la URL vieja se ve igual que un artículo borrado.
     expect(readCategory({ categoria: "bpo" }, "en")).toBe("bpo");
   });
 
@@ -40,8 +37,7 @@ describe("readCategory", () => {
 
 describe("readPage", () => {
   it("cae a la página 1 ante cualquier cosa que no sea un número positivo", () => {
-    /* Esto viene de la barra de direcciones, así que llega cualquier cosa. Un
-       NaN o un negativo propagados al `skip` de Postgres son un error 500. */
+    // Esto viene de la barra de direcciones, así que llega cualquier cosa; un NaN o un negativo propagados al skip de Postgres son un error 500.
     for (const raw of ["0", "-3", "abc", "", undefined]) {
       expect(readPage({ pagina: raw }, "es")).toBe(1);
     }

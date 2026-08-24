@@ -5,9 +5,7 @@ import { verifyAdminPassword } from "@/lib/adminUsers";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/admin/login" },
-  /* Un password equivocado no es una falla del sistema — es tráfico normal de
-     un login. Sin esto, Auth.js registra cada intento como [error] con stack
-     trace completo, ahogando los errores que sí importan en los logs. */
+  // Un password equivocado es tráfico normal de login, no un error del sistema; sin esto Auth.js lo registraría con stack trace, ahogando los errores que sí importan.
   logger: {
     error(error) {
       if (error instanceof CredentialsSignin) return;

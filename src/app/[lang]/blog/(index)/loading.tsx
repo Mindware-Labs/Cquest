@@ -1,32 +1,11 @@
-/* Esqueleto del listado mientras la consulta viaja a la base. Reproduce la
-   maqueta real —cabecera, barra de categorías, portada y grilla— para que el
-   contenido no salte al llegar. `animate-pulse` de Tailwind ya respeta
-   prefers-reduced-motion vía la media query global del proyecto, así que no
-   necesita una excepción propia. */
+// Reproduce la maqueta real para que el contenido no salte al llegar. `animate-pulse` ya respeta prefers-reduced-motion vía la media query global.
 
 const CONTAINER = "mx-auto w-full max-w-[70rem] px-5 sm:px-8";
 
-/* Vive en el grupo `(index)` y ya no en `blog/`, y el motivo es un 404 que no
-   era 404.
-   ---------------------------------------------------------------------------
-
-   Un `loading.tsx` es un límite de Suspense, y desde `blog/` ese límite envolvía
-   también a `blog/[slug]`. Con streaming, la cabecera HTTP sale ANTES de que la
-   página termine de renderizarse: para cuando `notFound()` se disparaba sobre un
-   slug inexistente, el 200 ya estaba enviado y no había forma de corregirlo. El
-   visitante veía la pantalla de 404 correcta, pero el servidor le decía a Google
-   "esta página existe" — un soft 404, que es como se llenan los informes de
-   Search Console de URLs fantasma indexadas.
-
-   El grupo `(index)` no aparece en la URL (`/blog` sigue siendo `/blog`), pero
-   acota el límite a esta pantalla. El artículo queda fuera y vuelve a responder
-   404 de verdad. */
+// Vive en (index) y no en blog/ para no envolver también a blog/[slug]: con streaming, la cabecera 200 salía antes de que notFound() pudiera corregirla, produciendo un soft 404 ante Google.
 export default function BlogLoading() {
   return (
-    /* aria-busy en vez de un texto "Cargando…": loading.tsx no recibe `params`,
-       así que no puede saber el idioma de la ruta, y una cadena en español
-       fija sería la única parte del blog que ignora el idioma del visitante.
-       El estado se comunica por atributo, que no necesita traducción. */
+    // aria-busy en vez de texto "Cargando…": loading.tsx no recibe params y no puede saber el idioma de la ruta.
     <div aria-busy="true">
       {/* La barra de categorías va PRIMERA, igual que en la pantalla real. */}
       <div className="cq-blog-filters mt-28 sm:mt-32">

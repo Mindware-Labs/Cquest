@@ -13,16 +13,7 @@ const nameSchema = z
   .min(2, "El nombre debe tener al menos 2 caracteres.")
   .max(60, "El nombre no puede superar 60 caracteres.");
 
-/* El nombre en inglés es OPCIONAL a propósito.
-   ---------------------------------------------------------------------------
-
-   Un artículo vive en un solo idioma, pero la categoría era una fila con un
-   solo nombre: /en/blog mostraba «Operaciones» en la miga y en el filtro de un
-   artículo escrito en inglés.
-
-   Hacerlo obligatorio habría roto las categorías que ya existen y habría puesto
-   un peaje en inglés a quien sólo publica en español. Vacío significa "usá el
-   nombre en español", que es feo pero legible — ver categoryName(). */
+// nameEn es OPCIONAL a propósito: obligarlo habría roto las categorías existentes y puesto un peaje en inglés a quien sólo publica en español (vacío cae al nombre en español, ver categoryName()).
 const nameEnSchema = z
   .string()
   .trim()
@@ -46,9 +37,7 @@ function isForeignKeyConstraintError(error: unknown): boolean {
   );
 }
 
-/* Sin esto la pantalla sigue mostrando la lista cacheada y el admin cree que
-   su cambio no se guardó. El blog público también depende del nombre de la
-   categoría, así que se invalida junto. */
+// Sin esto la pantalla sigue mostrando la lista cacheada; se invalida también el blog público porque depende del nombre de la categoría.
 function revalidateCategories(): void {
   revalidatePath("/admin/categories");
   revalidatePath("/[lang]/blog", "page");
@@ -62,12 +51,7 @@ export async function getCategories() {
   });
 }
 
-/** Una sola categoría por su identificador de URL.
- *
- *  Existe para que la tabla de artículos pueda nombrar la categoría por la que
- *  está filtrando. Antes lo sacaba del propio listado, pero con paginación el
- *  slug filtrado puede no estar en la página que se ve, y la etiqueta terminaba
- *  mostrando el slug crudo en vez del nombre. */
+/** Una sola categoría por slug — para la tabla de artículos, cuyo filtro puede no estar en la página visible con paginación. */
 export async function getCategoryBySlug(slug: string) {
   return prisma.category.findUnique({ where: { slug }, select: { name: true, nameEn: true } });
 }

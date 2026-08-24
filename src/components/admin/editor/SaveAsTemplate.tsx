@@ -7,12 +7,7 @@ import { Alert } from "@/components/admin/ui/Surface";
 import { useToast } from "@/components/admin/ui/Toast";
 import { INPUT_CLASS } from "./fields";
 
-/* Guardar la estructura del artículo como plantilla reutilizable (AD-15).
-
-   Deliberadamente NO es un <form>: este componente vive dentro del formulario
-   del artículo, y anidar formularios es HTML inválido — el navegador cierra el
-   interno y sus campos terminan enviándose con el submit del artículo. Por eso
-   arma el FormData a mano y despacha la action directamente. */
+// Deliberadamente NO es un <form>: vive dentro del formulario del artículo y anidar formularios es HTML inválido, así que arma el FormData a mano.
 export default function SaveAsTemplate({
   action,
   blocks,
@@ -25,16 +20,7 @@ export default function SaveAsTemplate({
   const [isPending, startTransition] = useTransition();
   const { notify } = useToast();
 
-  /* El "guardado" decía la verdad a medias.
-
-     Antes se marcaba `saved` en el mismo momento de despachar, ANTES de que la
-     acción resolviera, y el campo no se limpiaba. Resultado: "Plantilla
-     guardada." quedaba en pantalla al lado del nombre todavía escrito, y un
-     segundo clic creaba una plantilla duplicada sin decir nada.
-
-     Ahora se espera el resultado y sólo entonces se limpia y se avisa. El aviso
-     es un toast como el del resto del panel, no un texto verde propio de esta
-     caja. */
+  // Se espera el resultado antes de limpiar y avisar: marcarlo "guardado" al despachar dejaba el nombre escrito en pantalla y un segundo clic duplicaba la plantilla.
   function save() {
     const formData = new FormData();
     formData.set("name", name);

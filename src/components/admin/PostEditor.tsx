@@ -53,32 +53,18 @@ export type PostEditorInitial = {
   locale: string;
   seoTitle: string;
   seoDescription: string;
-  /* Ausente al crear. Sirve para distinguir la primera publicación —la que
-     efectivamente saca el artículo a la web— del guardado de uno que ya está
-     publicado. */
+  // Ausente al crear: distingue la primera publicación (la que saca el artículo a la web) de guardar uno ya publicado.
   status?: string;
-  /* La fecha de publicación tal como la espera <input type="datetime-local">
-     ("2026-09-01T08:30"), ya convertida a la zona de la operación por el Server
-     Component. No se manda un Date ni un ISO: convertir en el cliente daría la
-     zona del navegador de quien edita, y entonces la hora que se ve al abrir no
-     sería la que se guardó. */
+  // Formato datetime-local, ya convertido a la zona de la operación por el Server Component; convertir en el cliente usaría la zona del navegador y mostraría una hora distinta a la guardada.
   publishedAt?: string;
-  /* Si esa fecha era futura EN EL SERVIDOR al renderizar. Viene calculado y no
-     se deriva en el cliente: comparar contra el reloj durante el render hace
-     que el rótulo del botón dependa de cuántas veces React dibujó. */
+  // Calculado en el servidor al renderizar; derivarlo en el cliente haría que el rótulo del botón dependa de cuántas veces React re-renderizó.
   isScheduled?: boolean;
-  /* Marca de la última escritura, para la guarda de concurrencia. Se reenvía
-     tal cual y el servidor la compara: si cambió, alguien guardó en el medio y
-     este submit se rechaza en vez de pisarlo. */
+  // Guarda de concurrencia: el servidor compara esta marca y rechaza el submit si alguien guardó en el medio, en vez de pisarlo.
   updatedAt?: string;
   blocks: Block[];
 };
 
-/* Lo que se compara para saber si hay cambios sin guardar, y lo que se copia a
-   la red local. Es UNA definición: antes el objeto estaba escrito dos veces
-   —una por lado de la comparación— y agregar un campo al editor y olvidarlo en
-   uno de los dos lados significaba que ese campo no marcaba el formulario como
-   sucio y se perdía sin aviso. */
+// Definición única compartida entre el snapshot y el baseline: antes estaba duplicada y un campo olvidado en un lado no marcaba el formulario como sucio.
 type Snapshot = {
   title: string;
   slug: string;
@@ -98,16 +84,14 @@ function SaveButtons({
   publishLabel,
   publishPendingLabel,
 }: {
-  /* Devuelve `true` si hay que frenar y pedir confirmación. El botón no sabe
-     por qué: sólo pregunta antes de enviar. */
+  // Devuelve true si hay que frenar y pedir confirmación; el botón no sabe por qué, solo pregunta antes de enviar.
   onPublishIntent: () => boolean;
   publishLabel: string;
   publishPendingLabel: string;
 }) {
   const { pending } = useFormStatus();
 
-  /* Los dos botones mandan `intent` distinto en el mismo submit (AD-12): el
-     backend decide estado y fecha con ese campo, sin una segunda llamada. */
+  // Los dos botones mandan "intent" distinto en el mismo submit (AD-12): el backend decide estado y fecha con ese campo.
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
@@ -121,9 +105,7 @@ function SaveButtons({
         {pending ? <IconSpinner size={15} /> : null}
         {pending ? "Guardando…" : "Guardar borrador"}
       </button>
-      {/* Publicar también muestra que está corriendo. Es la acción MÁS lenta y
-          la de más consecuencia, y era la única del panel que sólo se apagaba:
-          sobre una conexión lenta se veía igual que un botón muerto. */}
+      {/* Publicar muestra que está corriendo: era el único botón que solo se apagaba, y en conexión lenta parecía muerto. */}
       <button
         type="submit"
         name="intent"
@@ -176,17 +158,10 @@ export default function PostEditor({
   const [blocks, setBlocks] = useState<Block[]>(initial.blocks);
   const [selectedId, setSelectedId] = useState<string | null>(initial.blocks[0]?.id ?? null);
 
-  /* El selector de plantillas solo aparece al crear un artículo vacío (AD-14).
-     En un artículo existente sería una forma de borrar todo por accidente. */
+  // El selector de plantillas solo aparece al crear un artículo vacío (AD-14); en uno existente borraría todo por accidente.
   const [showTemplates, setShowTemplates] = useState(!initial.id && initial.blocks.length === 0);
 
-  /* Región viva: el arrastre y los botones ↑↓ cambian el orden sin mover el
-     foco, así que sin esto un lector de pantalla no anuncia nada (RNF-5).
-
-     El contador NO es decorativo. Una región viva sólo anuncia cuando su texto
-     CAMBIA: subir dos veces el mismo bloque, o borrar dos párrafos seguidos,
-     producía el mismo string y el segundo anuncio no existía. El número lo
-     fuerza a cambiar siempre y va oculto entre paréntesis. */
+  // Región viva para lector de pantalla (RNF-5); el contador fuerza que el texto cambie siempre, porque una región viva no anuncia si el string se repite.
   const [announcement, setAnnouncement] = useState({ text: "", nonce: 0 });
 
   const announce = useCallback((text: string) => {
@@ -195,36 +170,20 @@ export default function PostEditor({
 
   const selected = selectedId ? findBlock(blocks, selectedId) : null;
 
-  /* Al crear, la action devuelve el id nuevo: se pasa a la pantalla de edición
-     para que un segundo "Guardar" actualice en vez de crear un duplicado. */
+  // Al crear, la action devuelve el id nuevo; se navega a edición para que un segundo "Guardar" actualice en vez de duplicar.
   useEffect(() => {
     if (!initial.id && state.id) {
-      /* La copia local de "Nuevo artículo" queda huérfana en cuanto el artículo
-         tiene id. Sin esto, la próxima vez que alguien abra "Nuevo artículo" se
-         le ofrecería recuperar el artículo ANTERIOR, ya guardado. */
+      // Limpia el draft local de "Nuevo artículo": sin esto, la próxima vez se ofrecería recuperar el artículo anterior ya guardado.
       clearNewPostDraft();
       router.replace(`/admin/posts/${state.id}/edit`);
     }
   }, [state.id, initial.id, router]);
 
-  /* Confirmación de guardado.
-
-     Faltaba, y era el hueco más grave del panel: al guardar un artículo que ya
-     existía, la acción sólo devolvía error o nada. En el caso bueno no cambiaba
-     NADA en pantalla —ni aviso, ni hora, ni estado—, así que no había forma de
-     distinguir "se guardó" de "el clic no hizo nada". Con Publicar, eso termina
-     en alguien apretando el botón tres veces.
-
-     Se cuenta el envío con un ref y no con estado: el contador no participa del
-     render, y sumarlo como estado dispararía un render extra por cada guardado
-     sin cambiar un solo píxel. */
+  // Confirmación de guardado: sin esto, un guardado exitoso no cambiaba nada en pantalla y era indistinguible de que el clic no hiciera nada. El envío se cuenta con un ref, no con estado, para no forzar un render extra.
   const submissions = useRef(0);
   const lastNotified = useRef(0);
   const intent = useRef<"draft" | "publish">("draft");
-  /* Si la fecha era futura EN EL MOMENTO DEL ENVÍO, y no cuando llega el aviso.
-     Cuando la acción vuelve, `initial` ya trae la fecha guardada y compararla
-     contra el reloj otra vez daría el resultado correcto por casualidad — hasta
-     que alguien programe para dentro de treinta segundos. Se congela acá. */
+  // Congela si la fecha era futura al momento del envío; comparar de nuevo cuando vuelve la action daría el resultado correcto solo por casualidad.
   const scheduledAtSubmit = useRef(false);
 
   useEffect(() => {
@@ -244,17 +203,7 @@ export default function PostEditor({
     });
   }, [state, notify]);
 
-  /* Cambios sin guardar.
-
-     Todo el artículo vive en estado del cliente y sólo se persiste al enviar,
-     así que cerrar la pestaña o recargar tiraba el trabajo entero sin una
-     palabra. `beforeunload` es lo único que el navegador permite para eso.
-
-     La comparación es contra las props `initial`, no contra una copia guardada
-     a mano: cuando la acción termina bien, el Server Component vuelve a
-     renderizar con los datos ya guardados y `initial` pasa a ser exactamente lo
-     que hay en pantalla. O sea que el guardado limpia el estado sucio solo, sin
-     que haya que acordarse de limpiarlo. */
+  // Se compara contra las props "initial" y no contra una copia guardada a mano: al guardar, el Server Component re-renderiza con los datos nuevos y "initial" queda al día solo, sin limpieza manual.
   const snapshot: Snapshot = {
     title,
     slug,
@@ -269,9 +218,7 @@ export default function PostEditor({
     blocks,
   };
 
-  /* La misma forma, con los valores que llegaron del servidor. Se serializa una
-     sola vez y se reusa como vara para la comparación Y para la red local: son
-     literalmente la misma pregunta ("¿esto es distinto de lo guardado?"). */
+  // Se serializa una sola vez y se reusa como vara para la comparación y para la red local: es la misma pregunta ("¿esto es distinto de lo guardado?").
   const baseline = JSON.stringify({
     title: initial.title,
     slug: initial.slug,
@@ -288,10 +235,7 @@ export default function PostEditor({
 
   const isDirty = JSON.stringify(snapshot) !== baseline;
 
-  /* La red contra lo que NO es una decisión de la persona: la pestaña que se
-     cae, el reinicio por actualización, el navegador que mata la pestaña por
-     memoria. `beforeunload` y el guard sobre los enlaces cubren el irse a
-     propósito; nada cubría lo demás. */
+  // Red de seguridad para lo que NO es decisión de la persona (crash, reinicio, el navegador matando la pestaña); beforeunload solo cubre el irse a propósito.
   const localDraft = useLocalDraft<Snapshot>({
     postId: initial.id,
     snapshot,
@@ -312,50 +256,17 @@ export default function PostEditor({
     setPublishedAt(draft.publishedAt);
     setBlocks(draft.blocks);
     setSelectedId(draft.blocks[0]?.id ?? null);
-    /* El selector de plantillas sobra si acabamos de restaurar contenido: era
-       para empezar de cero. */
+    // El selector de plantillas sobra si ya se restauró contenido: era para empezar de cero.
     setShowTemplates(false);
   }, []);
 
-  /* El error se busca solo. La validación llega como una sola alerta arriba de
-     un formulario de tres pantallas de alto: al enviar desde el final, el aviso
-     aparecía completamente fuera de la vista y el botón simplemente no hacía
-     nada visible. Se desplaza hasta él y se le pone el foco —de ahí el
-     `tabIndex={-1}`—, así el teclado también queda parado en el problema y no
-     donde estaba antes. */
+  // El error se autodesplaza y recibe foco (tabIndex={-1}): en un formulario largo, enviar desde el final dejaba la alerta fuera de la vista.
   const errorRef = useRef<HTMLDivElement | null>(null);
 
-  /* Confirmación antes de la PRIMERA publicación.
-
-     El panel protegía lo reversible y dejaba abierto lo que sale a producción:
-     borrar pedía diálogo y daba cinco segundos para deshacer, mientras publicar
-     era un clic sin nada, con el botón pegado a "Guardar borrador", del mismo
-     tamaño y a ocho píxeles. Un error de puntería sacaba un borrador a la web.
-
-     Sólo la PRIMERA vez. Volver a guardar un artículo que ya está publicado no
-     cambia su visibilidad, y preguntar ahí sería un peaje en el trabajo normal
-     de corregir un párrafo — que es como se entrena a la gente a confirmar sin
-     leer. El diálogo aparece cuando el estado cambia de verdad.
-
-     El formulario se envía por referencia y no reenviando el evento: hay que
-     conservar el `intent=publish` del botón, y `requestSubmit` con el botón
-     como argumento es lo único que lo incluye. */
+  // Confirma solo la PRIMERA publicación (volver a guardar uno ya publicado no cambia su visibilidad); se reenvía con requestSubmit(button) para conservar el intent=publish del botón.
   const formRef = useRef<HTMLFormElement | null>(null);
   const [confirmingPublish, setConfirmingPublish] = useState(false);
-  /* Una fecha futura cambia lo que el botón HACE, así que tiene que cambiar lo
-     que el botón DICE. Un control rotulado "Publicar" que en realidad programa
-     para dentro de tres días es la clase de sorpresa que hace que alguien
-     apriete otra vez pensando que no funcionó.
-
-     El valor NO se deriva durante el render, y no es un capricho del linter:
-     `Date.now()` en el cuerpo de un componente devuelve algo distinto cada vez
-     que React decide volver a dibujar, así que el rótulo del botón podría
-     cambiar solo sin que nadie tocara nada. Se calcula donde el tiempo sí se
-     puede leer —el manejador del cambio, que corre una vez por interacción— y
-     arranca con lo que el servidor ya sabía al renderizar.
-
-     Es una etiqueta, no una decisión: quien decide de verdad es la consulta
-     pública, que compara contra la hora de Postgres. */
+  // El rótulo del botón debe reflejar si programa o publica ya; no se deriva con Date.now() en el render (cambiaría solo entre renders), se calcula en el handler de cambio. Es solo etiqueta: la consulta pública decide de verdad comparando contra la hora de Postgres.
   const [isScheduled, setIsScheduled] = useState(initial.isScheduled ?? false);
 
   const changePublishedAt = useCallback((value: string) => {
@@ -370,10 +281,7 @@ export default function PostEditor({
       ? "Publicar"
       : "Guardar y publicar";
 
-  /* El permiso para pasar de largo va en un ref y no en el estado del diálogo:
-     `confirmPublish` reenvía el formulario en el mismo tick en que baja el
-     estado, así que el `onClick` que se vuelve a disparar leería el valor del
-     render anterior. Un ref se lee y se escribe en el momento. */
+  // El permiso va en un ref, no en estado: confirmPublish reenvía el formulario en el mismo tick, y un estado leería el valor del render anterior.
   const publishConfirmed = useRef(false);
 
   const askBeforePublish = useCallback(() => {
@@ -408,9 +316,7 @@ export default function PostEditor({
     if (!isDirty) return;
 
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      /* `preventDefault` es lo que dispara el diálogo del navegador. El texto lo
-         escribe el navegador, no nosotros: hace años que ignoran el mensaje
-         propio para que ningún sitio pueda escribir ahí lo que quiera. */
+      // preventDefault dispara el diálogo; el texto lo pone el navegador, ignora cualquier mensaje propio.
       event.preventDefault();
     };
 
@@ -418,19 +324,7 @@ export default function PostEditor({
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [isDirty]);
 
-  /* `beforeunload` sólo cubre cerrar la pestaña, recargar o irse a otro sitio.
-     NO se dispara en una navegación de Next: un clic en "Artículos" del riel es
-     un push del router, no una descarga de documento — el guard de arriba no se
-     enteraba y el borrador se perdía en silencio.
-
-     Se escucha el clic en fase de captura sobre el documento y no se envuelve
-     cada enlace: los enlaces que sacan de acá están en el riel y en la miga,
-     que son componentes del layout y no saben que abajo hay un editor sucio.
-     Un solo oyente los cubre a todos, incluidos los que se agreguen después.
-
-     Se dejan pasar: el clic con modificador (abre en otra pestaña, no te saca
-     de esta), el destino externo o con `target`, la descarga, y el enlace que
-     apunta a esta misma ruta. */
+  // beforeunload no cubre la navegación de Next (push del router, no descarga), así que se intercepta el clic en captura sobre document en vez de envolver cada enlace del layout; se dejan pasar clics con modificador, destinos externos/con target, descargas y la ruta actual.
   useEffect(() => {
     if (!isDirty) return;
 
@@ -458,16 +352,7 @@ export default function PostEditor({
     return () => document.removeEventListener("click", onCapture, true);
   }, [isDirty]);
 
-  /* Un bloque nuevo entra JUSTO DEBAJO del que está seleccionado, no al final.
-
-     Antes siempre se anexaba, y esa era la razón por la que el arrastre era la
-     única forma de insertar en una posición: quien trabaja con teclado tenía
-     que agregar al final y después subirlo con ↑ tantas veces como bloques
-     hubiera. En un artículo de veinte bloques eso son veinte pulsaciones para
-     una operación que ahora no cuesta ninguna.
-
-     Si el seleccionado vive en una columna y el tipo nuevo entra en una, el
-     bloque nace ahí adentro: es lo que espera quien está armando esa columna. */
+  // Un bloque nuevo entra justo debajo del seleccionado, no al final: antes forzaba a subirlo a mano con teclado. Si el seleccionado vive en una columna, el bloque nuevo nace ahí adentro.
   function addBlock(type: Block["type"]) {
     const block = createBlock(type);
     const location = selectedId ? locateBlock(blocks, selectedId) : null;
@@ -503,45 +388,27 @@ export default function PostEditor({
       ref={formRef}
       action={formAction}
       onSubmit={(event) => {
-        /* Qué botón se apretó. `submitter` es lo único que lo dice, y hace
-           falta para que el aviso posterior diga "publicado" o "guardado" y no
-           un genérico que sirva para los dos. */
+        // submitter es lo único que dice qué botón se apretó; sin esto el aviso posterior no puede distinguir "publicado" de "guardado".
         const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
         intent.current = submitter?.value === "publish" ? "publish" : "draft";
         scheduledAtSubmit.current = isScheduled;
         submissions.current += 1;
       }}
     >
-      {/* El contenido viaja serializado en un input oculto: es lo que espera
-          contentSchema en posts.ts, y lo que hace que el mismo schema valide
-          en el cliente y en el servidor. */}
+      {/* Serializado en un input oculto: es lo que espera contentSchema en posts.ts, y valida igual en cliente y servidor. */}
       <input type="hidden" name="content" value={JSON.stringify(blocks)} />
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
       <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
-      {/* La marca de la última escritura, tal como llegó. El servidor la compara
-          antes de escribir: si otra pestaña guardó en el medio, este submit se
-          rechaza con un mensaje en vez de pisar el trabajo ajeno en silencio. */}
+      {/* El servidor compara esta marca antes de escribir: si otra pestaña guardó en el medio, rechaza el submit en vez de pisarlo. */}
       {initial.updatedAt && (
         <input type="hidden" name="expectedUpdatedAt" value={initial.updatedAt} />
       )}
 
-      {/* La barra de guardado va PEGADA arriba, debajo de la barra del panel.
-          El editor mide varias pantallas de alto: con los botones sólo en el
-          encabezado, guardar desde el final del formulario obliga a subir todo
-          el camino. Es la corrección más útil de esta vista. */}
-      {/* El desplazamiento sale del token que define el alto de la barra
-          superior (`--p-space-7`), no de un `3rem` escrito a mano: eran el
-          mismo número en dos archivos, y el día que la barra cambie de alto
-          esta se le monta encima. */}
+      {/* Barra de guardado pegada arriba: el editor mide varias pantallas, sin esto guardar obligaría a subir todo el camino. */}
+      {/* El desplazamiento usa el token --p-space-7 y no un valor fijo, para no desincronizarse si cambia el alto de la barra superior. */}
       <div className="sticky top-[var(--p-space-7)] z-[var(--p-z-sticky)] -mx-4 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--p-line)] bg-[var(--p-surface)] px-4 py-2.5 sm:-mx-6 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          {/* La SALIDA. No existía: el editor tenía dos botones para guardar y
-              ninguno para irse. La única forma de abandonar un borrador era el
-              botón de atrás del navegador o un enlace del riel, o sea salir por
-              donde no hay puerta. Va a la izquierda del título porque es un
-              retroceso, no una acción sobre el artículo — y por eso es un
-              enlace y no un botón: navega. El guard de cambios sin guardar lo
-              intercepta igual que a cualquier otro enlace. */}
+          {/* La salida no existía antes (solo atrás del navegador o el riel). Es enlace y no botón porque navega; el guard de cambios sin guardar lo intercepta igual que a cualquier otro enlace. */}
           <IconLinkButton
             href="/admin/posts"
             label="Volver a Artículos"
@@ -550,8 +417,7 @@ export default function PostEditor({
           <h1 className="cq-title truncate">
             {initial.id ? "Editar artículo" : "Nuevo artículo"}
           </h1>
-          {/* El identificador del artículo, si ya existe. Es lo que se pega en
-              un mensaje para señalar de cuál se está hablando. */}
+          {/* El id del artículo, para pegar en un mensaje al señalar de cuál se está hablando. */}
           {initial.id && <Ident chip>#{initial.id}</Ident>}
         </div>
         <SaveButtons
@@ -559,10 +425,7 @@ export default function PostEditor({
           publishLabel={publishLabel}
           publishPendingLabel={isScheduled ? "Programando…" : "Publicando…"}
         />
-        {/* El diálogo dice lo que va a pasar de verdad. Programar no saca nada a
-            la web ahora mismo, así que no puede pedir la misma confirmación que
-            publicar — confirmar algo que no es lo que ocurre es cómo se entrena
-            a la gente a confirmar sin leer. */}
+        {/* El diálogo distingue programar de publicar: pedir la misma confirmación para algo que no ocurre enseña a confirmar sin leer. */}
         <ConfirmDialog
           open={confirmingPublish}
           onClose={() => setConfirmingPublish(false)}
@@ -589,16 +452,7 @@ export default function PostEditor({
         </div>
       )}
 
-      {/* Borrador recuperado.
-          -----------------------------------------------------------------
-          Se OFRECE, no se aplica solo. Aplicar sin preguntar sería pisar con
-          una copia local lo que quizá otra persona guardó bien en el medio, y
-          además dejaría a alguien mirando un texto que no escribió en esta
-          sesión sin entender de dónde salió.
-
-          Las dos salidas pesan distinto a propósito: restaurar es la acción
-          principal (es lo que vino a buscar quien perdió la pestaña) y
-          descartar es un botón discreto, porque es irreversible. */}
+      {/* El borrador recuperado se OFRECE, no se aplica solo: aplicarlo sin preguntar pisaría lo que otra persona pudo haber guardado en el medio. Restaurar es la acción principal; descartar es discreto porque es irreversible. */}
       {localDraft.recovered && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-[var(--p-radius-sm)] border border-dashed border-[var(--p-line)] bg-[var(--p-surface-sunken)] px-4 py-3">
           <div className="min-w-0">
@@ -683,8 +537,7 @@ export default function PostEditor({
           <input type="hidden" name="excerpt" value={excerpt} />
         </div>
 
-        {/* La portada se recorta a 16/9 por diseño, así que sus dimensiones
-            reales no cambian nada: solo se guarda la URL. */}
+        {/* La portada se recorta a 16/9 por diseño: sus dimensiones reales no importan, solo se guarda la URL. */}
         <ImageUploadField
           label="Portada"
           value={coverImageUrl}
@@ -718,8 +571,7 @@ export default function PostEditor({
 
         <label className="block">
           <span className="cq-label">Idioma</span>
-          {/* Un artículo vive en un idioma; el listado público filtra por acá.
-              No es una traducción de otro artículo. */}
+          {/* Un artículo vive en un idioma (el listado público filtra por acá); no es traducción de otro artículo. */}
           <select
             name="locale"
             value={locale}
@@ -731,22 +583,7 @@ export default function PostEditor({
           </select>
         </label>
 
-        {/* Fecha de publicación.
-            -----------------------------------------------------------------
-            La condición «publicado Y su fecha ya llegó» existía en el listado
-            público y en la página del artículo desde el principio, pero era
-            letra muerta: las acciones siempre escribían la hora actual, así que
-            nunca había una fecha futura que filtrar. Este campo es lo que la
-            enciende.
-
-            Con una fecha futura el artículo queda PROGRAMADO — el estado sigue
-            siendo "publicado" y lo que lo mantiene fuera del blog es la fecha.
-            No hay un cuarto estado en la base a propósito: un estado guardado
-            que depende del reloj hay que ir a corregirlo cuando el reloj pasa,
-            y ese es el trabajo de fondo que nadie recuerda escribir.
-
-            `datetime-local` es el control nativo: calendario, teclado y
-            lectores de pantalla ya funcionan sin escribir una línea. */}
+        {/* Con fecha futura el artículo queda PROGRAMADO sin un cuarto estado en la base: sigue "publicado" y la fecha es lo único que lo mantiene fuera del blog, evitando un job de fondo que corrija el estado cuando pasa el reloj. */}
         <label className="block lg:col-span-2">
           <span className="cq-label">Fecha de publicación</span>
           <input
@@ -763,17 +600,7 @@ export default function PostEditor({
           </span>
         </label>
 
-        {/* El SEO va PLEGADO y aparte.
-
-            Estaba suelto en la misma grilla que Título, Portada y Categoría, o
-            sea que dos campos opcionales que la mayoría de las veces se dejan
-            vacíos pesaban lo mismo que los obligatorios. Lo único que los
-            distinguía era la palabra "(opcional)" dentro del rótulo.
-
-            `<details>` y no una pestaña ni un acordeón propio: es un control
-            nativo, funciona sin JavaScript, el navegador ya lo hace accesible
-            con teclado, y el buscador del navegador (Ctrl+F) encuentra lo que
-            hay adentro y lo abre solo. */}
+        {/* El SEO va plegado en <details> (nativo, sin JS, accesible por teclado, y Ctrl+F lo abre solo) para que dos campos opcionales no pesen igual que los obligatorios. */}
         <details className="cq-details lg:col-span-2">
           <summary className="cq-details-summary">
             <span className="cq-section-title">Metadatos para buscadores</span>
@@ -819,21 +646,7 @@ export default function PostEditor({
             selectedId={selectedId}
             onSelect={setSelectedId}
             onMove={(from, to) => setBlocks((current) => moveBlock(current, from, to))}
-            /* Borrar un bloque es reversible.
-
-               Era la acción más destructiva del panel y la única sin ninguna
-               protección: un clic en la papelera y listo. Borrar un bloque de
-               COLUMNAS se llevaba además todos sus hijos, o sea dos o tres
-               bloques con su contenido, en silencio.
-
-               La protección estaba invertida: borrar una categoría —que se
-               vuelve a crear en diez segundos— pedía confirmación y daba cinco
-               segundos para deshacer, y borrar media hora de escritura no pedía
-               nada.
-
-               Acá el deshacer es real y no cuesta nada: el artículo todavía no
-               se guardó, así que restaurar es devolver el arreglo anterior. No
-               hay servidor de por medio. */
+            // Borrar un bloque es reversible sin costo (el artículo no se guardó aún, restaurar solo devuelve el array anterior); antes era la única acción destructiva sin ninguna protección, y borrar columnas se llevaba a sus hijos en silencio.
             onRemove={(id) => {
               const previous = blocks;
               const removed = findBlock(blocks, id);
@@ -843,8 +656,7 @@ export default function PostEditor({
               setSelectedId((current) => (current === id ? null : current));
 
               const label = removed ? TYPE_LABEL[removed.type] : "Bloque";
-              /* El aviso dice CUÁNTO se llevó puesto cuando son columnas: "se
-                 eliminó Columnas" esconde que adentro había cuatro bloques. */
+              // El aviso dice cuántos bloques hijos se llevó puesto una columna al borrarse; "se eliminó Columnas" a secas lo escondía.
               const children =
                 removed?.type === "columns"
                   ? removed.columns.reduce((total, column) => total + column.length, 0)
@@ -880,8 +692,7 @@ export default function PostEditor({
           />
         </section>
 
-        {/* Barra superior + barra de guardado + aire. Se compone de los mismos
-            tokens que las dos barras que tiene encima. */}
+        {/* Usa los mismos tokens de espaciado que las dos barras de arriba (topbar + barra de guardado). */}
         <aside className="lg:sticky lg:top-[calc(var(--p-space-7)*2+var(--p-space-4))] lg:self-start">
           <div className="cq-section pb-5">
             <div className="cq-section-head">
@@ -889,8 +700,7 @@ export default function PostEditor({
             </div>
             {selected ? (
               <div className="grid gap-4">
-                {/* El destino del bloque, arriba de sus opciones: mover es una
-                    decisión sobre DÓNDE va, y va antes que cómo se ve. */}
+                {/* Mover va antes que las opciones de estilo: es una decisión sobre dónde, no sobre cómo se ve. */}
                 <MoveBlockControl
                   block={selected}
                   blocks={blocks}
@@ -928,12 +738,7 @@ export default function PostEditor({
                   }}
                 />
 
-                {/* La previa del bloque va ARRIBA de sus controles, no abajo
-                    (PERS-5). Un control y su efecto tienen que estar a la vista
-                    a la vez: la previa fiel ya existía, pero al final del
-                    formulario, y cambiar la alineación de un título obligaba a
-                    bajar dos pantallas para ver qué había pasado. Arriba, el
-                    ojo cae primero en el resultado y después en las perillas. */}
+                {/* La previa va arriba de sus controles (PERS-5): antes estaba al final del formulario y cambiar una alineación obligaba a bajar dos pantallas para verlo. */}
                 <BlockPreview block={selected} />
 
                 <BlockProperties
@@ -945,12 +750,10 @@ export default function PostEditor({
                 />
               </div>
             ) : (
-              /* El vacío del panel de propiedades dice qué hacer, no que no hay
-                 nada: "seleccioná un bloque" es la instrucción, y el recuadro
-                 punteado muestra dónde van a aparecer sus opciones. */
+              // El estado vacío dice qué hacer ("seleccioná un bloque"), no que no hay nada.
               <div className="cq-ghost px-4 py-8 text-center">
                 <p className="cq-body text-[var(--p-ink)]">Ningún bloque seleccionado</p>
-                <p className="cq-meta mt-1">Tocá un bloque del lienzo para ver sus opciones acá.</p>
+                <p className="cq-meta mt-1">Toca un bloque del lienzo para ver sus opciones acá.</p>
               </div>
             )}
           </div>
@@ -959,24 +762,20 @@ export default function PostEditor({
         </aside>
       </div>
 
-      {/* Vista previa con el MISMO renderer del blog público (PERS-5): lo que
-          se ve acá es literalmente lo que se va a publicar, no una maqueta. */}
+      {/* Usa el mismo renderer del blog público (PERS-5): esto es literalmente lo que se va a publicar, no una maqueta. */}
       <section className="cq-section mt-8">
         <div className="cq-section-head">
           <h2 className="cq-section-title">Vista previa</h2>
         </div>
         <div className="mx-auto max-w-[44rem] pb-8">
           {blocks.length > 0 ? (
-            /* `preview`: los bloques de imagen sin subir dibujan su marco en
-               vez de desaparecer. Sin esto, agregar una imagen y venir a ver
-               cómo queda la página no mostraba NADA —ni el hueco—, así que no
-               había forma de juzgar el ritmo antes de subir el archivo. */
+            // preview: los bloques de imagen sin subir dibujan su marco en vez de desaparecer, para poder juzgar el ritmo antes de subir el archivo.
             <BlockRenderer blocks={blocks} preview />
           ) : (
             <div className="cq-ghost px-4 py-10 text-center">
               <p className="cq-body text-[var(--p-ink)]">Todavía no hay nada que previsualizar</p>
               <p className="cq-meta mt-1">
-                Agregá un bloque desde la paleta y aparece acá tal como se va a publicar.
+                Agrega un bloque desde la paleta y aparece acá tal como se va a publicar.
               </p>
             </div>
           )}

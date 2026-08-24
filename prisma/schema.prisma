@@ -84,7 +84,14 @@ model Template {
   author    AdminUser @relation(fields: [authorId], references: [id])
 }
 
-/// Intentos fallidos de login, para frenar la fuerza bruta contra /admin/login.
+/// Ledger genérico de contadores por CLAVE OPACA, para frenar fuerza bruta en
+/// cualquier endpoint público que la necesite. Nació sólo para /admin/login,
+/// pero el nombre y la forma ya no son de ahí: /admin/reset-password reusa la
+/// misma tabla con sus propias claves (prefijo "resetreq:"/"resetverify:", en
+/// vez de "ip:"/"email:" a secas) para no montar una tabla idéntica al lado.
+/// La POLÍTICA —umbrales, escalera— vive aparte por feature (loginPolicy.ts,
+/// resetPolicy.ts): esta tabla no sabe ni le importa de qué feature es cada
+/// fila, sólo cuenta.
 ///
 /// Vive en la base y no en memoria del proceso a propósito. En un despliegue
 /// serverless cada instancia tiene su propia memoria: un contador local se
@@ -96,8 +103,8 @@ model Template {
 /// probó qué, sólo el contador vigente. Así la tabla no crece con el ataque —
 /// que sería regalarle al atacante una forma de llenarnos la base.
 model LoginAttempt {
-  /// "ip:1.2.3.4" o "email:alguien@dominio.com". Dos espacios de nombres en la
-  /// misma tabla porque la política es idéntica; sólo cambian los umbrales.
+  /// "ip:1.2.3.4", "email:alguien@dominio.com", "resetreq:ip:...", etc. — el
+  /// prefijo de feature evita que dos features cuenten sobre la misma fila.
   key           String    @id
   failures      Int       @default(0)
   lastFailureAt DateTime  @default(now())
@@ -108,13 +115,66 @@ model LoginAttempt {
   @@index([lastFailureAt])
 }
 
+/// Token de un solo uso para "olvidé mi contraseña". El código NUNCA se
+/// guarda en claro ni con un hash simple — ver codeHash.
+model PasswordResetToken {
+  id      Int       @id @default(autoincrement())
+  adminId Int
+  admin   AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  /// HMAC-SHA256 del código con AUTH_SECRET (mismo patrón que
+  /// src/lib/previewToken.ts) — NO un hash simple. Un código de 6 dígitos es
+  /// sólo un millón de combinaciones; SHA-256 sin clave es reversible en
+  /// menos de un segundo si la base se filtra por cualquier vía (backup,
+  /// réplica mal configurada, etc.). El HMAC lo vuelve inútil sin el secreto
+  /// del servidor.
+  codeHash String
+
+  /// Intentos de código incorrectos contra ESTE token. Al llegar a 5 el
+  /// token queda inservible aunque no haya expirado — un código de 10
+  /// minutos sin este freno es una ventana de fuerza bruta viable. Se
+  /// incrementa con un updateMany condicionado (`attempts: { lt: 5 }`),
+  /// nunca leer-y-escribir: eso es una carrera bajo pedidos concurrentes.
+  attempts Int @default(0)
+
+  /// Cuándo se verificó el código bien por primera vez. Nulo hasta entonces.
+  ///
+  /// No hay un "sessionToken" guardado en esta fila — el handle que el
+  /// cliente lleva al paso final ("nueva contraseña") es un token
+  /// AUTOCONTENIDO, mismo patrón que src/lib/previewToken.ts:
+  /// "{id}.{verifiedAtMs}.{firma}", firmado con AUTH_SECRET. Reconstruirlo
+  /// sólo requiere este timestamp más el id de la fila — no hace falta
+  /// guardar el token en sí, ni en claro ni hasheado.
+  ///
+  /// Eso es lo que hace la verificación IDEMPOTENTE gratis: si el código
+  /// correcto se reenvía dos veces (doble clic, reintento de red), la
+  /// segunda vez `verifiedAt` ya está puesto y se recalcula la MISMA firma
+  /// —mismos id y verifiedAtMs adentro— en vez de emitir un handle nuevo que
+  /// deja huérfano al primero.
+  verifiedAt DateTime?
+
+  /// Se llena cuando la contraseña efectivamente cambia — no cuando el
+  /// código se verifica: alguien puede verificar bien y no llegar a mandar
+  /// la contraseña nueva, y el token tiene que seguir sirviendo hasta la
+  /// acción de verdad irreversible. También marca un token superado por uno
+  /// más nuevo del mismo admin.
+  consumedAt DateTime?
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
 model AdminUser {
-  id           Int        @id @default(autoincrement())
-  email        String     @unique
+  id           Int                  @id @default(autoincrement())
+  email        String               @unique
   passwordHash String
   name         String
-  createdAt    DateTime   @default(now())
-  posts        Post[]     @relation("PostAuthor")
-  editedPosts  Post[]     @relation("PostEditor")
+  createdAt    DateTime             @default(now())
+  posts        Post[]               @relation("PostAuthor")
+  editedPosts  Post[]               @relation("PostEditor")
   templates    Template[]
+  resetTokens  PasswordResetToken[]
 }

@@ -9,42 +9,14 @@ import { Input, Select, Textarea } from "@/components/admin/ui/Field";
 import { IconPlus } from "@/components/admin/ui/icons";
 import { useToast } from "@/components/admin/ui/Toast";
 
-/* «Nuevo artículo» abre el MISMO cajón que edita la ficha, no el editor entero.
-
-   Antes el botón cargaba el editor de bloques en blanco: lienzo, paleta,
-   propiedades y previa, todo montado para escribir un título. Y ahí adentro los
-   campos de la ficha son un panel lateral entre otras cinco cosas, así que el
-   primer paso real —cómo se llama, de qué categoría es, qué resume— quedaba
-   escondido detrás de la herramienta más pesada del panel.
-
-   El orden que impone este cajón es el del trabajo: primero se identifica el
-   artículo, se guarda, y RECIÉN AHÍ se abre el editor a escribirlo. De paso el
-   artículo existe en la base desde el minuto uno, así que lo que se escriba
-   después se guarda sobre una fila que ya está, no sobre un formulario que
-   puede perderse al cerrar la pestaña.
-
-   Es literalmente el formulario de PostMetaDrawer con tres diferencias, y las
-   tres salen de que acá todavía no hay artículo:
-
-   - No muestra la insignia de estado. Nace borrador; no hay estado que informar.
-   - No lleva la guarda de concurrencia (`expectedUpdatedAt`): no hay versión
-     anterior que alguien pueda estar pisando.
-   - No enlaza al editor — LLEVA al editor. Guardar es lo que crea el artículo,
-     así que la salida natural es seguir escribiéndolo.
-
-   Lo que sí comparte es lo que importa: los mismos seis campos, el mismo
-   esquema del servidor (`postMetaSchema`) y el mismo comportamiento al fallar
-   —el cajón se queda abierto con lo escrito—. */
+// "Nuevo artículo" abre el mismo cajón que edita la ficha, no el editor entero: primero se identifica y guarda el artículo (existe en la base desde el minuto uno), y recién ahí se abre el editor — a diferencia de PostMetaDrawer, no muestra estado, no lleva expectedUpdatedAt, y guardar navega al editor en vez de solo cerrar.
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
 export default function PostCreateDrawer({
   categories,
   action,
-  /* El texto del botón que lo abre. Es una cadena y no un `trigger` que
-     devuelva JSX: este componente lo montan Server Components, y una función no
-     cruza esa frontera. Con dos usos que sólo difieren en el rótulo —el
-     encabezado y el estado vacío de la tabla— una cadena alcanza. */
+  // Cadena y no un trigger JSX: lo montan Server Components y una función no cruza esa frontera.
   label = "Nuevo artículo",
 }: {
   categories: ReadonlyArray<{ id: number; name: string }>;
@@ -58,9 +30,7 @@ export default function PostCreateDrawer({
   const router = useRouter();
   const { notify } = useToast();
 
-  /* El envío se maneja a mano y no con `useActionState` + un efecto: así el
-     cajón se cierra únicamente cuando la creación funcionó, y si falla se queda
-     abierto con lo escrito. Misma decisión que los otros dos cajones del panel. */
+  // Envío manual y no useActionState + efecto: así el cajón se cierra solo si la creación funcionó, y si falla queda abierto con lo escrito.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -78,10 +48,7 @@ export default function PostCreateDrawer({
       formRef.current?.reset();
       notify({ message: "Artículo creado. Ahora el contenido.", tone: "success" });
 
-      /* Al editor del artículo recién creado. Es el paso siguiente y no una
-         cortesía: el artículo todavía no tiene ni portada ni bloques, y sin los
-         dos no se puede publicar. Dejarlo en la tabla obligaría a buscarlo
-         entre las demás filas para seguir donde se estaba. */
+      // Navega al editor del artículo recién creado: todavía no tiene portada ni bloques, y sin ellos no se puede publicar.
       if (result.id) router.push(`/admin/posts/${result.id}/edit`);
     });
   }
@@ -97,8 +64,7 @@ export default function PostCreateDrawer({
         onClose={() => setOpen(false)}
         title="Nuevo artículo"
         description="La portada y los bloques se cargan después, en el editor."
-        /* `lg`, igual que el cajón de ficha: son seis campos y dos de ellos son
-           áreas de texto de varias líneas. */
+        // "lg" igual que el cajón de ficha: seis campos, dos de ellos áreas de texto de varias líneas.
         size="lg"
         footer={
           <>

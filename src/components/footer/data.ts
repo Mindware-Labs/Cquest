@@ -35,9 +35,7 @@ export function getBaseLinks(dict: Dictionary, lang: Locale): FooterLink[] {
     .map(({ label, href }) => ({ label, href }));
   return [
     ...navLinks,
-    /* El blog no está en la navegación principal (no compite con las líneas de
-       negocio por la atención de un visitante que viene a cotizar), pero sin
-       un enlace en el pie sería inalcanzable salvo por buscador. */
+    // El blog no está en la navegación principal (no compite por atención con las líneas de negocio), pero necesita un enlace en el pie o sería inalcanzable.
     { label: t.links.blog, href: "/blog" },
     { label: t.links.terms, href: "/legal/terms" },
     { label: t.links.privacy, href: "/legal/privacy" },

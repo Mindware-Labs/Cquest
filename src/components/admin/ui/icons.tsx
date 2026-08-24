@@ -1,10 +1,6 @@
 import type { SVGProps } from "react";
 
-/* Set de iconos dibujado para el panel. No hay librería de iconos en el
-   proyecto y los glifos unicode (↑ ↓ ✕) que se usaban antes heredan la métrica
-   de la fuente: se ven de distinto tamaño y grosor según el navegador.
-   Todos comparten grilla de 24, trazo de 1.6 y remates redondeados, así que
-   cualquier combinación de iconos se lee como un solo sistema. */
+// Iconos dibujados a mano (sin librería): los glifos unicode que usaban antes heredaban la métrica de la fuente y variaban de tamaño según el navegador.
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
@@ -66,8 +62,7 @@ export function IconCategories(props: IconProps) {
   );
 }
 
-/* El hueco de una imagen que todavía no está. Marco con horizonte y sol: es la
-   convención, y en 14px una cámara o una montaña sola no se distinguen. */
+// Marco con horizonte y sol (convención de placeholder de imagen): en 14px una cámara o montaña sola no se distingue.
 export function IconImage(props: IconProps) {
   return (
     <Icon {...props}>
@@ -78,17 +73,9 @@ export function IconImage(props: IconProps) {
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Iconos de dato
-   Nombran un BLOQUE del tablero (una cifra, un gráfico, una lista), no una
-   acción. Por eso ninguno es un verbo: dicen de qué habla la caja, y el color
-   de acento hace el resto.
---------------------------------------------------------------------------- */
+// Iconos de dato: nombran un bloque del tablero, no una acción — ninguno es un verbo.
 
-/* Publicado y visible. El círculo con tilde y no un tilde suelto: el suelto ya
-   es el de "confirmar" en los botones del panel, y un mismo glifo con dos
-   significados en la misma pantalla obliga a leer el contexto para saber cuál
-   es cuál. */
+// Círculo con tilde y no un tilde suelto: el suelto ya significa "confirmar" en los botones del panel.
 export function IconCheckCircle(props: IconProps) {
   return (
     <Icon {...props}>
@@ -98,8 +85,7 @@ export function IconCheckCircle(props: IconProps) {
   );
 }
 
-/* Lo que espera: borradores, programados, ocultos. Un reloj y no una bandeja —
-   lo que tienen en común esas tres cosas es que todavía no pasaron. */
+// Reloj y no bandeja: borradores, programados y ocultos tienen en común que todavía no pasaron.
 export function IconClock(props: IconProps) {
   return (
     <Icon {...props}>
@@ -109,8 +95,7 @@ export function IconClock(props: IconProps) {
   );
 }
 
-/* El gráfico de barras del volumen: la escalera del acumulado, no tres barras
-   cualesquiera. Sube de izquierda a derecha porque el dato también. */
+// Escalera del acumulado, no tres barras cualesquiera: sube de izquierda a derecha porque el dato también.
 export function IconChartBars(props: IconProps) {
   return (
     <Icon {...props}>
@@ -120,8 +105,7 @@ export function IconChartBars(props: IconProps) {
   );
 }
 
-/* La dona del reparto por categoría. Con agujero, como la del tablero: es una
-   dona y no una torta, y el icono tiene que decir lo mismo que el gráfico. */
+// Con agujero, como el gráfico del tablero: tiene que decir "dona" y no "torta".
 export function IconChartDonut(props: IconProps) {
   return (
     <Icon {...props}>
@@ -180,9 +164,7 @@ export function IconEyeOff(props: IconProps) {
   );
 }
 
-/* Panel lateral: el rectángulo de la pantalla con la columna del riel marcada.
-   Es la convención que ya usan editores y paneles para "plegar la barra", y se
-   entiende sin leer nada — una flecha sola no dice QUÉ se pliega. */
+// Convención de editores/paneles para "plegar la barra": una flecha sola no dice qué se pliega.
 export function IconPanelLeft(props: IconProps) {
   return (
     <Icon {...props}>
@@ -229,9 +211,7 @@ export function IconArrowRight(props: IconProps) {
   );
 }
 
-/* Espejo exacto de IconArrowRight: mismo trazo, mismo largo de asta, misma
-   apertura de punta. Un icono de volver dibujado a ojo se nota al lado del de
-   avanzar. */
+// Espejo exacto de IconArrowRight: dibujado a ojo se nota al lado del de avanzar.
 export function IconArrowLeft(props: IconProps) {
   return (
     <Icon {...props}>
@@ -339,8 +319,7 @@ export function IconWarning(props: IconProps) {
   );
 }
 
-/* Reintentar. Va en el estado de error, que es el único lugar donde una acción
-   del panel se repite tal cual. */
+// Va en el estado de error, el único lugar donde una acción del panel se repite tal cual.
 export function IconRetry(props: IconProps) {
   return (
     <Icon {...props}>

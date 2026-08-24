@@ -50,26 +50,19 @@ const COPY: Record<
   },
 };
 
-/* El número de página en el <title>. Sin esto, cinco URLs distintas comparten
-   titular en los resultados de búsqueda y Google las trata como duplicados. */
+// Sin el número de página en el <title>, varias URLs comparten titular y Google las trata como duplicados.
 const PAGE_SUFFIX: Record<Locale, (page: number) => string> = {
   es: (page) => ` — Página ${page}`,
   en: (page) => ` — Page ${page}`,
 };
 
-/* 70rem y no el contenedor de 84rem del sitio: con tres columnas de tarjeta,
-   84rem deja cada portada tan ancha que el título de abajo queda flotando en
-   una línea de texto muy corta contra una imagen enorme. */
+// 70rem y no el contenedor de 84rem del sitio: con tres columnas, 84rem deja cada portada demasiado ancha para su título.
 const CONTAINER = "mx-auto w-full max-w-[70rem] px-5 sm:px-8";
 
 type Params = Promise<{ lang: string }>;
 type Search = Promise<BlogSearchParams>;
 
-/* Un artículo programado tiene que aparecer solo cuando llega su hora, y lo
-   único que decide eso es que esta página se vuelva a generar. La invalidación
-   por evento (revalidatePath al guardar) no sirve acá: nadie guarda nada en el
-   momento en que el reloj cruza la fecha. De ahí el plazo — es el retraso
-   máximo entre la hora programada y el artículo visible. */
+// revalidatePath no sirve para artículos programados (nadie guarda nada cuando el reloj cruza la fecha); este plazo es el retraso máximo hasta que aparecen.
 export const revalidate = 300;
 
 export async function generateMetadata({
@@ -84,13 +77,7 @@ export async function generateMetadata({
   const page = readPage(search, lang);
   const category = readCategory(search, lang);
 
-  /* La página 2 en adelante lleva su número en el título: sin eso, cinco URLs
-     distintas comparten titular y descripción en los resultados de búsqueda, y
-     Google las trata como duplicados entre sí.
-
-     Y el canonical apunta a la propia página, no a /blog: cada página del
-     listado tiene artículos distintos, así que colapsarlas todas en la primera
-     le estaría diciendo a Google que el resto no existe. */
+  // El canonical apunta a la propia página, no a /blog: cada página tiene artículos distintos, colapsarlas le diría a Google que el resto no existe.
   const suffix = page > 1 ? PAGE_SUFFIX[lang](page) : "";
   const canonicalPath = blogHref(lang, { category, page });
 
@@ -122,56 +109,33 @@ export default async function BlogIndexPage({
     getPublishedPosts(lang, categoria, requestedPage),
   ]);
 
-  /* El nombre de cada categoría, en el idioma de la página. El orden alfabético
-     se recalcula DESPUÉS de traducir: ordenado por el nombre en español, una
-     lista en inglés sale desordenada sin explicación visible. */
+  // El orden alfabético se recalcula DESPUÉS de traducir: si no, una lista en inglés sale desordenada.
   const categories = rawCategories
     .map((category) => localizeCategory(category, lang))
     .sort((a, b) => a.name.localeCompare(b.name, lang));
 
-  /* Un slug inexistente en la URL no es un error: se ignora y el filtro vuelve
-     a "Todos", en vez de dejar la interfaz marcando algo que no existe. */
+  // Un slug inexistente en la URL no es un error: se ignora y el filtro vuelve a "Todos".
   const activeSlug = categories.some((category) => category.slug === categoria)
     ? (categoria ?? null)
     : null;
 
   const copy = COPY[lang];
 
-  /* Con una sola categoría el filtro no filtra nada y `CategoryFilter` devuelve
-     null. La página necesita saberlo antes de renderizar: es lo que decide qué
-     elemento carga el hueco bajo el navbar. */
+  // Con una sola categoría CategoryFilter devuelve null; hace falta saberlo antes para decidir qué elemento carga el hueco bajo el navbar.
   const hasFilters = categories.length > 1;
 
-  /* El destacado sólo existe en la PRIMERA página. En la página 2 no hay un
-     "más reciente" que destacar —son los que siguen— y agrandar el primero de
-     una página cualquiera inventaría una jerarquía que no existe. */
+  // El destacado sólo existe en la primera página: agrandar el primero de cualquier otra inventaría una jerarquía que no existe.
   const isFirstPage = page === 1;
   const [featured, ...rest] = posts;
 
-  /* LA PORTADA ES UN TRÍO, no un artículo solo.
-     ---------------------------------------------------------------------------
-     El destacado al ancho completo empujaba todo lo demás fuera de la primera
-     pantalla: se entraba al blog y se veía un artículo. Ahora la primera franja
-     son tres —el más reciente en el centro, a doble tamaño, y los dos que le
-     siguen en columnas verticales a los costados—, así que se llega con tres
-     puertas a la vista en el mismo alto que antes ocupaba una.
-
-     Los laterales son los artículos 2 y 3, no una caja de "destacados
-     editoriales" ni un widget: son los que iban a encabezar la grilla de abajo,
-     puestos donde se ven. Nada de contenido inventado para llenar la maqueta.
-
-     El trío SÓLO se arma con tres o más. Con dos, una columna lateral quedaría
-     vacía y la franja saldría manca; ahí la portada va sola a ancho completo,
-     como antes. */
+  // Portada en trío (destacado + 2 laterales) para no empujar todo fuera de la primera pantalla; sólo se arma con 3+ posts, si no la columna lateral quedaría vacía.
   const hasTrio = isFirstPage && posts.length >= 3;
   const rail = hasTrio ? rest.slice(0, 2) : [];
   const grid = isFirstPage ? rest.slice(hasTrio ? 2 : 0) : posts;
 
   return (
     <BlogIndexMotion>
-      {/* El feed, declarado en el <head> de la página. Es lo que hace que el
-          botón de suscripción del navegador y los lectores de feeds lo
-          encuentren solos al pegar la URL del blog. */}
+      {/* Feed declarado en el <head>: lo encuentran solos el botón de suscripción del navegador y los lectores de feeds. */}
       <link
         rel="alternate"
         type="application/rss+xml"
@@ -179,20 +143,8 @@ export default async function BlogIndexPage({
         href={`/${lang}/blog/rss.xml`}
       />
 
-      {/* ---------- Categorías ---------- */}
-      {/* Las categorías van ARRIBA del titular, no debajo.
-          -----------------------------------------------------------------------
-          Es lo que hace compacta la primera pantalla: la barra ocupa una línea y
-          es lo único que se puede accionar en toda la cabecera, así que ponerla
-          primero deja al titular pegado a los artículos en vez de tener texto,
-          barra y otra vez contenido.
-
-          Sigue pegajosa al tope: en un índice largo, un filtro que se va con el
-          scroll obliga a volver arriba para cambiar de categoría. */}
-      {/* El hueco bajo el navbar fijo va en MARGEN y no en relleno: el relleno
-          de un elemento pegajoso viaja con él, y la barra se habría vuelto un
-          bloque de 8rem de alto al quedar fija arriba. El margen sólo afecta a
-          su posición en reposo. */}
+      {/* Categorías arriba del titular: mantiene la primera pantalla compacta. Sticky para no obligar a volver arriba a cambiar de categoría. */}
+      {/* Hueco bajo el navbar en MARGEN y no en relleno: el relleno de un elemento sticky viaja con él y lo volvería un bloque de 8rem al quedar fijo. */}
       {hasFilters && (
         <div data-blog-rail className="cq-blog-filters mt-28 sm:mt-32">
           <div className={CONTAINER}>
@@ -201,26 +153,14 @@ export default async function BlogIndexPage({
         </div>
       )}
 
-      {/* ---------- Cabecera ---------- */}
-      {/* Hoja blanca de arriba abajo: sin campo de color, sin rótulo encima del
-          titular. La palabra "Blog" ya está en la navegación y en el título de
-          la pestaña; repetirla en un eyebrow gasta la primera línea de la
-          página en decir dónde estás en vez de decir qué vas a encontrar.
-
-          Titular y bajada en DOS COLUMNAS desde escritorio. Apilados sumaban
-          nueve renglones de alto antes del primer artículo; al costado ocupan
-          los mismos renglones que el titular solo, y la bajada apoyada en la
-          base del titular se lee como su pie y no como un segundo párrafo. */}
+      {/* Sin eyebrow "Blog": ya está en la navegación y el título de la pestaña, repetirlo gastaría la primera línea. Título y bajada en dos columnas desde escritorio para no sumar renglones apilados. */}
       <header
-        /* Sin barra de categorías arriba, este encabezado es el primer elemento
-           de la página y le toca a él despejar el navbar fijo. */
+        // Sin barra de categorías, este encabezado es el primer elemento y le toca despejar el navbar fijo.
         className={`${CONTAINER} grid items-end gap-x-12 gap-y-5 pb-8 sm:pb-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] ${
           hasFilters ? "pt-10 sm:pt-12" : "pt-28 sm:pt-32"
         }`}
       >
-        {/* El ancho máximo en `ch` y no en `rem`: lo que hay que limitar es la
-            cantidad de caracteres por línea, y eso no cambia con el tamaño de
-            fuente como sí lo haría una medida fija. */}
+        {/* Ancho máximo en ch, no rem: limita caracteres por línea, algo que no cambia con el tamaño de fuente. */}
         <h1
           data-blog-title
           className="max-w-[20ch] text-balance font-heading text-[clamp(2.1rem,4.4vw,3.3rem)] font-semibold leading-[1.06] tracking-[-0.032em] text-foreground"
@@ -247,21 +187,13 @@ export default async function BlogIndexPage({
           </div>
         ) : (
           <>
-            {/* ---------- Portada ---------- */}
             {isFirstPage && featured && (
               <section aria-labelledby="blog-featured" className="pt-9 sm:pt-11">
                 <h2 id="blog-featured" className="sr-only">
                   {featured.title}
                 </h2>
 
-                {/* Las tres columnas: laterales angostos y centro al doble.
-                    `items-start` y no `stretch` — cada artículo mide lo que
-                    mide, y estirarlos a la altura del más alto abriría huecos
-                    entre el texto y el borde de las columnas cortas.
-
-                    El orden visual NO es el orden del documento en móvil: ahí
-                    todo se apila y el destacado va primero, que es el orden de
-                    importancia. En escritorio lo recoloca la grilla. */}
+                {/* items-start y no stretch: estirar cada artículo a la altura del más alto abriría huecos con el texto. En móvil se apila con el destacado primero; la grilla lo recoloca en escritorio. */}
                 {hasTrio ? (
                   <div className="grid gap-x-7 gap-y-12 lg:grid-cols-[minmax(0,0.74fr)_minmax(0,1.62fr)_minmax(0,0.74fr)] lg:items-start">
                     <div className="order-2 lg:order-1">
@@ -296,17 +228,13 @@ export default async function BlogIndexPage({
               </section>
             )}
 
-            {/* ---------- Resto ---------- */}
             {grid.length > 0 && (
               <section
                 aria-labelledby="blog-latest"
-                /* Menos aire que antes entre la portada y la grilla: con la
-                   franja de tres, el corte ya está dado por el cambio de
-                   composición y no hace falta un vacío que lo subraye. */
+                // Menos aire que antes: con la franja de tres, el corte ya lo da el cambio de composición.
                 className={isFirstPage ? "mt-16 sm:mt-20" : "pt-11 sm:pt-14"}
               >
-                {/* Un rótulo chico sobre una línea, no un titular: el que manda
-                    en esta zona es el título de cada artículo. */}
+                {/* Rótulo chico, no titular: el que manda en esta zona es el título de cada artículo. */}
                 <h2
                   id="blog-latest"
                   className="border-t border-border pt-8 text-[0.82rem] font-semibold text-[var(--text-tertiary)]"
@@ -314,10 +242,7 @@ export default async function BlogIndexPage({
                   {copy.latest}
                 </h2>
 
-                {/* El salto vertical (gap-y) es casi el doble del horizontal:
-                    con ambos iguales la grilla se lee como una cuadrícula de
-                    cajas, y con la vertical más generosa se lee como filas de
-                    artículos, que es lo que es. */}
+                {/* gap-y casi el doble del horizontal: con ambos iguales se lee como cuadrícula de cajas en vez de filas de artículos. */}
                 <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 sm:gap-y-16 lg:grid-cols-3">
                   {grid.map((post) => (
                     <PostCard

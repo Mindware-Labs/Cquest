@@ -10,27 +10,7 @@ import { StatusBadge } from "@/components/admin/ui/Surface";
 import { IconArrowRight } from "@/components/admin/ui/icons";
 import { useToast } from "@/components/admin/ui/Toast";
 
-/* Edición rápida de la FICHA de un artículo, desde la tabla.
-
-   Corregir una tilde del título obligaba a abrir el editor de bloques entero
-   —lienzo, paleta, propiedades y previa— esperar a que cargue, cambiar una
-   letra, guardar y volver. Para el trabajo diario de una redacción eso es el
-   noventa por ciento de las ediciones pasando por el diez por ciento de la
-   herramienta.
-
-   Lo que este cajón NO hace, y es lo que lo mantiene seguro:
-
-   - No toca los bloques. Ni los lee ni los reenvía. Por eso `updatePostMeta`
-     tiene su propio esquema en vez de reusar el del editor: si el formulario
-     mandara `content`, dos pestañas abiertas terminarían con la que guarda
-     segunda pisando el trabajo de la primera.
-   - No toca el estado. Publicar, ocultar y volver a borrador ya viven en la
-     propia fila con `setPostStatus`, y tener dos caminos de escritura para el
-     mismo campo es como se desincronizan. Acá el estado se MUESTRA, para saber
-     qué se está editando, y se cambia donde siempre.
-   - No toca la portada. Subir una imagen necesita el editor.
-
-   Para todo lo demás está el enlace al editor, dentro del propio cajón. */
+// Edición rápida de la FICHA desde la tabla, sin abrir el editor de bloques. NO toca bloques, estado ni portada — `updatePostMeta` tiene su propio esquema para no pisar el contenido de otra pestaña abierta.
 
 type Action = (state: PostActionState, formData: FormData) => Promise<PostActionState>;
 
@@ -44,9 +24,7 @@ export type PostMeta = {
   seoTitle: string;
   seoDescription: string;
   status: string;
-  /* Guarda de concurrencia: el servidor compara esta marca con la que hay en la
-     base antes de escribir. Si no coincide, alguien guardó mientras el cajón
-     estaba abierto y el envío se rechaza con un mensaje en vez de pisarlo. */
+  // Guarda de concurrencia: si no coincide con la base al guardar, alguien editó mientras el cajón estaba abierto y el envío se rechaza.
   updatedAtIso: string;
 };
 
@@ -68,11 +46,7 @@ export default function PostMetaDrawer({
   const formRef = useRef<HTMLFormElement>(null);
   const { notify } = useToast();
 
-  /* El envío se maneja a mano en vez de con `useActionState` + un efecto que
-     mire el resultado: así el cajón se cierra únicamente cuando el guardado
-     funcionó, y si falla se queda abierto con lo escrito. Cerrar y perder lo
-     tipeado es la forma más rápida de que alguien abandone el formulario. Es la
-     misma decisión que toma el cajón de categorías. */
+  // Envío manual (no `useActionState`) para que el cajón se cierre sólo si el guardado funcionó; si falla, queda abierto con lo escrito.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -97,18 +71,14 @@ export default function PostMetaDrawer({
       onClose={onClose}
       title="Editar ficha"
       description="Los bloques del artículo se editan en el editor."
-      /* `lg`: son ocho campos, y dos de ellos son áreas de texto de varias
-         líneas. A 26rem el extracto entra en una caja de tres renglones y no se
-         puede juzgar lo que se escribió. */
+      // `lg`: ocho campos incluyendo dos textareas; a 26rem el extracto no se alcanza a leer en su caja.
       size="lg"
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
-          {/* El botón vive en el pie pero envía el formulario del cuerpo: los
-              une el atributo `form`, que es lo que permite tener el control de
-              guardar siempre a la vista aunque haya que desplazarse. */}
+          {/* Botón en el pie, unido al form del cuerpo por el atributo `form`: así queda siempre a la vista aunque haya que desplazarse. */}
           <Button type="submit" form="post-meta" variant="solid" disabled={isPending}>
             {isPending ? "Guardando…" : "Guardar cambios"}
           </Button>
@@ -119,10 +89,7 @@ export default function PostMetaDrawer({
         <input type="hidden" name="id" value={post.id} />
         <input type="hidden" name="expectedUpdatedAt" value={post.updatedAtIso} />
 
-        {/* El estado, de sólo lectura y arriba de todo: es el contexto de lo que
-            se está por editar —no es lo mismo corregir el título de un borrador
-            que el de algo que ya está publicado y cacheado— pero se cambia desde
-            la fila, que es donde esa acción ya vivía. */}
+        {/* De sólo lectura: da contexto de lo que se edita, pero el estado se cambia desde la fila, donde esa acción ya vivía. */}
         <p className="mb-4 flex items-center gap-2">
           <StatusBadge status={post.status} />
         </p>
@@ -136,8 +103,7 @@ export default function PostMetaDrawer({
               required
               maxLength={120}
               defaultValue={post.title}
-              /* El primer campo toma el foco al abrir. Sin esto el foco arranca
-                 en el cajón y hay que tabular hasta acá. */
+              // El primer campo toma el foco al abrir; sin esto hay que tabular hasta acá.
               autoFocus
               error={error ?? undefined}
             />
@@ -206,8 +172,7 @@ export default function PostMetaDrawer({
           <p className="cq-meta">
             Los bloques, la portada y el estado de publicación se editan en el editor completo.
           </p>
-          {/* Enlace y no botón: lleva a otra pantalla, así que se puede abrir en
-              una pestaña nueva y el botón de atrás hace lo que se espera. */}
+          {/* Enlace y no botón: lleva a otra pantalla, así se puede abrir en pestaña nueva y el botón de atrás funciona como se espera. */}
           <Link
             href={`/admin/posts/${post.id}/edit`}
             className="cq-link cq-body mt-2 inline-flex items-center gap-2"

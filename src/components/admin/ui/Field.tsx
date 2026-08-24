@@ -2,23 +2,13 @@ import type { ComponentProps, ReactNode } from "react";
 import clsx from "clsx";
 import { IconCheck } from "./icons";
 
-/* Campos del panel.
-
-   Regla del archivo: la etiqueta y el control se emiten JUNTOS. Un componente
-   que sólo dibuja el <input> y deja la etiqueta a cargo de cada vista es cómo
-   se llega a un formulario con tres campos etiquetados y uno con un
-   placeholder haciendo de etiqueta — que además desaparece al escribir, justo
-   cuando hace falta recordar qué se estaba llenando.
-
-   Por eso `label` es obligatorio en todos. Si de verdad no debe verse, se pasa
-   `hideLabel` y sigue existiendo para el lector de pantalla. */
+// Regla del archivo: label y control se emiten juntos y label es obligatorio (usar hideLabel si no debe verse), para no terminar con un placeholder haciendo de etiqueta.
 
 type FieldShell = {
   id: string;
   label: string;
   hideLabel?: boolean;
-  /* Texto de ayuda estable. Se conecta por aria-describedby, así que el lector
-     de pantalla lo anuncia al enfocar y no queda como un gris decorativo. */
+  // Se conecta por aria-describedby, así que el lector de pantalla lo anuncia al enfocar.
   hint?: string;
   error?: string;
   className?: string;
@@ -44,8 +34,7 @@ function Shell({
           {hint}
         </p>
       )}
-      {/* El error reemplaza a la ayuda en vez de sumarse: dos líneas de texto
-          bajo un campo roto obligan a leer cuál de las dos es la que importa. */}
+      {/* El error reemplaza a la ayuda en vez de sumarse, para no dejar dos líneas bajo el campo. */}
       {error && (
         <p id={`${id}-error`} role="alert" className="cq-meta mt-1.5 text-[var(--p-danger)]">
           {error}
@@ -117,10 +106,7 @@ export function Select({
 }: FieldShell & Omit<ComponentProps<"select">, "id" | "className">) {
   return (
     <Shell id={id} label={label} hideLabel={hideLabel} hint={hint} error={error} className={className}>
-      {/* Select NATIVO y no una lista desplegable propia. En un teléfono el
-          nativo abre la rueda del sistema, se maneja con el teclado sin una
-          línea de JavaScript y no se sale de la pantalla. Un reemplazo hecho a
-          mano cuesta trescientas líneas para perder las tres cosas. */}
+      {/* Select nativo y no una lista desplegable propia: en el teléfono abre la rueda del sistema, sin JS y sin salirse de la pantalla. */}
       <select
         id={id}
         aria-invalid={error ? true : undefined}
@@ -134,9 +120,7 @@ export function Select({
   );
 }
 
-/* La casilla lleva su etiqueta AL LADO y no encima: es el único control donde
-   la etiqueta también es la superficie de clic, y ponerla arriba desperdicia
-   la mitad del área táctil. */
+// La etiqueta va al lado y no encima: acá también es superficie de clic, y ponerla arriba desperdicia área táctil.
 export function Checkbox({
   id,
   label,
@@ -175,10 +159,7 @@ export function Checkbox({
   );
 }
 
-/* Campo de búsqueda con el icono adentro. Se exporta aparte porque la caja
-   cambia (relativa, con relleno a la izquierda) y no es una prop más del
-   Input: un `withIcon` opcional termina usado en la mitad de los formularios
-   por costumbre y no por necesidad. */
+// Se exporta aparte de Input (y no como prop withIcon) para que ese opcional no termine usado por costumbre en la mitad de los formularios.
 export function SearchField({
   id,
   label,

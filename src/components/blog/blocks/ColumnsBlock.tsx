@@ -11,19 +11,14 @@ const COLUMN_COUNT = {
   3: "md:grid-cols-2 lg:grid-cols-3",
 } as const;
 
-/* Switch propio en vez de reusar BlockRenderer: las columnas admiten solo los
-   5 bloques simples que declara columnSimpleBlockSchema, y este switch es lo
-   que hace que esa restricción sea visible en el código y no solo en Zod.
-   De paso evita el import circular con BlockRenderer. */
+// Switch propio en vez de reusar BlockRenderer: las columnas admiten solo los 5 bloques de columnSimpleBlockSchema, y esto evita el import circular con BlockRenderer.
 function ColumnBlock({ block, preview }: { block: ColumnSimpleBlock; preview: boolean }) {
   switch (block.type) {
     case "heading":
       return <HeadingBlock block={block} />;
     case "paragraph":
       return <ParagraphBlock block={block} />;
-    /* El único de los cinco que cambia en previa. La bandera baja igual por el
-       switch entero para que agregar un bloque con medios a las columnas no se
-       olvide de pasarla. */
+    // Único de los cinco que cambia en previa; la bandera baja por todo el switch para no olvidarla si se agrega otro bloque con medios.
     case "image":
       return <ImageBlock block={block} preview={preview} />;
     case "list":

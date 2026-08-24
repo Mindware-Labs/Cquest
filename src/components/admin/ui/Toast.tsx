@@ -14,28 +14,17 @@ import {
 import { IconClose } from "./icons";
 import { IconButton } from "./Button";
 
-/* Avisos del panel.
-
-   Existe por una razón concreta y no por completar el catálogo: sin un aviso,
-   una acción que sale bien no tiene confirmación —la fila cambia y listo— y una
-   que ofrece deshacer no tiene dónde ofrecerlo.
-
-   Sin librería. Un sistema de avisos son una lista, un temporizador y una
-   región `aria-live`; traer una dependencia de 12 kB para eso paga peso por
-   código que igual habría que envolver para que respete los tokens. */
+// Sin librería a propósito: un sistema de avisos es una lista, un temporizador y una región `aria-live` — no vale una dependencia de 12kB para eso.
 
 export type ToastTone = "info" | "success" | "danger";
 
 export type ToastInput = {
   message: string;
   tone?: ToastTone;
-  /* Duración en milisegundos. Si el aviso lleva una acción, ESTE es el tiempo
-     real que tiene la persona para usarla: la barra de abajo lo dibuja. */
+  // Si el aviso lleva una acción, este es el tiempo real que tiene la persona para usarla; la barra de abajo lo dibuja.
   durationMs?: number;
   action?: { label: string; onClick: () => void };
-  /* Se ejecuta cuando el aviso se va sin que nadie haya tocado la acción. Es
-     lo que convierte "deshacer" en algo honesto: la operación destructiva se
-     dispara acá, al vencer el plazo, y no antes. */
+  // Se ejecuta cuando el aviso se va sin que nadie tocó la acción: la operación destructiva se dispara acá, al vencer el plazo, no antes.
   onExpire?: () => void;
 };
 
@@ -59,14 +48,7 @@ const DEFAULT_MS = 5000;
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(1);
-  /* Se anota si la acción se usó, para NO llamar a onExpire después. Sin esto,
-     deshacer y dejar vencer harían las dos cosas.
-
-     Se expone como dos funciones y no como el Set en crudo: leer `.current` de
-     un ref mientras se renderiza es justamente lo que React desaconseja —el
-     valor no participa del render y hacerlo pasar por ahí lleva a componentes
-     que no se actualizan cuando deberían. Dentro de una función, en cambio, se
-     lee recién cuando se la llama, que es siempre después del render. */
+  // Anota si la acción se usó, para NO llamar a onExpire después. Se expone como funciones (no el Set crudo) porque leer `.current` durante el render es lo que React desaconseja.
   const resolved = useRef(new Set<number>());
 
   const markResolved = useCallback((id: number) => {
@@ -91,15 +73,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      {/* La región vive fuera del árbol de contenido y es `polite`: un aviso de
-          "guardado" no debe interrumpir lo que el lector de pantalla esté
-          diciendo en ese momento. */}
-      {/* `aria-live` va acá y no en cada aviso: la región tiene que existir en
-          el árbol ANTES de que aparezca el contenido, o el lector de pantalla
-          no observa el cambio. Un `role="region"` a secas —lo que había— no
-          anuncia nada, y toda la ventana de "Deshacer" de cada borrado del
-          panel era silenciosa. `atomic=false` para que se lea el aviso nuevo y
-          no la pila entera cada vez. */}
+      {/* `aria-live="polite"` vive en el contenedor y no en cada aviso: tiene que existir en el árbol ANTES del contenido o el lector de pantalla no observa el cambio. `atomic=false` para leer sólo el aviso nuevo, no toda la pila. */}
       <div
         role="region"
         aria-label="Avisos"
@@ -135,9 +109,7 @@ function ToastCard({
   const duration = toast.durationMs ?? DEFAULT_MS;
   const { id, onExpire } = toast;
 
-  /* El temporizador se monta una vez y no se reinicia con cada render: si
-      dependiera del objeto `toast` entero, cualquier render del padre volvería
-      a darle cinco segundos y el aviso no se iría nunca. */
+  // No depende del objeto `toast` entero: si lo hiciera, cualquier render del padre reiniciaría el plazo y el aviso no se iría nunca.
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isResolved(id)) onExpire?.();
@@ -168,8 +140,7 @@ function ToastCard({
           data-variant="outline"
           data-size="sm"
           onClick={() => {
-            /* Se marca ANTES de ejecutar: si la acción lanza, el vencimiento
-               tampoco debe dispararse. */
+            // Se marca ANTES de ejecutar: si la acción lanza, el vencimiento tampoco debe dispararse.
             markResolved(id);
             toast.action?.onClick();
             onDismiss(id);
@@ -185,18 +156,13 @@ function ToastCard({
         icon={<IconClose size={13} />}
         className="shrink-0"
         onClick={() => {
-          /* Cerrar a mano NO cancela la operación pendiente: quien cierra el
-             aviso está diciendo "ya lo vi", no "deshacé". Para deshacer está el
-             botón de al lado. Se consulta ANTES de descartar, porque descartar
-             limpia la marca. */
+          // Cerrar a mano NO cancela la operación pendiente ("ya lo vi", no "deshacé"); se consulta ANTES de descartar porque descartar limpia la marca.
           if (!isResolved(id)) onExpire?.();
           onDismiss(id);
         }}
       />
 
-      {/* La barra de tiempo. En un aviso con "deshacer" no es decoración: es la
-          única forma de saber cuánto queda antes de que la acción sea
-          definitiva. Por eso sigue viva con movimiento reducido. */}
+      {/* No es decoración: en un aviso con "deshacer" es la única forma de saber cuánto queda antes de que la acción sea definitiva. */}
       <span aria-hidden="true" className="cq-toast-timer" style={{ background: accent }} />
     </div>
   );

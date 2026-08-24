@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { blockArraySchema, collectImageUrls, extractText, type Block } from "./blocks";
 
-/* `blockArraySchema` es donde converge todo el módulo: el editor, el renderer
-   público y el guardado validan contra él. Si afloja, se rompen los tres a la
-   vez y de formas distintas. */
+// blockArraySchema es donde converge todo el módulo: editor, renderer público y guardado validan contra él. Si afloja, se rompen los tres a la vez.
 
 function paragraph(text: string, id = "p1"): Block {
   return { id, type: "paragraph", text, variant: "body", align: "left", spacingTop: "md", spacingBottom: "md" };
@@ -32,29 +30,24 @@ describe("blockArraySchema", () => {
       { id: "h1", type: "heading", text: "Título" },
     ]);
     expect(result.success).toBe(true);
-    /* Sin esto, un bloque guardado por una versión anterior del editor —o por
-       una plantilla escrita a mano— llegaría al renderer sin `level` y sin
-       `spacing`, y el renderer no tiene de dónde sacarlos. */
+    // Sin esto, un bloque guardado por una versión anterior del editor —o una plantilla escrita a mano— llegaría al renderer sin level ni spacing.
     expect(result.data?.[0]).toMatchObject({ level: "h2", spacingTop: "md", spacingBottom: "md" });
   });
 
   it("rechaza una imagen SUBIDA sin texto alternativo", () => {
-    /* RNF-5. El panel promete que sin texto alternativo el artículo no se
-       guarda, y esta regla es lo único que sostiene esa promesa. */
+    // RNF-5: el panel promete que sin texto alternativo el artículo no se guarda, y esta regla es lo único que sostiene esa promesa.
     const result = blockArraySchema.safeParse([image({ alt: "" })]);
     expect(result.success).toBe(false);
   });
 
   it("acepta una imagen todavía SIN subir, para no romper el borrador", () => {
-    /* Una imagen recién agregada no tiene archivo ni descripción. Exigirle alt
-       ahí haría imposible guardar un borrador a medio escribir. */
+    // Una imagen recién agregada no tiene archivo ni descripción; exigirle alt ahí haría imposible guardar un borrador a medio escribir.
     const result = blockArraySchema.safeParse([image({ src: "", alt: "" })]);
     expect(result.success).toBe(true);
   });
 
   it("exige texto alternativo también dentro de una columna", () => {
-    /* El caso que un `.refine()` sobre el bloque suelto no cubriría: la
-       validación tiene que recorrer el árbol, no la lista de primer nivel. */
+    // El caso que un .refine() sobre el bloque suelto no cubriría: la validación tiene que recorrer el árbol, no la lista de primer nivel.
     const result = blockArraySchema.safeParse([
       {
         id: "cols",
@@ -67,8 +60,7 @@ describe("blockArraySchema", () => {
   });
 
   it("rechaza una imagen que no salió de nuestra propia subida", () => {
-    /* Una URL externa en un bloque de imagen es contenido de terceros servido
-       bajo nuestro dominio, y next/image ni siquiera la optimizaría. */
+    // Una URL externa en un bloque de imagen es contenido de terceros servido bajo nuestro dominio, y next/image ni siquiera la optimizaría.
     const result = blockArraySchema.safeParse([image({ src: "https://ejemplo.com/foto.jpg" })]);
     expect(result.success).toBe(false);
   });
@@ -83,8 +75,7 @@ describe("blockArraySchema", () => {
 
 describe("collectImageUrls", () => {
   it("junta las imágenes sueltas, las de galería y las anidadas en columnas", () => {
-    /* Si esto se olvida de una rama, esa imagen se borra del store creyendo que
-       nadie la referencia — y queda rota en un artículo publicado. */
+    // Si esto se olvida de una rama, esa imagen se borra del store creyendo que nadie la referencia y queda rota en un artículo publicado.
     const blocks = blockArraySchema.parse([
       image({ id: "a", src: "/api/images/posts/a.jpg" }),
       {
@@ -132,8 +123,7 @@ describe("extractText", () => {
   });
 
   it("deja fuera lo que no se lee corrido", () => {
-    /* El texto de un botón no es prosa: contarlo infla el tiempo de lectura y
-       ensucia la descripción del feed. */
+    // El texto de un botón no es prosa: contarlo infla el tiempo de lectura y ensucia la descripción del feed.
     const blocks = blockArraySchema.parse([
       paragraph("El cuerpo"),
       { id: "c", type: "cta", heading: "Titular", buttonLabel: "Solicitar cotización", href: "/quote" },

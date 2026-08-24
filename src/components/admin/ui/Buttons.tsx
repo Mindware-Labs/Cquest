@@ -5,23 +5,9 @@ import { useFormStatus } from "react-dom";
 import { IconSpinner, IconTrash } from "./icons";
 import type { ButtonVariant, ButtonSize } from "./Button";
 
-/* Los botones atados a un <form>. Viven aparte de Button.tsx porque dependen de
-   `useFormStatus`, que sólo funciona dentro del formulario que envía — y eso
-   los obliga a ser componentes de cliente. Un botón común no tiene por qué
-   pagar ese costo.
+// Aparte de Button.tsx porque useFormStatus solo funciona dentro del <form> que envía, obligando a ser componente de cliente; variantes y tamaños se importan de Button.tsx en vez de redeclararse para no tener dos vocabularios del mismo botón.
 
-   Las variantes y los tamaños se IMPORTAN de Button.tsx, no se redeclaran. Este
-   archivo tenía su propia unión con siete variantes y tres tamaños contra las
-   cuatro y dos del otro: dos vocabularios para el mismo botón, y el que
-   escribía uno no se enteraba de que el otro existía. Los alias viejos
-   (`primary`, `secondary`, `quiet`) se fueron con su CSS — el único que
-   quedaba escribiéndolos era el botón a mano del login, que ahora usa el
-   sistema. Los `"primary"`/`"secondary"` del editor de bloques son otra cosa:
-   estilos de botón del SITIO PÚBLICO, no variantes de `cq-btn`. */
-
-/* Un botón de envío que se apaga y se explica mientras la acción corre. El
-   `useFormStatus` solo funciona dentro del <form> que envía, así que esto vive
-   siempre como hijo del formulario, nunca como su hermano. */
+// useFormStatus solo funciona dentro del <form> que envía, así que esto vive siempre como hijo del formulario, nunca como su hermano.
 export function SubmitButton({
   children,
   pendingLabel,
@@ -58,11 +44,7 @@ export function SubmitButton({
   );
 }
 
-/* Reemplaza al `window.confirm` nativo. El diálogo del navegador saca al admin
-   de la página, no se puede diseñar y en algunos navegadores se puede silenciar
-   — es decir, el paso de seguridad puede desaparecer sin aviso.
-   Acá el primer clic arma el botón y el segundo borra; se desarma solo a los
-   4 segundos o cuando el foco se va, así que no queda cargado por olvido. */
+// Reemplaza a window.confirm, que en algunos navegadores se puede silenciar (el paso de seguridad desaparecería sin aviso). Primer clic arma, segundo borra; se desarma solo a los 4s o al perder el foco.
 export function ConfirmSubmit({
   children,
   confirmLabel,
@@ -94,10 +76,7 @@ export function ConfirmSubmit({
 
   return (
     <>
-      {/* El anuncio vive en un nodo aparte y no en el botón. `aria-live` sobre
-          un control interactivo lo convierte en su propia región viva: se
-          relee en cada re-render, no sólo cuando cambia el texto. Acá se
-          anuncia el armado una vez y nada más. */}
+      {/* El anuncio vive en un nodo aparte y no en el botón: aria-live sobre un control interactivo se relee en cada re-render, no solo cuando cambia el texto. */}
       <span aria-live="polite" className="sr-only">
         {armed ? confirmLabel : ""}
       </span>

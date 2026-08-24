@@ -1,17 +1,7 @@
 import type { CSSProperties } from "react";
 import clsx from "clsx";
 
-/* Esqueletos de carga.
-
-   La regla que gobierna todo el archivo: un esqueleto tiene que tener la MISMA
-   caja que el contenido que reemplaza. Si la fila real mide 36px y el esqueleto
-   30px, al llegar los datos la página salta — y ese salto es peor que no haber
-   mostrado nada, porque llega justo cuando el ojo ya se apoyó en algo.
-
-   Por eso cada pieza copia las alturas y el relleno de su equivalente en
-   Surface.tsx, y ninguna inventa una forma propia. Esqueletos y no un spinner:
-   el esqueleto ya dibuja la forma de lo que viene; un spinner informa que algo
-   pasa y después reacomoda la página entera. */
+// Cada esqueleto copia la caja exacta (altura/relleno) de su equivalente real en Surface.tsx: si no coincide, la página salta al llegar los datos.
 
 export function SkeletonLine({
   width = "100%",
@@ -56,9 +46,7 @@ export function SkeletonStatCard() {
   );
 }
 
-/* Espeja la fila de datos. El ancho del título varía por índice a propósito: un
-   bloque de filas idénticas se lee como una trama de fondo, no como contenido
-   que está por llegar. */
+// El ancho del título varía por índice a propósito: filas idénticas se leen como fondo, no como contenido por llegar.
 export function SkeletonRow({ index = 0 }: { index?: number }) {
   const widths = ["58%", "44%", "67%", "38%", "51%"];
 
@@ -84,15 +72,7 @@ export function SkeletonRows({ count = 6 }: { count?: number }) {
   );
 }
 
-/* Espeja la TABLA de artículos, que no es una lista de filas planas.
-
-   `SkeletonRows` dibujaba `<li>` de 36px sin encabezado, y la tabla real tiene
-   un `<thead>` pegado y filas de unos 52px —miniatura de 32px más dos líneas de
-   texto—. Sobre diez filas eso es un salto de más de 150px justo cuando el ojo
-   ya se apoyó en algo, y en la pantalla más visitada del panel.
-
-   Es un `<div>` y no una `<table>`: no hay datos que anunciar, y una tabla vacía
-   con `aria-hidden` en el medio de un árbol es más ruido que ayuda. */
+// `SkeletonRows` (filas de 36px sin encabezado) no encaja con la tabla real (~52px con thead); es un `<div>` y no `<table>` porque no hay datos que anunciar.
 export function SkeletonTable({ count = 10 }: { count?: number }) {
   const widths = ["58%", "44%", "67%", "38%", "51%"];
 
@@ -132,19 +112,9 @@ export function SkeletonTable({ count = 10 }: { count?: number }) {
   );
 }
 
-/* Espeja el encabezado de ModulePage: la acción sola contra el margen derecho.
-
-   Las dos barras de título se fueron con el `<h1>` visible, que ahora es
-   `sr-only` porque la miga de la barra superior ya nombra el módulo. Reservar
-   espacio para un texto que no va a llegar nunca es el mismo salto que el
-   esqueleto existe para evitar, sólo que al revés.
-
-   El radio es el de un CONTROL —el botón que reemplaza— y no `4px` escrito a
-   mano: dibujaba una caja de esquinas más duras que el botón que llegaba. */
+// El `<h1>` es `sr-only` (la miga ya nombra el módulo), así que no se reserva espacio para un título que no llega. El radio es el de un CONTROL, no un valor fijo, para no dibujar esquinas más duras que el botón real.
 export function SkeletonPageHeader({ withAction = true }: { withAction?: boolean }) {
-  /* Sin acción no hay franja, igual que en `ModulePage`: el módulo que no pasa
-     `actions` no dibuja encabezado, así que reservarle 16px acá dejaba un hueco
-     que al cargar se cerraba de golpe y subía la página entera. */
+  // Sin acción no hay franja, igual que en `ModulePage`: reservar espacio acá dejaba un hueco que al cargar se cerraba de golpe.
   if (!withAction) return null;
 
   return (
@@ -160,14 +130,7 @@ export function SkeletonPageHeader({ withAction = true }: { withAction?: boolean
   );
 }
 
-/* `SkeletonCard` se fue con su único consumidor. Espejaba la grilla de tarjetas
-   de Plantillas, que ahora es una lista: un esqueleto sin contenido al que
-   espejar no es una pieza disponible, es una segunda forma de dibujar la misma
-   pantalla esperando que alguien la use y quede distinta de la real. */
-
-/* El esqueleto es puramente visual —de ahí los `aria-hidden` de arriba—, así
-   que la carga se anuncia una sola vez acá en lugar de que un lector de
-   pantalla recorra veinte cajas vacías. */
+// El esqueleto es puramente visual (de ahí los `aria-hidden` de arriba); la carga se anuncia una sola vez acá en vez de que el lector de pantalla recorra veinte cajas vacías.
 export function LoadingAnnouncement({ children = "Cargando" }: { children?: string }) {
   return (
     <p role="status" className="sr-only">

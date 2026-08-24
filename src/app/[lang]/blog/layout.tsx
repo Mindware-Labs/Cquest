@@ -1,12 +1,6 @@
 import Navbar from "@/components/Navbar";
 
-/* El blog no tenía layout propio y por lo tanto tampoco navegación: se entraba a
-   un artículo y no había forma de volver al sitio. Usa el mismo Navbar que legal,
-   services y team — no una barra distinta para esta sección.
-
-   La superficie blanca vive acá y no en cada página: así el índice y el artículo
-   comparten fondo sin repetirlo, y `flex-1` la estira hasta el footer para que no
-   quede una franja del crema del sitio entre el último artículo y el pie. */
+// Antes el blog no tenía layout propio ni navegación para volver al sitio. La superficie blanca vive acá (no en cada página) y flex-1 la estira hasta el footer para que no quede franja del crema del sitio.
 export default function BlogLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>

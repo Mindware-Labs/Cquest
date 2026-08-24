@@ -1,22 +1,12 @@
 import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
 
-/* El store de Blob es privado — esta Function es la única pieza con el
-   token, y retransmite el archivo al navegador. A propósito sin auth aquí:
-   una portada de artículo es contenido público, es el endpoint de SUBIDA
-   (/api/admin/upload) el que necesita sesión, no el de lectura. */
+// Sin auth a propósito: una portada es contenido público; es /api/admin/upload el que necesita sesión, no la lectura.
 export async function GET(_request: Request, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const pathname = path.join("/");
 
-  /* La ruta acota lo que puede servir a la carpeta donde escribe blob.ts.
-     Sin esto es un lector genérico del store privado entero: hoy ahí sólo hay
-     portadas de artículos, pero el día que se guarde cualquier otra cosa
-     —adjuntos de una postulación, un export— quedaría publicada por una ruta
-     que ya está en producción y que nadie recordaría revisar.
-
-     Se comprueba sobre el pathname UNIDO y no sobre los segmentos sueltos: es
-     la cadena que efectivamente se le pasa a `get()`. */
+  // Acota a la carpeta donde escribe blob.ts; sin esto sería un lector genérico del store privado si algún día se guarda ahí algo no público. Se comprueba sobre el pathname UNIDO, la cadena que realmente recibe get().
   if (!pathname.startsWith("posts/") || pathname.includes("..")) {
     return NextResponse.json({ error: "Imagen no encontrada." }, { status: 404 });
   }
@@ -26,16 +16,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
     return NextResponse.json({ error: "Imagen no encontrada." }, { status: 404 });
   }
 
-  /* next/image ahora consume esta ruta: pide el original una vez, genera las
-     variantes AVIF/WebP y las cachea. Si el Content-Type no llegara correcto,
-     el optimizador rechazaría el archivo y la imagen no se mostraría — de ahí
-     que blob.ts lo fije explícitamente al subir. */
-
+  // next/image consume esta ruta y rechaza el archivo si Content-Type no llega correcto; por eso blob.ts lo fija explícitamente al subir.
   return new Response(result.stream, {
     headers: {
       "Content-Type": result.blob.contentType,
-      /* El nombre del archivo ya lleva timestamp + sufijo aleatorio de Blob:
-         nunca se reescribe, así que cachear "para siempre" es seguro. */
+      // El nombre ya lleva timestamp + sufijo aleatorio de Blob y nunca se reescribe: cachear "para siempre" es seguro.
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
