@@ -1,0 +1,198 @@
+/* ============================================================================
+   LOGIN — vocabulario propio
+   ============================================================================
+
+   admin.css es el "libro mayor" del panel: filete en vez de sombra, radio
+   grande en las superficies, ninguna caja flotando sin motivo. Esta pantalla
+   ya rompía esa regla a propósito —es la única con sombra, ver el comentario
+   en page.tsx— porque es la ÚNICA que flota de verdad, antes de que exista
+   sesión y sin nada de cromo del panel alrededor.
+
+   Esta hoja extiende esa excepción al resto de la forma: sin filete, esquina
+   recta de 2px —el mismo radio que `.cq-rect-cta` del sitio público, citado a
+   propósito— y sombra con el color de marca en vez de tinta neutra. Es la
+   puerta de entrada al panel, y tiene que anunciar la marca antes que la
+   herramienta interna.
+
+   Se importa SOLO desde login/page.tsx. No define un token nuevo en
+   panel-tokens.css porque no es vocabulario del panel: es la cita puntual de
+   otro sistema en la única pantalla que los toca a los dos.
+
+   Todos los selectores son COMPUESTOS (`.cq-btn.cq-login-submit`, nunca
+   `.cq-login-submit` solo): tienen que ganarle a admin.css por especificidad,
+   no por orden de import — dos hojas sueltas no tienen un orden de carga
+   garantizado entre desarrollo y build. */
+
+.cq-login-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Resplandor de marca. Dos manchas —celeste y petróleo, las mismas dos puntas
+   del degradado que ya usa la barra de progreso del sitio público— grandes,
+   desenfocadas y casi transparentes. Sólo dicen "hay marca detrás de esto":
+   nunca compiten con la tarjeta, que sigue siendo lo único nítido en pantalla. */
+.cq-login-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.cq-login-glow::before,
+.cq-login-glow::after {
+  content: "";
+  position: absolute;
+  width: 46rem;
+  height: 46rem;
+  border-radius: 50%;
+  filter: blur(96px);
+  opacity: 0.14;
+}
+
+.cq-login-glow::before {
+  top: -18rem;
+  left: -14rem;
+  background: var(--brand-celeste);
+}
+
+.cq-login-glow::after {
+  bottom: -20rem;
+  right: -16rem;
+  background: var(--brand-petroleo);
+}
+
+/* Respiración lenta y sutil. Sólo opacidad y escala —nada que dispare layout—
+   y apagada por completo si el sistema pide menos movimiento: es fondo, no
+   información, así que no tiene nada que decir bajo `reduced-motion`. */
+@media (prefers-reduced-motion: no-preference) {
+  .cq-login-glow::before,
+  .cq-login-glow::after {
+    animation: cq-login-breathe 11s var(--p-ease-soft) infinite alternate;
+  }
+
+  .cq-login-glow::after {
+    animation-delay: -5.5s;
+  }
+}
+
+@keyframes cq-login-breathe {
+  from {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.22;
+    transform: scale(1.08);
+  }
+}
+
+/* La tarjeta. Blanco puro —igual que `.cq-overlay`, para que la marca de éxito
+   (LoginSuccessMark) siga tapando exactamente el mismo color— pero sin filete:
+   lo que la separa del fondo es la sombra y el halo de arriba, no una línea.
+
+   Sin `overflow: hidden`: el halo de `::before` vive a propósito FUERA de la
+   caja, y recortarlo ahí sería recortar el efecto entero. Nada más adentro se
+   sale de esta esquina de 2px, así que no hace falta contener nada. */
+.cq-login-card {
+  position: relative;
+  isolation: isolate;
+  background: var(--p-surface);
+  border-radius: 2px;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--p-ink) 10%, transparent),
+    0 30px 60px -28px color-mix(in srgb, var(--brand-petroleo) 40%, transparent),
+    0 14px 30px -20px color-mix(in srgb, var(--brand-celeste) 32%, transparent);
+}
+
+/* El halo. No un galón pintado en el borde — luz posada arriba de la tarjeta,
+   como si cayera desde afuera del encuadre. Un núcleo casi blanco que se
+   apaga en celeste y se disuelve en transparente, muy desenfocado: nunca se
+   ve el óvalo, sólo el resplandor. Vive centrado y angosto, la escala mínima
+   para seguir leyéndose como marca sin volverse un elemento más de la
+   composición.
+
+   `pointer-events: none` porque se recuesta sobre el padding superior de la
+   tarjeta — no tiene que interceptar nada de lo que hay debajo. */
+.cq-login-card::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 56%;
+  height: 4.5rem;
+  transform: translate(-50%, -72%);
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, white 65%, var(--brand-celeste)) 0%,
+    color-mix(in srgb, var(--brand-celeste) 32%, transparent) 48%,
+    transparent 75%
+  );
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+/* Campo. Mismo comportamiento que `.cq-input` —hundido, foco, autofill,
+   inválido—, sólo se le corrige la esquina y se le sube el alto al piso de
+   44px que ya usa el botón: con el campo en 32px al lado de un botón `lg` la
+   fila se leía en dos tamaños distintos. */
+.cq-input.cq-login-input {
+  height: var(--p-control-h-lg);
+  border-radius: 2px;
+  font-size: var(--p-body-size);
+}
+
+/* Botón. Mismos estados —foco, press, disabled— que `.cq-btn`; se le corrige
+   la esquina, se le saca el filete transparente y se le suma el lenguaje del
+   CTA público: versalitas con tracking y un brillo diagonal al apuntar,
+   calcado de `.cq-rect-cta` en QuestCta.tsx. */
+.cq-btn.cq-login-submit {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 10px -2px color-mix(in srgb, var(--brand-celeste) 45%, transparent);
+  transition:
+    background-color var(--p-t-micro) var(--p-ease-soft),
+    box-shadow var(--p-t-base) var(--p-ease-soft);
+}
+
+.cq-btn.cq-login-submit:hover:not(:disabled) {
+  box-shadow: 0 20px 36px -14px color-mix(in srgb, var(--brand-celeste) 55%, transparent);
+}
+
+/* El brillo barre en diagonal al apuntar, igual que QuestCta. Vive en
+   `::after` y el contenido del botón se envuelve en un <span> con z-index
+   propio (ver SubmitButton en LoginForm.tsx): sin eso el barrido pasa POR
+   ENCIMA del texto en vez de detrás. */
+.cq-btn.cq-login-submit::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: -60%;
+  width: 40%;
+  transform: skewX(-15deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, white 55%, transparent),
+    transparent
+  );
+  transition: transform 700ms var(--p-ease-soft);
+  pointer-events: none;
+}
+
+.cq-btn.cq-login-submit:hover:not(:disabled)::after {
+  transform: translateX(330%) skewX(-15deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-btn.cq-login-submit::after {
+    display: none;
+  }
+}

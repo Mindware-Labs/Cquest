@@ -29,16 +29,19 @@ function SubmitButton({ succeeded }: { succeeded: boolean }) {
       /* Sigue deshabilitado después del éxito: la navegación tarda unos
          milisegundos y en esa ventana el botón todavía acepta clics. */
       disabled={pending || succeeded}
-      /* El sistema, no un botón a mano. Traía `data-variant="secondary"` —un
-         alias muerto— más un radio, un alto y un tamaño de fuente propios, y
-         era la única cosa del panel que definía su propia caja. `lg` existe
-         justamente para esto: la acción única de una pantalla enfocada. */
+      /* El sistema, no un botón a mano — `data-variant`/`data-size` siguen
+         gobernando color, alto y estados. `cq-login-submit` (login.css) sólo
+         le corrige la esquina y le suma el lenguaje del CTA público. */
       data-variant="solid"
       data-size="lg"
-      className="cq-btn mt-6 w-full"
+      className="cq-btn cq-login-submit mt-6 w-full"
     >
-      {pending && <IconSpinner size={16} />}
-      {pending ? "Entrando…" : "Entrar"}
+      {/* z-index propio: el brillo diagonal de `.cq-login-submit::after` tiene
+          que barrer DETRÁS del texto, no encima. */}
+      <span className="relative z-10 inline-flex items-center gap-2">
+        {pending && <IconSpinner size={16} />}
+        {pending ? "Entrando…" : "Entrar"}
+      </span>
     </button>
   );
 }
@@ -200,7 +203,7 @@ export default function LoginForm({
             defaultValue={state.email ?? ""}
             onChange={dismiss}
             aria-invalid={showError || undefined}
-            className="cq-input cq-field"
+            className="cq-input cq-field cq-login-input"
           />
         </div>
       </div>
@@ -227,7 +230,7 @@ export default function LoginForm({
             onChange={dismiss}
             aria-invalid={showError || undefined}
             aria-describedby={capsOn ? "password-caps" : undefined}
-            className={`cq-input cq-field pr-11 ${revealed ? "" : "cq-input-mask"}`}
+            className={`cq-input cq-field cq-login-input pr-11 ${revealed ? "" : "cq-input-mask"}`}
           />
           {/* Ver la contraseña que uno escribió no es un lujo: en un teclado de
               teléfono es la diferencia entre entrar y reintentar tres veces. */}
@@ -236,7 +239,7 @@ export default function LoginForm({
             onClick={() => setRevealed((current) => !current)}
             aria-label={revealed ? "Ocultar contraseña" : "Mostrar contraseña"}
             aria-pressed={revealed}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[var(--p-radius-sm)] text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[2px] text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
           >
             {revealed ? <IconEyeOff size={17} /> : <IconEye size={17} />}
           </button>
