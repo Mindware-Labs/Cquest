@@ -1,6 +1,6 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,15 @@ import {
   IconSpinner,
   IconWarning,
 } from "@/components/admin/ui/icons";
+
+/* Alto al que se encoge el marco cuando el login sale bien: el suficiente
+   para el icono (56px + su halo) más el titular y la leyenda, con aire
+   alrededor — no el mínimo posible. Sin esto, la tarjeta se queda con el alto
+   de un formulario completo y el check queda flotando solo en medio de un
+   hueco de sobra. Medido a mano, como CIRCLE_LENGTH en LoginSuccessMark: es
+   contenido fijo (dos frases cortas, un icono de tamaño fijo), no algo que
+   valga la pena medir en frío antes de animar. */
+const SUCCESS_FRAME_HEIGHT = 220;
 
 function SubmitButton({ succeeded }: { succeeded: boolean }) {
   /* useFormStatus lee el estado del <form> padre — por eso es un componente
@@ -48,8 +57,14 @@ function SubmitButton({ succeeded }: { succeeded: boolean }) {
 
 export default function LoginForm({
   action,
+  header,
 }: {
   action: (state: LoginActionState, formData: FormData) => Promise<LoginActionState>;
+  /* Logo, título y copy de la página (page.tsx) — el CONTENIDO sigue
+     declarado ahí. Entra como prop y no como JSX suelto al lado del form
+     porque el éxito tiene que poder desvanecerlo junto con los campos: ver
+     `contentRef` más abajo. */
+  header: ReactNode;
 }) {
   const [state, formAction] = useActionState(action, { error: null });
   const [revealed, setRevealed] = useState(false);
@@ -57,10 +72,12 @@ export default function LoginForm({
   const formRef = useRef<HTMLFormElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLSpanElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
   const circleRef = useRef<SVGCircleElement>(null);
   const checkRef = useRef<SVGPathElement>(null);
   const router = useRouter();
@@ -90,13 +107,38 @@ export default function LoginForm({
      el formulario. Por eso el push vive en `onComplete` y también en la rama de
      movimiento reducido, nunca colgado de un timeout suelto.
 
-     El halo y el icono entran juntos con el círculo —mismo punto de partida,
-     "<"— y el check lo pisa un poco al final: son tres cosas leyéndose como un
-     solo gesto, no tres pasos sueltos. El único rebote de todo el formulario
-     vive DESPUÉS de que el check cierra, en un pulso de escala sobre el icono
+     Se retira TODO, no sólo los campos. Antes `contentRef` envolvía nada más
+     que el email, la contraseña y el botón —el logo y "Entrar al panel"
+     vivían afuera, en page.tsx, y se quedaban plantados mientras el check se
+     dibujaba debajo: una marca de éxito a medio comprometer. Ahora el
+     encabezado entra como prop (ver arriba) y vive DENTRO de `contentRef`,
+     así que sale con el resto.
+
+     Sale en cascada, no como un bloque: `[data-enter]` ya marca cuatro grupos
+     —encabezado, email, contraseña, botón— porque ya los usa la entrada. Un
+     stagger corto en el mismo orden en que están en pantalla, con una leve
+     caída de escala además del desvanecido, y se lee como que la pantalla se
+     disuelve de arriba hacia abajo, no como que desaparece de golpe.
+
+     El marco se ENCOGE, no queda con el alto del formulario que ya no está.
+     `contentRef` sólo pierde opacidad —sigue ocupando su lugar—, así que sin
+     esto la tarjeta se quedaría con un hueco enorme y el check flotando solo
+     en el medio. Se fija el alto real con `gsap.set` antes de armar el
+     timeline —GSAP no anima desde "auto"— y de ahí se encoge al alto que ya
+     mide el contenido de éxito (`SUCCESS_FRAME_HEIGHT`). Arranca solapado con
+     la cola del desvanecido: para cuando el icono empieza a dibujarse el
+     marco ya terminó de asentarse, así que no se lo ve reacomodarse a medio
+     dibujar.
+
+     El halo, el icono y el círculo entran juntos —mismo punto de partida,
+     "<"— y el check lo pisa un poco al final: son cosas leyéndose como un
+     solo gesto, no pasos sueltos. El único rebote de todo el formulario vive
+     DESPUÉS de que el check cierra, en un pulso de escala sobre el icono
      —nunca sobre el panel blanco que tapa el formulario—, porque acá sí pasó
-     algo bueno. Al final la marca se retira hacia arriba, en la dirección en
-     la que la página está a punto de cambiar. */
+     algo bueno. El titular y la leyenda entran últimos, apenas el pulso se
+     asienta: son la firma del momento, no parte del dibujo. Al final la marca
+     se retira hacia arriba, en la dirección en la que la página está a punto
+     de cambiar. */
   useEffect(() => {
     if (!succeeded) return;
 
@@ -110,30 +152,49 @@ export default function LoginForm({
       return;
     }
 
+    gsap.set(frameRef.current, {
+      height: frameRef.current!.getBoundingClientRect().height,
+      overflow: "hidden",
+    });
+
     const timeline = gsap.timeline({ onComplete: go });
     timeline
-      /* Primero se retira el formulario, después se dibuja la marca. Solaparlos
-         haría que las dos cosas compitan y ninguna se lea. */
-      .to(contentRef.current, { opacity: 0, y: -6, duration: 0.22, ease: "power2.in" })
-      .to(markRef.current, { opacity: 1, duration: 0.18 }, "-=0.08")
+      /* Primero se retira todo el contenido, después se dibuja la marca.
+         Solaparlos haría que las dos cosas compitan y ninguna se lea. */
+      .to(contentRef.current!.querySelectorAll("[data-enter]"), {
+        opacity: 0,
+        y: -10,
+        scale: 0.97,
+        duration: 0.26,
+        stagger: 0.03,
+        ease: "power2.in",
+      })
+      .to(frameRef.current, { height: SUCCESS_FRAME_HEIGHT, duration: 0.42, ease: "power2.inOut" }, "-=0.14")
+      .to(markRef.current, { opacity: 1, duration: 0.16 }, "<0.06")
       .fromTo(
         glowRef.current,
         { opacity: 0, scale: 0.7 },
-        { opacity: 1, scale: 1, duration: 0.48, ease: "power2.out" },
-        "-=0.06",
+        { opacity: 1, scale: 1, duration: 0.42, ease: "power2.out" },
+        "<0.04",
       )
-      .fromTo(iconRef.current, { scale: 0.85 }, { scale: 1, duration: 0.44, ease: "power2.out" }, "<")
-      .to(circleRef.current, { strokeDashoffset: 0, duration: 0.4, ease: "power2.inOut" }, "<")
+      .fromTo(iconRef.current, { scale: 0.85 }, { scale: 1, duration: 0.4, ease: "power2.out" }, "<")
+      .to(circleRef.current, { strokeDashoffset: 0, duration: 0.36, ease: "power2.inOut" }, "<")
       /* El check arranca antes de que el círculo termine: pisarse un poco es lo
          que hace que se lea como un gesto y no como dos pasos. */
-      .to(checkRef.current, { strokeDashoffset: 0, duration: 0.2, ease: "power2.out" }, "-=0.12")
+      .to(checkRef.current, { strokeDashoffset: 0, duration: 0.18, ease: "power2.out" }, "-=0.1")
       /* El pulso. Sube y vuelve con sobrepaso corto — la única vez que este
          formulario deja que algo pase de largo su tamaño final. */
-      .to(iconRef.current, { scale: 1.08, duration: 0.12, ease: "power2.out" })
-      .to(iconRef.current, { scale: 1, duration: 0.24, ease: "back.out(2.5)" })
+      .to(iconRef.current, { scale: 1.08, duration: 0.11, ease: "power2.out" })
+      .to(iconRef.current, { scale: 1, duration: 0.2, ease: "back.out(2.5)" })
+      .fromTo(
+        textRef.current,
+        { opacity: 0, y: 5 },
+        { opacity: 1, y: 0, duration: 0.26, ease: "power2.out" },
+        "-=0.05",
+      )
       /* Retiro corto antes de navegar: se ve el resultado un instante, no sólo
          el trabajo de dibujarlo. */
-      .to(markRef.current, { opacity: 0, y: -8, duration: 0.2, ease: "power2.in" }, "+=0.12");
+      .to(markRef.current, { opacity: 0, y: -8, duration: 0.18, ease: "power2.in" }, "+=0.16");
 
     return () => {
       timeline.kill();
@@ -190,109 +251,116 @@ export default function LoginForm({
   }, [showError]);
 
   return (
-    <form ref={formRef} action={formAction} noValidate className="relative">
-      {/* La marca dibujada no la anuncia ningún lector de pantalla, así que el
-          éxito se dice acá aparte. Sin esto, para quien no ve la pantalla el
-          formulario simplemente deja de responder. */}
-      <p role="status" className="sr-only">
-        {succeeded ? "Sesión iniciada. Entrando al panel." : ""}
-      </p>
-
+    /* El ancla de posición Y el alto animable pasan a este div — antes era el
+       <form>. La marca de éxito cubre esta caja entera (`absolute inset-0`),
+       y ahora esa caja tiene que ser encabezado + formulario juntos, no sólo
+       el formulario. El anuncio para lectores de pantalla ya no es un párrafo
+       aparte: el titular de LoginSuccessMark es texto real y lo reemplaza. */
+    <div ref={frameRef} className="relative">
       <div ref={contentRef}>
-      <div data-enter>
-        <label htmlFor="email" className="cq-label">
-          Email
-        </label>
-        <div className="relative mt-1.5">
-          <IconMail size={17} className="cq-field-icon" />
-          {/* `key` atado al eco: cuando el servidor devuelve el email, el campo
-              se vuelve a montar con ese valor. Es lo que evita que un intento
-              fallido deje el email en blanco cuando React resetea el form. */}
-          <input
-            key={state.email ?? ""}
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="username"
-            required
-            autoFocus
-            placeholder="nombre@centerquest.do"
-            defaultValue={state.email ?? ""}
-            onChange={dismiss}
-            aria-invalid={showError || undefined}
-            className="cq-input cq-field cq-login-input"
-          />
-        </div>
-      </div>
+        {/* `data-enter` propio, igual que cada campo de abajo: es el cuarto
+            grupo del stagger de salida (ver el efecto de éxito). No participa
+            de la entrada escalonada —esa sigue leyendo sólo adentro de
+            `formRef`— porque el encabezado ya tiene la suya, la de
+            LoginReveal. */}
+        <div data-enter>{header}</div>
 
-      <div data-enter className="mt-4">
-        <label htmlFor="password" className="cq-label">
-          Contraseña
-        </label>
-        <div className="relative mt-1.5">
-          <IconLock size={17} className="cq-field-icon" />
-          <input
-            ref={passwordRef}
-            id="password"
-            name="password"
-            type={revealed ? "text" : "password"}
-            autoComplete="current-password"
-            required
-            /* Sólo enmascarado: revelado, un placeholder de puntos contradice
-               justo lo que el ojo acaba de prometer. */
-            placeholder={revealed ? undefined : "•••••"}
-            onKeyDown={readCapsLock}
-            onKeyUp={readCapsLock}
-            onBlur={() => setCapsOn(false)}
-            onChange={dismiss}
-            aria-invalid={showError || undefined}
-            aria-describedby={capsOn ? "password-caps" : undefined}
-            className={`cq-input cq-field cq-login-input pr-11 ${revealed ? "" : "cq-input-mask"}`}
-          />
-          {/* Ver la contraseña que uno escribió no es un lujo: en un teclado de
-              teléfono es la diferencia entre entrar y reintentar tres veces. */}
-          <button
-            type="button"
-            onClick={() => setRevealed((current) => !current)}
-            aria-label={revealed ? "Ocultar contraseña" : "Mostrar contraseña"}
-            aria-pressed={revealed}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[2px] text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
-          >
-            {revealed ? <IconEyeOff size={17} /> : <IconEye size={17} />}
-          </button>
-        </div>
+        <form ref={formRef} action={formAction} noValidate className="mt-6">
+          <div data-enter>
+            <label htmlFor="email" className="cq-label">
+              Email
+            </label>
+            <div className="relative mt-1.5">
+              <IconMail size={17} className="cq-field-icon" />
+              {/* `key` atado al eco: cuando el servidor devuelve el email, el
+                  campo se vuelve a montar con ese valor. Es lo que evita que
+                  un intento fallido deje el email en blanco cuando React
+                  resetea el form. */}
+              <input
+                key={state.email ?? ""}
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="username"
+                required
+                autoFocus
+                placeholder="nombre@centerquest.do"
+                defaultValue={state.email ?? ""}
+                onChange={dismiss}
+                aria-invalid={showError || undefined}
+                className="cq-input cq-field cq-login-input"
+              />
+            </div>
+          </div>
 
-        {/* Aviso, no error: la contraseña todavía puede ser correcta en mayúsculas.
-            Por eso es ámbar y `role="status"` — se anuncia sin interrumpir, y no
-            usa el rojo que este formulario reserva para "no entraste". */}
-        {capsOn && (
-          <p
-            id="password-caps"
-            role="status"
-            className="cq-meta mt-2 flex items-center gap-2 text-[var(--p-pending)]"
-          >
-            <IconCapsLock size={15} className="shrink-0" />
-            Bloq Mayús está activado.
-          </p>
-        )}
-      </div>
+          <div data-enter className="mt-4">
+            <label htmlFor="password" className="cq-label">
+              Contraseña
+            </label>
+            <div className="relative mt-1.5">
+              <IconLock size={17} className="cq-field-icon" />
+              <input
+                ref={passwordRef}
+                id="password"
+                name="password"
+                type={revealed ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                /* Sólo enmascarado: revelado, un placeholder de puntos
+                   contradice justo lo que el ojo acaba de prometer. */
+                placeholder={revealed ? undefined : "•••••"}
+                onKeyDown={readCapsLock}
+                onKeyUp={readCapsLock}
+                onBlur={() => setCapsOn(false)}
+                onChange={dismiss}
+                aria-invalid={showError || undefined}
+                aria-describedby={capsOn ? "password-caps" : undefined}
+                className={`cq-input cq-field cq-login-input pr-11 ${revealed ? "" : "cq-input-mask"}`}
+              />
+              {/* Ver la contraseña que uno escribió no es un lujo: en un
+                  teclado de teléfono es la diferencia entre entrar y
+                  reintentar tres veces. */}
+              <button
+                type="button"
+                onClick={() => setRevealed((current) => !current)}
+                aria-label={revealed ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-pressed={revealed}
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[2px] text-[var(--p-ink-muted)] transition-colors hover:text-[var(--p-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--p-accent)]"
+              >
+                {revealed ? <IconEyeOff size={17} /> : <IconEye size={17} />}
+              </button>
+            </div>
 
-      {/* role="alert" para que un lector de pantalla anuncie el error sin que
-          el usuario tenga que volver a recorrer el formulario buscándolo. */}
-      {showError && (
-        <p
-          ref={errorRef}
-          role="alert"
-          className="cq-alert mt-4"
-        >
-          <IconWarning size={16} className="mt-0.5 shrink-0" />
-          <span>{state.error}</span>
-        </p>
-      )}
+            {/* Aviso, no error: la contraseña todavía puede ser correcta en
+                mayúsculas. Por eso es ámbar y `role="status"` — se anuncia
+                sin interrumpir, y no usa el rojo que este formulario reserva
+                para "no entraste". */}
+            {capsOn && (
+              <p
+                id="password-caps"
+                role="status"
+                className="cq-meta mt-2 flex items-center gap-2 text-[var(--p-pending)]"
+              >
+                <IconCapsLock size={15} className="shrink-0" />
+                Bloq Mayús está activado.
+              </p>
+            )}
+          </div>
 
-        <div data-enter>
-          <SubmitButton succeeded={succeeded} />
-        </div>
+          {/* role="alert" para que un lector de pantalla anuncie el error sin
+              que el usuario tenga que volver a recorrer el formulario
+              buscándolo. */}
+          {showError && (
+            <p ref={errorRef} role="alert" className="cq-alert cq-login-alert mt-4">
+              <IconWarning size={16} className="mt-0.5 shrink-0" />
+              <span>{state.error}</span>
+            </p>
+          )}
+
+          <div data-enter>
+            <SubmitButton succeeded={succeeded} />
+          </div>
+        </form>
       </div>
 
       {succeeded && (
@@ -300,10 +368,11 @@ export default function LoginForm({
           rootRef={markRef}
           iconRef={iconRef}
           glowRef={glowRef}
+          textRef={textRef}
           circleRef={circleRef}
           checkRef={checkRef}
         />
       )}
-    </form>
+    </div>
   );
 }

@@ -166,6 +166,20 @@
   pointer-events: none;
 }
 
+/* Titular de la marca de éxito. Ni `.cq-title` (15px, pensado para el nombre
+   de una fila) ni `.cq-display` (32px, pensado para encabezar toda la
+   tarjeta cuando tenía el doble de alto): esto es un tercer momento, más
+   grande que un dato de tabla y más chico que el titular que acaba de
+   desaparecer. */
+.cq-login-success-title {
+  font-family: var(--p-font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--p-ink);
+}
+
 /* Campo. Mismo comportamiento que `.cq-input` —hundido, foco, autofill,
    inválido—, sólo se le corrige la esquina y se le sube el alto al piso de
    44px que ya usa el botón: con el campo en 32px al lado de un botón `lg` la
@@ -173,6 +187,24 @@
 .cq-input.cq-login-input {
   height: var(--p-control-h-lg);
   border-radius: 2px;
+  font-size: var(--p-body-size);
+}
+
+/* Alerta de error. `.cq-alert` en el resto del panel es una franja: filete
+   rojo a la izquierda, fondo teñido, radio sólo del lado derecho. Es la caja
+   correcta para una tabla con veinte filas alrededor, donde el aviso tiene
+   que competir por atención con el resto de la pantalla. Acá no hay nada más
+   —ES la pantalla—, así que la caja sobra: se vuelve la cosa más ruidosa de
+   una vista que hasta ahora no usó un solo filete de color sólido en reposo.
+
+   Sin caja, el aviso es el ícono y el texto, los dos en el mismo rojo, y
+   nada más. Lo que llama la atención es el movimiento de entrada —el empuje
+   lateral que ya arma LoginForm.tsx— y el color, no un bloque pintado. */
+.cq-alert.cq-login-alert {
+  padding: 0;
+  border-inline-start: none;
+  border-radius: 0;
+  background: transparent;
   font-size: var(--p-body-size);
 }
 
