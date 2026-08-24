@@ -14,6 +14,9 @@ type Action = (state: CategoryActionState, formData: FormData) => Promise<Catego
 export type CategoryCardData = {
   id: number;
   name: string;
+  /* Vacío significa "sin traducir": el blog en inglés cae al nombre de arriba.
+     Ver categoryName() en lib/categoryName.ts. */
+  nameEn: string;
   slug: string;
   postCount: number;
 };
@@ -110,6 +113,21 @@ export default function CategoryCard({
             maxLength={60}
             className="cq-input"
           />
+          {/* El nombre en inglés se edita JUNTO al español y no en otra
+              pantalla: son el mismo dato en dos idiomas, y separarlos garantiza
+              que uno de los dos quede desactualizado. Sin `required` — vacío es
+              una respuesta válida y significa "usá el de arriba". */}
+          <label htmlFor={`rename-en-${category.id}`} className="cq-label">
+            Nombre en inglés <span className="cq-meta">(opcional)</span>
+          </label>
+          <input
+            id={`rename-en-${category.id}`}
+            name="nameEn"
+            type="text"
+            defaultValue={category.nameEn}
+            maxLength={60}
+            className="cq-input"
+          />
           <div className="flex items-center gap-2">
             <Button type="submit" variant="solid" size="sm" disabled={renaming}>
               {renaming ? "Guardando…" : "Guardar"}
@@ -145,6 +163,15 @@ export default function CategoryCard({
       >
         <p className="cq-title truncate">{category.name}</p>
       </Link>
+
+      {/* El nombre en inglés, cuando existe. Es el único lugar donde se puede
+          ver de un vistazo qué categorías quedaron sin traducir — y una sin
+          traducir es una que sale en español dentro del blog en inglés. */}
+      {category.nameEn && (
+        <p className="cq-meta truncate">
+          <span className="cq-ident">EN</span> {category.nameEn}
+        </p>
+      )}
 
       {/* El slug se fue de acá también. En una tarjeta de categoría el nombre
           es el dato, y la versión en minúsculas con guiones debajo era el mismo

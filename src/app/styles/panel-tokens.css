@@ -67,6 +67,19 @@
      al 4.5:1 que pide un texto chico. Este da 5.4:1. */
   --p-success: #3f6600;
 
+  /* Pendiente: algo que va a pasar pero todavía no pasó. Hoy lo usa la insignia
+     "Programado", que es publicado con fecha futura.
+
+     Ámbar oscurecido y no el ámbar de web habitual (#f59e0b, 2.1:1 sobre
+     blanco): esto se usa como TEXTO chico, así que tiene que llegar al 4.5:1
+     igual que --p-success. Este da 4.7:1.
+
+     No reusa --p-accent aunque estén cerca en la rueda: el acento ya es
+     "Borrador", y dos estados del mismo objeto con el mismo color son dos
+     estados que no se distinguen de un vistazo, que es lo único que una
+     insignia hace. */
+  --p-warning: #8a5300;
+
   /* ---------- Serie de datos ----------
 
      Cinco colores para gráficos con más de una categoría. No son decorativos y

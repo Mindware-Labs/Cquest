@@ -44,6 +44,10 @@ export type PostMeta = {
   seoTitle: string;
   seoDescription: string;
   status: string;
+  /* Guarda de concurrencia: el servidor compara esta marca con la que hay en la
+     base antes de escribir. Si no coincide, alguien guardó mientras el cajón
+     estaba abierto y el envío se rechaza con un mensaje en vez de pisarlo. */
+  updatedAtIso: string;
 };
 
 export default function PostMetaDrawer({
@@ -113,6 +117,7 @@ export default function PostMetaDrawer({
     >
       <form id="post-meta" ref={formRef} onSubmit={handleSubmit}>
         <input type="hidden" name="id" value={post.id} />
+        <input type="hidden" name="expectedUpdatedAt" value={post.updatedAtIso} />
 
         {/* El estado, de sólo lectura y arriba de todo: es el contexto de lo que
             se está por editar —no es lo mismo corregir el título de un borrador

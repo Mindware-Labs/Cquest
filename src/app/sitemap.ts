@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import type { MetadataRoute } from "next";
 import { locales, defaultLocale } from "@/i18n/config";
-import { getPublishedPosts } from "@/lib/posts";
+import { getAllPublishedPosts } from "@/lib/posts";
 // Careers está fuera del alcance de esta entrega: la sección vive en
 // src/app/[lang]/_careers (carpeta privada, no enrutable). Descomentar este
 // import y las rutas /careers de abajo cuando se vuelva a publicar.
@@ -95,7 +95,10 @@ async function postEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const byLocale = await Promise.all(
       locales.map(async (locale) => {
-        const posts = await getPublishedPosts(locale);
+        /* Sin recorte: el listado del blog pagina, el sitemap no. Declararle a
+           Google sólo la primera página sería esconderle justo lo que el
+           sitemap existe para mostrarle. */
+        const posts = await getAllPublishedPosts(locale);
         return posts.map((post) => ({
           url: `${SITE_URL}/${locale}/blog/${post.slug}`,
           lastModified: post.updatedAt,

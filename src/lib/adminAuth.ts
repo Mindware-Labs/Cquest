@@ -1,6 +1,40 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn, signOut } from "@/auth";
+import {
+  blockedMessage,
+  checkLoginAllowed,
+  clearLoginFailures,
+  loginKeys,
+  registerLoginFailure,
+} from "@/lib/loginRateLimit";
+
+/* La IP del cliente.
+   ---------------------------------------------------------------------------
+
+   `x-forwarded-for` es una cadena de proxies: el primer valor es el cliente y
+   los siguientes son los saltos. Se toma el PRIMERO.
+
+   Ese encabezado lo puede falsificar cualquiera si la aplicación queda expuesta
+   directamente a internet — pero acá siempre hay un proxy delante (Vercel) que
+   lo reescribe con la IP real de la conexión, así que el valor es confiable.
+   Si algún día esto se sirve sin ese proxy, este freno deja de valer y hay que
+   volver acá.
+
+   Sin encabezado —desarrollo local— se usa una clave fija. Falla CERRADO a
+   propósito: en local todos comparten contador, que como mucho molesta a quien
+   está probando. Devolver "sin IP, pasá" sería un agujero que se activa solo si
+   alguien logra que el encabezado no llegue. */
+async function clientIp(): Promise<string> {
+  const store = await headers();
+  const forwarded = store.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return store.get("x-real-ip")?.trim() || "desconocida";
+}
 
 /* El email vuelve en el estado a propósito: React resetea el formulario cuando
    la acción termina, así que sin este eco un intento fallido borra el email y
@@ -31,6 +65,20 @@ export async function loginAdmin(
 
   const echo = email.trim();
 
+  /* El freno va ANTES de verificar la contraseña, no después.
+     -------------------------------------------------------------------------
+     Comprobarlo después dejaría a cada intento bloqueado pagando igual el
+     bcrypt de `verifyAdminPassword`, que es deliberadamente lento (ese es el
+     punto de bcrypt). O sea que el propio freno se convertiría en la forma más
+     barata de tumbar el servidor: mil peticiones por segundo, mil hashes, y no
+     hace falta acertar ninguna contraseña. */
+  const keys = loginKeys(await clientIp(), echo);
+
+  const gate = await checkLoginAllowed(keys);
+  if (!gate.allowed) {
+    return { error: blockedMessage(gate.retryAfterSeconds), email: echo };
+  }
+
   try {
     /* `redirect: false` a propósito. Con el redirect del servidor, un login
        correcto se lleva la página antes de que el cliente pueda decir nada, y no
@@ -43,10 +91,23 @@ export async function loginAdmin(
     /* Solo AuthError es una credencial mala. Cualquier otra cosa se relanza:
        tragarla dejaría al usuario mirando un formulario que no explica nada. */
     if (error instanceof AuthError) {
-      return { error: "Email o contraseña incorrectos.", email: echo };
+      /* El fallo se anota y, si con éste se llegó al umbral, el mensaje ya
+         avisa de la espera en vez de dejar que la persona descubra el bloqueo
+         recién en el intento siguiente. */
+      const limit = await registerLoginFailure(keys);
+      return {
+        error: limit.allowed
+          ? "Email o contraseña incorrectos."
+          : blockedMessage(limit.retryAfterSeconds),
+        email: echo,
+      };
     }
     throw error;
   }
+
+  /* Entrar bien borra la racha: alguien que se equivocó cuatro veces y acertó a
+     la quinta no arrastra el contador a su próxima sesión. */
+  await clearLoginFailures(keys);
 
   return { error: null, ok: true };
 }

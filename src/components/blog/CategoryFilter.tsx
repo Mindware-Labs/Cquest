@@ -1,5 +1,6 @@
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import type { Locale } from "@/i18n/config";
+import { blogHref } from "@/lib/blogParams";
 
 const ALL_LABEL: Record<Locale, string> = { es: "Todos", en: "All" };
 const NAV_LABEL: Record<Locale, string> = { es: "Filtrar por categoría", en: "Filter by category" };
@@ -41,7 +42,12 @@ export default function CategoryFilter({
         return (
           <LocalizedLink
             key={option.slug ?? "all"}
-            href={option.slug ? `/blog?categoria=${option.slug}` : "/blog"}
+            /* El nombre del parámetro también se traduce: `?categoria=` en una
+               URL inglesa era la única parte del sitio en inglés que seguía
+               hablando español, y en el lugar más visible que hay. Cambiar de
+               categoría vuelve a la página 1 a propósito — la página 3 de una
+               categoría no es la página 3 de otra. */
+            href={blogHref(lang, { category: option.slug })}
             aria-current={isActive ? "page" : undefined}
             className={`relative shrink-0 whitespace-nowrap py-4 text-[0.92rem] transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground ${
               isActive

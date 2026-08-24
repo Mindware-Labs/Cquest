@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCategories } from "@/lib/categories";
-import { getPostById, updatePost } from "@/lib/posts";
+import { displayStatus, getPostById, toEditorDateTime, updatePost } from "@/lib/posts";
 import { createTemplateFromBlocks } from "@/lib/templates";
 import { getTemplateChoices } from "@/lib/templateChoices";
 import { blockArraySchema } from "@/lib/blocks";
@@ -64,6 +64,15 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
            ya está publicado, que no cambia su visibilidad. Sólo el primero pide
            confirmación. */
         status: post.status,
+        /* La conversión a la zona de la operación se hace ACÁ, en el servidor.
+           En el cliente daría la zona del navegador de quien edita, y entonces
+           la hora que se ve al abrir no sería la que se guardó. */
+        publishedAt: toEditorDateTime(post.publishedAt),
+        isScheduled: displayStatus(post) === "SCHEDULED",
+        /* La guarda de concurrencia. El editor la reenvía tal cual y el servidor
+           la compara antes de escribir: si otra pestaña guardó en el medio, el
+           submit se rechaza en vez de pisar ese trabajo. */
+        updatedAt: post.updatedAt.toISOString(),
         blocks: parsed.data,
       }}
     />

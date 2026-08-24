@@ -13,6 +13,23 @@ const nameSchema = z
   .min(2, "El nombre debe tener al menos 2 caracteres.")
   .max(60, "El nombre no puede superar 60 caracteres.");
 
+/* El nombre en inglés es OPCIONAL a propósito.
+   ---------------------------------------------------------------------------
+
+   Un artículo vive en un solo idioma, pero la categoría era una fila con un
+   solo nombre: /en/blog mostraba «Operaciones» en la miga y en el filtro de un
+   artículo escrito en inglés.
+
+   Hacerlo obligatorio habría roto las categorías que ya existen y habría puesto
+   un peaje en inglés a quien sólo publica en español. Vacío significa "usá el
+   nombre en español", que es feo pero legible — ver categoryName(). */
+const nameEnSchema = z
+  .string()
+  .trim()
+  .max(60, "El nombre en inglés no puede superar 60 caracteres.")
+  .optional()
+  .transform((value) => (value && value.length > 0 ? value : null));
+
 function resolveSlug(name: string): string | null {
   const slug = slugify(name);
   return slug.length > 0 ? slug : null;
@@ -52,7 +69,7 @@ export async function getCategories() {
  *  slug filtrado puede no estar en la página que se ve, y la etiqueta terminaba
  *  mostrando el slug crudo en vez del nombre. */
 export async function getCategoryBySlug(slug: string) {
-  return prisma.category.findUnique({ where: { slug }, select: { name: true } });
+  return prisma.category.findUnique({ where: { slug }, select: { name: true, nameEn: true } });
 }
 
 export async function createCategory(
@@ -68,6 +85,11 @@ export async function createCategory(
     return { error: parsed.error.issues[0].message };
   }
 
+  const parsedNameEn = nameEnSchema.safeParse(formData.get("nameEn") ?? undefined);
+  if (!parsedNameEn.success) {
+    return { error: parsedNameEn.error.issues[0].message };
+  }
+
   const name = parsed.data;
   const slug = resolveSlug(name);
   if (!slug) {
@@ -75,7 +97,7 @@ export async function createCategory(
   }
 
   try {
-    await prisma.category.create({ data: { name, slug } });
+    await prisma.category.create({ data: { name, nameEn: parsedNameEn.data, slug } });
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       return { error: `Ya existe una categoría con el slug "${slug}".` };
@@ -105,6 +127,11 @@ export async function renameCategory(
     return { error: parsed.error.issues[0].message };
   }
 
+  const parsedNameEn = nameEnSchema.safeParse(formData.get("nameEn") ?? undefined);
+  if (!parsedNameEn.success) {
+    return { error: parsedNameEn.error.issues[0].message };
+  }
+
   const name = parsed.data;
   const slug = resolveSlug(name);
   if (!slug) {
@@ -112,7 +139,10 @@ export async function renameCategory(
   }
 
   try {
-    await prisma.category.update({ where: { id }, data: { name, slug } });
+    await prisma.category.update({
+      where: { id },
+      data: { name, nameEn: parsedNameEn.data, slug },
+    });
   } catch (error) {
     if (isUniqueConstraintError(error)) {
       return { error: `Ya existe una categoría con el slug "${slug}".` };

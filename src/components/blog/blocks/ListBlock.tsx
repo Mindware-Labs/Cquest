@@ -27,7 +27,10 @@ export default function ListBlock({ block }: { block: BlockOf<"list"> }) {
             <svg
               aria-hidden
               viewBox="0 0 20 20"
-              className="absolute left-0 top-[0.42em] h-4 w-4 text-verde"
+              /* `verde-oscuro`: el tilde es un icono que porta significado —dice
+                 "cumplido"— así que cae bajo WCAG 1.4.11, que pide 3:1 contra
+                 el fondo. El verde de marca daba 2.85:1. */
+              className="absolute left-0 top-[0.42em] h-4 w-4 text-verde-oscuro"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"

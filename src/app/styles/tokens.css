@@ -3,7 +3,25 @@
   /* Paleta institucional Center Quest (DISENIO.md) */
   --brand-celeste: #74c3d5;
   --brand-petroleo: #3f738d;
-  --brand-verde: #6aaa00; /* algo más oscuro para cumplir 3:1 sobre blanco */
+  /* El verde de marca. Se usa como CAMPO —fondos, barras, bordes de acento—,
+     nunca como texto ni como icono sobre superficie clara.
+
+     El comentario anterior decía que cumplía 3:1 sobre blanco. No es cierto:
+     medido da 2.85:1 sobre #ffffff y 2.66:1 sobre el marfil del sitio. Esa
+     afirmación sin verificar es exactamente lo que dejó pasar un botón de CTA
+     con texto blanco encima, muy por debajo del 4.5:1 que pide WCAG 1.4.3. */
+  --brand-verde: #6aaa00;
+
+  /* El mismo verde, oscurecido hasta ser legible. Mismo tono (azul en cero,
+     así que sigue siendo el amarillo-verde de la marca y no un oliva): 5.28:1
+     sobre blanco y 4.93:1 sobre el fondo del sitio.
+
+     Existe como token aparte y no reemplazando al de arriba porque son dos
+     trabajos distintos: el de marca pinta superficies, éste carga texto. Unificarlos
+     apagaría el verde en todos los campos grandes, que es donde el color de
+     marca hace su trabajo. */
+  --brand-verde-oscuro: #4a7800;
+
   --brand-gris: #d6d1ca;
 
   --background: #f8f7f4;
@@ -51,6 +69,7 @@
   --color-celeste: var(--brand-celeste);
   --color-petroleo: var(--brand-petroleo);
   --color-verde: var(--brand-verde);
+  --color-verde-oscuro: var(--brand-verde-oscuro);
   --color-gris: var(--brand-gris);
 
   --font-heading: var(--font-josefin);

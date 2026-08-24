@@ -165,7 +165,10 @@ export default function PostsTable({
         </div>
       )}
 
-      <div className="cq-table-scroll cq-scroll pb-2">
+      {/* Sólo desplazamiento HORIZONTAL, y sólo cuando las columnas no entran.
+          El vertical se fue: la tabla crece con la página y se recorre con la
+          rueda de siempre. */}
+      <div className="cq-table-scroll pb-2">
         <table className="cq-table cq-ledger">
           <caption className="sr-only">{caption ?? CAPTION}</caption>
           <thead>
@@ -246,6 +249,7 @@ export default function PostsTable({
             seoTitle: editing.seoTitle,
             seoDescription: editing.seoDescription,
             status: editing.status,
+            updatedAtIso: editing.updatedAtIso,
           }}
         />
       )}

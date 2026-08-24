@@ -66,6 +66,72 @@ export function IconCategories(props: IconProps) {
   );
 }
 
+/* El hueco de una imagen que todavía no está. Marco con horizonte y sol: es la
+   convención, y en 14px una cámara o una montaña sola no se distinguen. */
+export function IconImage(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
+      <circle cx="9" cy="10" r="1.4" />
+      <path d="m4.5 17 4.2-4.2 3.1 3.1 2.4-2.2 5.3 4.6" />
+    </Icon>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Iconos de dato
+   Nombran un BLOQUE del tablero (una cifra, un gráfico, una lista), no una
+   acción. Por eso ninguno es un verbo: dicen de qué habla la caja, y el color
+   de acento hace el resto.
+--------------------------------------------------------------------------- */
+
+/* Publicado y visible. El círculo con tilde y no un tilde suelto: el suelto ya
+   es el de "confirmar" en los botones del panel, y un mismo glifo con dos
+   significados en la misma pantalla obliga a leer el contexto para saber cuál
+   es cuál. */
+export function IconCheckCircle(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.5 12 2.4 2.4 4.6-4.8" />
+    </Icon>
+  );
+}
+
+/* Lo que espera: borradores, programados, ocultos. Un reloj y no una bandeja —
+   lo que tienen en común esas tres cosas es que todavía no pasaron. */
+export function IconClock(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 1.8" />
+    </Icon>
+  );
+}
+
+/* El gráfico de barras del volumen: la escalera del acumulado, no tres barras
+   cualesquiera. Sube de izquierda a derecha porque el dato también. */
+export function IconChartBars(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h16" />
+      <path d="M7 20v-4.5M12 20V11M17 20V6.5" />
+    </Icon>
+  );
+}
+
+/* La dona del reparto por categoría. Con agujero, como la del tablero: es una
+   dona y no una torta, y el icono tiene que decir lo mismo que el gráfico. */
+export function IconChartDonut(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="3.4" />
+      <path d="M12 3.5v5.1M18.9 16.2l-4.4-2.5" />
+    </Icon>
+  );
+}
+
 export function IconPlus(props: IconProps) {
   return (
     <Icon {...props}>

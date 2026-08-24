@@ -11,6 +11,7 @@ import ImageUploadField from "./ImageUploadField";
 import BlockCanvas from "./editor/BlockCanvas";
 import BlockPalette from "./editor/BlockPalette";
 import BlockProperties from "./editor/BlockProperties";
+import BlockPreview from "./editor/BlockPreview";
 import TemplatePicker, { type TemplateChoice } from "./editor/TemplatePicker";
 import SaveAsTemplate from "./editor/SaveAsTemplate";
 import { createBlock, createColumnBlock, type ColumnType } from "./editor/blockFactory";
@@ -30,6 +31,7 @@ import {
   updateBlock,
 } from "./editor/blockTree";
 import MoveBlockControl from "./editor/MoveBlockControl";
+import { clearNewPostDraft, useLocalDraft } from "./editor/useLocalDraft";
 import { TextAreaField, TextField } from "./editor/fields";
 import { IconArrowLeft, IconSpinner } from "./ui/icons";
 import { IconLinkButton } from "./ui/Button";
@@ -55,17 +57,52 @@ export type PostEditorInitial = {
      efectivamente saca el artículo a la web— del guardado de uno que ya está
      publicado. */
   status?: string;
+  /* La fecha de publicación tal como la espera <input type="datetime-local">
+     ("2026-09-01T08:30"), ya convertida a la zona de la operación por el Server
+     Component. No se manda un Date ni un ISO: convertir en el cliente daría la
+     zona del navegador de quien edita, y entonces la hora que se ve al abrir no
+     sería la que se guardó. */
+  publishedAt?: string;
+  /* Si esa fecha era futura EN EL SERVIDOR al renderizar. Viene calculado y no
+     se deriva en el cliente: comparar contra el reloj durante el render hace
+     que el rótulo del botón dependa de cuántas veces React dibujó. */
+  isScheduled?: boolean;
+  /* Marca de la última escritura, para la guarda de concurrencia. Se reenvía
+     tal cual y el servidor la compara: si cambió, alguien guardó en el medio y
+     este submit se rechaza en vez de pisarlo. */
+  updatedAt?: string;
+  blocks: Block[];
+};
+
+/* Lo que se compara para saber si hay cambios sin guardar, y lo que se copia a
+   la red local. Es UNA definición: antes el objeto estaba escrito dos veces
+   —una por lado de la comparación— y agregar un campo al editor y olvidarlo en
+   uno de los dos lados significaba que ese campo no marcaba el formulario como
+   sucio y se perdía sin aviso. */
+type Snapshot = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImageUrl: string;
+  coverImageAlt: string;
+  categoryId: number;
+  locale: string;
+  seoTitle: string;
+  seoDescription: string;
+  publishedAt: string;
   blocks: Block[];
 };
 
 function SaveButtons({
   onPublishIntent,
   publishLabel,
+  publishPendingLabel,
 }: {
   /* Devuelve `true` si hay que frenar y pedir confirmación. El botón no sabe
      por qué: sólo pregunta antes de enviar. */
   onPublishIntent: () => boolean;
   publishLabel: string;
+  publishPendingLabel: string;
 }) {
   const { pending } = useFormStatus();
 
@@ -99,7 +136,7 @@ function SaveButtons({
         }}
       >
         {pending ? <IconSpinner size={15} /> : null}
-        {pending ? "Publicando…" : publishLabel}
+        {pending ? publishPendingLabel : publishLabel}
       </button>
     </div>
   );
@@ -134,6 +171,7 @@ export default function PostEditor({
   const [locale, setLocale] = useState(initial.locale);
   const [seoTitle, setSeoTitle] = useState(initial.seoTitle);
   const [seoDescription, setSeoDescription] = useState(initial.seoDescription);
+  const [publishedAt, setPublishedAt] = useState(initial.publishedAt ?? "");
 
   const [blocks, setBlocks] = useState<Block[]>(initial.blocks);
   const [selectedId, setSelectedId] = useState<string | null>(initial.blocks[0]?.id ?? null);
@@ -161,6 +199,10 @@ export default function PostEditor({
      para que un segundo "Guardar" actualice en vez de crear un duplicado. */
   useEffect(() => {
     if (!initial.id && state.id) {
+      /* La copia local de "Nuevo artículo" queda huérfana en cuanto el artículo
+         tiene id. Sin esto, la próxima vez que alguien abra "Nuevo artículo" se
+         le ofrecería recuperar el artículo ANTERIOR, ya guardado. */
+      clearNewPostDraft();
       router.replace(`/admin/posts/${state.id}/edit`);
     }
   }, [state.id, initial.id, router]);
@@ -179,6 +221,11 @@ export default function PostEditor({
   const submissions = useRef(0);
   const lastNotified = useRef(0);
   const intent = useRef<"draft" | "publish">("draft");
+  /* Si la fecha era futura EN EL MOMENTO DEL ENVÍO, y no cuando llega el aviso.
+     Cuando la acción vuelve, `initial` ya trae la fecha guardada y compararla
+     contra el reloj otra vez daría el resultado correcto por casualidad — hasta
+     que alguien programe para dentro de treinta segundos. Se congela acá. */
+  const scheduledAtSubmit = useRef(false);
 
   useEffect(() => {
     if (submissions.current === 0) return;
@@ -187,7 +234,12 @@ export default function PostEditor({
 
     lastNotified.current = submissions.current;
     notify({
-      message: intent.current === "publish" ? "Artículo publicado." : "Borrador guardado.",
+      message:
+        intent.current !== "publish"
+          ? "Borrador guardado."
+          : scheduledAtSubmit.current
+            ? "Artículo programado."
+            : "Artículo publicado.",
       tone: "success",
     });
   }, [state, notify]);
@@ -203,31 +255,67 @@ export default function PostEditor({
      renderizar con los datos ya guardados y `initial` pasa a ser exactamente lo
      que hay en pantalla. O sea que el guardado limpia el estado sucio solo, sin
      que haya que acordarse de limpiarlo. */
-  const isDirty =
-    JSON.stringify({
-      title,
-      slug,
-      excerpt,
-      coverImageUrl,
-      coverImageAlt,
-      categoryId,
-      locale,
-      seoTitle,
-      seoDescription,
-      blocks,
-    }) !==
-    JSON.stringify({
-      title: initial.title,
-      slug: initial.slug,
-      excerpt: initial.excerpt,
-      coverImageUrl: initial.coverImageUrl,
-      coverImageAlt: initial.coverImageAlt,
-      categoryId: initial.categoryId ?? categories[0]?.id ?? 0,
-      locale: initial.locale,
-      seoTitle: initial.seoTitle,
-      seoDescription: initial.seoDescription,
-      blocks: initial.blocks,
-    });
+  const snapshot: Snapshot = {
+    title,
+    slug,
+    excerpt,
+    coverImageUrl,
+    coverImageAlt,
+    categoryId,
+    locale,
+    seoTitle,
+    seoDescription,
+    publishedAt,
+    blocks,
+  };
+
+  /* La misma forma, con los valores que llegaron del servidor. Se serializa una
+     sola vez y se reusa como vara para la comparación Y para la red local: son
+     literalmente la misma pregunta ("¿esto es distinto de lo guardado?"). */
+  const baseline = JSON.stringify({
+    title: initial.title,
+    slug: initial.slug,
+    excerpt: initial.excerpt,
+    coverImageUrl: initial.coverImageUrl,
+    coverImageAlt: initial.coverImageAlt,
+    categoryId: initial.categoryId ?? categories[0]?.id ?? 0,
+    locale: initial.locale,
+    seoTitle: initial.seoTitle,
+    seoDescription: initial.seoDescription,
+    publishedAt: initial.publishedAt ?? "",
+    blocks: initial.blocks,
+  } satisfies Snapshot);
+
+  const isDirty = JSON.stringify(snapshot) !== baseline;
+
+  /* La red contra lo que NO es una decisión de la persona: la pestaña que se
+     cae, el reinicio por actualización, el navegador que mata la pestaña por
+     memoria. `beforeunload` y el guard sobre los enlaces cubren el irse a
+     propósito; nada cubría lo demás. */
+  const localDraft = useLocalDraft<Snapshot>({
+    postId: initial.id,
+    snapshot,
+    isDirty,
+    baseline,
+  });
+
+  const applyRecovered = useCallback((draft: Snapshot) => {
+    setTitle(draft.title);
+    setSlug(draft.slug);
+    setExcerpt(draft.excerpt);
+    setCoverImageUrl(draft.coverImageUrl);
+    setCoverImageAlt(draft.coverImageAlt);
+    setCategoryId(draft.categoryId);
+    setLocale(draft.locale);
+    setSeoTitle(draft.seoTitle);
+    setSeoDescription(draft.seoDescription);
+    setPublishedAt(draft.publishedAt);
+    setBlocks(draft.blocks);
+    setSelectedId(draft.blocks[0]?.id ?? null);
+    /* El selector de plantillas sobra si acabamos de restaurar contenido: era
+       para empezar de cero. */
+    setShowTemplates(false);
+  }, []);
 
   /* El error se busca solo. La validación llega como una sola alerta arriba de
      un formulario de tres pantallas de alto: al enviar desde el final, el aviso
@@ -254,8 +342,33 @@ export default function PostEditor({
      como argumento es lo único que lo incluye. */
   const formRef = useRef<HTMLFormElement | null>(null);
   const [confirmingPublish, setConfirmingPublish] = useState(false);
+  /* Una fecha futura cambia lo que el botón HACE, así que tiene que cambiar lo
+     que el botón DICE. Un control rotulado "Publicar" que en realidad programa
+     para dentro de tres días es la clase de sorpresa que hace que alguien
+     apriete otra vez pensando que no funcionó.
+
+     El valor NO se deriva durante el render, y no es un capricho del linter:
+     `Date.now()` en el cuerpo de un componente devuelve algo distinto cada vez
+     que React decide volver a dibujar, así que el rótulo del botón podría
+     cambiar solo sin que nadie tocara nada. Se calcula donde el tiempo sí se
+     puede leer —el manejador del cambio, que corre una vez por interacción— y
+     arranca con lo que el servidor ya sabía al renderizar.
+
+     Es una etiqueta, no una decisión: quien decide de verdad es la consulta
+     pública, que compara contra la hora de Postgres. */
+  const [isScheduled, setIsScheduled] = useState(initial.isScheduled ?? false);
+
+  const changePublishedAt = useCallback((value: string) => {
+    setPublishedAt(value);
+    setIsScheduled(value !== "" && new Date(value).getTime() > Date.now());
+  }, []);
+
   const goingLive = initial.status !== "PUBLISHED";
-  const publishLabel = goingLive ? "Publicar" : "Guardar y publicar";
+  const publishLabel = isScheduled
+    ? "Programar"
+    : goingLive
+      ? "Publicar"
+      : "Guardar y publicar";
 
   /* El permiso para pasar de largo va en un ref y no en el estado del diálogo:
      `confirmPublish` reenvía el formulario en el mismo tick en que baja el
@@ -395,6 +508,7 @@ export default function PostEditor({
            un genérico que sirva para los dos. */
         const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
         intent.current = submitter?.value === "publish" ? "publish" : "draft";
+        scheduledAtSubmit.current = isScheduled;
         submissions.current += 1;
       }}
     >
@@ -404,6 +518,12 @@ export default function PostEditor({
       <input type="hidden" name="content" value={JSON.stringify(blocks)} />
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
       <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
+      {/* La marca de la última escritura, tal como llegó. El servidor la compara
+          antes de escribir: si otra pestaña guardó en el medio, este submit se
+          rechaza con un mensaje en vez de pisar el trabajo ajeno en silencio. */}
+      {initial.updatedAt && (
+        <input type="hidden" name="expectedUpdatedAt" value={initial.updatedAt} />
+      )}
 
       {/* La barra de guardado va PEGADA arriba, debajo de la barra del panel.
           El editor mide varias pantallas de alto: con los botones sólo en el
@@ -434,22 +554,86 @@ export default function PostEditor({
               un mensaje para señalar de cuál se está hablando. */}
           {initial.id && <Ident chip>#{initial.id}</Ident>}
         </div>
-        <SaveButtons onPublishIntent={askBeforePublish} publishLabel={publishLabel} />
+        <SaveButtons
+          onPublishIntent={askBeforePublish}
+          publishLabel={publishLabel}
+          publishPendingLabel={isScheduled ? "Programando…" : "Publicando…"}
+        />
+        {/* El diálogo dice lo que va a pasar de verdad. Programar no saca nada a
+            la web ahora mismo, así que no puede pedir la misma confirmación que
+            publicar — confirmar algo que no es lo que ocurre es cómo se entrena
+            a la gente a confirmar sin leer. */}
         <ConfirmDialog
           open={confirmingPublish}
           onClose={() => setConfirmingPublish(false)}
           onConfirm={confirmPublish}
           tone="primary"
-          confirmLabel="Publicar ahora"
+          confirmLabel={isScheduled ? "Programar" : "Publicar ahora"}
           cancelLabel="Todavía no"
-          title={`¿Publicar «${title || "este artículo"}»?`}
-          description="Queda visible en el blog público apenas se guarde. Se puede volver a borrador o esconder desde la tabla de artículos."
+          title={
+            isScheduled
+              ? `¿Programar «${title || "este artículo"}»?`
+              : `¿Publicar «${title || "este artículo"}»?`
+          }
+          description={
+            isScheduled
+              ? "No se ve en el blog hasta la fecha elegida. Hasta entonces figura como «Programado» en la tabla de artículos y se puede cambiar o cancelar."
+              : "Queda visible en el blog público apenas se guarde. Se puede volver a borrador o esconder desde la tabla de artículos."
+          }
         />
       </div>
 
       {state.error && (
         <div ref={errorRef} tabIndex={-1}>
           <Alert>{state.error}</Alert>
+        </div>
+      )}
+
+      {/* Borrador recuperado.
+          -----------------------------------------------------------------
+          Se OFRECE, no se aplica solo. Aplicar sin preguntar sería pisar con
+          una copia local lo que quizá otra persona guardó bien en el medio, y
+          además dejaría a alguien mirando un texto que no escribió en esta
+          sesión sin entender de dónde salió.
+
+          Las dos salidas pesan distinto a propósito: restaurar es la acción
+          principal (es lo que vino a buscar quien perdió la pestaña) y
+          descartar es un botón discreto, porque es irreversible. */}
+      {localDraft.recovered && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-[var(--p-radius-sm)] border border-dashed border-[var(--p-line)] bg-[var(--p-surface-sunken)] px-4 py-3">
+          <div className="min-w-0">
+            <p className="cq-body font-semibold text-[var(--p-ink)]">
+              Hay cambios sin guardar de una sesión anterior
+            </p>
+            <p className="cq-meta mt-0.5">
+              Se quedaron en este navegador. Restaurarlos reemplaza lo que se ve ahora.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="cq-btn"
+              data-variant="outline"
+              data-size="sm"
+              onClick={() => {
+                const draft = localDraft.recovered;
+                if (draft) applyRecovered(draft);
+                localDraft.discard();
+                notify({ message: "Borrador restaurado. Revisalo y guardá.", tone: "success" });
+              }}
+            >
+              Restaurar
+            </button>
+            <button
+              type="button"
+              className="cq-btn"
+              data-variant="ghost"
+              data-size="sm"
+              onClick={localDraft.discard}
+            >
+              Descartar
+            </button>
+          </div>
         </div>
       )}
 
@@ -545,6 +729,38 @@ export default function PostEditor({
             <option value="es">Español</option>
             <option value="en">English</option>
           </select>
+        </label>
+
+        {/* Fecha de publicación.
+            -----------------------------------------------------------------
+            La condición «publicado Y su fecha ya llegó» existía en el listado
+            público y en la página del artículo desde el principio, pero era
+            letra muerta: las acciones siempre escribían la hora actual, así que
+            nunca había una fecha futura que filtrar. Este campo es lo que la
+            enciende.
+
+            Con una fecha futura el artículo queda PROGRAMADO — el estado sigue
+            siendo "publicado" y lo que lo mantiene fuera del blog es la fecha.
+            No hay un cuarto estado en la base a propósito: un estado guardado
+            que depende del reloj hay que ir a corregirlo cuando el reloj pasa,
+            y ese es el trabajo de fondo que nadie recuerda escribir.
+
+            `datetime-local` es el control nativo: calendario, teclado y
+            lectores de pantalla ya funcionan sin escribir una línea. */}
+        <label className="block lg:col-span-2">
+          <span className="cq-label">Fecha de publicación</span>
+          <input
+            type="datetime-local"
+            name="publishedAt"
+            value={publishedAt}
+            onChange={(event) => changePublishedAt(event.target.value)}
+            className="cq-input mt-1.5 w-full sm:w-[16rem]"
+          />
+          <span className="cq-meta mt-1.5 block">
+            {isScheduled
+              ? `Queda programado: no se ve en el blog hasta esa fecha (hora de Santo Domingo).`
+              : "Vacío publica en el momento de guardar. Una fecha futura lo programa; la hora es la de Santo Domingo."}
+          </span>
         </label>
 
         {/* El SEO va PLEGADO y aparte.
@@ -711,6 +927,14 @@ export default function PostEditor({
                     });
                   }}
                 />
+
+                {/* La previa del bloque va ARRIBA de sus controles, no abajo
+                    (PERS-5). Un control y su efecto tienen que estar a la vista
+                    a la vez: la previa fiel ya existía, pero al final del
+                    formulario, y cambiar la alineación de un título obligaba a
+                    bajar dos pantallas para ver qué había pasado. Arriba, el
+                    ojo cae primero en el resultado y después en las perillas. */}
+                <BlockPreview block={selected} />
 
                 <BlockProperties
                 block={selected}

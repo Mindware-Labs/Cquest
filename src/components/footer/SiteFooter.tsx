@@ -177,6 +177,13 @@ export default function SiteFooter() {
               </LocalizedLink>
             ))}
           </nav>
+          {/* Sin enlace al panel, por decisión: el equipo entra escribiendo
+              /admin. El pie es superficie comercial y no tiene por qué gastar
+              una línea en una puerta que usan tres personas.
+
+              El `Disallow: /admin` de robots.ts se queda igual — no dependía de
+              que existiera este enlace, y sigue evitando que la pantalla de
+              login aparezca en una búsqueda de marca. */}
           <p className={styles.copyright}>
             © {year} Center Quest. {t.rights}
           </p>

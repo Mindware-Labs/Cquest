@@ -1,21 +1,26 @@
 import Link from "next/link";
 import {
+  ADMIN_POSTS_FILTERS,
   ADMIN_POSTS_PAGE_SIZE,
   ADMIN_POSTS_SORTS,
+  createPostMeta,
   deletePost,
+  displayStatus,
   getAdminPosts,
+  isAdminPostsFilter,
   isAdminPostsSort,
   setPostStatus,
   setPostsStatus,
   updatePostMeta,
+  type AdminPostsFilter,
   type AdminPostsSort,
 } from "@/lib/posts";
 import { getCategories, getCategoryBySlug } from "@/lib/categories";
+import { PREVIEW_PARAM, createPreviewToken } from "@/lib/previewToken";
 import {
   IconArrowLeft,
   IconArrowRight,
   IconClose,
-  IconPlus,
   IconSearch,
 } from "@/components/admin/ui/icons";
 import { LinkButton } from "@/components/admin/ui/Button";
@@ -23,6 +28,7 @@ import { SearchField } from "@/components/admin/ui/Field";
 import { ModulePage } from "@/components/admin/ui/ModulePage";
 import { EmptyState } from "@/components/admin/ui/Surface";
 import PostsTable from "./PostsTable";
+import PostCreateDrawer from "./PostCreateDrawer";
 
 /* Fecha para la tabla del admin: corta, con hora, y en la zona de la operación.
    No reusa formatPostDate() del blog público porque ahí interesa la fecha de
@@ -36,17 +42,30 @@ const EDITED_AT = new Intl.DateTimeFormat("es-DO", {
   timeZone: "America/Santo_Domingo",
 });
 
-const FILTERS = [
-  { key: "todos", label: "Todos" },
-  { key: "borrador", label: "Borradores", status: "DRAFT" },
-  { key: "publicado", label: "Publicados", status: "PUBLISHED" },
-  { key: "oculto", label: "Ocultos", status: "HIDDEN" },
-] as const;
+/* Las pestañas salen de lib/posts.ts y ya no se escriben acá.
+   -----------------------------------------------------------------------------
+   Eran dos listas paralelas —una para el rótulo y otra para el `where`— y una
+   pestaña nueva había que agregarla en los dos lados. Ahora la lista, el recorte
+   y el conteo salen de la misma definición, así que no pueden decir cosas
+   distintas.
 
-type FilterKey = (typeof FILTERS)[number]["key"];
+   Son cinco y no cuatro: «Programados» son los publicados con fecha futura, que
+   antes se contaban dentro de «Publicados» y prometían un conjunto que el
+   público no ve. */
 
-function isFilterKey(value: string | undefined): value is FilterKey {
-  return FILTERS.some((filter) => filter.key === value);
+/* El enlace de previsualización de un artículo que todavía no es público.
+   ---------------------------------------------------------------------------
+
+   Se arma en el SERVIDOR porque firmarlo necesita el secreto de sesión. Sin
+   AUTH_SECRET no se puede firmar nada, y en ese caso el botón simplemente no
+   aparece: es preferible una acción ausente a una que lleva a un 404 sin
+   explicar por qué. */
+function previewHref(id: number, locale: string, slug: string): string | null {
+  try {
+    return `/${locale}/blog/${slug}/preview?${PREVIEW_PARAM}=${createPreviewToken(id)}`;
+  } catch {
+    return null;
+  }
 }
 
 /* Un href que conserva TODO lo que ya estaba puesto. Sin esto, tocar un filtro
@@ -59,7 +78,7 @@ function buildHref({
   orden,
   pagina,
 }: {
-  estado?: FilterKey;
+  estado?: AdminPostsFilter;
   q?: string;
   categoria?: string;
   orden?: AdminPostsSort;
@@ -93,8 +112,8 @@ export default async function AdminPostsPage({
   /* Todo el recorte vive en la URL y no en estado de cliente: así una pestaña
      con "solo borradores de onboarding, ordenados por edición, página 2" se
      puede compartir, recargar y volver atrás. */
-  const active: FilterKey = isFilterKey(estado) ? estado : "todos";
-  const activeStatus = FILTERS.find((filter) => filter.key === active);
+  const active: AdminPostsFilter = isAdminPostsFilter(estado) ? estado : "todos";
+  const activeFilter = ADMIN_POSTS_FILTERS.find((filter) => filter.key === active);
   const term = q?.trim() ?? "";
   const categorySlug = categoria?.trim() || undefined;
   const sort: AdminPostsSort = isAdminPostsSort(orden) ? orden : "reciente";
@@ -103,8 +122,8 @@ export default async function AdminPostsPage({
   /* El filtrado, el orden y la página los hace la base. Antes se traía la tabla
      entera y se recortaba en memoria: con quinientos artículos eran quinientas
      filas viajando para mostrar veinticinco. */
-  const { posts, total, page, pageCount, counts } = await getAdminPosts({
-    status: activeStatus && "status" in activeStatus ? activeStatus.status : undefined,
+  const { posts, total, page, pageCount, counts, now } = await getAdminPosts({
+    filter: active,
     categorySlug,
     term: term || undefined,
     sort,
@@ -123,8 +142,7 @@ export default async function AdminPostsPage({
      que hoy no está en pantalla es justamente el caso de uso. */
   const allCategories = await getCategories();
 
-  const countFor = (filter: (typeof FILTERS)[number]) =>
-    "status" in filter ? counts[filter.status] : counts.todos;
+  const countFor = (filter: AdminPostsFilter) => counts[filter];
 
   /* Si NO hay recorte activo y aun así no hay nada, es que no existe ningún
      artículo — no que la búsqueda no encontró. Son dos vacíos distintos y se
@@ -144,29 +162,22 @@ export default async function AdminPostsPage({
          que "todo lo que se hace en esta pantalla está en la misma fila" — pero
          filtrar y buscar ALTERAN la tabla y crear no: crear se va a otra
          pantalla. La barra queda para lo que recorta lo que se está viendo. */
-      actions={
-        <LinkButton href="/admin/posts/new" variant="solid" icon={<IconPlus size={15} />}>
-          Nuevo artículo
-        </LinkButton>
-      }
+      actions={<PostCreateDrawer categories={allCategories} action={createPostMeta} />}
     >
       {/* Sin tarjeta. La tabla ES la pantalla, así que no va metida en una caja
           con filete y radio: eso la dibujaba como un bloque apoyado sobre la
           página, con el fondo asomando alrededor. Acá la barra de herramientas y
           la tabla ocupan la página entera.
 
-          `100dvh` y no `100vh`: en un teléfono la barra del navegador aparece y
-          desaparece, y `vh` mide la pantalla sin ella — la última fila quedaba
-          tapada. */}
-      {/* El tope se compone de los tokens de lo que hay ARRIBA de la tabla
-          —barra superior, encabezado del módulo, relleno del contenedor— en vez
-          de un `8rem` fijo. Con el encabezado del módulo ahora visible, esa
-          constante quedaba corta y la región desplazable se pasaba de largo,
-          así que la página entera ganaba una segunda barra de desplazamiento
-          además de la de la tabla. */}
-      <div className="cq-enter flex max-h-[calc(100dvh-var(--p-space-7)-6rem)] flex-col">
+          Y SIN altura tope. La tabla vivía dentro de una caja de `100dvh` menos
+          lo de arriba, con su propio desplazamiento: dos barras en la misma
+          pantalla —la de la página y la de la tabla— y la rueda haciendo una
+          cosa u otra según dónde estuviera el puntero. Ese tope existía para
+          que el encabezado de columnas se pegara; ahora se pega al viewport, que
+          es lo mismo con una barra menos. */}
+      <div className="cq-enter">
         <h2 className="sr-only">
-          {activeStatus ? activeStatus.label : "Artículos"} — {total}
+          {activeFilter ? activeFilter.label : "Artículos"} — {total}
         </h2>
         {/* Todo lo que altera la tabla vive CON la tabla: filtros y búsqueda en
             una sola barra pegada arriba de las columnas. Estaban repartidos
@@ -176,7 +187,7 @@ export default async function AdminPostsPage({
           {/* Pestañas con regla debajo, no botones rellenos: cuatro pastillas de
               color arriba de una tabla compiten con los datos. */}
           <nav aria-label="Filtrar por estado" className="flex flex-wrap items-center gap-1">
-            {FILTERS.map((filter) => {
+            {ADMIN_POSTS_FILTERS.map((filter) => {
               const isActive = filter.key === active;
               return (
                 <Link
@@ -195,7 +206,7 @@ export default async function AdminPostsPage({
                   className="cq-tab"
                 >
                   {filter.label}
-                  <span className="cq-tab-count">{countFor(filter)}</span>
+                  <span className="cq-tab-count">{countFor(filter.key)}</span>
                 </Link>
               );
             })}
@@ -306,10 +317,14 @@ export default async function AdminPostsPage({
           <EmptyState
             title="Todavía no hay artículos"
             hint="Un artículo se arma con bloques: título, párrafos, imágenes, tablas. Podés partir de una plantilla o desde cero."
+            /* El mismo cajón que el encabezado, con otro rótulo: dos puertas al
+               alta que abrieran cosas distintas serían dos altas. */
             action={
-              <LinkButton href="/admin/posts/new" variant="solid" icon={<IconPlus size={15} />}>
-                Escribir el primero
-              </LinkButton>
+              <PostCreateDrawer
+                categories={allCategories}
+                action={createPostMeta}
+                label="Escribir el primero"
+              />
             }
           />
         ) : total === 0 ? (
@@ -360,17 +375,35 @@ export default async function AdminPostsPage({
              que una tabla hace mejor que una lista. En pantalla angosta ahora
              se desplaza en horizontal DENTRO de su caja. */
           <PostsTable
-            caption={`Artículos ${active === "todos" ? "en todos los estados" : `— ${activeStatus?.label}`}${activeCategory ? `, en la categoría ${activeCategory}` : ""}${term ? `, filtrados por «${term}»` : ""} — página ${page} de ${pageCount}`}
+            caption={`Artículos ${active === "todos" ? "en todos los estados" : `— ${activeFilter?.label}`}${activeCategory ? `, en la categoría ${activeCategory}` : ""}${term ? `, filtrados por «${term}»` : ""} — página ${page} de ${pageCount}`}
             posts={posts.map((post) => ({
               id: post.id,
               title: post.title,
               slug: post.slug,
               coverImageUrl: post.coverImageUrl,
               coverImageAlt: post.coverImageAlt,
-              status: post.status,
+              /* El estado VISIBLE, no el de la base. Un artículo publicado con
+                 fecha futura está programado, y decir "Publicado" en la única
+                 columna que promete decir si se ve o no es mentir. */
+              status: displayStatus(post, now),
+              /* El estado real, para el interruptor de la fila: publicar/ocultar
+                 escribe en la columna `status`, que sigue teniendo tres valores. */
+              rawStatus: post.status,
+              publishedAt: post.publishedAt ? EDITED_AT.format(post.publishedAt) : null,
               locale: post.locale,
               categoryName: post.category.name,
               updatedAt: EDITED_AT.format(post.updatedAt),
+              updatedAtIso: post.updatedAt.toISOString(),
+              /* Quién guardó por última vez. "Editado hace 5 minutos" sin un
+                 nombre al lado no alcanza para saber a quién preguntarle. */
+              updatedByName: post.updatedBy?.name ?? null,
+              /* Enlace de previsualización, sólo para lo que NO es público.
+                 Para un artículo publicado ya está el enlace normal al blog, y
+                 un token ahí sería una URL con firma circulando sin motivo. */
+              previewHref:
+                displayStatus(post, now) === "PUBLISHED"
+                  ? null
+                  : previewHref(post.id, post.locale, post.slug),
               /* La ficha que edita el cajón. Sale de la MISMA consulta que ya
                  alimenta la tabla —son columnas del propio artículo—, así que
                  abrir el cajón no cuesta un viaje al servidor. */

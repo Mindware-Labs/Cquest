@@ -9,6 +9,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
   const { path } = await params;
   const pathname = path.join("/");
 
+  /* La ruta acota lo que puede servir a la carpeta donde escribe blob.ts.
+     Sin esto es un lector genérico del store privado entero: hoy ahí sólo hay
+     portadas de artículos, pero el día que se guarde cualquier otra cosa
+     —adjuntos de una postulación, un export— quedaría publicada por una ruta
+     que ya está en producción y que nadie recordaría revisar.
+
+     Se comprueba sobre el pathname UNIDO y no sobre los segmentos sueltos: es
+     la cadena que efectivamente se le pasa a `get()`. */
+  if (!pathname.startsWith("posts/") || pathname.includes("..")) {
+    return NextResponse.json({ error: "Imagen no encontrada." }, { status: 404 });
+  }
+
   const result = await get(pathname, { access: "private" });
   if (!result || result.statusCode !== 200) {
     return NextResponse.json({ error: "Imagen no encontrada." }, { status: 404 });

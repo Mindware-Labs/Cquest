@@ -27,6 +27,8 @@ export type ModuleStat = {
      cifra de arriba y el bloque que la desarrolla abajo se reconozcan como lo
      mismo. */
   accent?: "volume" | "category" | "pending" | "published";
+  /* Qué se cuenta, en un glifo. Reemplaza al punto de acento en la tarjeta. */
+  icon?: ReactNode;
 };
 
 export function ModulePage({
@@ -112,6 +114,7 @@ export function ModulePage({
                 href={stat.href}
                 delta={stat.delta}
                 accent={stat.accent}
+                icon={stat.icon}
               />
             </div>
           ))}

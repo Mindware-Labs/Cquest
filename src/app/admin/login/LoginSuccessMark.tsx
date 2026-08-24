@@ -36,12 +36,23 @@ export default function LoginSuccessMark({
       ref={rootRef}
       aria-hidden="true"
       /* Cubre el formulario con el propio color de la tarjeta en vez de
-         reemplazarlo: así la caja no cambia de alto y nada salta debajo. */
-      className="absolute inset-0 grid place-items-center bg-[var(--surface-raised)] opacity-0"
+         reemplazarlo: así la caja no cambia de alto y nada salta debajo.
+
+         Tokens del PANEL, no del sitio público. Esta pantalla ya se migró a
+         `--p-*` (ver el comentario en login/page.tsx), pero la marca de éxito
+         se quedó pintando con `--surface-raised` y `--brand-verde`, o sea con
+         la escala del otro sistema. `--p-surface` es el mismo blanco, así que
+         no cambia nada a la vista — cambia de qué sistema depende. */
+      className="absolute inset-0 grid place-items-center bg-[var(--p-surface)] opacity-0"
     >
       <svg
         viewBox="0 0 52 52"
-        className="size-14 text-[var(--brand-verde)]"
+        /* `--p-success` y no `--brand-verde`: este check porta significado —dice
+           "entraste"— así que cae bajo WCAG 1.4.11, que pide 3:1 contra el
+           fondo. El verde de marca daba 2.85:1 sobre el blanco de la tarjeta;
+           el verde del panel da 6.7:1. Y de paso es el color que el resto del
+           panel ya usa para decir "correcto". */
+        className="size-14 text-[var(--p-success)]"
         fill="none"
         stroke="currentColor"
       >

@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 import { imageSize } from "image-size";
 import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/uploadLimits";
 
@@ -75,4 +75,61 @@ export async function uploadCoverImage(file: File): Promise<UploadedImage> {
   });
 
   return { url: `/api/images/${blob.pathname}`, width, height };
+}
+
+/* ---------------------------------------------------------------------------
+   Recolección de huérfanas
+   ---------------------------------------------------------------------------
+
+   Borrar un artículo borraba la fila y dejaba sus archivos en el store para
+   siempre. Lo mismo al cambiar la portada o quitar un bloque de imagen: el
+   archivo viejo quedaba sin nadie que lo referenciara y sin forma de saber cuál
+   era. Con el tiempo eso es una factura que sólo sube.
+
+   La regla es una sola y vive del lado del que ESCRIBE: al guardar, se compara
+   el conjunto de imágenes que el artículo tenía contra el que va a tener, y lo
+   que salió se borra. Al eliminar, sale todo.
+--------------------------------------------------------------------------- */
+
+export const IMAGE_ROUTE_PREFIX = "/api/images/";
+
+/** Traduce la ruta pública que guardamos en la base al pathname del store.
+ *  Devuelve null para cualquier cosa que no sea una subida nuestra — nunca se
+ *  le pide a `del()` que borre algo cuyo origen no controlamos. */
+export function blobPathnameFromUrl(url: string): string | null {
+  if (!url.startsWith(IMAGE_ROUTE_PREFIX)) return null;
+  const pathname = url.slice(IMAGE_ROUTE_PREFIX.length);
+  /* `posts/` es el único prefijo que escribe uploadCoverImage(). Un pathname
+     con `..` o apuntando a otra carpeta no sale de acá: no se borra. */
+  if (!pathname.startsWith("posts/") || pathname.includes("..")) return null;
+  return pathname;
+}
+
+/** Borra del store las imágenes que ya nadie referencia.
+ *
+ *  Nunca lanza. Una imagen huérfana que no se pudo borrar es un costo; una
+ *  excepción acá haría fallar el guardado del artículo, que es el trabajo real.
+ *  El fallo se registra para poder barrer después. */
+export async function deleteUploads(urls: Iterable<string>): Promise<void> {
+  const pathnames = [...new Set(urls)]
+    .map(blobPathnameFromUrl)
+    .filter((pathname): pathname is string => pathname !== null);
+
+  if (pathnames.length === 0) return;
+
+  try {
+    /* Una sola llamada con el arreglo entero: `del()` acepta lote, y borrar
+       nueve imágenes de una galería de a una son nueve viajes. */
+    await del(pathnames);
+  } catch (error) {
+    console.error("No se pudieron borrar imágenes huérfanas:", pathnames, error);
+  }
+}
+
+/** Las imágenes que estaban y ya no están. Es la diferencia de dos conjuntos,
+ *  escrita acá para que las tres acciones que la necesitan (actualizar, borrar,
+ *  cambiar portada) no la vuelvan a derivar cada una a su manera. */
+export function orphanedUrls(before: Iterable<string>, after: Iterable<string>): string[] {
+  const kept = new Set(after);
+  return [...new Set(before)].filter((url) => !kept.has(url));
 }

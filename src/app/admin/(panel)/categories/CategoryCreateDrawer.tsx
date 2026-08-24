@@ -115,6 +115,24 @@ export default function CategoryCreateDrawer({
             hint="Es el nombre que se ve en el blog público, arriba del título del artículo."
             error={error ?? undefined}
           />
+          {/* El nombre en inglés, OPCIONAL.
+              ---------------------------------------------------------------
+              El blog está partido por idioma —un artículo vive en uno solo— pero
+              la categoría era una fila con un solo nombre, así que /en/blog
+              mostraba «Operaciones» en la miga y en el filtro de un artículo
+              escrito en inglés.
+
+              Opcional y no obligatorio: hacerlo obligatorio sería un peaje en
+              inglés para quien sólo publica en español. Vacío usa el nombre de
+              arriba, que es feo pero legible. */}
+          <Input
+            id="new-category-en"
+            name="nameEn"
+            label="Nombre en inglés"
+            maxLength={60}
+            placeholder="Por ejemplo: Operations"
+            hint="Opcional. Si se deja vacío, el blog en inglés muestra el nombre de arriba."
+          />
         </form>
       </Drawer>
     </>

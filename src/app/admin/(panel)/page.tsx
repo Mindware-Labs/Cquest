@@ -1,13 +1,24 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { getCategories } from "@/lib/categories";
-import { getPosts, updatePostMeta } from "@/lib/posts";
-import { IconExternal, IconPlus } from "@/components/admin/ui/icons";
+import { displayStatus, getPosts, updatePostMeta } from "@/lib/posts";
+import {
+  IconCategories,
+  IconChartBars,
+  IconChartDonut,
+  IconCheckCircle,
+  IconClock,
+  IconExternal,
+  IconEyeOff,
+  IconPencil,
+  IconPlus,
+} from "@/components/admin/ui/icons";
 import { IconLinkButton, LinkButton } from "@/components/admin/ui/Button";
 import { ModulePage } from "@/components/admin/ui/ModulePage";
 import { EmptyState, Ident, Section, StatusBadge } from "@/components/admin/ui/Surface";
 import PostQuickEdit from "./posts/PostQuickEdit";
-import { CategoryDonut, buildVolumeSeries } from "./charts";
+import { buildVolumeSeries } from "./charts";
+import { CategoryDonut } from "./CategoryDonut";
 import { VolumeBars } from "./VolumeBars";
 
 const dateFormat = new Intl.DateTimeFormat("es-DO", {
@@ -58,20 +69,39 @@ function comparePeriods(dates: Date[]) {
 export default async function AdminHomePage() {
   const [categories, posts] = await Promise.all([getCategories(), getPosts()]);
 
-  const published = posts.filter((post) => post.status === "PUBLISHED");
-  const drafts = posts.filter((post) => post.status === "DRAFT");
-  const hidden = posts.filter((post) => post.status === "HIDDEN");
+  /* El estado VISIBLE, igual que en la tabla: un artículo publicado con fecha
+     futura está programado, no publicado. Contarlo entre los publicados haría
+     que el tablero diga que hay algo en la web que el público no ve. */
+  const now = new Date();
+  const withStatus = posts.map((post) => ({ ...post, display: displayStatus(post, now) }));
 
-  const pending = [...drafts, ...hidden].sort(
+  const published = withStatus.filter((post) => post.display === "PUBLISHED");
+  const scheduled = withStatus.filter((post) => post.display === "SCHEDULED");
+  const drafts = withStatus.filter((post) => post.display === "DRAFT");
+  const hidden = withStatus.filter((post) => post.display === "HIDDEN");
+
+  /* Lo programado entra en "pendiente" y no en "publicado": todavía es trabajo
+     que puede cambiar de opinión, y el tablero abre con lo que falta hacer. */
+  const pending = [...drafts, ...scheduled, ...hidden].sort(
     (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
   );
 
-  /* Sin recorte: la tarjeta tiene su propio desplazamiento, así que mostrar
-     todo el histórico no estira la página. Antes se cortaba en seis y había que
-     irse a otra pantalla para ver el séptimo. */
   const recent = [...published].sort(
     (a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0),
   );
+
+  /* Las dos listas se acotan por CANTIDAD, no por altura.
+     ---------------------------------------------------------------------------
+     Antes cada tarjeta tenía un tope de 22rem y su propio desplazamiento: el
+     tablero entraba en una pantalla, sí, pero a costa de tres barras
+     compitiendo —la de la página y una por lista— donde la rueda hacía una cosa
+     u otra según dónde estuviera el puntero. Y una lista recortada por píxeles
+     no dice cuánto falta: la última fila queda cortada al medio, que se lee
+     como un error de dibujo antes que como "hay más".
+
+     Seis filas y un enlace que dice cuántas hay en total. El tope es explícito,
+     la salida es explícita, y la tarjeta mide siempre lo mismo. */
+  const PREVIEW = 6;
 
   const byCategory = categories
     .map((category) => ({
@@ -104,6 +134,12 @@ export default async function AdminHomePage() {
           value: published.length,
           href: "/admin/posts?estado=publicado",
           accent: "published",
+          /* Un icono por cifra, y cada uno dice lo suyo: visible, a medio
+             escribir, retirado, y el archivo. El punto de acento que había antes
+             sólo repetía el color de la tarjeta de abajo; el icono hace eso y
+             además nombra el dato de un vistazo, que es lo que hace legible una
+             tira de cuatro números iguales en tipografía y tamaño. */
+          icon: <IconCheckCircle size={15} />,
           delta: {
             value: lastPeriod - previousPeriod,
             label: `${lastPeriod} en los últimos 30 días`,
@@ -115,6 +151,7 @@ export default async function AdminHomePage() {
           hint: drafts.length === 0 ? "Nada a medio escribir" : "Sin publicar todavía",
           href: "/admin/posts?estado=borrador",
           accent: "pending",
+          icon: <IconPencil size={15} />,
         },
         {
           label: "Ocultos",
@@ -122,6 +159,7 @@ export default async function AdminHomePage() {
           hint: "Retirados del sitio, no borrados",
           href: "/admin/posts?estado=oculto",
           accent: "pending",
+          icon: <IconEyeOff size={15} />,
         },
         {
           label: "Categorías",
@@ -129,6 +167,7 @@ export default async function AdminHomePage() {
           hint: `${posts.length} ${posts.length === 1 ? "artículo" : "artículos"} en total`,
           href: "/admin/categories",
           accent: "category",
+          icon: <IconCategories size={15} />,
         },
       ]}
     >
@@ -144,6 +183,7 @@ export default async function AdminHomePage() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-stretch">
         <Section
           title="Volumen publicado"
+          icon={<IconChartBars />}
           boxed
           accent="volume"
           className="cq-enter flex flex-col"
@@ -154,6 +194,7 @@ export default async function AdminHomePage() {
 
         <Section
           title="Por categoría"
+          icon={<IconChartDonut />}
           count={categories.length}
           as="aside"
           boxed
@@ -184,13 +225,14 @@ export default async function AdminHomePage() {
       <div className="mt-4 grid gap-4 lg:grid-cols-2 lg:items-stretch">
         <Section
           title="Sin publicar"
+          icon={<IconClock />}
           count={pending.length}
           boxed
           accent="pending"
-          className="cq-enter flex max-h-[22rem] flex-col"
+          className="cq-enter flex flex-col"
           style={{ "--cq-i": 6 } as CSSProperties}
           actions={
-            pending.length > 6 ? (
+            pending.length > PREVIEW ? (
               <Link href="/admin/posts" className="cq-link cq-meta">
                 Ver los {pending.length}
               </Link>
@@ -209,11 +251,8 @@ export default async function AdminHomePage() {
               }
             />
           ) : (
-            /* La lista se desplaza DENTRO de la tarjeta y muestra todo lo
-               pendiente, no los primeros seis: recortar a seis obligaba a irse
-               a otra pantalla para ver el resto. */
-            <ul className="cq-ledger cq-scroll pb-2">
-              {pending.map((post, index) => (
+            <ul className="cq-ledger pb-2">
+              {pending.slice(0, PREVIEW).map((post, index) => (
                 <li
                   key={post.id}
                   className="cq-row cq-enter flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--p-line)] py-2 last:border-b-0"
@@ -231,7 +270,7 @@ export default async function AdminHomePage() {
                       {post.category.name} · editado el {dateFormat.format(post.updatedAt)}
                     </span>
                   </span>
-                  <StatusBadge status={post.status} />
+                  <StatusBadge status={post.display} />
                   <span className="cq-row-actions">
                     {/* El lápiz abre la ficha en un cajón; el TÍTULO sigue
                         llevando al editor de bloques. Es la misma división que
@@ -255,6 +294,11 @@ export default async function AdminHomePage() {
                         locale: post.locale,
                         seoTitle: post.seoTitle ?? "",
                         seoDescription: post.seoDescription ?? "",
+                        /* Guarda de concurrencia: el servidor compara esta
+                           marca antes de escribir. El tablero es justo donde
+                           más falta —se entra a corregir algo de paso, sin
+                           saber si alguien más lo está editando. */
+                        updatedAtIso: post.updatedAt.toISOString(),
                         status: post.status,
                       }}
                     />
@@ -267,11 +311,19 @@ export default async function AdminHomePage() {
 
         <Section
           title="Últimos publicados"
+          icon={<IconCheckCircle />}
           count={recent.length}
           boxed
           accent="published"
-          className="cq-enter flex max-h-[22rem] flex-col"
+          className="cq-enter flex flex-col"
           style={{ "--cq-i": 7 } as CSSProperties}
+          actions={
+            recent.length > PREVIEW ? (
+              <Link href="/admin/posts?estado=publicado" className="cq-link cq-meta">
+                Ver los {recent.length}
+              </Link>
+            ) : undefined
+          }
         >
           {recent.length === 0 ? (
             <EmptyState
@@ -280,8 +332,8 @@ export default async function AdminHomePage() {
               rows={2}
             />
           ) : (
-            <ul className="cq-ledger cq-scroll pb-2">
-              {recent.map((post, index) => (
+            <ul className="cq-ledger pb-2">
+              {recent.slice(0, PREVIEW).map((post, index) => (
                 <li
                   key={post.id}
                   className="cq-row cq-enter flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--p-line)] py-2 last:border-b-0"

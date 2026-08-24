@@ -28,8 +28,12 @@ enum PostLocale {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String
+  id   Int    @id @default(autoincrement())
+  name String
+  /// Nombre en inglés. Opcional: si falta, el blog en inglés cae a `name`.
+  /// Sin esto, un artículo en inglés mostraba su categoría en español en la
+  /// miga, el filtro y el pie — justo lo que la separación por idioma evita.
+  nameEn    String?
   slug      String   @unique
   createdAt DateTime @default(now())
   posts     Post[]
@@ -53,11 +57,22 @@ model Post {
   categoryId     Int
   category       Category   @relation(fields: [categoryId], references: [id])
   authorId       Int
-  author         AdminUser  @relation(fields: [authorId], references: [id])
+  author         AdminUser  @relation("PostAuthor", fields: [authorId], references: [id])
+
+  /// Quién guardó por última vez. El autor no cambia nunca; esto sí. Con varios
+  /// admins editando el mismo blog, "editado hace 5 minutos" sin un nombre al
+  /// lado no alcanza para saber a quién preguntarle.
+  /// Opcional: los artículos anteriores a este campo no tienen a quién señalar,
+  /// y `onDelete: SetNull` evita que borrar un admin se lleve sus artículos.
+  updatedById Int?
+  updatedBy   AdminUser? @relation("PostEditor", fields: [updatedById], references: [id], onDelete: SetNull)
 
   /// La consulta exacta del listado público: idioma + publicado + fecha ya
   /// alcanzada, ordenado por publishedAt.
   @@index([locale, status, publishedAt])
+  /// Relacionados y navegación anterior/siguiente filtran por categoría dentro
+  /// del mismo idioma antes de ordenar por fecha.
+  @@index([locale, status, categoryId, publishedAt])
 }
 
 model Template {
@@ -69,12 +84,37 @@ model Template {
   author    AdminUser @relation(fields: [authorId], references: [id])
 }
 
+/// Intentos fallidos de login, para frenar la fuerza bruta contra /admin/login.
+///
+/// Vive en la base y no en memoria del proceso a propósito. En un despliegue
+/// serverless cada instancia tiene su propia memoria: un contador local se
+/// reparte entre instancias (así que el atacante obtiene N veces los intentos
+/// permitidos) y se borra entero en cada despliegue o cada vez que la función
+/// se enfría. Un contador que se reinicia solo no es un límite.
+///
+/// Una fila por CLAVE, no una por intento: no interesa la bitácora de quién
+/// probó qué, sólo el contador vigente. Así la tabla no crece con el ataque —
+/// que sería regalarle al atacante una forma de llenarnos la base.
+model LoginAttempt {
+  /// "ip:1.2.3.4" o "email:alguien@dominio.com". Dos espacios de nombres en la
+  /// misma tabla porque la política es idéntica; sólo cambian los umbrales.
+  key           String    @id
+  failures      Int       @default(0)
+  lastFailureAt DateTime  @default(now())
+  /// Nulo mientras el contador todavía no llegó al umbral.
+  blockedUntil  DateTime?
+
+  /// Para la limpieza periódica de filas viejas.
+  @@index([lastFailureAt])
+}
+
 model AdminUser {
   id           Int        @id @default(autoincrement())
   email        String     @unique
   passwordHash String
   name         String
   createdAt    DateTime   @default(now())
-  posts        Post[]
+  posts        Post[]     @relation("PostAuthor")
+  editedPosts  Post[]     @relation("PostEditor")
   templates    Template[]
 }

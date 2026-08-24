@@ -295,6 +295,43 @@ a.cq-card:hover,
   pointer-events: none;
 }
 
+/* ---------------------------------------------------------------------------
+   Vista previa del bloque seleccionado (panel de propiedades)
+
+   Comparte la técnica de la miniatura de plantilla —componer al ancho de
+   lectura y reducir con `transform`— pero no sus medidas: aquélla es una hoja
+   recortada dentro de una tarjeta, y ésta es un bloque suelto que tiene que
+   entrar entero. De ahí el alto automático con tope en vez de fijo, y sin
+   máscara de desvanecido: cortar el pie de un bloque escondería justo el
+   espaciado inferior, que es una de las cosas que se están regulando.
+--------------------------------------------------------------------------- */
+
+.cq-blockpreview {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  padding-block: var(--p-space-2);
+  background: var(--p-surface-sunken);
+  border: var(--p-border);
+  border-radius: var(--p-radius-sm);
+}
+
+/* El alto lo fija el componente, midiendo el contenido real y multiplicándolo
+   por la escala: `transform` no cambia el alto que la caja ocupa en el layout,
+   así que sin eso un párrafo de dos líneas dejaría debajo el hueco de un
+   párrafo entero. El mínimo evita que un separador —que casi no mide— colapse
+   el recuadro a una raya. */
+.cq-blockpreview-page {
+  position: relative;
+  min-height: 2rem;
+  overflow: hidden;
+}
+
+.cq-blockpreview-scale {
+  transform-origin: top left;
+  pointer-events: none;
+}
+
 .cq-thumb-blank {
   align-self: center;
   margin-block: auto;
@@ -929,8 +966,25 @@ a.cq-card:hover,
   background: var(--p-accent-tint);
 }
 
+/* Desplazamiento horizontal SÓLO donde las columnas no entran.
+   -----------------------------------------------------------------------------
+   Desde escritorio se apaga, y no es un detalle de estilo: un elemento con
+   `overflow` distinto de `visible` ES un contenedor de desplazamiento, y un
+   `position: sticky` adentro se pega a ÉL y no a la página. Con la tabla ya sin
+   región desplazable propia, dejar el `overflow-x` siempre encendido dejaba el
+   encabezado de columnas clavado arriba de la tabla, sin pegarse a nada.
+
+   Apagarlo cuando ya no hace falta devuelve el pegajoso al viewport, que es
+   donde ahora ocurre el desplazamiento. En pantalla angosta gana el acceso a
+   las columnas: ahí el encabezado no se pega, pero la tabla se puede recorrer. */
 .cq-table-scroll {
   overflow-x: auto;
+}
+
+@media (min-width: 64rem) {
+  .cq-table-scroll {
+    overflow-x: visible;
+  }
 }
 
 .cq-table {
@@ -941,10 +995,16 @@ a.cq-card:hover,
 
 /* El encabezado es lo único hundido de la tabla, y va pegajoso: en una lista de
    cuarenta artículos, perder los nombres de columna al bajar obliga a subir
-   para saber qué se está mirando. */
+   para saber qué se está mirando.
+
+   Se pega a la altura de la BARRA SUPERIOR y no a cero. La tabla ya no vive
+   dentro de una región desplazable propia —se desplaza con la página—, así que
+   `top: 0` la mandaba a pegarse al borde del viewport, es decir por debajo de
+   la barra superior, que también es pegajosa. Los nombres de columna quedaban
+   tapados justo cuando empiezan a hacer falta. */
 .cq-table thead th {
   position: sticky;
-  top: 0;
+  top: var(--p-space-7);
   z-index: var(--p-z-raised);
   background: var(--p-surface-sunken);
   border-bottom: var(--p-border);
@@ -1035,6 +1095,18 @@ a.cq-card:hover,
   color: var(--p-success);
 }
 
+.cq-badge[data-tone="scheduled"] {
+  color: var(--p-warning);
+}
+
+.cq-badge[data-tone="scheduled"]::before {
+  /* Medio punto: el estado está a mitad de camino entre borrador y publicado, y
+     la forma lo dice sin depender del color — que es lo que hace falta para
+     quien no distingue el ámbar del verde. */
+  background: linear-gradient(to right, currentColor 50%, transparent 50%);
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
 .cq-badge[data-tone="draft"] {
   color: var(--p-accent);
 }
@@ -1123,6 +1195,68 @@ a.cq-stat:hover {
 
 .cq-stat[data-accent="published"] {
   --cq-accent: var(--p-success);
+}
+
+/* Fila de la leyenda de la dona.
+
+   Es un <button> y no una fila muerta: con ella se recorre el gráfico sin
+   mouse, y apuntarla resalta su porción. El relleno negativo a la izquierda
+   compensa el propio del botón, así que la muestra de color queda alineada con
+   el borde de la tarjeta igual que cuando la leyenda era una lista. */
+.cq-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  width: 100%;
+  padding: var(--p-space-1) var(--p-space-2);
+  margin-left: calc(var(--p-space-2) * -1);
+  border-radius: var(--p-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--p-t-micro) var(--p-ease-soft);
+}
+
+.cq-legend-row:hover,
+.cq-legend-row[data-active="true"] {
+  background: var(--p-hover-wash);
+}
+
+/* Fijada con un clic. El filete lateral y no un fondo más fuerte: el fondo ya
+   lo usa el resaltado al apuntar, y hacen falta DOS estados distinguibles —lo
+   que estoy mirando y lo que dejé marcado— o el clic no se siente. */
+.cq-legend-row[aria-pressed="true"] {
+  box-shadow: inset 2px 0 0 var(--p-accent);
+}
+
+.cq-legend-row:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 1px;
+}
+
+/* El icono de la cifra. Reemplaza al punto: dice el mismo acento por color y
+   además qué se está contando. Va al tamaño de la etiqueta y no más grande —
+   quien manda en la tarjeta es el número, y un icono de 20px al lado de una
+   etiqueta de 11px convierte el encabezado en el elemento dominante. */
+.cq-stat-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--cq-accent, var(--p-accent));
+}
+
+.cq-stat-icon > svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+/* El del título de sección va en el color del bloque, igual que el título. */
+.cq-section-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--cq-accent, var(--p-ink-soft, var(--p-ink)));
+}
+
+.cq-section-icon > svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .cq-stat-dot {
@@ -1227,14 +1361,22 @@ a.cq-stat[data-accent]:hover {
 
 /* ---------- Bloque con scroll propio ----------
 
-   Una lista larga NO estira la página: se desplaza dentro de su tarjeta. Así
-   el tablero entero entra en una pantalla y cada bloque queda donde el ojo ya
-   lo ubicó, en vez de moverse según cuántos datos haya ese día.
+   QUEDA UN SOLO USO: el cuerpo del cajón. Y ahí sí corresponde — un cajón es
+   una capa sobre la página, con su alto fijado por la ventana; si su contenido
+   no se desplazara adentro, un formulario largo no tendría forma de llegar al
+   final.
+
+   En las PANTALLAS ya no se usa. Las listas del tablero y la tabla de artículos
+   tenían cada una su región desplazable, y el resultado era una vista con tres
+   barras donde la rueda hacía una cosa distinta según dónde estuviera el
+   puntero. Ahora las pantallas se desplazan enteras, como cualquier página, y
+   lo que acota una lista larga es un tope de filas con su enlace al listado
+   completo — un límite que se puede leer, no uno que se descubre empujando.
 
    `min-height: 0` en el padre es obligatorio y es el error clásico: un hijo con
    overflow dentro de un contenedor flex NO se achica sin eso —el mínimo
-   automático es su contenido— y la lista empuja la tarjeta hasta desbordar la
-   pantalla en vez de desplazarse. */
+   automático es su contenido— y el contenido empuja la caja hasta desbordar en
+   vez de desplazarse. */
 .cq-scroll {
   overflow-y: auto;
   min-height: 0;

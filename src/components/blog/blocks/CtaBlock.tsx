@@ -1,8 +1,21 @@
 import { LocalizedLink } from "@/i18n/LocalizedLink";
 import { blockSpacing, type BlockOf } from "@/lib/blocks-style";
 
+/* El primario usa `verde-oscuro` y no el verde de marca.
+   ---------------------------------------------------------------------------
+
+   Con `bg-verde text-white` la etiqueta del botón quedaba en 2.85:1, muy por
+   debajo del 4.5:1 que pide WCAG 1.4.3 para texto normal. Y no era un detalle
+   de una pantalla: éste es un bloque que la redacción inserta en los artículos,
+   así que el fallo se multiplicaba por cada CTA publicado.
+
+   Se oscurece el FONDO en vez de cambiar el texto a tinta: el botón sigue
+   leyéndose como el mismo verde institucional —mismo tono, solo más profundo—
+   y el par blanco-sobre-verde queda en 5.28:1. Cambiar la etiqueta a tinta
+   habría resuelto el contraste rompiendo el par de color que el sistema le
+   asigna al CTA primario. */
 const BUTTON = {
-  primary: "bg-verde text-white hover:bg-verde/90 focus-visible:outline-verde",
+  primary: "bg-verde-oscuro text-white hover:bg-verde-oscuro/90 focus-visible:outline-verde-oscuro",
   secondary: "bg-petroleo text-white hover:bg-petroleo/90 focus-visible:outline-petroleo",
 } as const;
 

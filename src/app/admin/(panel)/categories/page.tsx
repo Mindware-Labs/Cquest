@@ -47,6 +47,7 @@ export default async function AdminCategoriesPage() {
               category={{
                 id: category.id,
                 name: category.name,
+                nameEn: category.nameEn ?? "",
                 slug: category.slug,
                 postCount: category._count.posts,
               }}

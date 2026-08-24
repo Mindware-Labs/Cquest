@@ -31,6 +31,7 @@ export function Section({
   boxed = false,
   accent,
   hideHead = false,
+  icon,
 }: {
   title: string;
   /* Opcional: una sección que no cuenta nada no dibuja cifra en vez de dibujar
@@ -58,6 +59,9 @@ export function Section({
      agrega una franja y hace que la tarjeta se lea como parte de algo más
      grande que no existe. El <h2> se queda para el lector de pantalla. */
   hideHead?: boolean;
+  /* Icono del bloque, en el color del acento. Va con `hideHead` en falso: si el
+     título no se dibuja, el icono tampoco tiene dónde apoyarse. */
+  icon?: ReactNode;
 }) {
   return (
     <Tag
@@ -78,6 +82,11 @@ export function Section({
       ) : (
         <div className="cq-section-head">
           <Heading className="cq-section-title flex min-w-0 items-center gap-2">
+            {icon && (
+              <span aria-hidden="true" className="cq-section-icon">
+                {icon}
+              </span>
+            )}
             <span className="truncate">{title}</span>
             {typeof count === "number" && <span className="cq-section-count">{count}</span>}
           </Heading>
@@ -160,11 +169,16 @@ export function StatCard({
   href,
   delta,
   accent,
+  icon,
 }: {
   label: string;
   value: number | string;
   hint?: string;
   href?: string;
+  /* Reemplaza al punto de color, no lo acompaña. El punto sólo codificaba el
+     acento; el icono codifica el acento Y qué se cuenta, así que tener los dos
+     es decir la misma cosa dos veces y gastar ancho de la etiqueta. */
+  icon?: ReactNode;
   /* Variación contra el período anterior. Es lo que convierte una cifra en
      información: "128" no dice nada solo; "128, +12 en 30 días" sí. */
   delta?: { value: number; label: string };
@@ -178,7 +192,13 @@ export function StatCard({
           abajo. Va antes de la etiqueta, no después: es lo primero que el ojo
           usa para agrupar. */}
       <span className="flex items-center gap-2">
-        {accent && <span aria-hidden="true" className="cq-stat-dot" />}
+        {icon ? (
+          <span aria-hidden="true" className="cq-stat-icon">
+            {icon}
+          </span>
+        ) : (
+          accent && <span aria-hidden="true" className="cq-stat-dot" />
+        )}
         <span className="cq-label">{label}</span>
       </span>
       <span className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -325,6 +345,12 @@ export function ErrorState({
 
 const TONE: Record<string, { tone: string; label: string }> = {
   PUBLISHED: { tone: "published", label: "Publicado" },
+  /* Publicado, pero con fecha futura. No existe como valor en la base —se
+     deriva del reloj, ver displayStatus() en lib/posts.ts— pero sí como estado
+     visible: la columna de estado promete decir si el artículo se ve o no, y
+     un programado no se ve. Tono propio: en verde se confundiría con lo que ya
+     está en la web, que es exactamente el error que hay que evitar. */
+  SCHEDULED: { tone: "scheduled", label: "Programado" },
   DRAFT: { tone: "draft", label: "Borrador" },
   HIDDEN: { tone: "hidden", label: "Oculto" },
 };

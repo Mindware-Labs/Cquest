@@ -56,10 +56,22 @@ const imageBlockSchema = z.object({
   ...blockBase,
   type: z.literal("image"),
   src: imageSrcSchema,
-  /* Obligatorio, no opcional con aviso: una imagen sin texto alternativo es
-     invisible para un lector de pantalla, y el panel ya promete que sin esto
-     el artículo no se guarda. La validación tiene que sostener esa promesa. */
-  alt: z.string().trim().min(1, "El texto alternativo es obligatorio.").max(200),
+  /* Sin `min(1)` acá, y NO es que el texto alternativo sea opcional: la regla
+     de verdad ("si hay imagen, hay alt") se aplica sobre el arreglo entero en
+     checkAltText(), más abajo.
+
+     La diferencia importa. Con `min(1)` en el campo, un bloque de imagen recién
+     agregado —que nace con `src: ""` y `alt: ""`, ver blockFactory.ts— hacía
+     fallar el guardado del borrador ENTERO antes de que hubiera un archivo que
+     describir. Y las plantillas de arranque traen bloques de imagen vacíos a
+     propósito, así que empezar un artículo desde «Estudio de caso» y apretar
+     "Guardar borrador" daba «El texto alternativo es obligatorio» sobre una
+     imagen que todavía no existía.
+
+     Una imagen sin subir no molesta a nadie; una subida sin describir no se
+     publica. Eso es lo que sostiene la promesa de RNF-5, y se comprueba donde
+     se puede ver el bloque completo. */
+  alt: z.string().trim().max(200, "Máximo 200 caracteres."),
   width: dimensionSchema,
   height: dimensionSchema,
   caption: z.string().trim().max(200).optional(),
@@ -69,7 +81,10 @@ const imageBlockSchema = z.object({
 
 const galleryImageSchema = z.object({
   src: imageSrcSchema,
-  alt: z.string().trim().min(1, "Cada imagen de la galería necesita texto alternativo.").max(200),
+  /* Igual que en imageBlockSchema: la regla vive en checkAltText(). Una galería
+     nace con una imagen vacía, así que exigirlo acá rompía el borrador desde el
+     momento en que se agregaba el bloque. */
+  alt: z.string().trim().max(200, "Máximo 200 caracteres."),
   /* La grilla recorta a una altura común, así que acá las dimensiones no
      deciden el encuadre — se guardan igual para no perder el dato si algún día
      la galería ofrece un modo que respete la proporción original. */
@@ -224,6 +239,67 @@ export const blockArraySchema = z
   .min(1, "El artículo necesita al menos un bloque.")
   .superRefine(checkAltText);
 export type BlockArray = z.infer<typeof blockArraySchema>;
+
+/* Toda imagen referenciada por un árbol de bloques, incluidas las de galerías
+   y las anidadas en columnas.
+
+   Existe para la recolección de huérfanas: al guardar o borrar un artículo hay
+   que saber qué archivos DEJARON de estar referenciados para borrarlos del
+   store. Sin esto, cada portada reemplazada y cada artículo borrado dejaban su
+   archivo pagando storage para siempre, sin registro de cuál era.
+
+   Devuelve un Set: la misma imagen puede aparecer dos veces en un artículo, y
+   comparar conjuntos es exactamente la operación que hace el recolector. */
+export function collectImageUrls(blocks: readonly Block[]): Set<string> {
+  const urls = new Set<string>();
+
+  function walk(block: Block): void {
+    if (block.type === "image" && block.src) urls.add(block.src);
+    if (block.type === "gallery") {
+      for (const image of block.images) if (image.src) urls.add(image.src);
+    }
+    if (block.type === "columns") {
+      for (const column of block.columns) for (const child of column) walk(child);
+    }
+  }
+
+  for (const block of blocks) walk(block);
+  return urls;
+}
+
+/* El texto plano de un artículo — lo que cuenta para el tiempo de lectura y lo
+   que alimenta la descripción del feed cuando no hay extracto. Se salta lo que
+   no se lee corrido: pies de foto, etiquetas de botón, encabezados de tabla. */
+export function extractText(blocks: readonly Block[]): string {
+  const parts: string[] = [];
+
+  function walk(block: Block): void {
+    switch (block.type) {
+      case "heading":
+      case "paragraph":
+      case "quote":
+        parts.push(block.text);
+        break;
+      case "list":
+        parts.push(...block.items);
+        break;
+      case "table":
+        for (const row of block.rows) parts.push(...row);
+        break;
+      case "cta":
+        if (block.body) parts.push(block.body);
+        break;
+      case "columns":
+        for (const column of block.columns) for (const child of column) walk(child);
+        break;
+      default:
+        break;
+    }
+  }
+
+  for (const block of blocks) walk(block);
+  return parts.join(" ");
+}
 
 export const BLOCK_TYPES = [
   "heading",
