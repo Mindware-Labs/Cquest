@@ -9,6 +9,19 @@ import type { RefObject } from "react";
    confirma— mientras que un icono que hace "pop" sólo llena un hueco. Es la
    diferencia entre una animación que informa y una que decora.
 
+   El trazo va en petróleo, no en `--p-success`. El resto del panel usa verde
+   para "correcto" porque convive con insignias de otros estados en la misma
+   pantalla y necesita distinguirse de ellas. Acá no hay nada más que
+   distinguir — hay una sola marca en toda la vista— así que gana la lectura
+   de marca en vez de la semántica genérica del panel. Sigue siendo petróleo
+   real (`--brand-petroleo`, 5.2:1 sobre blanco) y no un tinte cualquiera:
+   porta significado —dice "entraste"— y cae bajo WCAG 1.4.11 igual que antes.
+
+   El halo detrás SÍ es celeste. Es decorativo puro —no hace falta para
+   entender la marca, sólo la envuelve— así que no le aplica el mismo mínimo de
+   contraste, y es lo que engancha este momento con el resto de la pantalla:
+   el mismo resplandor que ya vive arriba de la tarjeta (login.css).
+
    Sin texto visible a propósito. El aviso para lectores de pantalla va aparte,
    en el formulario, porque una marca dibujada no la anuncia nadie. */
 
@@ -24,10 +37,14 @@ export { CIRCLE_LENGTH, CHECK_LENGTH };
 
 export default function LoginSuccessMark({
   rootRef,
+  iconRef,
+  glowRef,
   circleRef,
   checkRef,
 }: {
   rootRef: RefObject<HTMLDivElement | null>;
+  iconRef: RefObject<HTMLDivElement | null>;
+  glowRef: RefObject<HTMLSpanElement | null>;
   circleRef: RefObject<SVGCircleElement | null>;
   checkRef: RefObject<SVGPathElement | null>;
 }) {
@@ -35,46 +52,40 @@ export default function LoginSuccessMark({
     <div
       ref={rootRef}
       aria-hidden="true"
-      /* Cubre el formulario con el propio color de la tarjeta en vez de
-         reemplazarlo: así la caja no cambia de alto y nada salta debajo.
-
-         Tokens del PANEL, no del sitio público. Esta pantalla ya se migró a
-         `--p-*` (ver el comentario en login/page.tsx), pero la marca de éxito
-         se quedó pintando con `--surface-raised` y `--brand-verde`, o sea con
-         la escala del otro sistema. `--p-surface` es el mismo blanco, así que
-         no cambia nada a la vista — cambia de qué sistema depende. */
       className="absolute inset-0 grid place-items-center bg-[var(--p-surface)] opacity-0"
     >
-      <svg
-        viewBox="0 0 52 52"
-        /* `--p-success` y no `--brand-verde`: este check porta significado —dice
-           "entraste"— así que cae bajo WCAG 1.4.11, que pide 3:1 contra el
-           fondo. El verde de marca daba 2.85:1 sobre el blanco de la tarjeta;
-           el verde del panel da 6.7:1. Y de paso es el color que el resto del
-           panel ya usa para decir "correcto". */
-        className="size-14 text-[var(--p-success)]"
-        fill="none"
-        stroke="currentColor"
-      >
-        <circle
-          ref={circleRef}
-          cx="26"
-          cy="26"
-          r="24"
-          strokeWidth="1.6"
-          strokeDasharray={CIRCLE_LENGTH}
-          strokeDashoffset={CIRCLE_LENGTH}
-        />
-        <path
-          ref={checkRef}
-          d="M15 26.5 23 34 37.5 19"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={CHECK_LENGTH}
-          strokeDashoffset={CHECK_LENGTH}
-        />
-      </svg>
+      {/* `iconRef` es lo que hace el pulso final al cerrar el check — sólo el
+          icono, nunca este panel: escalar el panel completo movería también
+          el blanco que tapa el formulario, y el fondo de la tarjeta no
+          "rebota". */}
+      <div ref={iconRef} className="relative grid place-items-center">
+        <span ref={glowRef} className="cq-login-success-glow" />
+        <svg
+          viewBox="0 0 52 52"
+          className="relative size-14 text-[var(--brand-petroleo)]"
+          fill="none"
+          stroke="currentColor"
+        >
+          <circle
+            ref={circleRef}
+            cx="26"
+            cy="26"
+            r="24"
+            strokeWidth="1.6"
+            strokeDasharray={CIRCLE_LENGTH}
+            strokeDashoffset={CIRCLE_LENGTH}
+          />
+          <path
+            ref={checkRef}
+            d="M15 26.5 23 34 37.5 19"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray={CHECK_LENGTH}
+            strokeDashoffset={CHECK_LENGTH}
+          />
+        </svg>
+      </div>
     </div>
   );
 }

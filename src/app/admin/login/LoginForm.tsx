@@ -59,6 +59,8 @@ export default function LoginForm({
   const passwordRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLSpanElement>(null);
   const circleRef = useRef<SVGCircleElement>(null);
   const checkRef = useRef<SVGPathElement>(null);
   const router = useRouter();
@@ -88,9 +90,13 @@ export default function LoginForm({
      el formulario. Por eso el push vive en `onComplete` y también en la rama de
      movimiento reducido, nunca colgado de un timeout suelto.
 
-     El check entra con un `back.out` corto —el único rebote que se permite este
-     formulario, porque acá sí pasó algo bueno— y el resto se retira hacia arriba,
-     en la dirección en la que la página va a cambiar. */
+     El halo y el icono entran juntos con el círculo —mismo punto de partida,
+     "<"— y el check lo pisa un poco al final: son tres cosas leyéndose como un
+     solo gesto, no tres pasos sueltos. El único rebote de todo el formulario
+     vive DESPUÉS de que el check cierra, en un pulso de escala sobre el icono
+     —nunca sobre el panel blanco que tapa el formulario—, porque acá sí pasó
+     algo bueno. Al final la marca se retira hacia arriba, en la dirección en
+     la que la página está a punto de cambiar. */
   useEffect(() => {
     if (!succeeded) return;
 
@@ -108,15 +114,26 @@ export default function LoginForm({
     timeline
       /* Primero se retira el formulario, después se dibuja la marca. Solaparlos
          haría que las dos cosas compitan y ninguna se lea. */
-      .to(contentRef.current, { opacity: 0, duration: 0.22, ease: "power2.in" })
+      .to(contentRef.current, { opacity: 0, y: -6, duration: 0.22, ease: "power2.in" })
       .to(markRef.current, { opacity: 1, duration: 0.18 }, "-=0.08")
-      .to(circleRef.current, { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" })
+      .fromTo(
+        glowRef.current,
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.48, ease: "power2.out" },
+        "-=0.06",
+      )
+      .fromTo(iconRef.current, { scale: 0.85 }, { scale: 1, duration: 0.44, ease: "power2.out" }, "<")
+      .to(circleRef.current, { strokeDashoffset: 0, duration: 0.4, ease: "power2.inOut" }, "<")
       /* El check arranca antes de que el círculo termine: pisarse un poco es lo
          que hace que se lea como un gesto y no como dos pasos. */
-      .to(checkRef.current, { strokeDashoffset: 0, duration: 0.26, ease: "power2.out" }, "-=0.14")
-      /* Una pausa corta antes de navegar. Sin ella la marca se termina de dibujar
-         y la página ya cambió: se ve el trabajo, no el resultado. */
-      .to({}, { duration: 0.42 });
+      .to(checkRef.current, { strokeDashoffset: 0, duration: 0.2, ease: "power2.out" }, "-=0.12")
+      /* El pulso. Sube y vuelve con sobrepaso corto — la única vez que este
+         formulario deja que algo pase de largo su tamaño final. */
+      .to(iconRef.current, { scale: 1.08, duration: 0.12, ease: "power2.out" })
+      .to(iconRef.current, { scale: 1, duration: 0.24, ease: "back.out(2.5)" })
+      /* Retiro corto antes de navegar: se ve el resultado un instante, no sólo
+         el trabajo de dibujarlo. */
+      .to(markRef.current, { opacity: 0, y: -8, duration: 0.2, ease: "power2.in" }, "+=0.12");
 
     return () => {
       timeline.kill();
@@ -279,7 +296,13 @@ export default function LoginForm({
       </div>
 
       {succeeded && (
-        <LoginSuccessMark rootRef={markRef} circleRef={circleRef} checkRef={checkRef} />
+        <LoginSuccessMark
+          rootRef={markRef}
+          iconRef={iconRef}
+          glowRef={glowRef}
+          circleRef={circleRef}
+          checkRef={checkRef}
+        />
       )}
     </form>
   );

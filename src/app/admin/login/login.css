@@ -133,6 +133,28 @@
   pointer-events: none;
 }
 
+/* Halo de la marca de éxito. Mismo dibujo que el de la tarjeta —núcleo claro,
+   celeste, transparente, muy desenfocado— a otra escala: ahí marca un borde,
+   acá envuelve un icono. Es lo que amarra el cierre de la pantalla con su
+   apertura sin repetir literalmente el mismo elemento.
+
+   Centrado con `inset` negativo sobre el icono de 56px (`size-14`) en vez de
+   con ancho/alto propios: así sigue centrado si el icono cambia de tamaño, sin
+   un segundo número que mantener sincronizado con `.size-14`. */
+.cq-login-success-glow {
+  position: absolute;
+  inset: -1.5rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, white 55%, var(--brand-celeste)) 0%,
+    color-mix(in srgb, var(--brand-celeste) 30%, transparent) 55%,
+    transparent 78%
+  );
+  filter: blur(16px);
+  pointer-events: none;
+}
+
 /* Campo. Mismo comportamiento que `.cq-input` —hundido, foco, autofill,
    inválido—, sólo se le corrige la esquina y se le sube el alto al piso de
    44px que ya usa el botón: con el campo en 32px al lado de un botón `lg` la
