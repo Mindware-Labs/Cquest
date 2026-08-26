@@ -12,5 +12,5 @@ const pool =
   new Pool({ connectionString: requireEnv("DATABASE_URL"), max: 10 });
 
 if (process.env.NODE_ENV !== "production") globalForDb.cqPool = pool;
-
+ // te
 export const db = drizzle(pool, { schema });
