@@ -1,0 +1,68 @@
+/* Bajo la barra fija y sobre el artículo: tiene que verse antes que el texto
+   para que nadie confunda un borrador con lo que ya está publicado. */
+.bar {
+  position: sticky;
+  top: 5.5rem;
+  z-index: 5;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  border-block: 1px solid color-mix(in srgb, var(--brand-petroleo) 32%, transparent);
+  background: color-mix(in srgb, var(--brand-petroleo) 10%, var(--surface-raised));
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 0.7rem 0;
+}
+
+.tag {
+  flex: none;
+  padding: 0.35rem 0.55rem;
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.text {
+  flex: 1 1 16rem;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.action {
+  flex: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--brand-petroleo);
+}
+
+.action:hover {
+  color: var(--foreground);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+@media (max-width: 76rem) {
+  .inner {
+    padding-inline: var(--gutter, 1.25rem);
+  }
+}

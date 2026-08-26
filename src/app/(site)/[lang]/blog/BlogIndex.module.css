@@ -301,20 +301,19 @@
   transform: scale(1.03);
 }
 
-.coverEmpty {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: color-mix(in srgb, var(--foreground) 18%, var(--surface-sunken));
-}
-
 .body {
   margin-top: 1.35rem;
 }
 
+/* Sin portada el cuerpo es lo único que hay: ni columna reservada ni el hueco
+   que dejaba la imagen encima. */
+.entry:not([data-cover]) .body,
 .entry[data-shape="lead"] .body {
   margin-top: 0;
+}
+
+.entry[data-shape="lead"]:not([data-cover]) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .meta {

@@ -3,6 +3,7 @@ import { and, desc, eq, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { category, post } from "@/db/schema/blog";
 import { user } from "@/db/schema/auth";
+import { requireAdmin } from "@/lib/auth-guard";
 
 /* Lecturas públicas, aparte de las del panel: aquellas exigen sesión de admin y
    estas las hace cualquier visitante. */
@@ -80,6 +81,44 @@ export async function getPublishedPost(slug: string): Promise<PublicArticle | nu
     .limit(1);
 
   return rows[0] ? normalize(rows[0]) : null;
+}
+
+export type PreviewArticle = PublicArticle & {
+  status: "draft" | "published" | "hidden";
+  scheduled: boolean;
+  // Los bloques crudos: el HTML lo arma quien pinta la previa, no este módulo.
+  content: unknown;
+};
+
+/* La previa ve el artículo en cualquier estado, así que exige sesión de admin:
+   sin ese guard sería una puerta abierta a los borradores por URL adivinable.
+   Devuelve los bloques sin renderizar: importar BlockNote aquí lo metería en
+   el grafo de las páginas públicas, que solo leen el snapshot ya guardado. */
+export async function getPostForPreview(slug: string): Promise<PreviewArticle | null> {
+  await requireAdmin();
+
+  const rows = await db
+    .select({
+      ...listSelection,
+      content: post.content,
+      contentHtml: post.contentHtml,
+      seoTitle: post.seoTitle,
+      seoDescription: post.seoDescription,
+      status: post.status,
+    })
+    .from(post)
+    .leftJoin(category, eq(post.categoryId, category.id))
+    .leftJoin(user, eq(post.authorId, user.id))
+    .where(eq(post.slug, slug))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return null;
+
+  // "Programado" es published con fecha futura, igual que lo deriva el panel.
+  const scheduled = row.status === "published" && (row.publishedAt?.getTime() ?? 0) > Date.now();
+
+  return { ...normalize(row), scheduled };
 }
 
 // Solo las que tienen algo publicado: un filtro que no devuelve nada es una trampa.

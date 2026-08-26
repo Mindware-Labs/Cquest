@@ -49,6 +49,9 @@ export function sanitizePostHtml(html: string): string {
       "*": ["data-level", "data-text-color", "data-background-color", "class"],
     },
     allowedSchemes: ["http", "https", "mailto"],
+    /* Red de seguridad para lo que no pasa por el filtro de bloques: un <img>
+       pegado desde fuera sin src es el mismo cuadro roto. */
+    exclusiveFilter: (frame) => frame.tag === "img" && !frame.attribs.src,
     // Un enlace externo sin noopener deja al destino manipular la pestaña origen.
     transformTags: {
       a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer" }),

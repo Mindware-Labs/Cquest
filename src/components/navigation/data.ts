@@ -88,7 +88,6 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
        #why-us, no a #about, para que las dos barras lleven al mismo sitio. */
     { label: dict.hero.navLinks.whyUs, href: "/#why-us" },
     { label: dict.nav.blog, href: "/blog" },
-    { label: dict.nav.contact, href: "/quote" },
   ];
 }
 

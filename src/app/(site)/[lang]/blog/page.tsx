@@ -46,21 +46,24 @@ function ImageMark() {
 
 function Entry({ post, shape, base }: { post: PublicPost; shape: "lead" | "grid"; base: string }) {
   return (
-    <Link className={styles.entry} data-shape={shape} href={`${base}/${post.slug}`}>
-      <div className={styles.cover}>
-        {post.coverUrl ? (
+    <Link
+      className={styles.entry}
+      data-shape={shape}
+      data-cover={post.coverUrl ? "" : undefined}
+      href={`${base}/${post.slug}`}
+    >
+      {/* Sin portada no se reserva el hueco: una caja vacía se lee como una
+          imagen que no cargó. El texto ocupa la fila entera y sigue. */}
+      {post.coverUrl && (
+        <div className={styles.cover}>
           <Image
             src={post.coverUrl}
             alt={post.coverAlt ?? ""}
             fill
             sizes={shape === "lead" ? "(max-width: 64rem) 100vw, 40vw" : "(max-width: 64rem) 100vw, 25vw"}
           />
-        ) : (
-          <span className={styles.coverEmpty}>
-            <ImageMark />
-          </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className={styles.body}>
         <span className={styles.meta}>
