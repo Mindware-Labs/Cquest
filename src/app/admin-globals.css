@@ -1,0 +1,5 @@
+/* Sin site.css ni carousel.css: el panel no usa hero ni carrusel. */
+@import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/base.css";
+@import "./styles/admin.css";

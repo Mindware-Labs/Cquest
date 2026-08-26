@@ -1,0 +1,13 @@
+/* Tokens propios del panel: superficies de tinta en sólido, no en opacidad. */
+.cq-admin {
+  --ink-line: color-mix(in srgb, #ffffff 11%, var(--ink));
+  --ink-line-strong: color-mix(in srgb, #ffffff 20%, var(--ink));
+  --ink-text: color-mix(in srgb, #ffffff 58%, var(--ink));
+  --ink-text-strong: color-mix(in srgb, #ffffff 88%, var(--ink));
+  --ink-tick: color-mix(in srgb, #ffffff 26%, var(--ink));
+  --ink-tick-past: color-mix(in srgb, var(--brand-celeste) 46%, var(--ink));
+
+  /* Rojo ladrillo, no un rojo frío genérico: la paleta del sitio es cálida. */
+  --danger: #a1341f;
+  --danger-text: #7d2717;
+}

@@ -16,8 +16,7 @@ const createUserSchema = z.object({
   email: z.email("Escribe un correo válido.").trim().toLowerCase(),
 });
 
-/* El usuario nunca ve esta contraseña: existe solo para que la cuenta sea
-   válida hasta que él defina la suya con el código de seis dígitos. */
+// Nunca se muestra: solo mantiene la cuenta válida hasta que él defina la suya.
 function throwawayPassword(): string {
   return randomBytes(24).toString("base64url");
 }
@@ -44,8 +43,7 @@ export async function createAdminUser(input: {
   const { name, email } = parsed.data;
 
   try {
-    /* Con headers, el endpoint exige sesión de admin; es la comprobación real,
-       requireAdmin() de arriba solo evita llegar hasta aquí sin nada. */
+    // Con headers el endpoint exige sesión de admin: esta es la comprobación real.
     await auth.api.createUser({
       headers: await headers(),
       body: { name, email, password: throwawayPassword(), role: "admin" },
@@ -65,8 +63,7 @@ export async function createAdminUser(input: {
   return { ok: true };
 }
 
-/* Sin sesión reenviada: es una acción del servidor ya autorizada arriba y no
-   debe consumir el rate limit por IP del formulario público de recuperación. */
+// Sin headers: ya está autorizada y no debe gastar el rate limit por IP.
 async function sendWelcomeCode(email: string): Promise<ActionResult> {
   try {
     await withOtpPurpose("welcome", () =>

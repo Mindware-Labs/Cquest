@@ -1,6 +1,4 @@
-/* Siembra el primer admin. Sin esto no hay forma de entrar: el registro público
-   está deshabilitado y crear usuarios exige ya tener sesión de admin.
-   Uso: npm run seed:admin -- "Nombre" correo@cquest.do */
+// Siembra el primer admin. Uso: npm run seed:admin -- "Nombre" correo@cquest.do
 import { auth } from "../src/lib/auth";
 import { withOtpPurpose } from "../src/lib/emails/otp-context";
 
@@ -14,8 +12,7 @@ if (!name || !email) {
 const password = crypto.randomUUID() + crypto.randomUUID();
 
 try {
-  /* Sin headers ni request: el endpoint solo exige sesión cuando la petición
-     llega por HTTP, así que esta es la vía oficial para el primer usuario. */
+  // Sin headers: el endpoint solo exige sesión cuando la petición llega por HTTP.
   await auth.api.createUser({
     body: { name, email: email.toLowerCase(), password, role: "admin" },
   });

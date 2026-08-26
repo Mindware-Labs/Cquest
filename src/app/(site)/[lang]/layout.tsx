@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Josefin_Sans } from "next/font/google";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import "../globals.css";
+import "../../globals.css";
 import ScrollProgress from "@/components/ScrollProgress";
 import RouteTransition from "@/components/RouteTransition";
 import SiteFooter from "@/components/footer/SiteFooter";

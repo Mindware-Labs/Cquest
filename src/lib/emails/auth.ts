@@ -6,8 +6,7 @@ import { sendEmail } from "@/lib/emails/send";
 const ACCENT = C.celeste;
 const OTP_MINUTES = 10;
 
-/* El código se parte en dos grupos de tres: seis dígitos seguidos se copian mal
-   a mano y los clientes de correo los convierten en enlaces de teléfono. */
+// Partido en dos grupos: seis dígitos seguidos se vuelven enlace de teléfono.
 function otpBlock(otp: string): string {
   const grouped = `${otp.slice(0, 3)} ${otp.slice(3)}`;
   return `<div style="margin-top:14px;padding:18px 20px;background:${C.panel};border:1px solid ${C.line};border-radius:2px;text-align:center;">
@@ -34,8 +33,7 @@ function footNote(text: string): string {
 
 export type BuiltEmail = { subject: string; html: string; text: string };
 
-/* Construir y enviar van separados: así las plantillas se pueden renderizar y
-   revisar sin mandar correo a un buzón real. */
+// Construir y enviar separados: permite revisar la plantilla sin enviar nada.
 export function buildWelcomeOtpEmail(opts: {
   to: string;
   name: string;

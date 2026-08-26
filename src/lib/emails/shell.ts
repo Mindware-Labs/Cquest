@@ -1,5 +1,4 @@
-/* Chrome de email compartido por todo el sitio: la cotización lo estrenó y el
-   panel lo reutiliza, así que vive aquí y no dentro de una ruta concreta. */
+// Chrome compartido: lo estrenó la cotización y lo reutiliza el panel.
 
 export const C = {
   ink: "#0a1116",

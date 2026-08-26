@@ -10,8 +10,7 @@ import { currentOtpPurpose } from "@/lib/emails/otp-context";
 
 export const auth = betterAuth({
   appName: "Center Quest",
-  /* Sin la variable, Better Auth infiere la URL de la petición; fijarla a un
-     localhost heredado rompería el auth en producción. */
+  // Sin la variable se infiere de la petición; un localhost fijo rompe producción.
   baseURL: process.env.NEXT_PUBLIC_SITE_URL || undefined,
   secret: requireEnv("AUTH_SECRET"),
   database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -28,8 +27,7 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
-    /* Cachea la sesión en la cookie firmada 5 min para no golpear Postgres en
-       cada render del panel; la revocación tarda como mucho ese tiempo. */
+    // 5 min en la cookie firmada: menos lecturas, revocación con ese retraso.
     cookieCache: { enabled: true, maxAge: 300 },
   },
 
@@ -64,8 +62,7 @@ export const auth = betterAuth({
         await sendPasswordResetOtpEmail({ to: email, otp });
       },
     }),
-    /* nextCookies debe ir último: envuelve al resto para poder escribir cookies
-       desde server actions. */
+    // Último a propósito: envuelve al resto para escribir cookies en server actions.
     nextCookies(),
   ],
 });

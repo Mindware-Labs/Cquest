@@ -2,8 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { requireEnv } from "@/lib/env";
 
-/* Un cliente por proceso: el resto del sitio hace `new Resend()` por llamada y
-   eso rehace la config en cada envío. */
+// Un cliente por proceso: `new Resend()` por llamada rehace la config cada vez.
 let client: Resend | null = null;
 
 function resend(): Resend {

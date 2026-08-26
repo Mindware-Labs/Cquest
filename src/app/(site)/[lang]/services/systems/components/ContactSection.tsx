@@ -1,6 +1,6 @@
 "use client";
 
-import QuoteContact from "@/app/[lang]/quote/QuoteContact";
+import QuoteContact from "@/app/(site)/[lang]/quote/QuoteContact";
 import { useI18n } from "@/i18n/I18nProvider";
 import styles from "./ContactSection.module.css";
 

@@ -1,7 +1,6 @@
 import type { Config } from "drizzle-kit";
 
-/* drizzle-kit corre fuera de Next, que es quien normalmente carga .env.
-   En CI/producción las variables ya vienen del entorno y no hay archivo. */
+// drizzle-kit corre fuera de Next; en CI las variables ya vienen del entorno.
 try {
   process.loadEnvFile();
 } catch {}

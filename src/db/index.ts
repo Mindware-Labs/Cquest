@@ -4,8 +4,7 @@ import { Pool } from "pg";
 import { requireEnv } from "@/lib/env";
 import * as schema from "./schema";
 
-/* El HMR reevalúa este módulo en cada guardado; sin el pool en globalThis cada
-   recarga abriría conexiones nuevas hasta agotar el límite de Railway. */
+// El HMR reevalúa el módulo: sin esto cada recarga abre conexiones nuevas.
 const globalForDb = globalThis as unknown as { cqPool?: Pool };
 
 const pool =
