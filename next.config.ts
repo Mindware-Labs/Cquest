@@ -3,9 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Que Node los cargue desde node_modules en vez de empaquetarlos: BlockNote
      expone su código fuente y el bundler puede resolverlo en lugar del compilado.
-     sanitize-html se queda fuera de esta lista: su dependencia htmlparser2 es
-     ESM puro y Node no puede hacerle require() nativo, así que necesita pasar
-     por el bundler para que el interop CJS/ESM funcione. */
+     sanitize-html se queda fuera de esta lista a propósito: su dependencia
+     htmlparser2 se fija en 10.1.0 vía "overrides" (package.json) porque desde
+     la 11 es ESM puro sin build CJS, y require('htmlparser2') revienta en
+     runtime sin importar si el paquete queda externo o empaquetado. */
   serverExternalPackages: ["@blocknote/server-util", "@blocknote/core"],
 
   turbopack: {
