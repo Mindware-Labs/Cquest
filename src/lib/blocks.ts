@@ -1,5 +1,4 @@
 import "server-only";
-import { ServerBlockNoteEditor } from "@blocknote/server-util";
 import sanitizeHtml from "sanitize-html";
 
 /* Los bloques son la fuente de verdad; el HTML es un snapshot que se genera al
@@ -56,11 +55,4 @@ export function sanitizePostHtml(html: string): string {
       img: sanitizeHtml.simpleTransform("img", { loading: "lazy" }),
     },
   });
-}
-
-export async function renderBlocks(blocks: unknown): Promise<string> {
-  const editor = ServerBlockNoteEditor.create();
-  // Lossy y no FullHTML: el completo arrastra las manijas de redimensionado del editor.
-  const html = await editor.blocksToHTMLLossy(blocks as never);
-  return sanitizePostHtml(html);
 }

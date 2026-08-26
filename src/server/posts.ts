@@ -7,7 +7,8 @@ import { db } from "@/db";
 import { category, post } from "@/db/schema/blog";
 import { user } from "@/db/schema/auth";
 import { requireAdmin } from "@/lib/auth-guard";
-import { readingMinutes, renderBlocks } from "@/lib/blocks";
+import { readingMinutes } from "@/lib/blocks";
+import { renderBlocks } from "@/lib/renderBlocks";
 import { slugify } from "@/lib/slugify";
 
 export type PostStatus = "draft" | "published" | "hidden";
@@ -187,8 +188,13 @@ export async function savePost(id: string, input: PostInput): Promise<ActionResu
       .where(eq(post.id, id))
       .returning({ id: post.id });
     if (done.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
-  } catch {
-    return { ok: false, message: "No se pudo guardar el artículo." };
+  } catch (error) {
+    // Sin esto el fallo real se pierde y solo queda un mensaje genérico.
+    console.error("savePost falló:", error);
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "No se pudo guardar el artículo.",
+    };
   }
 
   revalidateTag("posts", "max");

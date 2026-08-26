@@ -10,6 +10,7 @@ export const dictionary: Dictionary = {
     services: "Services",
     sectors: "Sectors",
     team: "Team",
+    blog: "Blog",
     careers: "Careers",
     careersStrapline: "Open positions and talent pool",
     contact: "Contact",

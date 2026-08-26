@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import type { MetadataRoute } from "next";
 import { locales, defaultLocale } from "@/i18n/config";
+import { listPublishedSlugs } from "@/lib/blog";
 // Careers está fuera del alcance de esta entrega: la sección vive en
 // src/app/[lang]/_careers (carpeta privada, no enrutable). Descomentar este
 // import y las rutas /careers de abajo cuando se vuelva a publicar.
@@ -49,6 +50,7 @@ const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   /* Es indexable (robots: index en su generateMetadata) y hasta ahora no
      estaba listada: Google solo podía llegar por enlace interno. */
   { path: "/partnerships/mindware-labs", sources: ["src/app/[lang]/partnerships"] },
+  { path: "/blog", sources: ["src/app/(site)/[lang]/blog"] },
   { path: "/legal/terms", sources: ["src/app/[lang]/legal/terms"] },
   { path: "/legal/privacy", sources: ["src/app/[lang]/legal/privacy"] },
 ];
@@ -72,10 +74,10 @@ function lastCommit(paths: readonly string[]): Date | undefined {
   }
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return ROUTES.map(({ path, sources }) => ({
+function entry(path: string, lastModified: Date | undefined): MetadataRoute.Sitemap[number] {
+  return {
     url: `${SITE_URL}/${defaultLocale}${path}`,
-    lastModified: lastCommit(sources),
+    lastModified,
     alternates: {
       languages: {
         ...Object.fromEntries(locales.map((locale) => [locale, `${SITE_URL}/${locale}${path}`])),
@@ -84,7 +86,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "x-default": `${SITE_URL}/${defaultLocale}${path}`,
       },
     },
-  }));
+  };
+}
+
+/* Los artículos vienen de la base: estático dejaría fuera todo lo publicado
+   después del build, hasta el siguiente despliegue. */
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const statics = ROUTES.map(({ path, sources }) => entry(path, lastCommit(sources)));
+
+  /* Los artículos no salen de git sino de la base, así que su lastmod es el
+     updatedAt real de la fila y no la fecha del commit que tocó la plantilla. */
+  const articles = (await listPublishedSlugs()).map((row) =>
+    entry(`/blog/${row.slug}`, row.updatedAt),
+  );
+
+  return [...statics, ...articles];
 }
 
 /* Sin `priority` ni `changefreq`: Google confirmó hace años que los ignora por

@@ -10,6 +10,7 @@ export const dictionary: Dictionary = {
     services: "Servicios",
     sectors: "Sectores",
     team: "Equipo",
+    blog: "Blog",
     careers: "Empleos",
     careersStrapline: "Vacantes abiertas y banco de talento",
     contact: "Contacto",

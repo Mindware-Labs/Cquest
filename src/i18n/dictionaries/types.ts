@@ -8,6 +8,7 @@ export interface Dictionary {
     services: string;
     sectors: string;
     team: string;
+    blog: string;
     careers: string;
     careersStrapline: string;
     contact: string;

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
@@ -267,8 +268,7 @@ export default function PostEditor({
             <h2 className={styles.panelTitle}>Portada</h2>
             <div className={styles.cover} data-empty={!cover.url}>
               {cover.url ? (
-                // eslint-disable-next-line @next/next/no-img-element -- el dominio de Blob aún no está en remotePatterns
-                <img src={cover.url} alt="" />
+                <Image src={cover.url} alt="" fill sizes="20rem" />
               ) : (
                 <span className={styles.coverEmpty}>
                   <Icon name="image" size={20} />

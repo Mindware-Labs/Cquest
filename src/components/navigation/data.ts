@@ -85,6 +85,7 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
     },
     { label: dict.nav.sectors, href: "/#sectors" },
     { label: dict.nav.team, href: "/team" },
+    { label: dict.nav.blog, href: "/#blog" },
     { label: dict.nav.contact, href: "/quote" },
   ];
 }
@@ -100,7 +101,7 @@ function getLegalNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
 
     { label: dict.hero.navLinks.team, href: "/team" },
     { label: dict.nav.sectors, href: "/#sectors" },
-    { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
+    { label: dict.nav.blog, href: "/#blog" },
   ];
 }
 
@@ -113,7 +114,7 @@ function getHomeNavLink(dict: Dictionary): NavLink {
       { label: dict.hero.navLinks.services, href: "/#services" },
       { label: dict.hero.navLinks.team, href: "/#metrics" },
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
-      { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
+      { label: dict.nav.blog, href: "/#blog" },
     ],
   };
 }
@@ -182,7 +183,7 @@ export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<strin
       { label: dict.hero.navLinks.team, href: "/#metrics" },
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
       { label: dict.hero.navLinks.whyUs, href: "/#why-us" },
-      { label: dict.hero.navLinks.partnerships, href: "/#partnerships" },
+      { label: dict.nav.blog, href: "/#blog" },
     ],
   };
 }

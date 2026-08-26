@@ -1,0 +1,355 @@
+.page {
+  padding: clamp(6rem, 12vw, 9rem) var(--gutter, 1.25rem) clamp(5rem, 9vw, 7rem);
+}
+
+.inner {
+  width: 100%;
+  max-width: 84rem;
+  margin-inline: auto;
+}
+
+/* ---------- Cabecera ---------- */
+
+.eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.headline {
+  margin: 1.4rem 0 0;
+  max-width: 18ch;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.lead {
+  margin: 1.6rem 0 0;
+  max-width: 52ch;
+  font-size: clamp(1rem, 1.4vw, 1.1rem);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.rule {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  height: 1px;
+  background: var(--border);
+}
+
+/* ---------- Filtros ---------- */
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  flex-wrap: wrap;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Regla celeste deslizante, no píldoras de color. */
+.filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.22s var(--ease-out);
+}
+
+.filter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.55rem;
+  height: 2px;
+  background: var(--brand-celeste);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s var(--ease-out);
+}
+
+.filter:hover {
+  color: var(--foreground);
+}
+
+.filter:hover::after {
+  transform: scaleX(0.35);
+}
+
+.filter[aria-current="page"] {
+  color: var(--foreground);
+}
+
+.filter[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.filter:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.filterCount {
+  margin-left: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Listado ---------- */
+
+.list {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* Con dos artículos, dos columnas; una rejilla de tres con dos huecos vacíos
+   se lee como si faltara algo. */
+.list[data-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rest {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: clamp(2.5rem, 4vw, 3.5rem);
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+  border-top: 1px solid var(--border);
+}
+
+.entry {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.entry:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 6px;
+}
+
+/* Uno solo o el primero de varios: horizontal, para que llene el ancho sin
+   parecer una tarjeta perdida en el centro. */
+.entry[data-shape="lead"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: center;
+}
+
+.cover {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+
+.entry[data-shape="lead"] .cover {
+  aspect-ratio: 4 / 3;
+}
+
+.cover img {
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.entry:hover .cover img {
+  transform: scale(1.03);
+}
+
+.coverEmpty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--foreground) 18%, var(--surface-sunken));
+}
+
+.body {
+  margin-top: 1.35rem;
+}
+
+.entry[data-shape="lead"] .body {
+  margin-top: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.metaCategory {
+  color: var(--brand-petroleo);
+}
+
+.metaDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.title {
+  margin: 0.9rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.entry[data-shape="lead"] .title {
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  line-height: 1.12;
+}
+
+.entry:hover .title {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+.excerpt {
+  margin: 0.85rem 0 0;
+  max-width: 46ch;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.entry[data-shape="lead"] .excerpt {
+  font-size: 1.02rem;
+  max-width: 44ch;
+}
+
+.byline {
+  margin: 1.1rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Vacío ---------- */
+
+.empty {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding: clamp(3rem, 7vw, 5rem) clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  text-align: center;
+}
+
+.emptyMark {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--brand-petroleo);
+}
+
+.emptyTitle {
+  margin: 1.5rem 0 0;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.emptyText {
+  margin: 1rem auto 0;
+  max-width: 42ch;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.emptyCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  margin-top: 2rem;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.24s var(--ease-out), border-color 0.24s var(--ease-out);
+}
+
+.emptyCta:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.emptyCta:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+@media (max-width: 64rem) {
+  .entry[data-shape="lead"] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.35rem;
+  }
+
+  .entry[data-shape="lead"] .cover {
+    aspect-ratio: 16 / 10;
+  }
+
+  .entry[data-shape="lead"] .body {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 42rem) {
+  .list[data-count="2"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover img,
+  .filter,
+  .filter::after,
+  .emptyCta {
+    transition: none;
+  }
+
+  .entry:hover .cover img {
+    transform: none;
+  }
+}

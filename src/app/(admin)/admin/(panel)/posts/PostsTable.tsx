@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/admin/Toaster";
@@ -329,8 +330,7 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
                       <span className={styles.article}>
                         <span className={styles.thumb}>
                           {row.coverUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- miniatura de 36px; el dominio de Blob aún no está en remotePatterns
-                            <img src={row.coverUrl} alt="" />
+                            <Image src={row.coverUrl} alt="" width={36} height={36} />
                           ) : (
                             <span title="Sin portada">
                               <Icon name="image" />

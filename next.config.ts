@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
        la recompresión amplifica en cuanto alguien hace zoom. */
     qualities: [75, 82, 92],
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      { protocol: "https", hostname: "**.public.blob.vercel-storage.com" },
+    ],
     // Hero/brand photography is static and rarely changes — cache the
     // optimized output for a month instead of re-transforming every 4 hours.
     minimumCacheTTL: 2678400,
