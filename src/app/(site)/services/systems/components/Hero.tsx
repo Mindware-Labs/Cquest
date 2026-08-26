@@ -5,7 +5,7 @@ import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import { TransitionLink } from "@/components/TransitionLink";
-import devHeroImage from "@public/apps/dev-hero.jpeg";
+import devHeroImage from "../../../../../../public/apps/dev-hero.jpeg";
 import {
   EASE_OUT,
   focusRiseVariants,

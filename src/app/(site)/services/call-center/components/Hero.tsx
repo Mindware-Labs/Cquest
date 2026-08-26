@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, type MotionValue } from "motion/react"
 import { useRef } from "react";
 import Arrow from "@/components/services/Arrow";
 import { TransitionLink } from "@/components/TransitionLink";
-import heroCallcenterImage from "@public/hero-callcenter.jpg";
+import heroCallcenterImage from "../../../../../../public/hero-callcenter.jpg";
 import {
   focusRiseVariants,
   heroCopyVariants,
