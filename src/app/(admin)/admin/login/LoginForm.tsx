@@ -22,10 +22,21 @@ function safeNext(value: string | undefined): string {
 }
 
 function messageFor(status: number | undefined, code: string | undefined): string {
-  if (status === 429) return "Demasiados intentos. Espera unos minutos antes de volver a intentarlo.";
   if (code === "BANNED_USER") return "Esta cuenta está bloqueada. Habla con un administrador.";
   if (status === 401 || code === "INVALID_EMAIL_OR_PASSWORD") return "Correo o contraseña incorrectos.";
   return "No se pudo iniciar sesión. Inténtalo de nuevo.";
+}
+
+function clock(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+/* Texto fijo para el lector de pantalla: la cuenta atrás visual no se anuncia. */
+function waitNotice(seconds: number): string {
+  const minutes = Math.ceil(seconds / 60);
+  return minutes <= 1
+    ? "Demasiados intentos seguidos. Vuelve a intentarlo en un minuto."
+    : `Demasiados intentos seguidos. Vuelve a intentarlo en ${minutes} minutos.`;
 }
 
 function AlertIcon() {
@@ -33,6 +44,16 @@ function AlertIcon() {
     <svg className={styles.errorIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
       <path d="M7 1.5 13 12.5H1L7 1.5Z" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
       <path d="M7 5.6v3M7 10.4v.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.2">
+      <path d="M1.5 8s2.6-4.2 6.5-4.2S14.5 8 14.5 8s-2.6 4.2-6.5 4.2S1.5 8 1.5 8Z" strokeLinejoin="round" />
+      <circle cx="8" cy="8" r="1.9" />
+      {off && <path d="M2.6 2.6 13.4 13.4" strokeLinecap="round" />}
     </svg>
   );
 }
@@ -46,10 +67,25 @@ export default function LoginForm({ next }: { next?: string }) {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [revealed, setRevealed] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [focusAttempt, setFocusAttempt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [lock, setLock] = useState<{ until: number; notice: string } | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const locked = secondsLeft > 0;
+
+  // Se recalcula desde una marca absoluta: restar de a uno se atrasa en pestañas de fondo.
+  useEffect(() => {
+    if (!lock) return;
+    const id = setInterval(() => {
+      const left = Math.max(0, Math.ceil((lock.until - Date.now()) / 1000));
+      setSecondsLeft(left);
+      if (left === 0) setLock(null);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lock]);
 
   const errors = useMemo(() => {
     const parsed = schema.safeParse({ email, password });
@@ -71,7 +107,7 @@ export default function LoginForm({ next }: { next?: string }) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting) return;
+    if (submitting || locked) return;
 
     if (!valid) {
       setShowErrors(true);
@@ -82,10 +118,20 @@ export default function LoginForm({ next }: { next?: string }) {
     setSubmitting(true);
     setFormError(null);
 
-    const { error } = await authClient.signIn.email({ email: email.trim(), password });
+    let retryAfter = 0;
+    const { error } = await authClient.signIn.email(
+      { email: email.trim(), password },
+      { onError: (ctx) => { retryAfter = Number(ctx.response.headers.get("X-Retry-After")) || 0; } },
+    );
 
     if (error) {
       setSubmitting(false);
+      if (error.status === 429 && retryAfter > 0) {
+        setFormError(null);
+        setSecondsLeft(retryAfter);
+        setLock({ until: Date.now() + retryAfter * 1000, notice: waitNotice(retryAfter) });
+        return;
+      }
       setFormError(messageFor(error.status, error.code));
       return;
     }
@@ -94,10 +140,12 @@ export default function LoginForm({ next }: { next?: string }) {
     router.refresh();
   }
 
+  const errorText = locked ? (lock?.notice ?? null) : formError;
+
   const liveMessage = submitting
     ? "Verificando credenciales."
-    : formError
-      ? formError
+    : errorText
+      ? errorText
       : showErrors && !valid
         ? "Revisa los campos marcados."
         : "";
@@ -137,10 +185,10 @@ export default function LoginForm({ next }: { next?: string }) {
         noValidate
         {...rise(0.24)}
       >
-        {formError && (
+        {errorText && (
           <p className={styles.formError} role="alert">
             <AlertIcon />
-            <span>{formError}</span>
+            <span>{errorText}</span>
           </p>
         )}
 
@@ -175,18 +223,32 @@ export default function LoginForm({ next }: { next?: string }) {
           <label className={styles.label} htmlFor={passwordId}>
             Contraseña
           </label>
-          <input
-            id={passwordId}
-            className={styles.input}
-            type="password"
-            name="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="current-password"
-            required
-            aria-invalid={showErrors && Boolean(errors.password)}
-            aria-describedby={showErrors && errors.password ? `${passwordId}-error` : undefined}
-          />
+          <div className={styles.inputWrap}>
+            <input
+              id={passwordId}
+              className={`${styles.input} ${styles.inputWithAction}`}
+              type={revealed ? "text" : "password"}
+              name="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              aria-invalid={showErrors && Boolean(errors.password)}
+              aria-describedby={showErrors && errors.password ? `${passwordId}-error` : undefined}
+            />
+            <button
+              className={styles.reveal}
+              type="button"
+              onClick={() => setRevealed((v) => !v)}
+              aria-label="Mostrar contraseña"
+              aria-pressed={revealed}
+              aria-controls={passwordId}
+            >
+              <EyeIcon off={revealed} />
+            </button>
+          </div>
           {showErrors && errors.password && (
             <span className={styles.fieldError} id={`${passwordId}-error`} role="alert">
               <AlertIcon />
@@ -198,12 +260,23 @@ export default function LoginForm({ next }: { next?: string }) {
         <button
           className={styles.submit}
           type="submit"
-          disabled={submitting}
+          disabled={submitting || locked}
           data-inactive={!valid && showErrors}
-          aria-disabled={!valid}
+          data-locked={locked}
+          aria-disabled={!valid || locked}
+          /* Nombre estable: si cambiara cada segundo, el lector lo repetiría. */
+          aria-label={locked ? "Entrar al panel" : undefined}
         >
           {submitting && <span className={styles.spinner} aria-hidden="true" />}
-          {submitting ? "Verificando" : "Entrar al panel"}
+          {locked ? (
+            <>
+              Espera <span className={styles.lockCount}>{clock(secondsLeft)}</span>
+            </>
+          ) : submitting ? (
+            "Verificando"
+          ) : (
+            "Entrar al panel"
+          )}
         </button>
       </motion.form>
 

@@ -82,6 +82,57 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
 }
 
+.inputWrap {
+  position: relative;
+}
+
+/* Deja sitio al botón para que el texto no pase por debajo. */
+.inputWithAction {
+  padding-right: 3.1rem;
+}
+
+/* Edge pinta su propio ojo: dos controles para lo mismo confunden. */
+.input::-ms-reveal,
+.input::-ms-clear {
+  display: none;
+}
+
+.reveal {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  border: none;
+  border-left: 1px solid transparent;
+  border-radius: 0 2px 2px 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease-out),
+    background 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out);
+}
+
+.reveal:hover {
+  color: var(--foreground);
+  background: var(--surface-sunken);
+  border-left-color: var(--border);
+}
+
+.reveal[aria-pressed="true"] {
+  color: var(--brand-petroleo);
+}
+
+.reveal:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: -2px;
+}
+
 .fieldError {
   display: flex;
   align-items: center;
@@ -91,24 +142,32 @@
   color: var(--danger-text);
 }
 
+/* Contorno neutro como el de los campos: el rojo solo en el icono y el texto. */
 .formError {
   display: flex;
   align-items: flex-start;
-  gap: 0.55rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--danger) 32%, var(--border));
-  border-left-width: 2px;
-  border-left-color: var(--danger);
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem 0.85rem;
+  border: 1px solid var(--border);
   border-radius: 2px;
-  background: color-mix(in srgb, var(--danger) 5%, var(--surface-raised));
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-raised));
   font-size: 0.85rem;
   line-height: 1.5;
   color: var(--danger-text);
+  animation: errorIn 0.4s var(--ease-out) both;
+}
+
+@keyframes errorIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 .errorIcon {
   flex: none;
-  margin-top: 0.1rem;
+  margin-top: 0.18rem;
+  color: var(--danger);
 }
 
 .submit {
@@ -167,6 +226,24 @@
   cursor: progress;
 }
 
+.submit[data-locked="true"] {
+  background: var(--surface-sunken);
+  border-color: var(--border);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.submit[data-locked="true"]:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border);
+}
+
+/* Cifras de ancho fijo: si no, la cuenta atrás hace saltar la etiqueta. */
+.lockCount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
 .spinner {
   width: 0.85rem;
   height: 0.85rem;
@@ -223,11 +300,16 @@
 @media (prefers-reduced-motion: reduce) {
   .input,
   .submit,
-  .link {
+  .link,
+  .reveal {
     transition: none;
   }
 
   .spinner {
     animation-duration: 2s;
+  }
+
+  .formError {
+    animation: none;
   }
 }

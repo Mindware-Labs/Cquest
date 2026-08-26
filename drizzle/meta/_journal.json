@@ -8,6 +8,13 @@
       "when": 1787742962150,
       "tag": "0000_dashing_hedge_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787745914008,
+      "tag": "0001_quiet_anthem",
+      "breakpoints": true
     }
   ]
 }
