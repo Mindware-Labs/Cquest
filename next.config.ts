@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /* Que Node los cargue desde node_modules en vez de empaquetarlos: BlockNote
+     expone su código fuente y el bundler puede resolverlo en lugar del compilado. */
+  serverExternalPackages: ["@blocknote/server-util", "@blocknote/core", "sanitize-html"],
+
   turbopack: {
     root: __dirname,
   },

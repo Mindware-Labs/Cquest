@@ -1,30 +1,27 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/admin/Toaster";
+import { deletePosts, setPostStatus, type PostListRow } from "@/server/posts";
 import styles from "./PostsTable.module.css";
 
-export type PostStatus = "published" | "scheduled" | "draft" | "hidden";
+type Badge = "published" | "scheduled" | "draft" | "hidden";
 
-export type PostRow = {
-  id: string;
-  title: string;
-  slug: string;
-  cover: string | null;
-  category: string;
-  locale: "es" | "en";
-  status: PostStatus;
-  scheduledFor: string | null;
-  editedAt: string;
-  author: string | null;
-};
+/* Programado no se guarda: es publicado con fecha futura. Derivarlo evita un
+   cron que voltee estados y un estado más que mantener sincronizado. */
+function badgeOf(row: PostListRow, now: number): Badge {
+  if (row.status !== "published") return row.status;
+  return row.publishedAt && new Date(row.publishedAt).getTime() > now ? "scheduled" : "published";
+}
 
-type SortKey = "title" | "editedAt";
+type SortKey = "title" | "updatedAt";
 type SortDir = "asc" | "desc";
 
 const STAGGER_LIMIT = 8;
 
-const STATUS: Record<PostStatus, { label: string; ink: string; dot: "full" | "half" | "ring" }> = {
+const STATUS: Record<Badge, { label: string; ink: string; dot: "full" | "half" | "ring" }> = {
   published: { label: "Publicado", ink: "var(--brand-verde)", dot: "full" },
   scheduled: { label: "Programado", ink: "var(--brand-petroleo)", dot: "half" },
   draft: { label: "Borrador", ink: "var(--brand-celeste)", dot: "full" },
@@ -145,10 +142,39 @@ function Caret({ dir }: { dir: SortDir | null }) {
   );
 }
 
-export default function PostsTable({ rows }: { rows: PostRow[] }) {
+export default function PostsTable({ rows }: { rows: PostListRow[] }) {
   const toast = useToast();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [now] = useState(() => Date.now());
+
+  async function toggleVisibility(row: PostListRow) {
+    setBusy(true);
+    const next = row.status === "published" ? "hidden" : "published";
+    const result = await setPostStatus(row.id, next);
+    setBusy(false);
+    if (!result.ok) {
+      toast.error("No se pudo cambiar el estado", result.message);
+      return;
+    }
+    toast.success(next === "published" ? "Artículo publicado" : "Artículo oculto", row.title);
+    router.refresh();
+  }
+
+  async function removeSelected(ids: string[]) {
+    setBusy(true);
+    const result = await deletePosts(ids);
+    setBusy(false);
+    if (!result.ok) {
+      toast.error("No se pudo eliminar", result.message);
+      return;
+    }
+    toast.success(`${ids.length} ${ids.length === 1 ? "artículo eliminado" : "artículos eliminados"}`);
+    setSelected(new Set());
+    router.refresh();
+  }
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [sortKey, setSortKey] = useState<SortKey>("editedAt");
+  const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const allRef = useRef<HTMLInputElement>(null);
 
@@ -157,8 +183,8 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
     copy.sort((a, b) => {
       const value =
         sortKey === "title"
-          ? a.title.localeCompare(b.title, "es")
-          : a.editedAt.localeCompare(b.editedAt);
+          ? a.title.localeCompare(b.title, "en")
+          : a.updatedAt.localeCompare(b.updatedAt);
       return sortDir === "asc" ? value : -value;
     });
     return copy;
@@ -209,14 +235,14 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
               <span className={styles.bulkScope}>en esta página</span>
             </span>
             <span className={styles.bulkActions}>
-              <button className={styles.bulkButton} type="button">
-                Publicar
-              </button>
-              <button className={styles.bulkButton} type="button">
-                Ocultar
-              </button>
-              <button className={styles.bulkButton} type="button">
-                Pasar a borrador
+              <button
+                className={styles.bulkButton}
+                type="button"
+                data-tone="danger"
+                disabled={busy}
+                onClick={() => void removeSelected([...selected])}
+              >
+                Eliminar
               </button>
               <button
                 className={styles.bulkButton}
@@ -257,12 +283,11 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
                 </button>
               </th>
               <th className={styles.th}>Categoría</th>
-              <th className={styles.th}>Idioma</th>
               <th className={styles.th}>Estado</th>
-              <th className={styles.th} aria-sort={ariaSort("editedAt")}>
-                <button className={styles.sortLink} type="button" onClick={() => sortBy("editedAt")} data-active={sortKey === "editedAt"}>
+              <th className={styles.th} aria-sort={ariaSort("updatedAt")}>
+                <button className={styles.sortLink} type="button" onClick={() => sortBy("updatedAt")} data-active={sortKey === "updatedAt"}>
                   Editado
-                  <Caret dir={sortKey === "editedAt" ? sortDir : null} />
+                  <Caret dir={sortKey === "updatedAt" ? sortDir : null} />
                 </button>
               </th>
               <th className={styles.th}>
@@ -274,14 +299,14 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
           <tbody>
             {sorted.length === 0 && (
               <tr>
-                <td className={styles.empty} colSpan={7}>
+                <td className={styles.empty} colSpan={6}>
                   Todavía no hay artículos. El primero se crea desde “Nuevo artículo”.
                 </td>
               </tr>
             )}
 
             {sorted.map((row, index) => {
-              const state = STATUS[row.status];
+              const state = STATUS[badgeOf(row, now)];
               const isSelected = selected.has(row.id);
               return (
                 <Fragment key={row.id}>
@@ -303,43 +328,39 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
                     <td className={`${styles.td} ${styles.titleCell}`}>
                       <span className={styles.article}>
                         <span className={styles.thumb}>
-                          {row.cover ? (
+                          {row.coverUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element -- miniatura de 36px; el dominio de Blob aún no está en remotePatterns
-                            <img src={row.cover} alt="" />
+                            <img src={row.coverUrl} alt="" />
                           ) : (
                             <span title="Sin portada">
                               <Icon name="image" />
                             </span>
                           )}
                         </span>
-                        <a className={styles.articleTitle} href={`/admin/posts/${row.id}`}>
+                        <Link className={styles.articleTitle} href={`/admin/posts/${row.id}`}>
                           {row.title}
-                        </a>
+                        </Link>
                       </span>
                     </td>
 
-                    <td className={`${styles.td} ${styles.inkCell}`}>{row.category}</td>
-
-                    <td className={styles.td}>
-                      <span className={styles.lang}>{row.locale}</span>
-                    </td>
+                    <td className={`${styles.td} ${styles.inkCell}`}>{row.categoryName ?? "Sin categoría"}</td>
 
                     <td className={styles.td}>
                       <span className={styles.badge} style={{ "--badge-ink": state.ink } as React.CSSProperties}>
                         <StatusDot shape={state.dot} />
                         {state.label}
                       </span>
-                      {row.status === "scheduled" && row.scheduledFor && (
-                        <span className={styles.badgeDate}>{formatStamp(row.scheduledFor)}</span>
+                      {badgeOf(row, now) === "scheduled" && row.publishedAt && (
+                        <span className={styles.badgeDate}>{formatStamp(row.publishedAt)}</span>
                       )}
                     </td>
 
                     <td className={styles.td}>
                       <span className={styles.edited}>
                         <Icon name="clock" />
-                        <span className={styles.stamp}>{formatStamp(row.editedAt)}</span>
+                        <span className={styles.stamp}>{formatStamp(row.updatedAt)}</span>
                       </span>
-                      {row.author && <span className={styles.author}>{row.author}</span>}
+                      {row.authorName && <span className={styles.author}>{row.authorName}</span>}
                     </td>
 
                     <td className={`${styles.td} ${styles.actionsCell}`}>
@@ -365,25 +386,21 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
                             <Icon name="eye" />
                           </a>
                         )}
-                        <a
+                        <Link
                           className={styles.action}
                           href={`/admin/posts/${row.id}`}
                           title={`Editar «${row.title}»`}
                           aria-label={`Editar «${row.title}»`}
                         >
                           <Icon name="pencil" />
-                        </a>
+                        </Link>
                         <button
                           className={styles.action}
                           type="button"
                           title={row.status === "published" ? `Ocultar «${row.title}»` : `Publicar «${row.title}»`}
                           aria-label={row.status === "published" ? `Ocultar «${row.title}»` : `Publicar «${row.title}»`}
-                          onClick={() =>
-                            toast.info(
-                              row.status === "published" ? "Ocultar aún no funciona" : "Publicar aún no funciona",
-                              "La tabla del blog llega en la fase de base de datos.",
-                            )
-                          }
+                          disabled={busy}
+                          onClick={() => void toggleVisibility(row)}
                         >
                           <Icon name={row.status === "published" ? "eyeOff" : "eye"} />
                         </button>
@@ -393,12 +410,8 @@ export default function PostsTable({ rows }: { rows: PostRow[] }) {
                           data-tone="danger"
                           title={`Eliminar «${row.title}»`}
                           aria-label={`Eliminar «${row.title}»`}
-                          onClick={() =>
-                            toast.info(
-                              "Eliminar aún no funciona",
-                              "La tabla del blog llega en la fase de base de datos.",
-                            )
-                          }
+                          disabled={busy}
+                          onClick={() => void removeSelected([row.id])}
                         >
                           <Icon name="trash" />
                         </button>
