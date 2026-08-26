@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
@@ -31,13 +31,53 @@ function clock(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-/* Texto fijo para el lector de pantalla: la cuenta atrás visual no se anuncia. */
-function waitNotice(seconds: number): string {
-  const minutes = Math.ceil(seconds / 60);
-  return minutes <= 1
-    ? "Demasiados intentos seguidos. Vuelve a intentarlo en un minuto."
-    : `Demasiados intentos seguidos. Vuelve a intentarlo en ${minutes} minutos.`;
+const LOCK_KEY = "cq.admin.login.lock-until";
+
+/* Texto sin cifras: el número vive en el botón y aquí re-anunciaría cada segundo. */
+const LOCK_NOTICE =
+  "Demasiados intentos seguidos. El acceso se rehabilita cuando termine la cuenta atrás.";
+
+// El bloqueo lo impone el servidor; esto solo evita que la UI lo olvide al recargar.
+const lockListeners = new Set<() => void>();
+
+// getSnapshot corre en cada render: sin caché sería una lectura de disco por render.
+let cached: string | null | undefined;
+
+function readLockUntil(): string | null {
+  if (cached === undefined) {
+    try {
+      cached = localStorage.getItem(LOCK_KEY);
+    } catch {
+      cached = null;
+    }
+  }
+  return cached;
 }
+
+function writeLockUntil(until: number | null) {
+  cached = until ? String(until) : null;
+  try {
+    if (until) localStorage.setItem(LOCK_KEY, cached!);
+    else localStorage.removeItem(LOCK_KEY);
+  } catch {}
+  for (const notify of lockListeners) notify();
+}
+
+function subscribeLock(onChange: () => void) {
+  const external = () => {
+    cached = undefined;
+    onChange();
+  };
+  lockListeners.add(onChange);
+  window.addEventListener("storage", external);
+  return () => {
+    lockListeners.delete(onChange);
+    window.removeEventListener("storage", external);
+  };
+}
+
+// Techo de cordura: una marca manipulada no puede dejar el botón muerto para siempre.
+const MAX_LOCK_MS = 60 * 60 * 1000;
 
 function AlertIcon() {
   return (
@@ -72,20 +112,34 @@ export default function LoginForm({ next }: { next?: string }) {
   const [focusAttempt, setFocusAttempt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [lock, setLock] = useState<{ until: number; notice: string } | null>(null);
+  /* null en servidor y en la primera pasada: leer localStorage en render rompería la hidratación. */
+  const storedLock = useSyncExternalStore(subscribeLock, readLockUntil, () => null);
+  const parsed = storedLock ? Number(storedLock) : 0;
+  const lockUntil = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   const [secondsLeft, setSecondsLeft] = useState(0);
   const locked = secondsLeft > 0;
 
-  // Se recalcula desde una marca absoluta: restar de a uno se atrasa en pestañas de fondo.
+  // Se recalcula desde la marca absoluta: restar de a uno se atrasa en pestañas de fondo.
   useEffect(() => {
-    if (!lock) return;
-    const id = setInterval(() => {
-      const left = Math.max(0, Math.ceil((lock.until - Date.now()) / 1000));
+    if (!lockUntil) return;
+    const update = () => {
+      const remaining = lockUntil - Date.now();
+      if (remaining > MAX_LOCK_MS) {
+        writeLockUntil(null);
+        return;
+      }
+      const left = Math.max(0, Math.ceil(remaining / 1000));
       setSecondsLeft(left);
-      if (left === 0) setLock(null);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [lock]);
+      if (left === 0) writeLockUntil(null);
+    };
+    // En timeout y no en el cuerpo del efecto: un setState síncrono encadena renders.
+    const first = setTimeout(update, 0);
+    const id = setInterval(update, 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [lockUntil]);
 
   const errors = useMemo(() => {
     const parsed = schema.safeParse({ email, password });
@@ -129,18 +183,19 @@ export default function LoginForm({ next }: { next?: string }) {
       if (error.status === 429 && retryAfter > 0) {
         setFormError(null);
         setSecondsLeft(retryAfter);
-        setLock({ until: Date.now() + retryAfter * 1000, notice: waitNotice(retryAfter) });
+        writeLockUntil(Date.now() + retryAfter * 1000);
         return;
       }
       setFormError(messageFor(error.status, error.code));
       return;
     }
 
+    writeLockUntil(null);
     router.push(safeNext(next));
     router.refresh();
   }
 
-  const errorText = locked ? (lock?.notice ?? null) : formError;
+  const errorText = locked ? LOCK_NOTICE : formError;
 
   const liveMessage = submitting
     ? "Verificando credenciales."
@@ -265,7 +320,7 @@ export default function LoginForm({ next }: { next?: string }) {
           data-locked={locked}
           aria-disabled={!valid || locked}
           /* Nombre estable: si cambiara cada segundo, el lector lo repetiría. */
-          aria-label={locked ? "Entrar al panel" : undefined}
+          aria-label={locked ? "Entrar al panel, bloqueado temporalmente" : undefined}
         >
           {submitting && <span className={styles.spinner} aria-hidden="true" />}
           {locked ? (
