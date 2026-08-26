@@ -1,6 +1,6 @@
 "use server";
 
-import { desc, eq, inArray } from "drizzle-orm";
+import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -96,8 +96,36 @@ async function freeSlug(base: string, ignoreId?: string): Promise<string> {
   return `${root}-${Date.now().toString(36)}`;
 }
 
-export async function listPosts(): Promise<PostListRow[]> {
+export type PostListQuery = {
+  page?: number;
+  perPage?: number;
+  sortKey?: "title" | "updatedAt";
+  sortDir?: "asc" | "desc";
+};
+
+export type PostListPage = {
+  rows: PostListRow[];
+  total: number;
+  page: number;
+  perPage: number;
+};
+
+const PER_PAGE_ALLOWED = [10, 25, 50];
+
+/* La página se pide a Postgres, no se recorta en el cliente: traer la tabla
+   entera para mostrar diez filas escala con el blog y no con la pantalla. */
+export async function listPosts(query: PostListQuery = {}): Promise<PostListPage> {
   await requireAdmin();
+
+  const perPage = PER_PAGE_ALLOWED.includes(query.perPage ?? 0) ? query.perPage! : 10;
+  const column = query.sortKey === "title" ? post.title : post.updatedAt;
+  const direction = query.sortDir === "asc" ? asc : desc;
+
+  const [{ total }] = await db.select({ total: count() }).from(post);
+
+  // Pedir una página que ya no existe (tras borrar) devolvería una tabla vacía.
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
 
   const rows = await db
     .select({
@@ -114,13 +142,22 @@ export async function listPosts(): Promise<PostListRow[]> {
     .from(post)
     .leftJoin(category, eq(post.categoryId, category.id))
     .leftJoin(user, eq(post.authorId, user.id))
-    .orderBy(desc(post.updatedAt));
+    /* Desempate por id: sin un orden total, dos filas con el mismo timestamp
+       pueden cambiar de sitio entre páginas y una se vería dos veces. */
+    .orderBy(direction(column), desc(post.id))
+    .limit(perPage)
+    .offset((page - 1) * perPage);
 
-  return rows.map((row) => ({
-    ...row,
-    publishedAt: row.publishedAt?.toISOString() ?? null,
-    updatedAt: row.updatedAt.toISOString(),
-  }));
+  return {
+    rows: rows.map((row) => ({
+      ...row,
+      publishedAt: row.publishedAt?.toISOString() ?? null,
+      updatedAt: row.updatedAt.toISOString(),
+    })),
+    total,
+    page,
+    perPage,
+  };
 }
 
 export async function getPost(id: string): Promise<PostDetail | null> {
@@ -219,10 +256,15 @@ export async function publishPost(
   }
   const data = parsed.data;
 
-  // El slug se fija al publicar: hasta entonces sigue al título.
-  const current = await db.select({ slug: post.slug, status: post.status }).from(post).where(eq(post.id, id)).limit(1);
+  // El slug se congela cuando el artículo llegó a ser público de verdad, no
+  // cuando alguien dejó el estado en published: hasta entonces sigue al título.
+  const current = await db
+    .select({ slug: post.slug, publishedAt: post.publishedAt })
+    .from(post)
+    .where(eq(post.id, id))
+    .limit(1);
   if (current.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
-  const slug = current[0].status === "published" ? current[0].slug : await freeSlug(data.title, id);
+  const slug = current[0].publishedAt ? current[0].slug : await freeSlug(data.title, id);
 
   let html: string;
   try {
@@ -267,8 +309,74 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
     return { ok: false, message: "Estado inválido." };
   }
 
-  const done = await db.update(post).set({ status }).where(eq(post.id, id)).returning({ id: post.id });
-  if (done.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+  if (status !== "published") {
+    const done = await db.update(post).set({ status }).where(eq(post.id, id)).returning({ id: post.id });
+    if (done.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+
+    revalidateTag("posts", "max");
+    return { ok: true };
+  }
+
+  /* Publicar desde la tabla tiene que dejar el artículo igual que el editor: sin
+     fecha el filtro público lo descarta y sin HTML la página sale en blanco. */
+  const rows = await db
+    .select({
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      categoryId: post.categoryId,
+      coverUrl: post.coverUrl,
+      coverAlt: post.coverAlt,
+      content: post.content,
+      contentHtml: post.contentHtml,
+      publishedAt: post.publishedAt,
+    })
+    .from(post)
+    .where(eq(post.id, id))
+    .limit(1);
+  if (rows.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+  const row = rows[0];
+
+  const parsed = publishSchema.safeParse({
+    title: row.title,
+    excerpt: row.excerpt,
+    categoryId: row.categoryId,
+    coverUrl: row.coverUrl,
+    coverAlt: row.coverAlt,
+    content: row.content,
+  });
+  if (!parsed.success) {
+    // La tabla no pinta errores por campo: el motivo tiene que caber en el aviso.
+    const fields = fieldErrors(parsed.error);
+    return { ok: false, message: Object.values(fields).join(" "), fields };
+  }
+
+  // Estreno: hasta ahora el slug seguía al título y no había versión renderizada.
+  const first = row.publishedAt === null;
+
+  let html = row.contentHtml;
+  if (html === null) {
+    try {
+      html = await renderBlocks(row.content ?? []);
+    } catch {
+      return { ok: false, message: "No se pudo generar la versión pública del contenido." };
+    }
+  }
+
+  try {
+    await db
+      .update(post)
+      .set({
+        status,
+        slug: first ? await freeSlug(row.title, id) : row.slug,
+        contentHtml: html,
+        publishedAt: sql`coalesce(${post.publishedAt}, now())`,
+      })
+      .where(eq(post.id, id));
+  } catch (error) {
+    if (isUniqueViolation(error)) return { ok: false, message: "Ya hay un artículo con esa URL." };
+    return { ok: false, message: "No se pudo publicar el artículo." };
+  }
 
   revalidateTag("posts", "max");
   return { ok: true };

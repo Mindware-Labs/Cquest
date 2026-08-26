@@ -266,6 +266,48 @@
   color: var(--text-tertiary);
 }
 
+/* ---------- SEO automático ---------- */
+
+/* Lo que se publicará, no un campo: se lee, no se edita. */
+.seoPreview {
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  border-inline-start: 2px solid color-mix(in srgb, var(--brand-petroleo) 45%, transparent);
+  background: var(--surface-sunken);
+  color: var(--foreground);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.seoPreview[data-muted] {
+  color: var(--text-tertiary);
+}
+
+.seoLink {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-petroleo);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.seoLink:hover {
+  color: var(--foreground);
+}
+
+.seoLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
 .fieldError {
   display: flex;
   align-items: center;

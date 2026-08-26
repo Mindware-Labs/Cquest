@@ -9,6 +9,7 @@ import { upload } from "@vercel/blob/client";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import { useToast } from "@/components/admin/Toaster";
+import { seoDescriptionFor, seoTitleFor } from "@/lib/seo";
 import { publishPost, savePost, setPostStatus, type PostDetail } from "@/server/posts";
 import type { CategoryRow } from "@/server/categories";
 import styles from "./PostEditor.module.css";
@@ -79,6 +80,11 @@ export default function PostEditor({
   const [coverAlt, setCoverAlt] = useState(post.coverAlt ?? "");
   const [seoTitle, setSeoTitle] = useState(post.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(post.seoDescription ?? "");
+
+  /* Vacíos, estos dos campos no aportan nada al formulario: la página ya cae
+     en el título y el extracto. Solo se abren si el artículo trae textos
+     propios, o si el autor los pide. */
+  const [seoOpen, setSeoOpen] = useState(Boolean(post.seoTitle || post.seoDescription));
   const [content, setContent] = useState<unknown>(post.content);
   const [status, setStatus] = useState(post.status);
 
@@ -165,7 +171,9 @@ export default function PostEditor({
       const result = await publishPost(post.id, payload());
       if (!result.ok) {
         setErrors(result.fields ?? {});
-        toast.error("Falta algo para publicar", result.message);
+        /* El toast tapa el mensaje del campo: si no dice qué falta, no dice nada. */
+        const reasons = Object.values(result.fields ?? {});
+        toast.error("Falta algo para publicar", reasons.join(" ") || result.message);
         return;
       }
       setErrors({});
@@ -380,7 +388,11 @@ export default function PostEditor({
               maxLength={300}
               placeholder="Dos líneas que resuman el artículo."
               aria-invalid={Boolean(errors.excerpt)}
+              aria-describedby={`${excerptId}-help`}
             />
+            <span className={styles.help} id={`${excerptId}-help`}>
+              Sale en el listado y en buscadores. Mínimo 20 caracteres para publicar.
+            </span>
             {errors.excerpt && (
               <span className={styles.fieldError} role="alert">
                 <Icon name="alert" />
@@ -391,35 +403,63 @@ export default function PostEditor({
 
           <section className={styles.panel}>
             <h2 className={styles.panelTitle}>SEO</h2>
-            <label className={styles.label} htmlFor={seoTitleId}>
-              Título en buscadores <span className={styles.optional}>opcional</span>
-            </label>
-            <input
-              id={seoTitleId}
-              className={styles.input}
-              value={seoTitle}
-              onChange={(event) => {
-                setSeoTitle(event.target.value);
-                setDirty(true);
-              }}
-              maxLength={70}
-              placeholder={title || "Se usa el título del artículo"}
-            />
-            <label className={styles.label} htmlFor={seoDescId}>
-              Descripción <span className={styles.optional}>opcional</span>
-            </label>
-            <textarea
-              id={seoDescId}
-              className={styles.textarea}
-              value={seoDescription}
-              onChange={(event) => {
-                setSeoDescription(event.target.value);
-                setDirty(true);
-              }}
-              rows={3}
-              maxLength={180}
-              placeholder={excerpt || "Se usa el extracto"}
-            />
+
+            {seoOpen ? (
+              <>
+                <label className={styles.label} htmlFor={seoTitleId}>
+                  Título en buscadores <span className={styles.optional}>opcional</span>
+                </label>
+                <input
+                  id={seoTitleId}
+                  className={styles.input}
+                  value={seoTitle}
+                  onChange={(event) => {
+                    setSeoTitle(event.target.value);
+                    setDirty(true);
+                  }}
+                  maxLength={70}
+                  placeholder={title || "Se usa el título del artículo"}
+                />
+                <label className={styles.label} htmlFor={seoDescId}>
+                  Descripción <span className={styles.optional}>opcional</span>
+                </label>
+                <textarea
+                  id={seoDescId}
+                  className={styles.textarea}
+                  value={seoDescription}
+                  onChange={(event) => {
+                    setSeoDescription(event.target.value);
+                    setDirty(true);
+                  }}
+                  rows={3}
+                  maxLength={180}
+                  placeholder={excerpt || "Se usa el extracto"}
+                />
+                <button
+                  className={styles.seoLink}
+                  type="button"
+                  onClick={() => {
+                    setSeoTitle("");
+                    setSeoDescription("");
+                    setSeoOpen(false);
+                    setDirty(true);
+                  }}
+                >
+                  Volver a los automáticos
+                </button>
+              </>
+            ) : (
+              <>
+                <p className={styles.help}>Se arman solos con el artículo. Así se verán:</p>
+                <p className={styles.seoPreview}>{seoTitleFor(title, null)}</p>
+                <p className={styles.seoPreview} data-muted="">
+                  {seoDescriptionFor(excerpt, null) || "Escribe el extracto y aparecerá aquí."}
+                </p>
+                <button className={styles.seoLink} type="button" onClick={() => setSeoOpen(true)}>
+                  Escribirlos a mano
+                </button>
+              </>
+            )}
           </section>
         </aside>
       </div>

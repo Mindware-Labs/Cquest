@@ -1,9 +1,13 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
+import { useTableParams } from "@/components/admin/useTableParams";
+import Select from "@/components/admin/Select";
+import t from "@/components/admin/dataTable.module.css";
 import { useToast } from "@/components/admin/Toaster";
 import { deletePosts, setPostStatus, type PostListRow } from "@/server/posts";
 import styles from "./PostsTable.module.css";
@@ -116,6 +120,18 @@ function Icon({ name }: { name: string }) {
           <path d="M8 6.4v3.2M8 11.6v.6" strokeLinecap="round" />
         </svg>
       );
+    case "prev":
+      return (
+        <svg {...c} aria-hidden="true">
+          <path d="M9.8 3.6 5.4 8l4.4 4.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "next":
+      return (
+        <svg {...c} aria-hidden="true">
+          <path d="M6.2 3.6 10.6 8l-4.4 4.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
     default:
       return (
         <svg {...c} aria-hidden="true">
@@ -143,9 +159,19 @@ function Caret({ dir }: { dir: SortDir | null }) {
   );
 }
 
-export default function PostsTable({ rows }: { rows: PostListRow[] }) {
+type Props = {
+  rows: PostListRow[];
+  total: number;
+  page: number;
+  perPage: number;
+  sortKey: SortKey;
+  sortDir: SortDir;
+};
+
+export default function PostsTable({ rows, total, page, perPage, sortKey, sortDir }: Props) {
   const toast = useToast();
   const router = useRouter();
+  const { pending, setParams } = useTableParams();
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
 
@@ -175,23 +201,18 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
     router.refresh();
   }
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const allRef = useRef<HTMLInputElement>(null);
 
-  const sorted = useMemo(() => {
-    const copy = [...rows];
-    copy.sort((a, b) => {
-      const value =
-        sortKey === "title"
-          ? a.title.localeCompare(b.title, "en")
-          : a.updatedAt.localeCompare(b.updatedAt);
-      return sortDir === "asc" ? value : -value;
-    });
-    return copy;
-  }, [rows, sortKey, sortDir]);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-  const allChecked = rows.length > 0 && selected.size === rows.length;
+  /* Cada cambio de página u orden es una navegación: el servidor vuelve a
+     consultar con los parámetros nuevos y devuelve solo esas filas. */
+  function navigate(next: Record<string, string | number>) {
+    setSelected(new Set());
+    setParams(next);
+  }
+
+  const allChecked = rows.length > 0 && rows.every((row) => selected.has(row.id));
   const someChecked = selected.size > 0 && !allChecked;
 
   // indeterminate no es un atributo: solo se fija por JavaScript.
@@ -212,13 +233,19 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
     setSelected(allChecked ? new Set() : new Set(rows.map((r) => r.id)));
   }
 
+  /* La selección no cruza de página: la barra de acciones dice "en esta página"
+     y borrar en bloque filas que ya no se ven es la forma fácil de equivocarse. */
+  function goTo(next: number) {
+    navigate({ page: Math.min(Math.max(next, 1), totalPages) });
+  }
+
+  function changePerPage(size: number) {
+    navigate({ perPage: size, page: 1 });
+  }
+
   function sortBy(key: SortKey) {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-      return;
-    }
-    setSortKey(key);
-    setSortDir(key === "title" ? "asc" : "desc");
+    const dir = key === sortKey ? (sortDir === "asc" ? "desc" : "asc") : key === "title" ? "asc" : "desc";
+    navigate({ sort: key, dir, page: 1 });
   }
 
   function ariaSort(key: SortKey) {
@@ -227,7 +254,8 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
   }
 
   return (
-    <div className={styles.container}>
+    <>
+      <div className={styles.container}>
       {selected.size > 0 && (
         <div className={styles.bulk}>
           <div className={styles.bulkInner}>
@@ -261,8 +289,8 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
       <div className={styles.scroller}>
         <table className={styles.table}>
           <caption className={styles.caption}>
-            Artículos del blog, {rows.length} en esta página, ordenados por{" "}
-            {sortKey === "title" ? "título" : "última edición"}.
+            Artículos del blog, {rows.length} en esta página de {total}, página {page} de{" "}
+            {totalPages}, ordenados por {sortKey === "title" ? "título" : "última edición"}.
           </caption>
 
           <thead>
@@ -298,7 +326,7 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
           </thead>
 
           <tbody>
-            {sorted.length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td className={styles.empty} colSpan={6}>
                   Todavía no hay artículos. El primero se crea desde “Nuevo artículo”.
@@ -306,7 +334,7 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
               </tr>
             )}
 
-            {sorted.map((row, index) => {
+            {rows.map((row, index) => {
               const state = STATUS[badgeOf(row, now)];
               const isSelected = selected.has(row.id);
               return (
@@ -424,7 +452,61 @@ export default function PostsTable({ rows }: { rows: PostListRow[] }) {
             })}
           </tbody>
         </table>
+        </div>
       </div>
-    </div>
+
+      <div className={t.pagination}>
+        <div className={t.perPage}>
+          <span>Mostrar</span>
+          <Select
+            value={String(perPage)}
+            options={PER_PAGE_OPTIONS}
+            onChange={(next) => changePerPage(Number(next))}
+            label="Artículos por página"
+          />
+          <span>por página</span>
+        </div>
+
+        <nav className={t.pages} aria-label="Paginación">
+          <button
+            className={t.pageButton}
+            type="button"
+            onClick={() => goTo(page - 1)}
+            disabled={page === 1 || pending}
+            aria-label="Página anterior"
+          >
+            <Icon name="prev" />
+          </button>
+          {pageList(page, totalPages).map((entry, i) =>
+            entry === "gap" ? (
+              <span key={`gap-${i}`} className={t.ellipsis} aria-hidden="true">
+                …
+              </span>
+            ) : (
+              <button
+                key={entry}
+                className={t.pageButton}
+                type="button"
+                onClick={() => goTo(entry)}
+                disabled={pending}
+                aria-current={entry === page ? "page" : undefined}
+                aria-label={`Página ${entry}`}
+              >
+                {entry}
+              </button>
+            ),
+          )}
+          <button
+            className={t.pageButton}
+            type="button"
+            onClick={() => goTo(page + 1)}
+            disabled={page === totalPages || pending}
+            aria-label="Página siguiente"
+          >
+            <Icon name="next" />
+          </button>
+        </nav>
+      </div>
+    </>
   );
 }

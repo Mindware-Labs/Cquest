@@ -1,25 +1,45 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth-guard";
 import { listAdminUsers } from "@/server/admin-users";
-import UsersView, { type AdminUser } from "./UsersView";
+import UsersView from "./UsersView";
 
 export const metadata: Metadata = {
   title: "Usuarios · Panel Center Quest",
   robots: { index: false, follow: false },
 };
 
-export default async function UsersPage() {
+/* Búsqueda, orden y página viajan en la URL: es lo que permite resolverlos en
+   la consulta en vez de recortar en el cliente una lista ya completa. */
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string; q?: string }>;
+}) {
   const session = await requireAdmin();
-  const result = await listAdminUsers();
+  const params = await searchParams;
 
-  // Solo lo que la vista pinta: el resto no tiene por qué cruzar al cliente.
-  const users: AdminUser[] = (result.users ?? []).map((user) => ({
-    id: user.id,
-    name: user.name ?? "",
-    email: user.email,
-    banned: Boolean(user.banned),
-    createdAt: new Date(user.createdAt).toISOString(),
-  }));
+  const sortKey = params.sort === "name" ? "name" : "createdAt";
+  const sortDir = params.dir === "asc" ? "asc" : "desc";
+  const query = params.q ?? "";
 
-  return <UsersView users={users} currentUserId={session.user.id} />;
+  const { rows, total, page, perPage } = await listAdminUsers({
+    page: Number(params.page) || 1,
+    perPage: Number(params.perPage) || 10,
+    sortKey,
+    sortDir,
+    query,
+  });
+
+  return (
+    <UsersView
+      users={rows}
+      currentUserId={session.user.id}
+      total={total}
+      page={page}
+      perPage={perPage}
+      sortKey={sortKey}
+      sortDir={sortDir}
+      query={query}
+    />
+  );
 }

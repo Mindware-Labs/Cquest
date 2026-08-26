@@ -53,7 +53,7 @@ function Entry({ post, shape, base }: { post: PublicPost; shape: "lead" | "grid"
             src={post.coverUrl}
             alt={post.coverAlt ?? ""}
             fill
-            sizes={shape === "lead" ? "(max-width: 64rem) 100vw, 55vw" : "(max-width: 64rem) 100vw, 30vw"}
+            sizes={shape === "lead" ? "(max-width: 64rem) 100vw, 40vw" : "(max-width: 64rem) 100vw, 25vw"}
           />
         ) : (
           <span className={styles.coverEmpty}>
@@ -93,10 +93,11 @@ export default async function BlogIndexPage({
   const lang = await resolveLang(params);
   const { category } = await searchParams;
 
-  const [posts, categories] = await Promise.all([
-    listPublishedPosts(category),
-    listCategoriesInUse(),
-  ]);
+  /* Una sola lectura: la columna lateral necesita lo último sin filtrar, y
+     filtrar en memoria sale más barato que repetir la consulta. */
+  const [all, categories] = await Promise.all([listPublishedPosts(), listCategoriesInUse()]);
+  const posts = category ? all.filter((entry) => entry.categorySlug === category) : all;
+  const latest = all.slice(0, 4);
 
   /* La forma cambia con el conteo: uno solo va horizontal a todo el ancho, dos
      en dos columnas, y a partir de tres uno encabeza y el resto va en rejilla. */
@@ -120,64 +121,117 @@ export default async function BlogIndexPage({
           <p className={styles.lead}>{DESCRIPTION}</p>
         </header>
 
-        {categories.length > 0 && (
-          <nav className={styles.filters} aria-label="Filter by category">
-            <Link className={styles.filter} href={base} aria-current={!category ? "page" : undefined}>
-              All
-              <span className={styles.filterCount}>{posts.length}</span>
-            </Link>
-            {categories.map((entry) => (
-              <Link
-                key={entry.slug}
-                className={styles.filter}
-                href={`${base}?category=${entry.slug}`}
-                aria-current={category === entry.slug ? "page" : undefined}
-              >
-                {entry.name}
-                <span className={styles.filterCount}>{entry.count}</span>
-              </Link>
-            ))}
-          </nav>
-        )}
-
-        {shape === "empty" ? (
-          <div className={styles.empty}>
-            <span className={styles.emptyMark} aria-hidden="true">
-              <ImageMark />
-            </span>
-            <h2 className={styles.emptyTitle}>
-              {category ? "Nothing filed under that yet" : "The first piece is on its way"}
-            </h2>
-            <p className={styles.emptyText}>
-              {category
-                ? "That category has no published articles right now. The rest of the blog is one click away."
-                : "We write about what we actually run: service levels, back-office throughput, and the systems we build around them. Until the first one lands, our work speaks for us."}
-            </p>
-            <Link className={styles.emptyCta} href={category ? base : `/${lang}/quote`}>
-              {category ? "See all articles" : "Request a quote"}
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className={styles.list} data-count={shape}>
-              {shape === "many" ? (
-                <Entry post={lead} shape="lead" base={base} />
-              ) : (
-                posts.map((entry) => (
-                  <Entry key={entry.slug} post={entry} shape={posts.length === 1 ? "lead" : "grid"} base={base} />
-                ))
-              )}
-            </div>
-
-            {shape === "many" && (
-              <div className={styles.rest}>
-                {rest.map((entry) => (
-                  <Entry key={entry.slug} post={entry} shape="grid" base={base} />
-                ))}
-              </div>
+        <div className={styles.layout}>
+          <aside className={styles.sidebar}>
+            {categories.length > 0 && (
+              <nav aria-label="Filter by category">
+                <span className={styles.sidebarTitle}>Topics</span>
+                <ul className={styles.topicList}>
+                  <li>
+                    <Link
+                      className={styles.topic}
+                      href={base}
+                      aria-current={!category ? "page" : undefined}
+                    >
+                      All
+                      <span className={styles.topicCount}>{all.length}</span>
+                    </Link>
+                  </li>
+                  {categories.map((entry) => (
+                    <li key={entry.slug}>
+                      <Link
+                        className={styles.topic}
+                        href={`${base}?category=${entry.slug}`}
+                        aria-current={category === entry.slug ? "page" : undefined}
+                      >
+                        {entry.name}
+                        <span className={styles.topicCount}>{entry.count}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             )}
-          </>
-        )}
+
+            {latest.length > 0 && (
+              <section className={styles.latest}>
+                <span className={styles.sidebarTitle}>Latest</span>
+                <ul className={styles.latestList}>
+                  {latest.map((entry) => (
+                    <li key={entry.slug}>
+                      <Link className={styles.latestItem} href={`${base}/${entry.slug}`}>
+                        <span className={styles.latestMeta}>
+                          <time dateTime={entry.publishedAt}>
+                            {dateFormat.format(new Date(entry.publishedAt))}
+                          </time>
+                          <span className={styles.metaDot} aria-hidden="true" />
+                          <span>{entry.readingMinutes} min</span>
+                        </span>
+                        <span className={styles.latestTitle}>{entry.title}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section className={styles.pitch}>
+              <p className={styles.pitchText}>
+                Running an operation that needs this kind of work? Tell us what you are
+                measuring and we will tell you what it takes.
+              </p>
+              <Link className={styles.pitchCta} href={`/${lang}/quote`}>
+                Request a quote
+              </Link>
+            </section>
+          </aside>
+
+          <div className={styles.main}>
+            {shape === "empty" ? (
+              <div className={styles.empty}>
+                <span className={styles.emptyMark} aria-hidden="true">
+                  <ImageMark />
+                </span>
+                <h2 className={styles.emptyTitle}>
+                  {category ? "Nothing filed under that yet" : "The first piece is on its way"}
+                </h2>
+                <p className={styles.emptyText}>
+                  {category
+                    ? "That category has no published articles right now. The rest of the blog is one click away."
+                    : "We write about what we actually run: service levels, back-office throughput, and the systems we build around them. Until the first one lands, our work speaks for us."}
+                </p>
+                <Link className={styles.emptyCta} href={category ? base : `/${lang}/quote`}>
+                  {category ? "See all articles" : "Request a quote"}
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className={styles.list} data-count={shape}>
+                  {shape === "many" ? (
+                    <Entry post={lead} shape="lead" base={base} />
+                  ) : (
+                    posts.map((entry) => (
+                      <Entry
+                        key={entry.slug}
+                        post={entry}
+                        shape={posts.length === 1 ? "lead" : "grid"}
+                        base={base}
+                      />
+                    ))
+                  )}
+                </div>
+
+                {shape === "many" && (
+                  <div className={styles.rest}>
+                    {rest.map((entry) => (
+                      <Entry key={entry.slug} post={entry} shape="grid" base={base} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

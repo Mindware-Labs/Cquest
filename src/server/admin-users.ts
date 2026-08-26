@@ -1,8 +1,11 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { asc, count, desc, ilike, or } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { db } from "@/db";
+import { user } from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { requireAdmin } from "@/lib/auth-guard";
 import { withOtpPurpose } from "@/lib/emails/otp-context";
@@ -85,12 +88,84 @@ export async function resendWelcomeEmail(email: string): Promise<ActionResult> {
   return sendWelcomeCode(parsed.data);
 }
 
-export async function listAdminUsers() {
+export type AdminUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  banned: boolean;
+  createdAt: string;
+};
+
+export type AdminUserQuery = {
+  page?: number;
+  perPage?: number;
+  sortKey?: "name" | "createdAt";
+  sortDir?: "asc" | "desc";
+  query?: string;
+};
+
+export type AdminUserPage = {
+  rows: AdminUserRow[];
+  total: number;
+  page: number;
+  perPage: number;
+};
+
+const PER_PAGE_ALLOWED = [10, 25, 50];
+
+// El backslash es el escape por defecto de LIKE en Postgres.
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+/* La lectura va directa a la tabla en vez de a auth.api.listUsers: su búsqueda
+   admite un solo campo (nombre o correo, no ambos) y el listado traía un tope
+   fijo de 100 filas. Las escrituras siguen pasando por Better Auth, que es
+   donde viven sus validaciones y sus hooks. */
+export async function listAdminUsers(query: AdminUserQuery = {}): Promise<AdminUserPage> {
   await requireAdmin();
-  return auth.api.listUsers({
-    headers: await headers(),
-    query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
-  });
+
+  const perPage = PER_PAGE_ALLOWED.includes(query.perPage ?? 0) ? query.perPage! : 10;
+  const needle = query.query?.trim();
+  const where = needle
+    ? or(ilike(user.name, `%${escapeLike(needle)}%`), ilike(user.email, `%${escapeLike(needle)}%`))
+    : undefined;
+
+  const column = query.sortKey === "name" ? user.name : user.createdAt;
+  const direction = query.sortDir === "asc" ? asc : desc;
+
+  const [{ total }] = await db.select({ total: count() }).from(user).where(where);
+
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
+
+  const rows = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      banned: user.banned,
+      createdAt: user.createdAt,
+    })
+    .from(user)
+    .where(where)
+    // Desempate estable: sin él una fila puede repetirse entre dos páginas.
+    .orderBy(direction(column), asc(user.id))
+    .limit(perPage)
+    .offset((page - 1) * perPage);
+
+  return {
+    rows: rows.map((row) => ({
+      id: row.id,
+      name: row.name ?? "",
+      email: row.email,
+      banned: Boolean(row.banned),
+      createdAt: row.createdAt.toISOString(),
+    })),
+    total,
+    page,
+    perPage,
+  };
 }
 
 export async function removeAdminUser(userId: string): Promise<ActionResult> {

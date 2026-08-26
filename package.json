@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "patch-package",
     "seed:admin": "tsx --conditions=react-server --env-file=.env scripts/seed-admin.mts",
+    "seed:posts": "tsx --env-file=.env scripts/seed-posts.mts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "typecheck": "tsc --noEmit -p tsconfig.json",

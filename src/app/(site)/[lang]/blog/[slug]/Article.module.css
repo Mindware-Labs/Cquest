@@ -2,10 +2,16 @@
   padding: clamp(6rem, 12vw, 9rem) var(--gutter, 1.25rem) clamp(5rem, 9vw, 7rem);
 }
 
-.inner {
+.shell {
   width: 100%;
-  max-width: 46rem;
+  max-width: 72rem;
   margin-inline: auto;
+}
+
+/* La cabecera no se estira a los 72rem del contenedor: un titular a todo lo
+   ancho pierde el eje izquierdo que comparte con el cuerpo. */
+.header {
+  max-width: 50rem;
 }
 
 .back {
@@ -98,7 +104,7 @@
 /* La portada rompe la medida de lectura: es la única pieza a todo el ancho. */
 .cover {
   position: relative;
-  width: min(72rem, 100%);
+  width: 100%;
   margin: clamp(2.5rem, 5vw, 3.5rem) auto 0;
   aspect-ratio: 16 / 9;
   overflow: hidden;
@@ -133,8 +139,10 @@
   text-wrap: balance;
 }
 
+/* Con la barra fija encima, saltar desde el índice dejaba el h2 debajo de ella. */
 .prose h2 {
   font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+  scroll-margin-top: 7rem;
 }
 
 .prose h3 {
@@ -307,19 +315,36 @@
   outline-offset: 3px;
 }
 
-/* ---------- Seguir leyendo ---------- */
+/* ---------- Columnas ---------- */
 
-.more {
-  width: 100%;
-  max-width: 84rem;
-  margin: clamp(4rem, 8vw, 6rem) auto 0;
-  padding-top: clamp(2.5rem, 5vw, 3.5rem);
-  border-top: 1px solid var(--border);
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(13rem, 19vw, 16rem);
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+  align-items: start;
 }
 
-.moreTitle {
+/* La medida manda sobre la rejilla: el sobrante queda entre texto y columna. */
+.main {
+  min-width: 0;
+  max-width: 46rem;
+}
+
+.aside {
+  position: sticky;
+  top: 7rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 2.75rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  padding-inline-start: clamp(1.25rem, 2.5vw, 2rem);
+  border-inline-start: 1px solid var(--border);
+}
+
+.asideTitle {
+  display: block;
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   line-height: 1;
@@ -327,15 +352,75 @@
   color: var(--brand-petroleo);
 }
 
+/* ---------- Índice del artículo ---------- */
+
+.tocList {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.tocLink {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0 0.5rem 1.1rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.22s var(--ease-out);
+}
+
+/* Marca activa sobre la regla de la columna, no dentro del texto. */
+.tocLink::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * clamp(1.25rem, 2.5vw, 2rem) - 1px);
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 2px;
+  background: var(--brand-celeste);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 0.28s var(--ease-out);
+}
+
+.tocLink:hover {
+  color: var(--foreground);
+}
+
+.tocLink[aria-current="true"] {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.tocLink[aria-current="true"]::before {
+  transform: scaleY(1);
+}
+
+.tocLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Seguir leyendo ---------- */
+
 .moreList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  gap: clamp(1.75rem, 3vw, 2.5rem);
-  margin-top: 1.75rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.moreList li + li {
+  margin-top: 0.35rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
 }
 
 .moreItem {
   display: block;
+  padding-block: 0.35rem;
   text-decoration: none;
   color: inherit;
 }
@@ -345,11 +430,24 @@
   outline-offset: 4px;
 }
 
-.moreItemTitle {
-  margin: 0.5rem 0 0;
-  font-size: 1.05rem;
+.moreItemMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  line-height: 1.3;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.moreItemTitle {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.35;
   letter-spacing: -0.01em;
   color: var(--foreground);
 }
@@ -359,8 +457,48 @@
   text-underline-offset: 4px;
 }
 
+/* Bajo el pliegue la columna se apila: un índice pegajoso en móvil estorba,
+   y los relacionados sí valen como cierre. */
+@media (max-width: 64rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .main {
+    max-width: none;
+  }
+
+  .aside {
+    position: static;
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    padding-inline-start: 0;
+    padding-top: clamp(2rem, 4vw, 2.75rem);
+    border-inline-start: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .moreList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.5rem;
+  }
+
+  .moreList li + li {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .footCta {
+  .footCta,
+  .tocLink,
+  .tocLink::before {
     transition: none;
   }
 }

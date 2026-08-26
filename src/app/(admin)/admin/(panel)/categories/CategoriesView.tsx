@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Modal from "@/components/admin/Modal";
@@ -15,12 +15,13 @@ import {
   type CategoryRow,
 } from "@/server/categories";
 import t from "@/components/admin/dataTable.module.css";
+import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
+import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import styles from "./CategoriesView.module.css";
 
 type SortKey = "name" | "createdAt";
 type SortDir = "asc" | "desc";
 
-const PER_PAGE_OPTIONS = [10, 25, 50].map((n) => ({ value: String(n), label: String(n) }));
 const STAGGER_LIMIT = 8;
 
 const EMPTY = { name: "", description: "" };
@@ -107,19 +108,25 @@ function Caret({ dir }: { dir: SortDir | null }) {
   );
 }
 
-function pageList(current: number, total: number): (number | "gap")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const out: (number | "gap")[] = [1];
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  if (from > 2) out.push("gap");
-  for (let i = from; i <= to; i++) out.push(i);
-  if (to < total - 1) out.push("gap");
-  out.push(total);
-  return out;
-}
+type Props = {
+  categories: CategoryRow[];
+  total: number;
+  page: number;
+  perPage: number;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  query: string;
+};
 
-export default function CategoriesView({ categories }: { categories: CategoryRow[] }) {
+export default function CategoriesView({
+  categories,
+  total,
+  page,
+  perPage,
+  sortKey,
+  sortDir,
+  query,
+}: Props) {
   const router = useRouter();
   const toast = useToast();
   const reduced = useReducedMotion() ?? false;
@@ -129,12 +136,18 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
   const descriptionId = useId();
 
   const [view, setView] = useState<"list" | "grid">("list");
-  const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [perPage, setPerPage] = useState(10);
-  const [page, setPage] = useState(1);
+  const { pending, setParams } = useTableParams();
+  const [text, setText] = useDebouncedSearch(query, (next) =>
+    navigate({ q: next || null, page: 1 }),
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  /* La selección no cruza de página: la barra de acciones dice "en esta página"
+     y actuar en bloque sobre filas que ya no se ven es el error fácil. */
+  function navigate(next: Record<string, string | number | null>) {
+    setSelected(new Set());
+    setParams(next);
+  }
 
   const [editing, setEditing] = useState<CategoryRow | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -145,21 +158,8 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
   const [saving, startSaving] = useTransition();
   const [busy, setBusy] = useState(false);
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const base = needle
-      ? categories.filter((c) => `${c.name} ${c.slug}`.toLowerCase().includes(needle))
-      : categories;
-    return [...base].sort((a, b) => {
-      const value =
-        sortKey === "name" ? a.name.localeCompare(b.name, "en") : a.createdAt.localeCompare(b.createdAt);
-      return sortDir === "asc" ? value : -value;
-    });
-  }, [categories, query, sortKey, sortDir]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const safePage = Math.min(page, totalPages);
-  const visible = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const visible = categories;
 
   const allChecked = visible.length > 0 && visible.every((c) => selected.has(c.id));
   const someChecked = visible.some((c) => selected.has(c.id)) && !allChecked;
@@ -249,12 +249,8 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
   }
 
   function sortBy(key: SortKey) {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-      return;
-    }
-    setSortKey(key);
-    setSortDir(key === "name" ? "asc" : "desc");
+    const dir = key === sortKey ? (sortDir === "asc" ? "desc" : "asc") : key === "name" ? "asc" : "desc";
+    navigate({ sort: key, dir, page: 1 });
   }
 
   function rowActions(row: CategoryRow) {
@@ -302,10 +298,9 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
           <input
             className={t.searchInput}
             type="search"
-            value={query}
+            value={text}
             onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
+              setText(event.target.value);
             }}
             placeholder="Buscar por nombre o slug"
             aria-label="Buscar categorías"
@@ -388,7 +383,7 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
-                Categorías del blog, {filtered.length} en total, página {safePage} de {totalPages}.
+                Categorías del blog, {total} en total, página {page} de {totalPages}.
               </caption>
               <thead>
                 <tr>
@@ -495,8 +490,7 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
             value={String(perPage)}
             options={PER_PAGE_OPTIONS}
             onChange={(next) => {
-              setPerPage(Number(next));
-              setPage(1);
+              navigate({ perPage: Number(next), page: 1 });
             }}
             label="Categorías por página"
           />
@@ -507,13 +501,13 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
           <button
             className={t.pageButton}
             type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={safePage === 1}
+            onClick={() => navigate({ page: Math.max(1, page - 1) })}
+            disabled={page === 1 || pending}
             aria-label="Página anterior"
           >
             <Icon name="prev" />
           </button>
-          {pageList(safePage, totalPages).map((entry, i) =>
+          {pageList(page, totalPages).map((entry, i) =>
             entry === "gap" ? (
               <span key={`gap-${i}`} className={t.ellipsis} aria-hidden="true">
                 …
@@ -523,8 +517,8 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
                 key={entry}
                 className={t.pageButton}
                 type="button"
-                onClick={() => setPage(entry)}
-                aria-current={entry === safePage ? "page" : undefined}
+                onClick={() => navigate({ page: entry })}
+                aria-current={entry === page ? "page" : undefined}
                 aria-label={`Página ${entry}`}
               >
                 {entry}
@@ -534,8 +528,8 @@ export default function CategoriesView({ categories }: { categories: CategoryRow
           <button
             className={t.pageButton}
             type="button"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={safePage === totalPages}
+            onClick={() => navigate({ page: Math.min(totalPages, page + 1) })}
+            disabled={page === totalPages || pending}
             aria-label="Página siguiente"
           >
             <Icon name="next" />

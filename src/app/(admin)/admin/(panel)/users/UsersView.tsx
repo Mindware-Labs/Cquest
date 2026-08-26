@@ -15,6 +15,8 @@ import {
   setUserBanned,
 } from "@/server/admin-users";
 import t from "@/components/admin/dataTable.module.css";
+import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
+import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import styles from "./UsersView.module.css";
 
 export type AdminUser = {
@@ -33,7 +35,6 @@ type Pending =
 type SortKey = "name" | "createdAt";
 type SortDir = "asc" | "desc";
 
-const PER_PAGE_OPTIONS = [10, 25, 50].map((n) => ({ value: String(n), label: String(n) }));
 const STAGGER_LIMIT = 8;
 
 const schema = z.object({
@@ -173,25 +174,27 @@ function Caret({ dir }: { dir: SortDir | null }) {
   );
 }
 
-function pageList(current: number, total: number): (number | "gap")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const out: (number | "gap")[] = [1];
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  if (from > 2) out.push("gap");
-  for (let i = from; i <= to; i++) out.push(i);
-  if (to < total - 1) out.push("gap");
-  out.push(total);
-  return out;
-}
+type Props = {
+  users: AdminUser[];
+  currentUserId: string;
+  total: number;
+  page: number;
+  perPage: number;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  query: string;
+};
 
 export default function UsersView({
   users,
   currentUserId,
-}: {
-  users: AdminUser[];
-  currentUserId: string;
-}) {
+  total,
+  page,
+  perPage,
+  sortKey,
+  sortDir,
+  query,
+}: Props) {
   const router = useRouter();
   const toast = useToast();
   const nameId = useId();
@@ -200,12 +203,18 @@ export default function UsersView({
   const allRef = useRef<HTMLInputElement>(null);
 
   const [view, setView] = useState<"list" | "grid">("list");
-  const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("createdAt");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [perPage, setPerPage] = useState(10);
-  const [page, setPage] = useState(1);
+  const { pending: navigating, setParams } = useTableParams();
+  const [text, setText] = useDebouncedSearch(query, (next) =>
+    navigate({ q: next || null, page: 1 }),
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  /* La selección no cruza de página: la barra de acciones dice "en esta página"
+     y actuar en bloque sobre filas que ya no se ven es el error fácil. */
+  function navigate(next: Record<string, string | number | null>) {
+    setSelected(new Set());
+    setParams(next);
+  }
 
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
@@ -221,23 +230,8 @@ export default function UsersView({
      durante el render es impuro y da resultados que no cuadran entre sí. */
   const [now] = useState(() => Date.now());
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const base = needle
-      ? users.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(needle))
-      : users;
-    return [...base].sort((a, b) => {
-      const value =
-        sortKey === "name"
-          ? (a.name || a.email).localeCompare(b.name || b.email, "es")
-          : a.createdAt.localeCompare(b.createdAt);
-      return sortDir === "asc" ? value : -value;
-    });
-  }, [users, query, sortKey, sortDir]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const safePage = Math.min(page, totalPages);
-  const visible = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const visible = users;
 
   const allChecked = visible.length > 0 && visible.every((u) => selected.has(u.id));
   const someChecked = visible.some((u) => selected.has(u.id)) && !allChecked;
@@ -288,11 +282,10 @@ export default function UsersView({
 
   function sortBy(key: SortKey) {
     if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      navigate({ sort: key, dir: sortDir === "asc" ? "desc" : "asc", page: 1 });
       return;
     }
-    setSortKey(key);
-    setSortDir(key === "name" ? "asc" : "desc");
+    navigate({ sort: key, dir: key === "name" ? "asc" : "desc", page: 1 });
   }
 
   function handleCreate(event: React.FormEvent<HTMLFormElement>) {
@@ -512,10 +505,9 @@ export default function UsersView({
           <input
             className={t.searchInput}
             type="search"
-            value={query}
+            value={text}
             onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
+              setText(event.target.value);
             }}
             placeholder="Buscar por nombre o correo"
             aria-label="Buscar usuarios"
@@ -621,7 +613,7 @@ export default function UsersView({
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
-                Personal con acceso al panel, {filtered.length} en total, página {safePage} de {totalPages}.
+                Personal con acceso al panel, {total} en total, página {page} de {totalPages}.
               </caption>
               <thead>
                 <tr>
@@ -746,8 +738,7 @@ export default function UsersView({
             value={String(perPage)}
             options={PER_PAGE_OPTIONS}
             onChange={(next) => {
-              setPerPage(Number(next));
-              setPage(1);
+              navigate({ perPage: Number(next), page: 1 });
             }}
             label="Usuarios por página"
           />
@@ -758,13 +749,13 @@ export default function UsersView({
           <button
             className={t.pageButton}
             type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={safePage === 1}
+            onClick={() => navigate({ page: Math.max(1, page - 1) })}
+            disabled={page === 1 || navigating}
             aria-label="Página anterior"
           >
             <Icon name="prev" />
           </button>
-          {pageList(safePage, totalPages).map((entry, i) =>
+          {pageList(page, totalPages).map((entry, i) =>
             entry === "gap" ? (
               <span key={`gap-${i}`} className={t.ellipsis} aria-hidden="true">
                 …
@@ -774,8 +765,8 @@ export default function UsersView({
                 key={entry}
                 className={t.pageButton}
                 type="button"
-                onClick={() => setPage(entry)}
-                aria-current={entry === safePage ? "page" : undefined}
+                onClick={() => navigate({ page: entry })}
+                aria-current={entry === page ? "page" : undefined}
                 aria-label={`Página ${entry}`}
               >
                 {entry}
@@ -785,8 +776,8 @@ export default function UsersView({
           <button
             className={t.pageButton}
             type="button"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={safePage === totalPages}
+            onClick={() => navigate({ page: Math.min(totalPages, page + 1) })}
+            disabled={page === totalPages || navigating}
             aria-label="Página siguiente"
           >
             <Icon name="next" />
