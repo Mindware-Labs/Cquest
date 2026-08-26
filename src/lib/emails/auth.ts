@@ -34,12 +34,13 @@ function footNote(text: string): string {
 export type BuiltEmail = { subject: string; html: string; text: string };
 
 // Construir y enviar separados: permite revisar la plantilla sin enviar nada.
+// El alta la hizo un admin: quien recibe esto no tiene ninguna ventana abierta.
 export function buildWelcomeOtpEmail(opts: {
   to: string;
   name: string;
   otp: string;
 }): BuiltEmail {
-  const link = `${siteUrl()}/admin/reset-password?email=${encodeURIComponent(opts.to)}`;
+  const link = `${siteUrl()}/admin/reset-password?email=${encodeURIComponent(opts.to)}&paso=codigo`;
   const html = emailShell({
     preheader: `Tu código para activar el acceso al panel: ${opts.otp}`,
     accent: ACCENT,
@@ -50,7 +51,8 @@ export function buildWelcomeOtpEmail(opts: {
           "Se creó tu cuenta en el panel de Center Quest. Define tu contraseña con este código de un solo uso.",
         ) +
         otpBlock(opts.otp) +
-        `<div style="margin-top:22px;"><a href="${escapeHtml(link)}" style="display:inline-block;padding:13px 24px;background:${C.ink};color:#ffffff;text-decoration:none;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Definir contraseña</a></div>` +
+        `<div style="margin-top:22px;"><a href="${escapeHtml(link)}" style="display:inline-block;padding:13px 24px;background:${C.ink};color:#ffffff;text-decoration:none;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Definir mi contraseña</a></div>` +
+        paragraph("El botón te lleva a la pantalla donde escribes el código y eliges tu contraseña.") +
         footNote(
           "Si no esperabas este correo, ignóralo: sin el código nadie puede activar la cuenta.",
         ),
@@ -63,7 +65,7 @@ export function buildWelcomeOtpEmail(opts: {
     "Se creó tu cuenta en el panel de Center Quest.",
     `Código de un solo uso: ${opts.otp} (caduca en ${OTP_MINUTES} minutos)`,
     "",
-    `Define tu contraseña: ${link}`,
+    `Define tu contraseña aquí: ${link}`,
     "",
     "Si no esperabas este correo, ignóralo.",
   ].join("\n");
@@ -83,7 +85,6 @@ export function buildPasswordResetOtpEmail(opts: {
   to: string;
   otp: string;
 }): BuiltEmail {
-  const link = `${siteUrl()}/admin/reset-password?email=${encodeURIComponent(opts.to)}`;
   const html = emailShell({
     preheader: `Tu código para restablecer la contraseña: ${opts.otp}`,
     accent: ACCENT,
@@ -92,7 +93,7 @@ export function buildPasswordResetOtpEmail(opts: {
         heading("Código de verificación") +
         paragraph("Usa este código para definir una contraseña nueva en el panel de Center Quest.") +
         otpBlock(opts.otp) +
-        `<div style="margin-top:22px;"><a href="${escapeHtml(link)}" style="display:inline-block;padding:13px 24px;background:${C.ink};color:#ffffff;text-decoration:none;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Restablecer contraseña</a></div>` +
+        paragraph("Escribe el código en la ventana donde lo pediste.") +
         footNote(
           "Si no pediste este cambio, ignora el correo: tu contraseña actual sigue siendo válida.",
         ),
@@ -104,7 +105,7 @@ export function buildPasswordResetOtpEmail(opts: {
     "",
     `Código: ${opts.otp} (caduca en ${OTP_MINUTES} minutos)`,
     "",
-    `Restablecer: ${link}`,
+    "Escribe el código en la ventana donde lo pediste.",
     "",
     "Si no pediste este cambio, ignora el correo.",
   ].join("\n");

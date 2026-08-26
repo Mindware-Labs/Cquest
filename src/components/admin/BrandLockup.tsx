@@ -5,7 +5,8 @@ import styles from "./BrandLockup.module.css";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export default function BrandLockup() {
+/* Compacto para el rail: el lockup completo se diseñó para el panel ancho del login. */
+export default function BrandLockup({ compact = false }: { compact?: boolean }) {
   const reduced = useReducedMotion() ?? false;
   const rise = (delay: number) =>
     reduced
@@ -17,7 +18,7 @@ export default function BrandLockup() {
         };
 
   return (
-    <div className={styles.lockup}>
+    <div className={compact ? `${styles.lockup} ${styles.compact}` : styles.lockup}>
       <motion.span className={styles.mark} aria-hidden="true" {...rise(0)} />
       <motion.span
         className={styles.divider}

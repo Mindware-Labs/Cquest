@@ -1,0 +1,124 @@
+.viewport {
+  position: fixed;
+  z-index: 60;
+  right: clamp(1rem, 2vw, 1.75rem);
+  bottom: clamp(1rem, 2vw, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: min(24rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.7rem;
+  padding: 0.9rem 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  box-shadow: 0 22px 50px -24px rgba(10, 17, 22, 0.5);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.05rem;
+  border-radius: 999px;
+  color: var(--surface-raised);
+  background: var(--tone);
+}
+
+.body {
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.description {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.15rem -0.15rem 0 0;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.18s var(--ease-out), background 0.18s var(--ease-out);
+}
+
+.close:hover {
+  color: var(--foreground);
+  background: var(--surface-sunken);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* La regla es el temporizador: al agotarse dispara el cierre. No es adorno,
+   así que sigue corriendo con prefers-reduced-motion. */
+.timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left center;
+  background: var(--tone);
+  animation: drain linear forwards;
+}
+
+.toast:hover .timer,
+.toast:focus-within .timer {
+  animation-play-state: paused;
+}
+
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (max-width: 42rem) {
+  .viewport {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close {
+    transition: none;
+  }
+}

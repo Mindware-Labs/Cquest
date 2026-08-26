@@ -1,0 +1,32 @@
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 16.5rem) minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--background);
+  transition: grid-template-columns 0.32s var(--ease-out);
+}
+
+:global(html[data-rail="collapsed"]) .shell {
+  grid-template-columns: minmax(0, 4.75rem) minmax(0, 1fr);
+}
+
+.content {
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 3.5rem);
+}
+
+@media (max-width: 64rem) {
+  .shell,
+  :global(html[data-rail="collapsed"]) .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content {
+    padding: 2rem 1.25rem 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell {
+    transition: none;
+  }
+}

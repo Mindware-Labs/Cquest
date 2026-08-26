@@ -1,0 +1,389 @@
+/* ---------- Barra superior, solo en compacto ---------- */
+
+.topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--ink);
+  border-bottom: 1px solid var(--ink-line);
+}
+
+.burger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0 0.65rem;
+  border: 1px solid var(--ink-line-strong);
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.burger span {
+  display: block;
+  height: 1px;
+  background: var(--ink-text-strong);
+  transition: transform 0.28s var(--ease-out), opacity 0.2s var(--ease-out);
+}
+
+.burger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.burger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+.burger:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 2px;
+}
+
+.scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--ink) 62%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+/* ---------- Rail ---------- */
+
+.rail {
+  display: grid;
+  /* Sin esto la columna implícita es max-content y los hijos desbordan el rail. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  height: 100svh;
+  position: sticky;
+  top: 0;
+  padding: clamp(1.25rem, 1.8vw, 1.6rem) 0 1.25rem;
+  background: var(--ink);
+  border-right: 1px solid var(--ink-line);
+  /* clip y no hidden: hidden rompería el position sticky. */
+  overflow-x: clip;
+}
+
+.head {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 clamp(1.25rem, 2vw, 1.75rem) 1.25rem;
+}
+
+/* Mismo cuerpo que los ítems del nav: hairline, 2px, celeste al tocarlo. */
+.fold {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--ink-line-strong);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-text);
+  cursor: pointer;
+  transition:
+    color 0.22s var(--ease-out),
+    background 0.22s var(--ease-out),
+    border-color 0.22s var(--ease-out);
+}
+
+.fold svg {
+  transition: transform 0.32s var(--ease-out);
+}
+
+.fold:hover {
+  color: var(--ink);
+  background: var(--brand-celeste);
+  border-color: var(--brand-celeste);
+}
+
+.fold:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 2px;
+}
+
+.itemLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav {
+  min-width: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ink-line);
+}
+
+.navLabel {
+  display: block;
+  padding: 0 clamp(1.25rem, 2vw, 1.75rem);
+  margin-bottom: 0.9rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: color-mix(in srgb, #ffffff 38%, var(--ink));
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Regla celeste deslizante, no fondo tipo píldora. */
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.7rem clamp(1.25rem, 2vw, 1.75rem);
+  color: var(--ink-text);
+  font-size: 0.88rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color 0.22s var(--ease-out), background 0.22s var(--ease-out);
+}
+
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 2px;
+  background: var(--brand-celeste);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.28s var(--ease-out);
+}
+
+.item:hover {
+  color: var(--ink-text-strong);
+  background: color-mix(in srgb, #ffffff 4%, var(--ink));
+}
+
+.item:hover::before {
+  transform: scaleY(0.4);
+}
+
+.item[aria-current="page"] {
+  color: #ffffff;
+  background: color-mix(in srgb, #ffffff 5%, var(--ink));
+}
+
+.item[aria-current="page"]::before {
+  transform: scaleY(1);
+}
+
+.item svg {
+  flex: none;
+  color: currentColor;
+  opacity: 0.72;
+}
+
+.item[aria-current="page"] svg {
+  color: var(--brand-celeste);
+  opacity: 1;
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: -2px;
+}
+
+/* ---------- Usuario ---------- */
+
+.user {
+  margin: 1.25rem clamp(1.25rem, 2vw, 1.75rem) 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ink-line);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--ink-line-strong);
+  border-radius: 2px;
+  color: var(--brand-celeste);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: color-mix(in srgb, #ffffff 42%, var(--ink));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.signOut {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-text);
+  cursor: pointer;
+  transition: color 0.22s var(--ease-out), background 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
+}
+
+.signOut:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--brand-celeste);
+  border-color: var(--brand-celeste);
+}
+
+.signOut:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+
+.signOut:focus-visible {
+  outline: 2px solid var(--brand-celeste);
+  outline-offset: 2px;
+}
+
+/* ---------- Plegado (solo escritorio) ---------- */
+
+@media (min-width: 64.0625rem) {
+  :global(html[data-rail="collapsed"]) .head {
+    flex-direction: column;
+    gap: 1rem;
+    padding-inline: 0;
+  }
+
+  :global(html[data-rail="collapsed"]) .navLabel {
+    visibility: hidden;
+  }
+
+  :global(html[data-rail="collapsed"]) .item {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  /* Oculto a la vista pero legible por lector de pantalla. */
+  :global(html[data-rail="collapsed"]) .itemLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :global(html[data-rail="collapsed"]) .user {
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-inline: 0.75rem;
+  }
+
+  :global(html[data-rail="collapsed"]) .identity {
+    display: none;
+  }
+
+  /* El chevron apunta al otro lado cuando el rail ya está plegado. */
+  :global(html[data-rail="collapsed"]) .fold svg {
+    transform: scaleX(-1);
+  }
+}
+
+/* ---------- Compacto ---------- */
+
+@media (max-width: 64rem) {
+  .topbar {
+    display: flex;
+  }
+
+  /* En cajón el plegado no aplica: se abre y se cierra entero. */
+  .fold {
+    display: none;
+  }
+
+  .scrim {
+    display: block;
+  }
+
+  .scrim[data-open="true"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .rail {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    left: 0;
+    width: min(19rem, 84vw);
+    transform: translateX(-100%);
+    transition: transform 0.34s var(--ease-out);
+    box-shadow: 0 0 60px -12px rgba(0, 0, 0, 0.7);
+  }
+
+  .rail[data-open="true"] {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .scrim,
+  .item,
+  .item::before,
+  .burger span,
+  .signOut,
+  .fold,
+  .fold svg {
+    transition: none;
+  }
+}

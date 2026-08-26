@@ -259,6 +259,210 @@
   }
 }
 
+.eyebrowDone {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--brand-verde);
+}
+
+.lead {
+  margin: 1.35rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.leadStrong {
+  font-weight: 600;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+.steps {
+  margin-top: 1.35rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.stepBar {
+  height: 2px;
+  background: var(--border);
+  transition: background 0.35s var(--ease-out);
+}
+
+.stepBar[data-state="current"] {
+  background: var(--brand-petroleo);
+}
+
+.stepBar[data-state="done"] {
+  background: color-mix(in srgb, var(--brand-verde) 70%, var(--border));
+}
+
+.leadTight {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Acción secundaria: no compite con el botón principal del paso. */
+.ghost {
+  align-self: flex-start;
+  min-height: 2.75rem;
+  padding: 0.6rem 0;
+  border: none;
+  background: none;
+  color: var(--brand-petroleo);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.ghost:hover:not(:disabled) {
+  border-bottom-color: var(--brand-petroleo);
+}
+
+.ghost:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.ghost:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.checklist {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  transition: color 0.25s var(--ease-out);
+}
+
+.checklist li svg {
+  flex: none;
+  transition: color 0.25s var(--ease-out);
+}
+
+/* Sin escribir nada todavía: requisito pendiente, no error. */
+.checklist li[data-state="idle"] {
+  color: var(--text-tertiary);
+}
+
+.checklist li[data-state="idle"] svg {
+  color: var(--border);
+}
+
+.checklist li[data-state="unmet"] {
+  color: var(--danger-text);
+}
+
+.checklist li[data-state="unmet"] svg {
+  color: var(--danger);
+}
+
+.checklist li[data-state="met"] {
+  color: var(--text-secondary);
+}
+
+.checklist li[data-state="met"] svg {
+  color: var(--brand-verde);
+}
+
+/* Mismo cuerpo que .submit pero como enlace: el paso final navega, no envía. */
+.submitLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    background 0.24s var(--ease-out),
+    border-color 0.24s var(--ease-out);
+}
+
+.submitLink:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.submitLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.linkButton {
+  min-height: 2.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.linkButton:hover {
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+}
+
+.linkButton:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.errorSpaced {
+  margin-top: 1.25rem;
+}
+
+.actions {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .footer {
   margin-top: 1.6rem;
   padding-top: 1.35rem;
@@ -301,7 +505,11 @@
   .input,
   .submit,
   .link,
-  .reveal {
+  .reveal,
+  .stepBar,
+  .checklist li,
+  .checklist li svg,
+  .submitLink {
     transition: none;
   }
 

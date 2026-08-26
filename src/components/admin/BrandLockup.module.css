@@ -49,6 +49,26 @@
   color: var(--ink-text-strong);
 }
 
+/* ---------- Variante compacta ---------- */
+
+.compact {
+  gap: 0.7rem;
+}
+
+.compact .mark {
+  height: 1.7rem;
+}
+
+.compact .divider {
+  height: 1.5rem;
+}
+
+.compact .name {
+  gap: 0.22rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+}
+
 @media (max-width: 64rem) {
   .lockup {
     gap: 0.9rem;
@@ -65,5 +85,21 @@
   .name {
     font-size: 0.66rem;
     letter-spacing: 0.22em;
+  }
+}
+
+/* Plegado (solo escritorio): queda el monograma, que ya identifica la marca. */
+@media (min-width: 64.0625rem) {
+  :global(html[data-rail="collapsed"]) .lockup {
+    gap: 0;
+  }
+
+  :global(html[data-rail="collapsed"]) .divider,
+  :global(html[data-rail="collapsed"]) .name {
+    display: none;
+  }
+
+  :global(html[data-rail="collapsed"]) .mark {
+    height: 1.9rem;
   }
 }

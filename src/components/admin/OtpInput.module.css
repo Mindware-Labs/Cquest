@@ -1,0 +1,66 @@
+.group {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.slot {
+  width: 100%;
+  min-height: 3.4rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
+}
+
+.slot:focus {
+  outline: none;
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+/* Una casilla llena se lee como escalón cumplido, no como campo pendiente. */
+.slot:not(:placeholder-shown),
+.slot[value]:not([value=""]) {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 45%, var(--border));
+}
+
+.group[data-invalid="true"] .slot {
+  border-color: var(--danger);
+}
+
+.group[data-invalid="true"] .slot:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+.slot:disabled {
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 26rem) {
+  .group {
+    gap: 0.35rem;
+  }
+
+  .slot {
+    min-height: 3rem;
+    font-size: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot {
+    transition: none;
+  }
+}

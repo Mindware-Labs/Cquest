@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
+import { clock, useRateLimitLock } from "@/components/admin/useRateLimitLock";
 import styles from "@/components/admin/fields.module.css";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -27,57 +28,11 @@ function messageFor(status: number | undefined, code: string | undefined): strin
   return "No se pudo iniciar sesión. Inténtalo de nuevo.";
 }
 
-function clock(seconds: number): string {
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 const LOCK_KEY = "cq.admin.login.lock-until";
 
 /* Texto sin cifras: el número vive en el botón y aquí re-anunciaría cada segundo. */
 const LOCK_NOTICE =
   "Demasiados intentos seguidos. El acceso se rehabilita cuando termine la cuenta atrás.";
-
-// El bloqueo lo impone el servidor; esto solo evita que la UI lo olvide al recargar.
-const lockListeners = new Set<() => void>();
-
-// getSnapshot corre en cada render: sin caché sería una lectura de disco por render.
-let cached: string | null | undefined;
-
-function readLockUntil(): string | null {
-  if (cached === undefined) {
-    try {
-      cached = localStorage.getItem(LOCK_KEY);
-    } catch {
-      cached = null;
-    }
-  }
-  return cached;
-}
-
-function writeLockUntil(until: number | null) {
-  cached = until ? String(until) : null;
-  try {
-    if (until) localStorage.setItem(LOCK_KEY, cached!);
-    else localStorage.removeItem(LOCK_KEY);
-  } catch {}
-  for (const notify of lockListeners) notify();
-}
-
-function subscribeLock(onChange: () => void) {
-  const external = () => {
-    cached = undefined;
-    onChange();
-  };
-  lockListeners.add(onChange);
-  window.addEventListener("storage", external);
-  return () => {
-    lockListeners.delete(onChange);
-    window.removeEventListener("storage", external);
-  };
-}
-
-// Techo de cordura: una marca manipulada no puede dejar el botón muerto para siempre.
-const MAX_LOCK_MS = 60 * 60 * 1000;
 
 function AlertIcon() {
   return (
@@ -112,34 +67,8 @@ export default function LoginForm({ next }: { next?: string }) {
   const [focusAttempt, setFocusAttempt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  /* null en servidor y en la primera pasada: leer localStorage en render rompería la hidratación. */
-  const storedLock = useSyncExternalStore(subscribeLock, readLockUntil, () => null);
-  const parsed = storedLock ? Number(storedLock) : 0;
-  const lockUntil = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const locked = secondsLeft > 0;
+  const { locked, secondsLeft, start: startLock, clear: clearLock } = useRateLimitLock(LOCK_KEY);
 
-  // Se recalcula desde la marca absoluta: restar de a uno se atrasa en pestañas de fondo.
-  useEffect(() => {
-    if (!lockUntil) return;
-    const update = () => {
-      const remaining = lockUntil - Date.now();
-      if (remaining > MAX_LOCK_MS) {
-        writeLockUntil(null);
-        return;
-      }
-      const left = Math.max(0, Math.ceil(remaining / 1000));
-      setSecondsLeft(left);
-      if (left === 0) writeLockUntil(null);
-    };
-    // En timeout y no en el cuerpo del efecto: un setState síncrono encadena renders.
-    const first = setTimeout(update, 0);
-    const id = setInterval(update, 1000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(id);
-    };
-  }, [lockUntil]);
 
   const errors = useMemo(() => {
     const parsed = schema.safeParse({ email, password });
@@ -182,15 +111,14 @@ export default function LoginForm({ next }: { next?: string }) {
       setSubmitting(false);
       if (error.status === 429 && retryAfter > 0) {
         setFormError(null);
-        setSecondsLeft(retryAfter);
-        writeLockUntil(Date.now() + retryAfter * 1000);
+        startLock(retryAfter);
         return;
       }
       setFormError(messageFor(error.status, error.code));
       return;
     }
 
-    writeLockUntil(null);
+    clearLock();
     router.push(safeNext(next));
     router.refresh();
   }
@@ -336,7 +264,7 @@ export default function LoginForm({ next }: { next?: string }) {
       </motion.form>
 
       <motion.div className={styles.footer} {...rise(0.32)}>
-        <Link className={styles.link} href="/admin/forgot-password">
+        <Link className={styles.link} href="/admin/reset-password">
           ¿Olvidaste tu contraseña?
         </Link>
         <span className={styles.note}>Las cuentas se crean desde dentro.</span>

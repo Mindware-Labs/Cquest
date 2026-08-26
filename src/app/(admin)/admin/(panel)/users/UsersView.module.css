@@ -1,0 +1,179 @@
+/* Solo lo propio de esta vista; el chasis vive en dataTable.module.css. */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding: 0.8rem 0.9rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.alert[data-tone="error"] {
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-raised));
+  color: var(--danger-text);
+}
+
+.alert[data-tone="ok"] {
+  background: color-mix(in srgb, var(--brand-verde) 8%, var(--surface-raised));
+  color: color-mix(in srgb, var(--brand-verde) 62%, var(--foreground));
+}
+
+.alert svg {
+  flex: none;
+  margin-top: 0.18rem;
+}
+
+/* ---------- Formulario del modal ---------- */
+
+.form {
+  margin-top: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--danger-text);
+}
+
+.formFoot {
+  margin-top: 1.4rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.formNote {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Confirmación ---------- */
+
+.dialogText {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.dialogFoot {
+  margin-top: 1.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.ghost {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.ghost:hover {
+  background: var(--surface-sunken);
+}
+
+.confirm {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: var(--danger);
+  color: var(--surface-raised);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.confirm:hover:not(:disabled) {
+  background: var(--danger-text);
+}
+
+.confirm:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.ghost:focus-visible,
+.confirm:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .ghost,
+  .confirm {
+    transition: none;
+  }
+}
