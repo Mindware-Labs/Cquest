@@ -2,8 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* Que Node los cargue desde node_modules en vez de empaquetarlos: BlockNote
-     expone su código fuente y el bundler puede resolverlo en lugar del compilado. */
-  serverExternalPackages: ["@blocknote/server-util", "@blocknote/core", "sanitize-html"],
+     expone su código fuente y el bundler puede resolverlo en lugar del compilado.
+     sanitize-html se queda fuera de esta lista: su dependencia htmlparser2 es
+     ESM puro y Node no puede hacerle require() nativo, así que necesita pasar
+     por el bundler para que el interop CJS/ESM funcione. */
+  serverExternalPackages: ["@blocknote/server-util", "@blocknote/core"],
 
   turbopack: {
     root: __dirname,
