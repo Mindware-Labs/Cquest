@@ -8,6 +8,7 @@ import { category, post } from "@/db/schema/blog";
 import { user } from "@/db/schema/auth";
 import { requireAdmin } from "@/lib/auth-guard";
 import { readingMinutes } from "@/lib/blocks";
+import { missingToPublish, type PublishDraft } from "@/lib/publishRules";
 import { renderBlocks } from "@/lib/renderBlocks";
 import { slugify } from "@/lib/slugify";
 
@@ -59,14 +60,36 @@ const draftSchema = z.object({
 
 export type PostInput = z.input<typeof draftSchema>;
 
-/* Publicar exige lo que la página pública necesita para no salir rota: portada
-   con texto alternativo, extracto y categoría. Un borrador no exige nada. */
-const publishSchema = draftSchema.extend({
-  excerpt: z.string().trim().min(20, "El extracto necesita al menos 20 caracteres."),
-  categoryId: z.uuid("Elige una categoría antes de publicar."),
-  coverUrl: z.url("Hace falta una imagen de portada."),
-  coverAlt: z.string().trim().min(3, "La portada necesita texto alternativo."),
-});
+/* Publicar exige lo que la página pública necesita para no salir rota. Las
+   reglas viven en lib/publishRules porque el editor las usa para bloquear el
+   botón: extenderlas aquí con Zod daba mensajes crudos ("expected string,
+   received null") en cuanto un campo llegaba nulo en vez de vacío. */
+function publishBlockers(data: PublishDraft) {
+  const missing = missingToPublish(data);
+  if (missing.length === 0) return null;
+
+  return {
+    ok: false as const,
+    message: missing.map((rule) => rule.message).join(" "),
+    fields: Object.fromEntries(missing.map((rule) => [rule.field, rule.message])),
+  };
+}
+
+function asDraft(data: {
+  title: string;
+  excerpt?: string | null;
+  categoryId?: string | null;
+  coverUrl?: string | null;
+  coverAlt?: string | null;
+}): PublishDraft {
+  return {
+    title: data.title,
+    excerpt: data.excerpt ?? "",
+    categoryId: data.categoryId ?? null,
+    coverUrl: data.coverUrl ?? null,
+    coverAlt: data.coverAlt ?? null,
+  };
+}
 
 function fieldErrors(error: z.ZodError): Record<string, string> {
   const map: Record<string, string> = {};
@@ -246,15 +269,14 @@ export async function publishPost(
   await requireAdmin();
   if (!z.uuid().safeParse(id).success) return { ok: false, message: "Artículo inválido." };
 
-  const parsed = publishSchema.safeParse(input);
+  const parsed = draftSchema.safeParse(input);
   if (!parsed.success) {
-    return {
-      ok: false,
-      message: "Falta algo para poder publicarlo.",
-      fields: fieldErrors(parsed.error),
-    };
+    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
   }
   const data = parsed.data;
+
+  const blocked = publishBlockers(asDraft(data));
+  if (blocked) return blocked;
 
   // El slug se congela cuando el artículo llegó a ser público de verdad, no
   // cuando alguien dejó el estado en published: hasta entonces sigue al título.
@@ -281,8 +303,8 @@ export async function publishPost(
         title: data.title,
         excerpt: data.excerpt,
         categoryId: data.categoryId,
-        coverUrl: data.coverUrl,
-        coverAlt: data.coverAlt,
+        coverUrl: data.coverUrl ?? null,
+        coverAlt: data.coverAlt ?? null,
         coverPathname: data.coverPathname ?? null,
         content: data.content ?? [],
         contentHtml: html,
@@ -337,19 +359,9 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
   if (rows.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
   const row = rows[0];
 
-  const parsed = publishSchema.safeParse({
-    title: row.title,
-    excerpt: row.excerpt,
-    categoryId: row.categoryId,
-    coverUrl: row.coverUrl,
-    coverAlt: row.coverAlt,
-    content: row.content,
-  });
-  if (!parsed.success) {
-    // La tabla no pinta errores por campo: el motivo tiene que caber en el aviso.
-    const fields = fieldErrors(parsed.error);
-    return { ok: false, message: Object.values(fields).join(" "), fields };
-  }
+  // La tabla no pinta errores por campo: el motivo tiene que caber en el aviso.
+  const blocked = publishBlockers(asDraft(row));
+  if (blocked) return blocked;
 
   // Estreno: hasta ahora el slug seguía al título y no había versión renderizada.
   const first = row.publishedAt === null;

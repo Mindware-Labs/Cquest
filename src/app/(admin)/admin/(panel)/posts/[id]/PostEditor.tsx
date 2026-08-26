@@ -9,6 +9,7 @@ import { upload } from "@vercel/blob/client";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import { useToast } from "@/components/admin/Toaster";
+import { missingToPublish } from "@/lib/publishRules";
 import { seoDescriptionFor, seoTitleFor } from "@/lib/seo";
 import { publishPost, savePost, setPostStatus, type PostDetail } from "@/server/posts";
 import type { CategoryRow } from "@/server/categories";
@@ -71,6 +72,7 @@ export default function PostEditor({
   const altId = useId();
   const seoTitleId = useId();
   const seoDescId = useId();
+  const blockedId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState(post.title === "Untitled" ? "" : post.title);
@@ -205,6 +207,18 @@ export default function PostEditor({
   const statusLabel =
     status === "published" ? "Publicado" : status === "hidden" ? "Oculto" : "Borrador";
 
+  /* Las mismas reglas que aplica el servidor: el botón no promete algo que
+     luego se rechaza, ni bloquea algo que sí pasaría. */
+  const missing = missingToPublish({
+    title,
+    excerpt,
+    categoryId: categoryId || null,
+    coverUrl: cover.url,
+    coverAlt: coverAlt || null,
+  });
+  const blocked =
+    missing.length > 0 ? `Falta ${missing.map((rule) => rule.need).join(", ")}.` : undefined;
+
   return (
     <div className={styles.page}>
       <header className={styles.bar}>
@@ -232,9 +246,40 @@ export default function PostEditor({
           <button className={styles.ghost} type="button" onClick={handleSave} disabled={saving}>
             {saving ? "Guardando" : "Guardar borrador"}
           </button>
-          <button className={styles.primary} type="button" onClick={() => setConfirmOpen(true)} disabled={saving}>
-            {status === "published" ? "Actualizar publicación" : "Publicar"}
-          </button>
+          {/* El panel cuelga del botón en vez de usar `title`: una lista se lee
+              de un vistazo y el tooltip del navegador ni se estila ni llega al
+              teclado. aria-disabled y no disabled, porque un botón
+              deshabilitado no recibe foco ni hover en varios navegadores. */}
+          <span className={styles.publishWrap}>
+            <button
+              className={styles.primary}
+              type="button"
+              onClick={() => {
+                if (blocked) {
+                  toast.error("Falta algo para publicar", blocked);
+                  return;
+                }
+                setConfirmOpen(true);
+              }}
+              disabled={saving}
+              aria-disabled={blocked ? true : undefined}
+              aria-describedby={blocked ? blockedId : undefined}
+              data-blocked={blocked ? "" : undefined}
+            >
+              {status === "published" ? "Actualizar publicación" : "Publicar"}
+            </button>
+
+            {missing.length > 0 && (
+              <span className={styles.blockedPanel} id={blockedId} role="tooltip">
+                <span className={styles.blockedTitle}>Falta para publicar</span>
+                <ul className={styles.blockedList}>
+                  {missing.map((rule) => (
+                    <li key={rule.field}>{rule.need}</li>
+                  ))}
+                </ul>
+              </span>
+            )}
+          </span>
         </div>
       </header>
 
@@ -273,7 +318,9 @@ export default function PostEditor({
 
         <aside className={styles.side}>
           <section className={styles.panel}>
-            <h2 className={styles.panelTitle}>Portada</h2>
+            <h2 className={styles.panelTitle}>
+              Portada <span className={styles.optional}>opcional</span>
+            </h2>
             <div className={styles.cover} data-empty={!cover.url}>
               {cover.url ? (
                 <Image src={cover.url} alt="" fill sizes="20rem" />
@@ -342,7 +389,7 @@ export default function PostEditor({
               aria-describedby={`${altId}-help`}
             />
             <span className={styles.help} id={`${altId}-help`}>
-              Lo lee quien no ve la imagen. Obligatorio para publicar.
+              Lo lee quien no ve la imagen. Obligatorio si hay portada.
             </span>
             {errors.coverAlt && (
               <span className={styles.fieldError} role="alert">

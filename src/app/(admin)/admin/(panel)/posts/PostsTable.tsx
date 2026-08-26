@@ -393,27 +393,31 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
 
                     <td className={`${styles.td} ${styles.actionsCell}`}>
                       <span className={styles.actions}>
-                        {row.status === "published" ? (
-                          <a
-                            className={styles.action}
-                            href={`/es/blog/${row.slug}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            title={`Abrir «${row.title}» en el blog`}
-                            aria-label={`Abrir «${row.title}» en el blog`}
-                          >
-                            <Icon name="external" />
-                          </a>
-                        ) : (
-                          <a
-                            className={styles.action}
-                            href={`/es/blog/${row.slug}/preview`}
-                            title={`Previsualizar «${row.title}»`}
-                            aria-label={`Previsualizar «${row.title}»`}
-                          >
-                            <Icon name="eye" />
-                          </a>
-                        )}
+                        {/* Siempre el icono de "abrir fuera": el ojo es del
+                            interruptor de visibilidad, y en un borrador los dos
+                            salían idénticos en la misma fila. */}
+                        <a
+                          className={styles.action}
+                          href={
+                            row.status === "published"
+                              ? `/es/blog/${row.slug}`
+                              : `/es/blog/${row.slug}/preview`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          title={
+                            row.status === "published"
+                              ? `Abrir «${row.title}» en el blog`
+                              : `Previsualizar «${row.title}»`
+                          }
+                          aria-label={
+                            row.status === "published"
+                              ? `Abrir «${row.title}» en el blog`
+                              : `Previsualizar «${row.title}»`
+                          }
+                        >
+                          <Icon name="external" />
+                        </a>
                         <Link
                           className={styles.action}
                           href={`/admin/posts/${row.id}`}

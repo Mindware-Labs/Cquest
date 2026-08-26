@@ -16,7 +16,6 @@ import styles from "./PanelRail.module.css";
 type Props = { name: string; email: string };
 
 const NAV = [
-  { href: "/admin", label: "Resumen", icon: "gauge" },
   { href: "/admin/posts", label: "Artículos", icon: "doc" },
   { href: "/admin/categories", label: "Categorías", icon: "tag" },
   { href: "/admin/users", label: "Usuarios", icon: "people" },
@@ -24,13 +23,6 @@ const NAV = [
 
 function NavIcon({ name }: { name: (typeof NAV)[number]["icon"] }) {
   const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
-  if (name === "gauge")
-    return (
-      <svg {...common} aria-hidden="true">
-        <path d="M2.2 12a6 6 0 1 1 11.6 0" strokeLinecap="round" />
-        <path d="M8 12 10.8 6.6" strokeLinecap="round" />
-      </svg>
-    );
   if (name === "doc")
     return (
       <svg {...common} aria-hidden="true">
@@ -140,8 +132,7 @@ export default function PanelRail({ name, email }: Props) {
           <span className={styles.navLabel}>Panel</span>
           <ul className={styles.list}>
             {NAV.map((entry) => {
-              const active =
-                entry.href === "/admin" ? pathname === "/admin" : pathname.startsWith(entry.href);
+              const active = pathname.startsWith(entry.href);
               return (
                 <li key={entry.href}>
                   <Link
