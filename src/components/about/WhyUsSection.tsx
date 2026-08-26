@@ -7,61 +7,47 @@ import { EASE_OUT, VIEWPORT, focusRiseVariants, groupVariants, lineMaskGroupVari
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import { gsap } from "@/lib/gsap";
 import { SCRUB, useEnteredOnce, useIsomorphicLayoutEffect } from "./motion";
-import { useI18n } from "@/i18n/I18nProvider";
-import type { Locale } from "@/i18n/config";
 import styles from "./WhyUsSection.module.css";
 
 type Accent = "celeste" | "verde";
-type WhyCard = { id: string; accent: Accent; es: { title: string; body: string }; en: { title: string; body: string } };
+type WhyCard = { id: string; accent: Accent; title: string; body: string };
 
 const CARDS: readonly WhyCard[] = [
   {
     id: "one-roof",
     accent: "celeste",
-    es: { title: "Un solo techo", body: "Call Center, BPO y Desarrollo de Sistemas bajo un mismo equipo. Un solo responsable, no tres proveedores que coordinar." },
-    en: { title: "One roof", body: "Call Center, BPO and Systems Development under one team. One accountable partner, not three vendors to coordinate." },
+    title: "One roof",
+    body: "Call Center, BPO and Systems Development under one team. One accountable partner, not three vendors to coordinate.",
   },
   {
     id: "engineering",
     accent: "verde",
-    es: { title: "Ingeniería propia", body: "Un equipo de desarrolladores propios construye CRMs, dashboards y automatización a la medida. La mayoría de los BPO no puede decir lo mismo." },
-    en: { title: "In-house engineering", body: "A team of in-house developers builds CRMs, dashboards and automation shaped around your operation. Most BPOs can't say the same." },
+    title: "In-house engineering",
+    body: "A team of in-house developers builds CRMs, dashboards and automation shaped around your operation. Most BPOs can't say the same.",
   },
   {
     id: "control-room",
     accent: "celeste",
-    es: { title: "Una sala de control real", body: "Un mismo piso de operaciones, un mismo equipo. Real, visitable — no subcontratado en cascada." },
-    en: { title: "A real control room", body: "One operations floor, one team. Real, visitable — not layers of outsourced subcontracting." },
+    title: "A real control room",
+    body: "One operations floor, one team. Real, visitable — not layers of outsourced subcontracting.",
   },
   {
     id: "people",
     accent: "celeste",
-    es: { title: "Gente formada, no alquilada", body: "Un departamento de RR. HH. propio recluta y forma a cada operador, con equipos especializados por sector." },
-    en: { title: "People we train, not rent", body: "A dedicated in-house HR team recruits and trains every operator, with teams specialized by sector." },
+    title: "People we train, not rent",
+    body: "A dedicated in-house HR team recruits and trains every operator, with teams specialized by sector.",
   },
 ];
 
 const COPY = {
-  en: {
-    eyebrow: "Why Center Quest",
-    heading: ["Four reasons.", "One operation."] as const,
-    lead: "Not a pitch — this is how the team is actually built.",
-    carouselAriaLabel: "Reasons to choose Center Quest",
-    goToCard: (n: number) => `Show reason ${n} of ${CARDS.length}`,
-    liveAnnouncement: (n: number, title: string) => `Reason ${n} of ${CARDS.length}: ${title}`,
-    pause: "Pause rotation",
-    resume: "Resume rotation",
-  },
-  es: {
-    eyebrow: "Por qué Center Quest",
-    heading: ["Cuatro razones.", "Una sola operación."] as const,
-    lead: "No es una promesa — así está armado el equipo.",
-    carouselAriaLabel: "Razones para elegir Center Quest",
-    goToCard: (n: number) => `Mostrar razón ${n} de ${CARDS.length}`,
-    liveAnnouncement: (n: number, title: string) => `Razón ${n} de ${CARDS.length}: ${title}`,
-    pause: "Pausar rotación",
-    resume: "Reanudar rotación",
-  },
+  eyebrow: "Why Center Quest",
+  heading: ["Four reasons.", "One operation."] as const,
+  lead: "Not a pitch — this is how the team is actually built.",
+  carouselAriaLabel: "Reasons to choose Center Quest",
+  goToCard: (n: number) => `Show reason ${n} of ${CARDS.length}`,
+  liveAnnouncement: (n: number, title: string) => `Reason ${n} of ${CARDS.length}: ${title}`,
+  pause: "Pause rotation",
+  resume: "Resume rotation",
 };
 
 const CARD_COUNT = CARDS.length;
@@ -91,17 +77,14 @@ function slotFor(relative: number): Slot {
 function WhyCardFace({
   card,
   relative,
-  lang,
   number,
   onSelect,
 }: {
   card: WhyCard;
   relative: number;
-  lang: Locale;
   number: string;
   onSelect: () => void;
 }) {
-  const copy = card[lang];
   const isActive = relative === 0;
   const slot = slotFor(relative);
 
@@ -122,8 +105,8 @@ function WhyCardFace({
       onClick={isActive ? undefined : onSelect}
     >
       <span className={styles.faceIndex}>{number}</span>
-      <h3>{copy.title}</h3>
-      <p>{copy.body}</p>
+      <h3>{card.title}</h3>
+      <p>{card.body}</p>
     </motion.div>
   );
 }
@@ -145,8 +128,7 @@ function PlayIcon() {
 }
 
 export default function WhyUsSection({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const tabVisible = useTabVisibility();
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -268,8 +250,8 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
             {CARDS.map((card, index) => (
               <li key={card.id} className={styles.staticCard} data-accent={card.accent}>
                 <span className={styles.faceIndex}>{PAD2(index + 1)}</span>
-                <h3>{card[lang].title}</h3>
-                <p>{card[lang].body}</p>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
               </li>
             ))}
           </ul>
@@ -309,7 +291,6 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
                     key={card.id}
                     card={card}
                     relative={relativeSlot(index, activeIndex)}
-                    lang={lang}
                     number={PAD2(index + 1)}
                     onSelect={() => advanceTo(index)}
                   />
@@ -369,7 +350,7 @@ export default function WhyUsSection({ reduced }: { reduced: boolean }) {
             </div>
 
             <span role="status" aria-live="polite" className="sr-only">
-              {t.liveAnnouncement(activeIndex + 1, CARDS[activeIndex][lang].title)}
+              {t.liveAnnouncement(activeIndex + 1, CARDS[activeIndex].title)}
             </span>
           </motion.div>
         )}

@@ -6,8 +6,8 @@ import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import { EASE_OUT, VIEWPORT } from "@/components/services/motion";
 import { SERVICES } from "@/components/services/data";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import styles from "./ServicesRoster.module.css";
 
 /* El tramo del raíl, primero: la entrada empieza por la línea que la sostiene
@@ -41,7 +41,6 @@ const bodyItemVariants: Variants = {
 };
 
 export default function ServicesRoster() {
-  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
 
   return (
@@ -69,7 +68,7 @@ export default function ServicesRoster() {
               />
 
               <h2 className={styles.name}>
-                {service.label[lang].split(" ").map((word, index, words) => (
+                {service.label.split(" ").map((word, index, words) => (
                   <Fragment key={`${word}-${index}`}>
                     <span className="cq-word">
                       <motion.span
@@ -89,7 +88,7 @@ export default function ServicesRoster() {
                   className={styles.claim}
                   variants={reduced ? undefined : bodyItemVariants}
                 >
-                  {service.shortLabel[lang]}
+                  {service.shortLabel}
                 </motion.p>
 
                 {/* role="list" explícito: Safari le quita la semántica de lista
@@ -101,15 +100,15 @@ export default function ServicesRoster() {
                   variants={reduced ? undefined : bodyItemVariants}
                 >
                   {service.details.map((detail) => (
-                    <li key={detail.id}>{detail.title[lang]}</li>
+                    <li key={detail.id}>{detail.title}</li>
                   ))}
                 </motion.ul>
 
                 <motion.div variants={reduced ? undefined : bodyItemVariants}>
-                  <LocalizedLink href={service.href} className={styles.link}>
-                    {dict.carousel.explorePrefix} {service.label[lang]}
+                  <TransitionLink href={service.href} className={styles.link}>
+                    {dict.carousel.explorePrefix} {service.label}
                     <Arrow />
-                  </LocalizedLink>
+                  </TransitionLink>
                 </motion.div>
               </motion.div>
             </motion.li>

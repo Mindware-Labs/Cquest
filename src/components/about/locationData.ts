@@ -1,5 +1,4 @@
 import { CONTACT } from "@/components/footer/data";
-import type { Locale } from "@/i18n/config";
 
 export const HQ = {
   lat: 18.4768114,
@@ -29,38 +28,20 @@ export const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destinatio
 export const MAP_URL = `https://www.google.com/maps/search/?api=1&query=${HQ.lat},${HQ.lng}`;
 
 export const LOCATION_COPY = {
-  en: {
-    eyebrow: "Location",
-    heading: "One floor. One operations centre.",
-    lead: "Everything runs from a single control room, so nothing gets handed between sites. Come see the floor your campaign will run on — we host visits, book yours when you request your quote.",
-    plotLabel: "CQ · Operations HQ",
-    mapAriaLabel: "Map showing Center Quest's operations centre",
-    hqLabel: "Operations HQ",
-    regionLabel: "Region",
-    region: "Caribbean · LATAM",
-    timezoneLabel: "Time zone",
-    timezone: "AST · UTC−4",
-    directions: "Get directions",
-    fallbackTitle: "Map unavailable",
-    fallbackBody: "Open the location in Google Maps instead.",
-    fallbackAction: "Open in Google Maps",
-  },
-  es: {
-    eyebrow: "Ubicación",
-    heading: "Un piso. Un centro de operaciones.",
-    lead: "Todo corre desde una sola sala, sin operaciones repartidas entre sedes. Ven a ver la sala donde correrá tu campaña — recibimos visitas, agenda la tuya al solicitar tu cotización.",
-    plotLabel: "CQ · Sede operativa",
-    mapAriaLabel: "Mapa con el centro de operaciones de Center Quest",
-    hqLabel: "Sede operativa",
-    regionLabel: "Región",
-    region: "Caribe · LATAM",
-    timezoneLabel: "Zona horaria",
-    timezone: "AST · UTC−4",
-    directions: "Cómo llegar",
-    fallbackTitle: "Mapa no disponible",
-    fallbackBody: "Abre la ubicación en Google Maps.",
-    fallbackAction: "Abrir en Google Maps",
-  },
-} satisfies Record<Locale, Record<string, string>>;
+  eyebrow: "Location",
+  heading: "One floor. One operations centre.",
+  lead: "Everything runs from a single control room, so nothing gets handed between sites. Come see the floor your campaign will run on — we host visits, book yours when you request your quote.",
+  plotLabel: "CQ · Operations HQ",
+  mapAriaLabel: "Map showing Center Quest's operations centre",
+  hqLabel: "Operations HQ",
+  regionLabel: "Region",
+  region: "Caribbean · LATAM",
+  timezoneLabel: "Time zone",
+  timezone: "AST · UTC−4",
+  directions: "Get directions",
+  fallbackTitle: "Map unavailable",
+  fallbackBody: "Open the location in Google Maps instead.",
+  fallbackAction: "Open in Google Maps",
+} satisfies Record<string, string>;
 
 export { CONTACT };

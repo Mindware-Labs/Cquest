@@ -38,12 +38,12 @@ type SortDir = "asc" | "desc";
 const STAGGER_LIMIT = 8;
 
 const schema = z.object({
-  name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres."),
-  email: z.email("Escribe un correo válido."),
+  name: z.string().trim().min(2, "The name needs at least 2 characters."),
+  email: z.email("Enter a valid email address."),
 });
 
-const exactDate = new Intl.DateTimeFormat("es-DO", { dateStyle: "long" });
-const relative = new Intl.RelativeTimeFormat("es-DO", { numeric: "auto" });
+const exactDate = new Intl.DateTimeFormat("en-GB", { dateStyle: "long" });
+const relative = new Intl.RelativeTimeFormat("en-GB", { numeric: "auto" });
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["year", 365 * 24 * 60 * 60_000],
@@ -58,7 +58,7 @@ function sinceNow(iso: string, now: number): string {
   for (const [unit, ms] of UNITS) {
     if (Math.abs(diff) >= ms) return relative.format(Math.round(diff / ms), unit);
   }
-  return "hace un momento";
+  return "just now";
 }
 
 function initials(name: string, email: string): string {
@@ -299,10 +299,10 @@ export default function UsersView({
     startSaving(async () => {
       const result = await createAdminUser({ name, email });
       if (!result.ok) {
-        toast.error("No se pudo crear la cuenta", result.message);
+        toast.error("Could not create the account", result.message);
         return;
       }
-      toast.success("Cuenta creada", `El código de acceso salió hacia ${email.trim().toLowerCase()}.`);
+      toast.success("Account created", `The access code went out to ${email.trim().toLowerCase()}.`);
       setName("");
       setEmail("");
       setShowErrors(false);
@@ -315,8 +315,8 @@ export default function UsersView({
     setBusyId(user.id);
     const result = await resendWelcomeEmail(user.email);
     setBusyId(null);
-    if (result.ok) toast.success("Acceso reenviado", `Código nuevo para ${user.email}.`);
-    else toast.error("No se pudo reenviar el acceso", result.message);
+    if (result.ok) toast.success("Access resent", `New code for ${user.email}.`);
+    else toast.error("Could not resend access", result.message);
   }
 
   async function applyTo(user: AdminUser, kind: BulkKind) {
@@ -336,13 +336,13 @@ export default function UsersView({
     setPending(null);
     setSelected(new Set());
 
-    const verb = kind === "remove" ? "eliminadas" : kind === "ban" ? "bloqueadas" : "desbloqueadas";
-    const noun = done === 1 ? "cuenta" : "cuentas";
+    const verb = kind === "remove" ? "deleted" : kind === "ban" ? "blocked" : "unblocked";
+    const noun = done === 1 ? "account" : "accounts";
     if (failed.length === 0) toast.success(`${done} ${noun} ${verb}`);
     else
       toast.error(
-        `${done} de ${targets.length} ${verb}`,
-        `No se pudo con: ${failed.join(", ")}.`,
+        `${done} of ${targets.length} ${verb}`,
+        `Failed for: ${failed.join(", ")}.`,
       );
     router.refresh();
   }
@@ -360,13 +360,13 @@ export default function UsersView({
     setPending(null);
 
     if (!result.ok) {
-      toast.error("La acción no se completó", result.message);
+      toast.error("The action did not complete", result.message);
       return;
     }
     const who = user.name || user.email;
-    if (kind === "remove") toast.success("Cuenta eliminada", `${who} ya no tiene acceso.`);
-    else if (kind === "ban") toast.success("Acceso bloqueado", `${who} no podrá entrar.`);
-    else toast.success("Acceso devuelto", `${who} puede entrar otra vez.`);
+    if (kind === "remove") toast.success("Account deleted", `${who} no longer has access.`);
+    else if (kind === "ban") toast.success("Access blocked", `${who} will not be able to sign in.`);
+    else toast.success("Access restored", `${who} can sign in again.`);
     router.refresh();
   }
 
@@ -374,7 +374,7 @@ export default function UsersView({
     pending?.scope === "bulk"
       ? {
           n: pending.users.length,
-          noun: pending.users.length === 1 ? "cuenta" : "cuentas",
+          noun: pending.users.length === 1 ? "account" : "accounts",
         }
       : null;
 
@@ -382,35 +382,35 @@ export default function UsersView({
     ? {
         title:
           pending.kind === "remove"
-            ? `Eliminar ${bulkCopy.n} ${bulkCopy.noun}`
+            ? `Delete ${bulkCopy.n} ${bulkCopy.noun}`
             : pending.kind === "ban"
-              ? `Bloquear ${bulkCopy.n} ${bulkCopy.noun}`
-              : `Devolver el acceso a ${bulkCopy.n} ${bulkCopy.noun}`,
+              ? `Block ${bulkCopy.n} ${bulkCopy.noun}`
+              : `Restore access for ${bulkCopy.n} ${bulkCopy.noun}`,
         text:
           pending.kind === "remove"
-            ? `Se borran ${bulkCopy.n} ${bulkCopy.noun} y no se puede deshacer. Los artículos que hayan escrito se conservan.`
+            ? `${bulkCopy.n} ${bulkCopy.noun} are deleted and this cannot be undone. Any articles they wrote are kept.`
             : pending.kind === "ban"
-              ? `Esas ${bulkCopy.n} ${bulkCopy.noun} dejarán de poder entrar al panel. Puedes desbloquearlas después.`
-              : `Esas ${bulkCopy.n} ${bulkCopy.noun} volverán a poder entrar con su contraseña de siempre.`,
-        cta: pending.kind === "remove" ? "Eliminar" : pending.kind === "ban" ? "Bloquear" : "Desbloquear",
+              ? `Those ${bulkCopy.n} ${bulkCopy.noun} will no longer be able to sign in. You can unblock them later.`
+              : `Those ${bulkCopy.n} ${bulkCopy.noun} will be able to sign in again with their usual password.`,
+        cta: pending.kind === "remove" ? "Delete" : pending.kind === "ban" ? "Block" : "Unblock",
       }
     : pending?.scope === "one"
     ? pending.kind === "remove"
       ? {
-          title: "Eliminar la cuenta",
-          text: `Se borra la cuenta de ${pending.user.name || pending.user.email} y no se puede deshacer. Los artículos que haya escrito se conservan.`,
-          cta: "Eliminar",
+          title: "Delete the account",
+          text: `The account for ${pending.user.name || pending.user.email} is deleted and this cannot be undone. Any articles they wrote are kept.`,
+          cta: "Delete",
         }
       : pending.kind === "ban"
         ? {
-            title: "Bloquear el acceso",
-            text: `${pending.user.name || pending.user.email} dejará de poder entrar al panel. La cuenta se conserva y puedes desbloquearla después.`,
-            cta: "Bloquear",
+            title: "Block access",
+            text: `${pending.user.name || pending.user.email} will no longer be able to sign in. The account is kept and you can unblock it later.`,
+            cta: "Block",
           }
         : {
-            title: "Devolver el acceso",
-            text: `${pending.user.name || pending.user.email} volverá a poder entrar con su contraseña de siempre.`,
-            cta: "Desbloquear",
+            title: "Restore access",
+            text: `${pending.user.name || pending.user.email} will be able to sign in again with their usual password.`,
+            cta: "Unblock",
           }
     : null;
 
@@ -424,8 +424,8 @@ export default function UsersView({
           type="button"
           onClick={() => void handleResend(user)}
           disabled={busy}
-          aria-label={`Reenviar el código de acceso a ${user.email}`}
-          title="Reenviar acceso"
+          aria-label={`Resend the access code to ${user.email}`}
+          title="Resend access"
         >
           <Icon name="resend" />
         </button>
@@ -434,8 +434,8 @@ export default function UsersView({
           type="button"
           onClick={() => setPending({ scope: "one", kind: user.banned ? "unban" : "ban", user })}
           disabled={busy || self}
-          aria-label={`${user.banned ? "Desbloquear" : "Bloquear"} a ${user.email}`}
-          title={self ? "No puedes bloquear tu cuenta" : user.banned ? "Desbloquear" : "Bloquear"}
+          aria-label={`${user.banned ? "Unblock" : "Block"} ${user.email}`}
+          title={self ? "You cannot block your own account" : user.banned ? "Unblock" : "Block"}
         >
           <Icon name={user.banned ? "unban" : "ban"} />
         </button>
@@ -445,8 +445,8 @@ export default function UsersView({
           data-tone="danger"
           onClick={() => setPending({ scope: "one", kind: "remove", user })}
           disabled={busy || self}
-          aria-label={`Eliminar la cuenta de ${user.email}`}
-          title={self ? "No puedes eliminar tu cuenta" : "Eliminar"}
+          aria-label={`Delete the account for ${user.email}`}
+          title={self ? "You cannot delete your own account" : "Delete"}
         >
           <Icon name="trash" />
         </button>
@@ -465,7 +465,7 @@ export default function UsersView({
         <svg width="7" height="7" viewBox="0 0 8 8" aria-hidden="true">
           <circle cx="4" cy="4" r="3.2" fill={user.banned ? "none" : "currentColor"} stroke="currentColor" strokeWidth="1.2" />
         </svg>
-        {user.banned ? "Bloqueado" : "Activo"}
+        {user.banned ? "Blocked" : "Active"}
       </span>
     );
   }
@@ -482,8 +482,8 @@ export default function UsersView({
   function personCell(user: AdminUser) {
     return (
       <span className={t.personName}>
-        {user.name || "Sin nombre"}
-        {user.id === currentUserId && <span className={t.tagSelf}>Tú</span>}
+        {user.name || "No name"}
+        {user.id === currentUserId && <span className={t.tagSelf}>You</span>}
       </span>
     );
   }
@@ -492,10 +492,10 @@ export default function UsersView({
     <div className={t.page}>
       <header className={t.pageHead}>
         <div className={t.titleGroup}>
-          <h1 className={t.pageTitle}>Usuarios</h1>
-          <InfoHint label="Cómo se crean las cuentas">
-            No hay registro público: las cuentas se crean aquí. Quien das de alta recibe un código
-            de seis dígitos y define su propia contraseña, que nadie más llega a ver.
+          <h1 className={t.pageTitle}>Users</h1>
+          <InfoHint label="How accounts are created">
+            There is no public sign-up: accounts are created here. Whoever you add receives a
+            six-digit code and sets their own password, which nobody else ever sees.
           </InfoHint>
         </div>
         <div className={t.search}>
@@ -509,8 +509,8 @@ export default function UsersView({
             onChange={(event) => {
               setText(event.target.value);
             }}
-            placeholder="Buscar por nombre o correo"
-            aria-label="Buscar usuarios"
+            placeholder="Search by name or email"
+            aria-label="Search users"
           />
         </div>
       </header>
@@ -519,14 +519,14 @@ export default function UsersView({
 
       <div className={t.container}>
         <div className={t.toolbar}>
-          <div className={t.viewToggle} role="group" aria-label="Forma de ver los usuarios">
+          <div className={t.viewToggle} role="group" aria-label="User view mode">
             <button className={t.viewButton} type="button" onClick={() => setView("list")} aria-pressed={view === "list"}>
               <Icon name="list" size={15} />
-              Lista
+              List
             </button>
             <button className={t.viewButton} type="button" onClick={() => setView("grid")} aria-pressed={view === "grid"}>
               <Icon name="grid" size={15} />
-              Cuadrícula
+              Grid
             </button>
           </div>
 
@@ -536,7 +536,7 @@ export default function UsersView({
             onClick={() => setCreateOpen(true)}
           >
             <Icon name="plus" size={15} />
-            Agregar usuario
+            Add user
           </button>
         </div>
 
@@ -554,10 +554,10 @@ export default function UsersView({
             >
               <div className={t.bulk}>
                 <span className={t.bulkCount}>
-                  {selected.size} {selected.size === 1 ? "seleccionado" : "seleccionados"}
-                  <span className={t.bulkScope}>en esta página</span>
+                  {selected.size} {selected.size === 1 ? "selected" : "selected"}
+                  <span className={t.bulkScope}>on this page</span>
                   {skipsSelf && (
-                    <span className={t.bulkNote}>Tu cuenta queda fuera de estas acciones.</span>
+                    <span className={t.bulkNote}>Your own account is left out of these actions.</span>
                   )}
                 </span>
 
@@ -569,7 +569,7 @@ export default function UsersView({
                     onClick={() => setPending({ scope: "bulk", kind: "ban", users: bulkTargets })}
                   >
                     <Icon name="ban" />
-                    Bloquear
+                    Block
                   </button>
                   <button
                     className={t.bulkButton}
@@ -578,7 +578,7 @@ export default function UsersView({
                     onClick={() => setPending({ scope: "bulk", kind: "unban", users: bulkTargets })}
                   >
                     <Icon name="unban" />
-                    Desbloquear
+                    Unblock
                   </button>
                   <button
                     className={t.bulkButton}
@@ -588,7 +588,7 @@ export default function UsersView({
                     onClick={() => setPending({ scope: "bulk", kind: "remove", users: bulkTargets })}
                   >
                     <Icon name="trash" />
-                    Eliminar
+                    Delete
                   </button>
                   <button
                     className={t.bulkButton}
@@ -597,7 +597,7 @@ export default function UsersView({
                     disabled={bulkBusy}
                     onClick={() => setSelected(new Set())}
                   >
-                    Quitar selección
+                    Clear selection
                   </button>
                 </span>
               </div>
@@ -607,13 +607,13 @@ export default function UsersView({
 
         {visible.length === 0 ? (
           <p className={t.empty}>
-            {query ? `Ningún usuario coincide con «${query}».` : "Todavía no hay cuentas."}
+            {query ? `No user matches “${query}”.` : "No accounts yet."}
           </p>
         ) : view === "list" ? (
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
-                Personal con acceso al panel, {total} en total, página {page} de {totalPages}.
+                Staff with panel access, {total} in total, page {page} of {totalPages}.
               </caption>
               <thead>
                 <tr>
@@ -624,26 +624,26 @@ export default function UsersView({
                       type="checkbox"
                       checked={allChecked}
                       onChange={toggleAll}
-                      aria-label="Seleccionar los usuarios de esta página"
+                      aria-label="Select the users on this page"
                     />
                   </th>
                   <th className={t.th} aria-sort={sortKey === "name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                     <button className={t.sortLink} type="button" onClick={() => sortBy("name")} data-active={sortKey === "name"}>
-                      Usuario
+                      User
                       <Caret dir={sortKey === "name" ? sortDir : null} />
                     </button>
                   </th>
-                  <th className={t.th}>Correo</th>
-                  <th className={t.th}>Estado</th>
+                  <th className={t.th}>Email</th>
+                  <th className={t.th}>Status</th>
                   <th className={t.th} aria-sort={sortKey === "createdAt" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                     <button className={t.sortLink} type="button" onClick={() => sortBy("createdAt")} data-active={sortKey === "createdAt"}>
-                      Alta
+                      Added
                       <Caret dir={sortKey === "createdAt" ? sortDir : null} />
                     </button>
                   </th>
-                  <th className={t.th}>Rol</th>
+                  <th className={t.th}>Role</th>
                   <th className={t.th}>
-                    <span className={t.srOnly}>Acciones</span>
+                    <span className={t.srOnly}>Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -661,7 +661,7 @@ export default function UsersView({
                         type="checkbox"
                         checked={selected.has(user.id)}
                         onChange={() => toggle(user.id)}
-                        aria-label={`Seleccionar «${user.name || user.email}»`}
+                        aria-label={`Select “${user.name || user.email}”`}
                       />
                     </td>
                     <td className={t.td}>
@@ -699,7 +699,7 @@ export default function UsersView({
                     type="checkbox"
                     checked={selected.has(user.id)}
                     onChange={() => toggle(user.id)}
-                    aria-label={`Seleccionar «${user.name || user.email}»`}
+                    aria-label={`Select “${user.name || user.email}”`}
                   />
                   <span className={t.avatar} aria-hidden="true">
                     {initials(user.name, user.email)}
@@ -712,11 +712,11 @@ export default function UsersView({
 
                 <div className={t.cardRows}>
                   <div className={t.cardRow}>
-                    <span className={t.cardRowLabel}>Alta</span>
+                    <span className={t.cardRowLabel}>Added</span>
                     {stampCell(user)}
                   </div>
                   <div className={t.cardRow}>
-                    <span className={t.cardRowLabel}>Rol</span>
+                    <span className={t.cardRowLabel}>Role</span>
                     <span className={t.chip}>Admin</span>
                   </div>
                 </div>
@@ -733,25 +733,25 @@ export default function UsersView({
 
       <div className={t.pagination}>
         <div className={t.perPage}>
-          <span>Mostrar</span>
+          <span>Show</span>
           <Select
             value={String(perPage)}
             options={PER_PAGE_OPTIONS}
             onChange={(next) => {
               navigate({ perPage: Number(next), page: 1 });
             }}
-            label="Usuarios por página"
+            label="Users per page"
           />
-          <span>por página</span>
+          <span>per page</span>
         </div>
 
-        <nav className={t.pages} aria-label="Paginación">
+        <nav className={t.pages} aria-label="Pagination">
           <button
             className={t.pageButton}
             type="button"
             onClick={() => navigate({ page: Math.max(1, page - 1) })}
             disabled={page === 1 || navigating}
-            aria-label="Página anterior"
+            aria-label="Previous page"
           >
             <Icon name="prev" />
           </button>
@@ -767,7 +767,7 @@ export default function UsersView({
                 type="button"
                 onClick={() => navigate({ page: entry })}
                 aria-current={entry === page ? "page" : undefined}
-                aria-label={`Página ${entry}`}
+                aria-label={`Page ${entry}`}
               >
                 {entry}
               </button>
@@ -778,7 +778,7 @@ export default function UsersView({
             type="button"
             onClick={() => navigate({ page: Math.min(totalPages, page + 1) })}
             disabled={page === totalPages || navigating}
-            aria-label="Página siguiente"
+            aria-label="Next page"
           >
             <Icon name="next" />
           </button>
@@ -788,22 +788,22 @@ export default function UsersView({
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        eyebrow="Nuevo acceso"
-        title="Agregar usuario"
+        eyebrow="New access"
+        title="Add user"
         width="30rem"
       >
         <form ref={formRef} className={styles.form} onSubmit={handleCreate} noValidate>
           <div className={styles.formGrid}>
             <div className={styles.field}>
               <label className={styles.label} htmlFor={nameId}>
-                Nombre
+                Name
               </label>
               <input
                 id={nameId}
                 className={styles.input}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Nombre y apellido"
+                placeholder="First and last name"
                 autoComplete="off"
                 required
                 aria-invalid={showErrors && Boolean(errors.name)}
@@ -818,7 +818,7 @@ export default function UsersView({
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor={emailId}>
-                Correo
+                Email
               </label>
               <input
                 id={emailId}
@@ -844,11 +844,11 @@ export default function UsersView({
 
           <div className={styles.formFoot}>
             <p className={styles.formNote}>
-              La contraseña inicial es aleatoria y no se muestra a nadie: la persona define la suya
-              con el código que le llega por correo.
+              The initial password is random and shown to nobody: the person sets their own with
+              the code that reaches them by email.
             </p>
             <button className={t.primary} type="submit" disabled={saving}>
-              {saving ? "Creando" : "Crear y enviar acceso"}
+              {saving ? "Creating" : "Create and send access"}
             </button>
           </div>
         </form>
@@ -857,13 +857,13 @@ export default function UsersView({
       <Modal
         open={pending !== null}
         onClose={() => setPending(null)}
-        eyebrow="Confirmar"
+        eyebrow="Confirm"
         title={dialogCopy?.title ?? ""}
       >
         <p className={styles.dialogText}>{dialogCopy?.text}</p>
         <div className={styles.dialogFoot}>
           <button className={styles.ghost} type="button" onClick={() => setPending(null)}>
-            Cancelar
+            Cancel
           </button>
           <button
             className={styles.confirm}

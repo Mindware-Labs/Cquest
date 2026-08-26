@@ -19,8 +19,8 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthShell
-      thesis="Solo tú abres tu cuenta."
-      lead="El código llega a tu correo y se escribe aquí mismo. Las contraseñas se guardan cifradas: nadie en Center Quest puede verlas ni recuperarlas."
+      thesis="Only you open your account."
+      lead="The code arrives in your inbox and you type it right here. Passwords are stored encrypted: nobody at Center Quest can read them or recover them."
     >
       <ResetPasswordForm initialEmail={email} startAtCode={Boolean(email) && paso === "codigo"} />
     </AuthShell>

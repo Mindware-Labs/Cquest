@@ -3,14 +3,9 @@
 import { motion } from "motion/react";
 import container from "@/components/services/Container.module.css";
 import { EASE_OUT, focusRiseVariants, groupVariants, ruleXVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
-import { useI18n } from "@/i18n/I18nProvider";
-import type { Locale } from "@/i18n/config";
 import styles from "./UpcomingSection.module.css";
 
-const TAG = {
-  en: "In development",
-  es: "En desarrollo",
-};
+const TAG = "In development";
 
 export default function UpcomingSection({
   id,
@@ -19,12 +14,10 @@ export default function UpcomingSection({
   reduced,
 }: {
   id: string;
-  title: Record<Locale, string>;
-  note: Record<Locale, string>;
+  title: string;
+  note: string;
   reduced: boolean;
 }) {
-  const { lang } = useI18n();
-
   return (
     <section id={id} className={styles.upcomingSection}>
       <div className={container.container}>
@@ -37,7 +30,7 @@ export default function UpcomingSection({
         >
           <motion.div className={styles.headingCopy} variants={stepVariants}>
             <motion.span className={styles.rule} aria-hidden variants={ruleXVariants} />
-            <motion.h2 variants={focusRiseVariants}>{title[lang]}</motion.h2>
+            <motion.h2 variants={focusRiseVariants}>{title}</motion.h2>
           </motion.div>
         </motion.div>
 
@@ -48,8 +41,8 @@ export default function UpcomingSection({
           viewport={VIEWPORT}
           transition={{ duration: 0.55, ease: EASE_OUT }}
         >
-          <span className={styles.tag}>{TAG[lang]}</span>
-          <p>{note[lang]}</p>
+          <span className={styles.tag}>{TAG}</span>
+          <p>{note}</p>
         </motion.div>
       </div>
     </section>

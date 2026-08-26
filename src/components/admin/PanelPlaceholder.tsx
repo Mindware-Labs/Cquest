@@ -17,7 +17,7 @@ export default function PanelPlaceholder({ eyebrow, title, lead, points, foot }:
         <span className={styles.eyebrow}>{eyebrow}</span>
         <span className={styles.pending}>
           <span className={styles.pendingDot} aria-hidden="true" />
-          En construcción
+          Under construction
         </span>
       </div>
 

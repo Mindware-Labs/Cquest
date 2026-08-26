@@ -11,31 +11,18 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import { EASE_OUT } from "@/components/services/motion";
-import { useI18n } from "@/i18n/I18nProvider";
 import { ABOUT_SECTORS } from "./data";
 import styles from "./SectorsBeam.module.css";
 
 const COPY = {
-  en: {
-    choose: "Choose a sector",
-    listLabel: "Center Quest sectors",
-    protocol: "CQ · Sector protocol",
-    demandLabel: "What the operation must handle",
-    servicesLabel: "Services that answer it",
-    standard: "People who know the rules. Process that gets measured. Reporting that hides nothing.",
-    caption: (sector: string) =>
-      `Interactive sector brief. ${sector} is selected; the panel describes its operational demands and relevant Center Quest services.`,
-  },
-  es: {
-    choose: "Elige un sector",
-    listLabel: "Sectores de Center Quest",
-    protocol: "CQ · Protocolo sectorial",
-    demandLabel: "Lo que la operación debe resolver",
-    servicesLabel: "Servicios que lo atienden",
-    standard: "Gente que conoce las reglas. Procesos que se miden. Reportes que no esconden nada.",
-    caption: (sector: string) =>
-      `Ficha sectorial interactiva. ${sector} está seleccionado; el panel describe sus exigencias operativas y los servicios relevantes de Center Quest.`,
-  },
+  choose: "Choose a sector",
+  listLabel: "Center Quest sectors",
+  protocol: "CQ · Sector protocol",
+  demandLabel: "What the operation must handle",
+  servicesLabel: "Services that answer it",
+  standard: "People who know the rules. Process that gets measured. Reporting that hides nothing.",
+  caption: (sector: string) =>
+    `Interactive sector brief. ${sector} is selected; the panel describes its operational demands and relevant Center Quest services.`,
 };
 
 const SPRING = { type: "spring", stiffness: 420, damping: 38, mass: 0.8 } as const;
@@ -43,8 +30,7 @@ const SELECTOR_HEADER_REM = 3.5;
 const SELECTOR_ROW_REM = 5.1;
 
 export default function SectorsBeam({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const [activeIndex, setActiveIndex] = useState(0);
   /* Se incrementa en cada elección y remonta el pulso del haz para que la
      animación vuelva a correr. En 0 no se dibuja: nada que responder todavía. */
@@ -159,7 +145,7 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
                   <span className={styles.sectorIcon} aria-hidden>
                     <ServiceIcon name={sector.icon} />
                   </span>
-                  <span className={styles.sectorLabel}>{sector.label[lang]}</span>
+                  <span className={styles.sectorLabel}>{sector.label}</span>
                   <span className={styles.sectorArrow} aria-hidden />
                 </button>
               );
@@ -206,18 +192,18 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
               <span className={styles.detailIcon} aria-hidden>
                 <ServiceIcon name={active.icon} />
               </span>
-              <h3>{active.label[lang]}</h3>
+              <h3>{active.label}</h3>
             </div>
 
             <div className={styles.demand}>
               <span className={styles.detailLabel}>{t.demandLabel}</span>
-              <p>{active.focus[lang]}</p>
+              <p>{active.focus}</p>
             </div>
 
             <div className={styles.services}>
               <span className={styles.detailLabel}>{t.servicesLabel}</span>
               <ul>
-                {active.services[lang].map((service) => (
+                {active.services.map((service) => (
                   <li key={service}>{service}</li>
                 ))}
               </ul>
@@ -228,7 +214,7 @@ export default function SectorsBeam({ reduced }: { reduced: boolean }) {
         <p className={styles.standard}>{t.standard}</p>
       </section>
 
-      <figcaption className={styles.caption}>{t.caption(active.label[lang])}</figcaption>
+      <figcaption className={styles.caption}>{t.caption(active.label)}</figcaption>
     </motion.figure>
   );
 }

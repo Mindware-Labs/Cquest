@@ -4,7 +4,7 @@ import { listAdminUsers } from "@/server/admin-users";
 import UsersView from "./UsersView";
 
 export const metadata: Metadata = {
-  title: "Usuarios · Panel Center Quest",
+  title: "Users · Center Quest Admin",
   robots: { index: false, follow: false },
 };
 

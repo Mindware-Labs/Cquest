@@ -23,20 +23,20 @@ export type PublishRule = {
 export const PUBLISH_RULES: PublishRule[] = [
   {
     field: "title",
-    message: "El título necesita al menos 3 caracteres.",
-    need: "el título",
+    message: "The title needs at least 3 characters.",
+    need: "the title",
     ok: (draft) => draft.title.trim().length >= 3,
   },
   {
     field: "excerpt",
-    message: "El extracto necesita al menos 20 caracteres.",
-    need: "el extracto (mínimo 20 caracteres)",
+    message: "The excerpt needs at least 20 characters.",
+    need: "the excerpt (at least 20 characters)",
     ok: (draft) => draft.excerpt.trim().length >= 20,
   },
   {
     field: "categoryId",
-    message: "Elige una categoría antes de publicar.",
-    need: "la categoría",
+    message: "Pick a category before publishing.",
+    need: "the category",
     ok: (draft) => Boolean(draft.categoryId),
   },
   /* La portada es opcional. El texto alternativo solo se exige cuando hay
@@ -44,8 +44,8 @@ export const PUBLISH_RULES: PublishRule[] = [
      no lleva portada a propósito. */
   {
     field: "coverAlt",
-    message: "La portada necesita texto alternativo.",
-    need: "el texto alternativo de la portada",
+    message: "The cover needs alt text.",
+    need: "the cover alt text",
     ok: (draft) => !draft.coverUrl || (draft.coverAlt ?? "").trim().length >= 3,
   },
 ];

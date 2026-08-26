@@ -47,7 +47,7 @@ export type ActionResult<T = undefined> =
   | { ok: false; message: string; fields?: Record<string, string> };
 
 const draftSchema = z.object({
-  title: z.string().trim().min(3, "El título necesita al menos 3 caracteres.").max(140),
+  title: z.string().trim().min(3, "The title needs at least 3 characters.").max(140),
   excerpt: z.string().trim().max(300).optional(),
   categoryId: z.uuid().nullable().optional(),
   coverUrl: z.url().nullable().optional(),
@@ -222,11 +222,11 @@ export async function createPost(): Promise<ActionResult<{ id: string }>> {
 
 export async function savePost(id: string, input: PostInput): Promise<ActionResult> {
   await requireAdmin();
-  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Artículo inválido." };
+  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Invalid article." };
 
   const parsed = draftSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
+    return { ok: false, message: "Check the highlighted fields.", fields: fieldErrors(parsed.error) };
   }
   const data = parsed.data;
 
@@ -247,13 +247,13 @@ export async function savePost(id: string, input: PostInput): Promise<ActionResu
       })
       .where(eq(post.id, id))
       .returning({ id: post.id });
-    if (done.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+    if (done.length === 0) return { ok: false, message: "That article no longer exists." };
   } catch (error) {
     // Sin esto el fallo real se pierde y solo queda un mensaje genérico.
-    console.error("savePost falló:", error);
+    console.error("savePost failed:", error);
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "No se pudo guardar el artículo.",
+      message: error instanceof Error ? error.message : "Could not save the article.",
     };
   }
 
@@ -267,11 +267,11 @@ export async function publishPost(
   publishedAt?: string | null,
 ): Promise<ActionResult> {
   await requireAdmin();
-  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Artículo inválido." };
+  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Invalid article." };
 
   const parsed = draftSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
+    return { ok: false, message: "Check the highlighted fields.", fields: fieldErrors(parsed.error) };
   }
   const data = parsed.data;
 
@@ -285,14 +285,14 @@ export async function publishPost(
     .from(post)
     .where(eq(post.id, id))
     .limit(1);
-  if (current.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+  if (current.length === 0) return { ok: false, message: "That article no longer exists." };
   const slug = current[0].publishedAt ? current[0].slug : await freeSlug(data.title, id);
 
   let html: string;
   try {
     html = await renderBlocks(data.content ?? []);
   } catch {
-    return { ok: false, message: "No se pudo generar la versión pública del contenido." };
+    return { ok: false, message: "Could not generate the public version of the content." };
   }
 
   try {
@@ -316,8 +316,8 @@ export async function publishPost(
       })
       .where(eq(post.id, id));
   } catch (error) {
-    if (isUniqueViolation(error)) return { ok: false, message: "Ya hay un artículo con esa URL." };
-    return { ok: false, message: "No se pudo publicar el artículo." };
+    if (isUniqueViolation(error)) return { ok: false, message: "There is already an article with that URL." };
+    return { ok: false, message: "Could not publish the article." };
   }
 
   revalidateTag("posts", "max");
@@ -326,14 +326,14 @@ export async function publishPost(
 
 export async function setPostStatus(id: string, status: PostStatus): Promise<ActionResult> {
   await requireAdmin();
-  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Artículo inválido." };
+  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Invalid article." };
   if (!["draft", "published", "hidden"].includes(status)) {
-    return { ok: false, message: "Estado inválido." };
+    return { ok: false, message: "Invalid status." };
   }
 
   if (status !== "published") {
     const done = await db.update(post).set({ status }).where(eq(post.id, id)).returning({ id: post.id });
-    if (done.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+    if (done.length === 0) return { ok: false, message: "That article no longer exists." };
 
     revalidateTag("posts", "max");
     return { ok: true };
@@ -356,7 +356,7 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
     .from(post)
     .where(eq(post.id, id))
     .limit(1);
-  if (rows.length === 0) return { ok: false, message: "Ese artículo ya no existe." };
+  if (rows.length === 0) return { ok: false, message: "That article no longer exists." };
   const row = rows[0];
 
   // La tabla no pinta errores por campo: el motivo tiene que caber en el aviso.
@@ -371,7 +371,7 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
     try {
       html = await renderBlocks(row.content ?? []);
     } catch {
-      return { ok: false, message: "No se pudo generar la versión pública del contenido." };
+      return { ok: false, message: "Could not generate the public version of the content." };
     }
   }
 
@@ -386,8 +386,8 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
       })
       .where(eq(post.id, id));
   } catch (error) {
-    if (isUniqueViolation(error)) return { ok: false, message: "Ya hay un artículo con esa URL." };
-    return { ok: false, message: "No se pudo publicar el artículo." };
+    if (isUniqueViolation(error)) return { ok: false, message: "There is already an article with that URL." };
+    return { ok: false, message: "Could not publish the article." };
   }
 
   revalidateTag("posts", "max");
@@ -398,7 +398,7 @@ export async function deletePosts(ids: string[]): Promise<ActionResult> {
   await requireAdmin();
 
   const valid = ids.filter((id) => z.uuid().safeParse(id).success);
-  if (valid.length === 0) return { ok: false, message: "No hay artículos válidos que eliminar." };
+  if (valid.length === 0) return { ok: false, message: "No valid articles to delete." };
 
   await db.delete(post).where(inArray(post.id, valid));
 

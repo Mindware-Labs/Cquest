@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import ServiceIcon from "@/components/services/ServiceIcon";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
 export default function DesktopNav({
@@ -152,7 +152,7 @@ export default function DesktopNav({
                 </svg>
               </button>
             ) : (
-              <LocalizedLink
+              <TransitionLink
                 href={href}
                 onClick={(event) => href === "#" && event.preventDefault()}
                 onFocus={() => setHovered(label)}
@@ -161,7 +161,7 @@ export default function DesktopNav({
                 className={`${itemClass(isActive)} block`}
               >
                 {label}
-              </LocalizedLink>
+              </TransitionLink>
             )}
 
             {children && (
@@ -197,7 +197,7 @@ export default function DesktopNav({
                         >
                           {children.map((child) => (
                             <li key={child.label}>
-                              <LocalizedLink
+                              <TransitionLink
                                 href={child.href}
                                 onClick={() => setOpenLabel(null)}
                                 onMouseEnter={() => onChildHover?.(child.href)}
@@ -232,7 +232,7 @@ export default function DesktopNav({
                                 >
                                   {child.description}
                                 </span>
-                              </LocalizedLink>
+                              </TransitionLink>
                             </li>
                           ))}
                         </ul>
@@ -241,7 +241,7 @@ export default function DesktopNav({
                       <ul className="flex flex-col">
                         {children.map((child) => (
                           <li key={child.label}>
-                            <LocalizedLink
+                            <TransitionLink
                               href={child.href}
                               onClick={() => setOpenLabel(null)}
                               onMouseEnter={() => onChildHover?.(child.href)}
@@ -253,7 +253,7 @@ export default function DesktopNav({
                               }`}
                             >
                               {child.label}
-                            </LocalizedLink>
+                            </TransitionLink>
                           </li>
                         ))}
                       </ul>

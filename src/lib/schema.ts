@@ -1,7 +1,6 @@
 import { CONTACT } from "@/components/footer/data";
 import { HQ } from "@/components/about/locationData";
 import { SERVICES } from "@/components/services/data";
-import type { Locale } from "@/i18n/config";
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example"
@@ -15,16 +14,20 @@ export const SITE_ID = `${SITE_URL}/#website`;
 
 const ORG_NAME = "Center Quest";
 
+/* El sitio se publica solo en inglés; el dato viaja al inLanguage de cada
+   nodo WebSite/WebPage. */
+const SITE_LANGUAGE = "en";
+
 /* Regla heredada del layout y que se mantiene: solo campos que existen de
    verdad. Sin sameAs (no hay perfiles sociales confirmados), sin openingHours
    ni priceRange (nadie los ha dado). Un dato inventado en JSON-LD es una
    penalización esperando, no un campo de más. */
-export function organizationNode(lang: Locale) {
+export function organizationNode() {
   return {
     "@type": "ProfessionalService",
     "@id": ORG_ID,
     name: ORG_NAME,
-    url: `${SITE_URL}/${lang}`,
+    url: `${SITE_URL}/`,
     logo: {
       "@type": "ImageObject",
       url: `${SITE_URL}/logo.png`,
@@ -53,23 +56,25 @@ export function organizationNode(lang: Locale) {
       { "@type": "Country", name: "Dominican Republic" },
       { "@type": "Country", name: "United States" },
     ],
+    /* El sitio es en inglés, pero la operación atiende en ambos idiomas:
+       esto describe al equipo de ventas, no a la web. */
     contactPoint: {
       "@type": "ContactPoint",
       telephone: CONTACT.phoneHref,
       email: CONTACT.email,
       contactType: "sales",
-      availableLanguage: ["es", "en"],
+      availableLanguage: ["en", "es"],
     },
   };
 }
 
-export function websiteNode(lang: Locale) {
+export function websiteNode() {
   return {
     "@type": "WebSite",
     "@id": SITE_ID,
-    url: `${SITE_URL}/${lang}`,
+    url: `${SITE_URL}/`,
     name: ORG_NAME,
-    inLanguage: lang,
+    inLanguage: SITE_LANGUAGE,
     publisher: { "@id": ORG_ID },
   };
 }
@@ -86,17 +91,17 @@ const SERVICE_TYPE: Record<string, string> = {
    repetirlo: el grafo se cose entre páginas por @id. Antes cada página
    declaraba su propio Organization suelto y Google veía tres «Center Quest»
    distintos, ninguno conectado con el negocio local del layout. */
-export function serviceNode(serviceId: string, lang: Locale) {
+export function serviceNode(serviceId: string) {
   const service = SERVICES.find((entry) => entry.id === serviceId);
   if (!service) return null;
 
   return {
     "@type": "Service",
-    "@id": `${SITE_URL}/${lang}${service.href}#service`,
+    "@id": `${SITE_URL}${service.href}#service`,
     serviceType: SERVICE_TYPE[serviceId],
-    name: service.label[lang],
-    description: `${service.strapline[lang]} ${service.description[lang]}`,
-    url: `${SITE_URL}/${lang}${service.href}`,
+    name: service.label,
+    description: `${service.strapline} ${service.description}`,
+    url: `${SITE_URL}${service.href}`,
     provider: { "@id": ORG_ID },
     /* Sin esto el WebSite del layout es una isla: nada en la página enlaza
        hacia él, aunque la etiqueta <script> del layout lo declare global. */
@@ -109,31 +114,28 @@ export function serviceNode(serviceId: string, lang: Locale) {
        enumera. El catálogo sale de la misma constante que pinta la UI. */
     hasOfferCatalog: {
       "@type": "OfferCatalog",
-      name: service.label[lang],
+      name: service.label,
       itemListElement: service.details.map((detail, index) => ({
         "@type": "Offer",
         position: index + 1,
         itemOffered: {
           "@type": "Service",
-          name: detail.title[lang],
-          description: detail.description[lang],
+          name: detail.title,
+          description: detail.description,
         },
       })),
     },
   };
 }
 
-export function breadcrumbNode(
-  lang: Locale,
-  trail: ReadonlyArray<{ name: string; path: string }>,
-) {
+export function breadcrumbNode(trail: ReadonlyArray<{ name: string; path: string }>) {
   return {
     "@type": "BreadcrumbList",
     itemListElement: trail.map((step, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: step.name,
-      item: `${SITE_URL}/${lang}${step.path}`,
+      item: `${SITE_URL}${step.path === "" ? "/" : step.path}`,
     })),
   };
 }
@@ -141,15 +143,15 @@ export function breadcrumbNode(
 /* El grafo completo de una página de servicio: la línea de negocio con su
    catálogo, más su sitio en la jerarquía. Los tres detalles de servicio lo
    comparten, así que vive aquí y no repetido en cada page.tsx. */
-export function servicePageGraph(serviceId: string, lang: Locale) {
+export function servicePageGraph(serviceId: string) {
   const service = SERVICES.find((entry) => entry.id === serviceId);
   if (!service) return graph();
 
   return graph(
-    serviceNode(serviceId, lang),
-    breadcrumbNode(lang, [
+    serviceNode(serviceId),
+    breadcrumbNode([
       { name: "Center Quest", path: "" },
-      { name: service.label[lang], path: service.href },
+      { name: service.label, path: service.href },
     ]),
   );
 }
@@ -159,7 +161,6 @@ export function servicePageGraph(serviceId: string, lang: Locale) {
    sitio por @id, en vez de dejarlas sin dato estructurado alguno. */
 export function simplePageNode(
   type: "AboutPage" | "ContactPage" | "WebPage",
-  lang: Locale,
   path: string,
   name: string,
   description: string,
@@ -167,11 +168,11 @@ export function simplePageNode(
 ) {
   return {
     "@type": type,
-    "@id": `${SITE_URL}/${lang}${path}#webpage`,
-    url: `${SITE_URL}/${lang}${path}`,
+    "@id": `${SITE_URL}${path}#webpage`,
+    url: `${SITE_URL}${path}`,
     name,
     description,
-    inLanguage: lang,
+    inLanguage: SITE_LANGUAGE,
     isPartOf: { "@id": SITE_ID },
     about: { "@id": ORG_ID },
     ...extra,
@@ -180,7 +181,6 @@ export function simplePageNode(
 
 export function simplePageGraph(
   type: "AboutPage" | "ContactPage" | "WebPage",
-  lang: Locale,
   path: string,
   name: string,
   description: string,
@@ -188,8 +188,8 @@ export function simplePageGraph(
   extra?: Record<string, unknown>,
 ) {
   return graph(
-    simplePageNode(type, lang, path, name, description, extra),
-    breadcrumbNode(lang, trail),
+    simplePageNode(type, path, name, description, extra),
+    breadcrumbNode(trail),
   );
 }
 

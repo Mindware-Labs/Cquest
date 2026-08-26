@@ -16,9 +16,9 @@ import styles from "./PanelRail.module.css";
 type Props = { name: string; email: string };
 
 const NAV = [
-  { href: "/admin/posts", label: "Artículos", icon: "doc" },
-  { href: "/admin/categories", label: "Categorías", icon: "tag" },
-  { href: "/admin/users", label: "Usuarios", icon: "people" },
+  { href: "/admin/posts", label: "Articles", icon: "doc" },
+  { href: "/admin/categories", label: "Categories", icon: "tag" },
+  { href: "/admin/users", label: "Users", icon: "people" },
 ] as const;
 
 function NavIcon({ name }: { name: (typeof NAV)[number]["icon"] }) {
@@ -101,7 +101,7 @@ export default function PanelRail({ name, email }: Props) {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="panel-rail"
-          aria-label={open ? "Cerrar el menú" : "Abrir el menú"}
+          aria-label={open ? "Close menu" : "Open menu"}
         >
           <span />
           <span />
@@ -120,15 +120,15 @@ export default function PanelRail({ name, email }: Props) {
             onClick={toggleRail}
             aria-expanded={!collapsed}
             aria-controls="panel-rail"
-            aria-label={collapsed ? "Expandir el panel lateral" : "Plegar el panel lateral"}
-            title={collapsed ? "Expandir" : "Plegar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand" : "Collapse"}
           >
             <FoldIcon />
           </button>
         </div>
 
         {/* En compacto el rail tapa el contenido: navegar tiene que cerrarlo. */}
-        <nav className={styles.nav} aria-label="Secciones del panel">
+        <nav className={styles.nav} aria-label="Panel sections">
           <span className={styles.navLabel}>Panel</span>
           <ul className={styles.list}>
             {NAV.map((entry) => {
@@ -156,7 +156,7 @@ export default function PanelRail({ name, email }: Props) {
             {initials(name, email)}
           </span>
           <span className={styles.identity}>
-            <span className={styles.name}>{name || "Sin nombre"}</span>
+            <span className={styles.name}>{name || "No name"}</span>
             <span className={styles.email}>{email}</span>
           </span>
           <button
@@ -164,8 +164,8 @@ export default function PanelRail({ name, email }: Props) {
             type="button"
             onClick={handleSignOut}
             disabled={leaving}
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
+            aria-label="Sign out"
+            title="Sign out"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
               <path d="M6.2 2.4H3.1v11.2h3.1" strokeLinecap="round" strokeLinejoin="round" />

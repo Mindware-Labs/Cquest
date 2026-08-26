@@ -1,11 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { isLocale } from "@/i18n/config";
-import { getLocale } from "@/i18n/getLocale";
-
-const LOCALE_COOKIE = "NEXT_LOCALE";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /* Rutas del panel accesibles sin sesión; el resto de /admin exige cookie. */
 const PUBLIC_ADMIN_PATHS = new Set([
@@ -14,11 +9,10 @@ const PUBLIC_ADMIN_PATHS = new Set([
   "/admin/reset-password",
 ]);
 
-function resolveLocale(request: NextRequest): string {
-  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (cookieLocale && isLocale(cookieLocale)) return cookieLocale;
-  return getLocale(request.headers.get("accept-language"));
-}
+/* Prefijos del sitio bilingüe anterior. Google tiene URLs /es/... y /en/...
+   indexadas: un 308 al path sin prefijo consolida esas señales en el
+   canonical nuevo en vez de dejar un rastro de 404. */
+const LEGACY_LOCALES = ["es", "en"] as const;
 
 /* Solo comprueba que la cookie exista: no la valida ni consulta la base de
    datos. La verificación real vive en el layout del panel y en requireAdmin(). */
@@ -35,34 +29,25 @@ function guardAdmin(request: NextRequest, pathname: string) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  /* El panel es interno y monolingüe: queda fuera del prefijo de idioma. */
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     return guardAdmin(request, pathname);
   }
 
   const segment = pathname.split("/")[1];
 
-  if (isLocale(segment)) {
-    const response = NextResponse.next();
-    response.cookies.set(LOCALE_COOKIE, segment, { maxAge: COOKIE_MAX_AGE, path: "/", sameSite: "lax" });
-    return response;
+  if ((LEGACY_LOCALES as readonly string[]).includes(segment)) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.slice(segment.length + 1) || "/";
+    return NextResponse.redirect(url, 308);
   }
 
-  const locale = resolveLocale(request);
-  const url = request.nextUrl.clone();
-  url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
-  /* 308 (permanente) y no 307: una ruta sin locale siempre resuelve al mismo
-     destino localizado, así que Google puede consolidar las señales de
-     ranking en el canonical sin esperar a que se confirme "temporal". */
-  const response = NextResponse.redirect(url, 308);
-  response.cookies.set(LOCALE_COOKIE, locale, { maxAge: COOKIE_MAX_AGE, path: "/", sameSite: "lax" });
-  return response;
+  return NextResponse.next();
 }
 
-/* El matcher excluye assets y rutas internas: redirigir un .png a /es/... lo
-   rompe, y el coste por request de pasar por aquí no es cero. */
+/* El matcher excluye assets y rutas internas: redirigir un .png rompe la
+   petición, y el coste por request de pasar por aquí no es cero. */
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|.*\..*).*)",
+    "/((?!api|_next/static|_next/image|.*\\..*).*)",
   ],
 };

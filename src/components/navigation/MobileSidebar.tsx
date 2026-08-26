@@ -3,8 +3,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import { NAV_EASE_OUT, type NavLink } from "./data";
 
 function subscribeNever() {
@@ -38,7 +38,6 @@ export default function MobileSidebar({
   ctaLabel,
   theme = "light",
 }: MobileSidebarProps) {
-  const { dict } = useI18n();
   const resolvedCtaLabel = ctaLabel ?? dict.common.contactUs;
   const mounted = useSyncExternalStore(subscribeNever, getIsClient, getIsServer);
   const [openLabel, setOpenLabel] = useState<string | null>(null);
@@ -126,7 +125,7 @@ export default function MobileSidebar({
                       <ChevronIcon open={openLabel === label} />
                     </button>
                   ) : (
-                    <LocalizedLink
+                    <TransitionLink
                       href={href}
                       onClick={(event) => {
                         if (href === "#") event.preventDefault();
@@ -139,7 +138,7 @@ export default function MobileSidebar({
                       }`}
                     >
                       {label}
-                    </LocalizedLink>
+                    </TransitionLink>
                   )}
                   {children && (
                     <AnimatePresence initial={false}>
@@ -155,7 +154,7 @@ export default function MobileSidebar({
                         >
                           {children.map((child) => (
                             <li key={child.label} className="py-1">
-                              <LocalizedLink
+                              <TransitionLink
                                 href={child.href}
                                 onClick={onClose}
                                 className={`block touch-manipulation py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
@@ -165,7 +164,7 @@ export default function MobileSidebar({
                                 }`}
                               >
                                 {child.label}
-                              </LocalizedLink>
+                              </TransitionLink>
                             </li>
                           ))}
                         </motion.ul>
@@ -180,7 +179,7 @@ export default function MobileSidebar({
                 transition={{ duration: 0.4, delay: 0.1 + links.length * 0.06, ease: NAV_EASE_OUT }}
                 className="pt-4"
               >
-                <LocalizedLink
+                <TransitionLink
                   href={ctaHref}
                   onClick={onClose}
                   className={`cq-rect-cta flex touch-manipulation items-center justify-center px-6 py-3 text-center transition-transform duration-150 ease-out active:scale-[0.96] ${
@@ -188,7 +187,7 @@ export default function MobileSidebar({
                   }`}
                 >
                   {resolvedCtaLabel}
-                </LocalizedLink>
+                </TransitionLink>
               </motion.li>
             </ul>
           </motion.div>

@@ -33,7 +33,7 @@ const ToastContext = createContext<Api | null>(null);
 
 export function useToast(): Api {
   const api = useContext(ToastContext);
-  if (!api) throw new Error("useToast necesita estar dentro de <ToastProvider>");
+  if (!api) throw new Error("useToast must be used inside <ToastProvider>");
   return api;
 }
 
@@ -80,7 +80,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
         className={styles.close}
         type="button"
         onClick={() => onDismiss(toast.id)}
-        aria-label="Descartar la notificación"
+        aria-label="Dismiss notification"
       >
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
           <path d="m3 3 8 8M11 3l-8 8" strokeLinecap="round" />
@@ -127,7 +127,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className={styles.viewport} role="region" aria-label="Notificaciones">
+      <div className={styles.viewport} role="region" aria-label="Notifications">
         <AnimatePresence initial={false}>
           {toasts.map((toast) => (
             <motion.div

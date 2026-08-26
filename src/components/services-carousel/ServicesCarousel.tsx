@@ -12,9 +12,9 @@ import {
 } from "motion/react";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import { SERVICES } from "@/components/services/data";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
-import { format } from "@/i18n/format";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
+import { format } from "@/lib/format";
 import CapabilityTags from "./CapabilityTags";
 import ServiceCta from "./ServiceCta";
 import ServicesRoster from "./ServicesRoster";
@@ -103,7 +103,6 @@ export default function ServicesCarousel() {
 }
 
 function ServicesTrack() {
-  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
 
   const [[index, direction], setPage] = useState<[number, number]>([0, 0]);
@@ -246,7 +245,7 @@ function ServicesTrack() {
         <AnimatePresence initial={false} custom={direction}>
           <motion.article
             key={service.id}
-            aria-label={format(dict.carousel.slideAriaLabel, { index: index + 1, total: SERVICES.length, label: service.label[lang] })}
+            aria-label={format(dict.carousel.slideAriaLabel, { index: index + 1, total: SERVICES.length, label: service.label })}
             custom={direction}
 
             style={{ "--svc": service.color, "--svc-glow": service.glow } as CSSProperties}
@@ -298,13 +297,13 @@ function ServicesTrack() {
                 variants={reduced ? undefined : stageItemVariants}
                 className="mt-3 font-heading text-[clamp(1.85rem,4.3vw,2.7rem)] font-semibold leading-[1.04] tracking-[-0.03em] lg:mt-4 lg:text-[clamp(2.5rem,5.2vw,4rem)] lg:leading-[1.02] lg:tracking-[-0.035em]"
               >
-                {service.label[lang]}
+                {service.label}
               </motion.h2>
               <motion.p
                 variants={reduced ? undefined : stageItemVariants}
                 className="mt-3 max-w-[42ch] text-balance font-heading text-[clamp(0.98rem,1.9vw,1.2rem)] font-medium leading-snug text-foreground/90 lg:mt-5 lg:max-w-[52ch] lg:text-[clamp(1.2rem,2vw,1.5rem)]"
               >
-                {service.shortLabel[lang]}
+                {service.shortLabel}
               </motion.p>
               {/* Más angosto que antes (78ch → 62ch) y un punto menos de cuerpo:
                   el renglón corto se lee de un vistazo, y el alto que suelta es
@@ -313,7 +312,7 @@ function ServicesTrack() {
                 variants={reduced ? undefined : stageItemVariants}
                 className="mt-3.5 max-w-[52ch] text-pretty text-[0.88rem] leading-relaxed text-[var(--text-secondary)] sm:text-[0.92rem] md:max-w-[58ch] lg:mt-5 lg:max-w-[62ch] lg:text-[0.98rem] lg:leading-[1.7]"
               >
-                {service.strapline[lang]} {service.description[lang]}
+                {service.strapline} {service.description}
               </motion.p>
 
               <CapabilityTags service={service} reduced={reduced} />
@@ -326,12 +325,12 @@ function ServicesTrack() {
                 className="mt-7 flex flex-wrap items-center justify-center gap-x-7 gap-y-4 lg:mt-9"
               >
                 <ServiceCta service={service} />
-                <LocalizedLink
+                <TransitionLink
                   href="/quote"
                   className="border-b border-[color-mix(in_srgb,var(--foreground)_18%,transparent)] pb-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[var(--text-secondary)] transition-colors duration-300 hover:border-[var(--svc)] hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-petroleo"
                 >
                   {dict.carousel.talkToTeam}
-                </LocalizedLink>
+                </TransitionLink>
               </motion.div>
             </motion.div>
           </motion.article>
@@ -349,7 +348,7 @@ function ServicesTrack() {
               <button
                 key={entry.id}
                 type="button"
-                aria-label={entry.label[lang]}
+                aria-label={entry.label}
                 aria-current={isCurrent ? "true" : undefined}
                 onClick={() => scrollToIndex(dotIndex)}
                 className="relative h-2 overflow-hidden rounded-full transition-[width,background-color] duration-500 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-petroleo"

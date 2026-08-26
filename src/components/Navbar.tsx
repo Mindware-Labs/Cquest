@@ -10,15 +10,15 @@ import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETA
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { useSectionSpy } from "@/hooks/useSectionSpy";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink, useLocalizedPathname } from "@/i18n/LocalizedLink";
+import { usePathname } from "next/navigation";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 
-const MotionLink = motion.create(LocalizedLink);
+const MotionLink = motion.create(TransitionLink);
 
 export default function Navbar() {
-  const { dict, lang } = useI18n();
   const reduced = useReducedMotion() ?? false;
-  const pathname = useLocalizedPathname();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const {
@@ -57,7 +57,7 @@ export default function Navbar() {
     darkPage || (isDarkHeroPage(pathname) && !scrolled && !open);
 
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
-  const navLinks = getServiceNavLinks(dict, lang)[pathname] ?? getNavLinks(dict, lang);
+  const navLinks = getServiceNavLinks()[pathname] ?? getNavLinks();
 
   const quoteHref = serviceDetailPage
     ? `/quote?servicio=${pathname.split("/").pop()}`
@@ -92,7 +92,7 @@ export default function Navbar() {
         aria-label={dict.nav.mainNavAriaLabel}
         className={`${container.container} flex items-center justify-between py-5`}
       >
-        <LocalizedLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="ml-2 shrink-0">
+        <TransitionLink href="/" aria-label={dict.nav.homeLinkAriaLabel} className="ml-2 shrink-0">
           <Image
             src="/logo.png"
             alt="Center Quest"
@@ -102,7 +102,7 @@ export default function Navbar() {
             sizes="76px"
             className={`h-14 w-auto transition-[filter] duration-500 ${inverse ? "brightness-0 invert" : ""}`}
           />
-        </LocalizedLink>
+        </TransitionLink>
 
         <DesktopNav reduced={reduced} inverse={inverse} links={navLinks} activeHref={activeHref} />
 

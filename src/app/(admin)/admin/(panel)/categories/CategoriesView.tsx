@@ -26,7 +26,7 @@ const STAGGER_LIMIT = 8;
 
 const EMPTY = { name: "", description: "" };
 
-const dateFormat = new Intl.DateTimeFormat("es-DO", { day: "numeric", month: "short", year: "numeric" });
+const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 function Icon({ name, size = 16 }: { name: string; size?: number }) {
   const c = { viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
@@ -195,13 +195,13 @@ export default function CategoriesView({
 
       if (!result.ok) {
         setErrors(result.fields ?? {});
-        toast.error(editing ? "No se pudo guardar" : "No se pudo crear la categoría", result.message);
+        toast.error(editing ? "Could not save" : "Could not create the category", result.message);
         formRef.current?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus();
         return;
       }
 
       setFormOpen(false);
-      toast.success(editing ? "Categoría actualizada" : "Categoría creada", form.name);
+      toast.success(editing ? "Category updated" : "Category created", form.name);
       router.refresh();
     });
   }
@@ -213,11 +213,11 @@ export default function CategoriesView({
     setConfirmOpen(false);
 
     if (!result.ok) {
-      toast.error("No se pudo eliminar", result.message);
+      toast.error("Could not delete", result.message);
       return;
     }
     const n = pendingIds.length;
-    toast.success(`${n} ${n === 1 ? "categoría eliminada" : "categorías eliminadas"}`);
+    toast.success(`${n} ${n === 1 ? "category deleted" : "categories deleted"}`);
     setSelected(new Set());
     setPendingIds([]);
     router.refresh();
@@ -260,8 +260,8 @@ export default function CategoriesView({
           className={t.action}
           type="button"
           onClick={() => openEdit(row)}
-          aria-label={`Editar «${row.name}»`}
-          title="Editar"
+          aria-label={`Edit “${row.name}”`}
+          title="Edit"
         >
           <Icon name="pencil" />
         </button>
@@ -270,8 +270,8 @@ export default function CategoriesView({
           type="button"
           data-tone="danger"
           onClick={() => askDelete([row.id])}
-          aria-label={`Eliminar «${row.name}»`}
-          title="Eliminar"
+          aria-label={`Delete “${row.name}”`}
+          title="Delete"
         >
           <Icon name="trash" />
         </button>
@@ -285,10 +285,10 @@ export default function CategoriesView({
     <div className={t.page}>
       <header className={t.pageHead}>
         <div className={t.titleGroup}>
-          <h1 className={t.pageTitle}>Categorías</h1>
-          <InfoHint label="Para qué sirven las categorías">
-            Agrupan los artículos y alimentan los filtros del blog público. El slug es la parte que
-            se ve en la URL, así que conviene dejarlo quieto una vez publicado.
+          <h1 className={t.pageTitle}>Categories</h1>
+          <InfoHint label="What categories are for">
+            They group articles and feed the filters on the public blog. The slug is the part that
+            shows in the URL, so it is best left alone once published.
           </InfoHint>
         </div>
         <div className={t.search}>
@@ -302,28 +302,28 @@ export default function CategoriesView({
             onChange={(event) => {
               setText(event.target.value);
             }}
-            placeholder="Buscar por nombre o slug"
-            aria-label="Buscar categorías"
+            placeholder="Search by name or slug"
+            aria-label="Search categories"
           />
         </div>
       </header>
 
       <div className={t.container}>
         <div className={t.toolbar}>
-          <div className={t.viewToggle} role="group" aria-label="Forma de ver las categorías">
+          <div className={t.viewToggle} role="group" aria-label="Category view mode">
             <button className={t.viewButton} type="button" onClick={() => setView("list")} aria-pressed={view === "list"}>
               <Icon name="list" size={15} />
-              Lista
+              List
             </button>
             <button className={t.viewButton} type="button" onClick={() => setView("grid")} aria-pressed={view === "grid"}>
               <Icon name="grid" size={15} />
-              Cuadrícula
+              Grid
             </button>
           </div>
 
           <button className={t.primary} type="button" onClick={openCreate}>
             <Icon name="plus" size={15} />
-            Agregar categoría
+            Add category
           </button>
         </div>
 
@@ -339,8 +339,8 @@ export default function CategoriesView({
             >
               <div className={t.bulk}>
                 <span className={t.bulkCount}>
-                  {selected.size} {selected.size === 1 ? "seleccionada" : "seleccionadas"}
-                  <span className={t.bulkScope}>en esta página</span>
+                  {selected.size} {selected.size === 1 ? "selected" : "selected"}
+                  <span className={t.bulkScope}>on this page</span>
                 </span>
                 <span className={t.bulkActions}>
                   <button
@@ -350,7 +350,7 @@ export default function CategoriesView({
                     onClick={() => askDelete([...selected])}
                   >
                     <Icon name="trash" />
-                    Eliminar
+                    Delete
                   </button>
                   <button
                     className={t.bulkButton}
@@ -358,7 +358,7 @@ export default function CategoriesView({
                     data-variant="plain"
                     onClick={() => setSelected(new Set())}
                   >
-                    Quitar selección
+                    Clear selection
                   </button>
                 </span>
               </div>
@@ -369,12 +369,12 @@ export default function CategoriesView({
         {visible.length === 0 ? (
           <div className={t.empty}>
             {query ? (
-              `Ninguna categoría coincide con «${query}».`
+              `No category matches “${query}”.`
             ) : (
               <>
-                Todavía no hay categorías.
+                No categories yet.
                 <span className={styles.emptyHint}>
-                  La primera define cómo se agrupan los artículos en el blog.
+                  The first one defines how articles are grouped on the blog.
                 </span>
               </>
             )}
@@ -383,7 +383,7 @@ export default function CategoriesView({
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
-                Categorías del blog, {total} en total, página {page} de {totalPages}.
+                Blog categories, {total} in total, page {page} of {totalPages}.
               </caption>
               <thead>
                 <tr>
@@ -394,24 +394,24 @@ export default function CategoriesView({
                       type="checkbox"
                       checked={allChecked}
                       onChange={toggleAll}
-                      aria-label="Seleccionar las categorías de esta página"
+                      aria-label="Select the categories on this page"
                     />
                   </th>
                   <th className={t.th} aria-sort={sortKey === "name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                     <button className={t.sortLink} type="button" onClick={() => sortBy("name")} data-active={sortKey === "name"}>
-                      Categoría
+                      Category
                       <Caret dir={sortKey === "name" ? sortDir : null} />
                     </button>
                   </th>
                   <th className={t.th}>Slug</th>
                   <th className={t.th} aria-sort={sortKey === "createdAt" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}>
                     <button className={t.sortLink} type="button" onClick={() => sortBy("createdAt")} data-active={sortKey === "createdAt"}>
-                      Creada
+                      Created
                       <Caret dir={sortKey === "createdAt" ? sortDir : null} />
                     </button>
                   </th>
                   <th className={t.th}>
-                    <span className={t.srOnly}>Acciones</span>
+                    <span className={t.srOnly}>Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -429,7 +429,7 @@ export default function CategoriesView({
                         type="checkbox"
                         checked={selected.has(row.id)}
                         onChange={() => toggle(row.id)}
-                        aria-label={`Seleccionar «${row.name}»`}
+                        aria-label={`Select “${row.name}”`}
                       />
                     </td>
                     <td className={t.td}>
@@ -461,7 +461,7 @@ export default function CategoriesView({
                     type="checkbox"
                     checked={selected.has(row.id)}
                     onChange={() => toggle(row.id)}
-                    aria-label={`Seleccionar «${row.name}»`}
+                    aria-label={`Select “${row.name}”`}
                   />
                   <span className={t.cardIdentity}>
                     <span className={styles.name}>{row.name}</span>
@@ -485,25 +485,25 @@ export default function CategoriesView({
 
       <div className={t.pagination}>
         <div className={t.perPage}>
-          <span>Mostrar</span>
+          <span>Show</span>
           <Select
             value={String(perPage)}
             options={PER_PAGE_OPTIONS}
             onChange={(next) => {
               navigate({ perPage: Number(next), page: 1 });
             }}
-            label="Categorías por página"
+            label="Categories per page"
           />
-          <span>por página</span>
+          <span>per page</span>
         </div>
 
-        <nav className={t.pages} aria-label="Paginación">
+        <nav className={t.pages} aria-label="Pagination">
           <button
             className={t.pageButton}
             type="button"
             onClick={() => navigate({ page: Math.max(1, page - 1) })}
             disabled={page === 1 || pending}
-            aria-label="Página anterior"
+            aria-label="Previous page"
           >
             <Icon name="prev" />
           </button>
@@ -519,7 +519,7 @@ export default function CategoriesView({
                 type="button"
                 onClick={() => navigate({ page: entry })}
                 aria-current={entry === page ? "page" : undefined}
-                aria-label={`Página ${entry}`}
+                aria-label={`Page ${entry}`}
               >
                 {entry}
               </button>
@@ -530,7 +530,7 @@ export default function CategoriesView({
             type="button"
             onClick={() => navigate({ page: Math.min(totalPages, page + 1) })}
             disabled={page === totalPages || pending}
-            aria-label="Página siguiente"
+            aria-label="Next page"
           >
             <Icon name="next" />
           </button>
@@ -540,14 +540,14 @@ export default function CategoriesView({
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        eyebrow={editing ? "Editar" : "Nueva categoría"}
-        title={editing ? editing.name : "Agregar categoría"}
+        eyebrow={editing ? "Edit" : "New category"}
+        title={editing ? editing.name : "Add category"}
         width="32rem"
       >
         <form ref={formRef} className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor={nameId}>
-              Nombre
+              Name
             </label>
             <input
               id={nameId}
@@ -562,7 +562,7 @@ export default function CategoriesView({
             />
             {/* La URL se muestra, no se edita: el usuario no tiene por qué inventarla. */}
             <span className={styles.help} id={`${nameId}-url`}>
-              {editing ? "URL fija desde su creación:" : "Se publicará en:"}{" "}
+              {editing ? "URL fixed since creation:" : "Will be published at:"}{" "}
               <span className={styles.slug}>/blog/{previewSlug || "…"}</span>
             </span>
             {errors.name && (
@@ -575,7 +575,7 @@ export default function CategoriesView({
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor={descriptionId}>
-              Descripción <span className={styles.optional}>opcional</span>
+              Description <span className={styles.optional}>optional</span>
             </label>
             <textarea
               id={descriptionId}
@@ -584,16 +584,16 @@ export default function CategoriesView({
               onChange={(event) => setForm((f) => ({ ...f, description: event.target.value }))}
               rows={3}
               maxLength={240}
-              placeholder="Una línea sobre qué agrupa esta categoría."
+              placeholder="One line about what this category groups."
             />
           </div>
 
           <div className={styles.formFoot}>
             <button className={styles.ghost} type="button" onClick={() => setFormOpen(false)}>
-              Cancelar
+              Cancel
             </button>
             <button className={t.primary} type="submit" disabled={saving}>
-              {saving ? "Guardando" : editing ? "Guardar cambios" : "Crear categoría"}
+              {saving ? "Saving" : editing ? "Save changes" : "Create category"}
             </button>
           </div>
         </form>
@@ -602,25 +602,25 @@ export default function CategoriesView({
       <Modal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        eyebrow="Confirmar"
+        eyebrow="Confirm"
         title={
           pendingIds.length === 1
-            ? "Eliminar la categoría"
-            : `Eliminar ${pendingIds.length} categorías`
+            ? "Delete the category"
+            : `Delete ${pendingIds.length} categories`
         }
       >
         <p className={styles.dialogText}>
           {pendingIds.length === 1
-            ? `Se elimina «${pendingNames[0] ?? ""}» y no se puede deshacer.`
-            : `Se eliminan ${pendingIds.length} categorías y no se puede deshacer.`}{" "}
-          Los artículos que las usen quedarán sin categoría.
+            ? `“${pendingNames[0] ?? ""}” is deleted and this cannot be undone.`
+            : `${pendingIds.length} categories are deleted and this cannot be undone.`}{" "}
+          Articles using them will be left without a category.
         </p>
         <div className={styles.dialogFoot}>
           <button className={styles.ghost} type="button" onClick={() => setConfirmOpen(false)}>
-            Cancelar
+            Cancel
           </button>
           <button className={styles.confirm} type="button" onClick={() => void confirmDelete()} disabled={busy}>
-            Eliminar
+            Delete
           </button>
         </div>
       </Modal>

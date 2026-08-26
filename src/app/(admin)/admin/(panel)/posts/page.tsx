@@ -5,7 +5,7 @@ import PostsHeader from "./PostsHeader";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Artículos · Panel Center Quest",
+  title: "Articles · Center Quest Admin",
   robots: { index: false, follow: false },
 };
 

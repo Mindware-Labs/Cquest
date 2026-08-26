@@ -6,7 +6,7 @@ import styles from "./ShiftClock.module.css";
 
 const TICKS = Array.from({ length: 25 }, (_, i) => i);
 
-const formatter = new Intl.DateTimeFormat("es-DO", {
+const formatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "America/Santo_Domingo",
   hour: "2-digit",
   minute: "2-digit",
@@ -38,7 +38,7 @@ export default function ShiftClock() {
   return (
     <div className={styles.clock}>
       <div className={styles.head}>
-        <span className={styles.zone}>Operación 24/7</span>
+        <span className={styles.zone}>24/7 operation</span>
         <span className={time ? styles.time : `${styles.time} ${styles.pending}`}>
           {time ?? "--:--"}
         </span>

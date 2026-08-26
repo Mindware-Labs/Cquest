@@ -18,7 +18,7 @@ type Step = "email" | "code" | "password" | "done";
 
 const STEPS: Step[] = ["email", "code", "password"];
 
-const emailSchema = z.email("Escribe un correo válido.");
+const emailSchema = z.email("Enter a valid email address.");
 
 function AlertIcon({ className }: { className?: string }) {
   return (
@@ -141,7 +141,7 @@ export default function ResetPasswordForm({
         goTo("code");
         return;
       }
-      setError("No se pudo enviar el código. Inténtalo de nuevo.");
+      setError("Could not send the code. Try again.");
       return;
     }
 
@@ -166,10 +166,10 @@ export default function ResetPasswordForm({
       // Agotados los intentos el token queda muerto: ni el código correcto sirve.
       setError(
         checkError.code === "TOO_MANY_ATTEMPTS"
-          ? "Fallaste el código tres veces y quedó anulado. Pide uno nuevo."
+          ? "You missed the code three times and it was voided. Request a new one."
           : checkError.code === "INVALID_OTP"
-            ? "El código no coincide. Revísalo o pide uno nuevo."
-            : "El código caducó. Pide uno nuevo.",
+            ? "The code does not match. Check it or request a new one."
+            : "The code expired. Request a new one.",
       );
       setCode("");
       return;
@@ -192,7 +192,7 @@ export default function ResetPasswordForm({
       // El código murió entre pasos: volver atrás deja a mano el botón de reenvío.
       goTo("code");
       setCode("");
-      setError("El código dejó de ser válido. Pide uno nuevo y repite el paso.");
+      setError("The code is no longer valid. Request a new one and repeat the step.");
       return;
     }
     goTo("done");
@@ -225,23 +225,23 @@ export default function ResetPasswordForm({
   const hint = !showErrors || stepValid
     ? null
     : step === "email"
-      ? "Escribe un correo válido."
+      ? "Enter a valid email address."
       : step === "code"
-        ? "Faltan dígitos del código."
+        ? "The code is missing digits."
         : !longEnough
-          ? `La contraseña necesita al menos ${MIN_PASSWORD} caracteres.`
-          : "Las dos contraseñas no coinciden.";
+          ? `The password needs at least ${MIN_PASSWORD} characters.`
+          : "The two passwords do not match.";
 
   const liveMessage = busy
-    ? "Procesando."
+    ? "Working."
     : (error ?? hint)
       ? (error ?? hint)
       : step === "code"
-        ? "Código enviado. Escríbelo abajo."
+        ? "Code sent. Type it below."
         : step === "password"
-          ? "Código verificado. Define tu contraseña."
+          ? "Code verified. Set your password."
           : step === "done"
-            ? "Contraseña actualizada."
+            ? "Password updated."
             : "";
 
   const rise = (delay: number) =>
@@ -265,10 +265,10 @@ export default function ResetPasswordForm({
   const stepIndex = STEPS.indexOf(step);
 
   const heads: Record<Step, { eyebrow: string; title: string; done?: boolean }> = {
-    email: { eyebrow: "Recuperar acceso", title: "¿Olvidaste tu contraseña?" },
-    code: { eyebrow: "Código enviado", title: "Escribe el código" },
-    password: { eyebrow: "Código verificado", title: "Define tu contraseña", done: true },
-    done: { eyebrow: "Listo", title: "Contraseña actualizada", done: true },
+    email: { eyebrow: "Recover access", title: "Forgot your password?" },
+    code: { eyebrow: "Code sent", title: "Type the code" },
+    password: { eyebrow: "Code verified", title: "Set your password", done: true },
+    done: { eyebrow: "Done", title: "Password updated", done: true },
   };
   const head = heads[step];
 
@@ -288,7 +288,7 @@ export default function ResetPasswordForm({
       </motion.h1>
 
       {step !== "done" && (
-        <div className={styles.steps} aria-label={`Paso ${stepIndex + 1} de ${STEPS.length}`}>
+        <div className={styles.steps} aria-label={`Step ${stepIndex + 1} of ${STEPS.length}`}>
           {STEPS.map((s, i) => (
             <span key={s} className={styles.stepBar} data-state={i < stepIndex ? "done" : i === stepIndex ? "current" : "next"} />
           ))}
@@ -313,11 +313,11 @@ export default function ResetPasswordForm({
           {step === "done" ? (
             <>
               <p className={styles.lead}>
-                Ya puedes entrar al panel con tu contraseña nueva.
+                You can now sign in with your new password.
               </p>
               <div className={styles.actions}>
                 <Link className={styles.submitLink} href="/admin/login">
-                  Entrar al panel
+                  Sign in
                 </Link>
               </div>
             </>
@@ -333,11 +333,11 @@ export default function ResetPasswordForm({
               {step === "email" && (
                 <>
                   <p className={styles.leadTight}>
-                    Escribe tu correo y te enviamos un código de seis dígitos.
+                    Enter your email and we will send you a six-digit code.
                   </p>
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor={emailId}>
-                      Correo
+                      Email
                     </label>
                     <input
                       id={emailId}
@@ -355,7 +355,7 @@ export default function ResetPasswordForm({
                     {showErrors && !emailValid && (
                       <span className={styles.fieldError} role="alert">
                         <AlertIcon className={styles.errorIcon} />
-                        Escribe un correo válido.
+                        Enter a valid email address.
                       </span>
                     )}
                   </div>
@@ -365,12 +365,12 @@ export default function ResetPasswordForm({
               {step === "code" && (
                 <>
                   <p className={styles.leadTight}>
-                    Si <span className={styles.leadStrong}>{email}</span> tiene una cuenta activa, le
-                    llegó un código de seis dígitos. Caduca a los 10 minutos.
+                    If <span className={styles.leadStrong}>{email}</span> has an active account, a
+                    six-digit code has arrived. It expires in 10 minutes.
                   </p>
                   <div className={styles.field}>
                     <span className={styles.label} id={codeErrorId}>
-                      Código
+                      Code
                     </span>
                     <OtpInput
                       value={code}
@@ -383,7 +383,7 @@ export default function ResetPasswordForm({
                     {showErrors && !codeValid && (
                       <span className={styles.fieldError} role="alert">
                         <AlertIcon className={styles.errorIcon} />
-                        Faltan dígitos del código.
+                        The code is missing digits.
                       </span>
                     )}
                   </div>
@@ -392,15 +392,15 @@ export default function ResetPasswordForm({
                     type="button"
                     onClick={() => void requestCode(email)}
                     disabled={busy || locked}
-                    aria-label={locked ? "Enviar otro código, disponible más tarde" : undefined}
+                    aria-label={locked ? "Send another code, available later" : undefined}
                   >
                     {locked ? (
                       <>
-                        Enviar otro código en{" "}
+                        Send another code in{" "}
                         <span className={styles.lockCount}>{clock(secondsLeft)}</span>
                       </>
                     ) : (
-                      "Enviar otro código"
+                      "Send another code"
                     )}
                   </button>
                 </>
@@ -410,7 +410,7 @@ export default function ResetPasswordForm({
                 <>
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor={passwordId}>
-                      Contraseña nueva
+                      New password
                     </label>
                     <div className={styles.inputWrap}>
                       <input
@@ -430,7 +430,7 @@ export default function ResetPasswordForm({
                         className={styles.reveal}
                         type="button"
                         onClick={() => setRevealed((v) => !v)}
-                        aria-label="Mostrar contraseña"
+                        aria-label="Show password"
                         aria-pressed={revealed}
                         aria-controls={passwordId}
                       >
@@ -441,7 +441,7 @@ export default function ResetPasswordForm({
 
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor={confirmId}>
-                      Repite la contraseña
+                      Repeat the password
                     </label>
                     <input
                       id={confirmId}
@@ -461,11 +461,11 @@ export default function ResetPasswordForm({
                   <ul className={styles.checklist} id={rulesId}>
                     <li data-state={lengthState}>
                       <RuleIcon state={lengthState} />
-                      Al menos {MIN_PASSWORD} caracteres
+                      At least {MIN_PASSWORD} characters
                     </li>
                     <li data-state={matchState}>
                       <RuleIcon state={matchState} />
-                      Las dos coinciden
+                      Both match
                     </li>
                   </ul>
                 </>
@@ -478,21 +478,21 @@ export default function ResetPasswordForm({
                 data-inactive={!stepValid}
                 data-locked={step === "email" && locked}
                 aria-disabled={!stepValid || (step === "email" && locked)}
-                aria-label={step === "email" && locked ? "Enviar código, bloqueado temporalmente" : undefined}
+                aria-label={step === "email" && locked ? "Send code, temporarily locked" : undefined}
               >
                 {busy && <span className={styles.spinner} aria-hidden="true" />}
                 {step === "email" && locked ? (
                   <>
-                    Espera <span className={styles.lockCount}>{clock(secondsLeft)}</span>
+                    Wait <span className={styles.lockCount}>{clock(secondsLeft)}</span>
                   </>
                 ) : busy ? (
-                  "Un momento"
+                  "One moment"
                 ) : step === "email" ? (
-                  "Enviar código"
+                  "Send code"
                 ) : step === "code" ? (
-                  "Verificar código"
+                  "Verify code"
                 ) : (
-                  "Guardar contraseña"
+                  "Save password"
                 )}
               </button>
             </form>
@@ -503,7 +503,7 @@ export default function ResetPasswordForm({
       {step !== "done" && (
         <div className={styles.footer}>
           <Link className={styles.link} href="/admin/login">
-            Volver a iniciar sesión
+            Back to sign in
           </Link>
           {step === "code" && (
             <button
@@ -514,7 +514,7 @@ export default function ResetPasswordForm({
                 setError(null);
               }}
             >
-              Usar otro correo
+              Use another email
             </button>
           )}
         </div>

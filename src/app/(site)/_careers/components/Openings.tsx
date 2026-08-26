@@ -1,0 +1,231 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { animate, createTimeline, onScroll, stagger } from "animejs";
+import { motion } from "motion/react";
+import Arrow from "@/components/services/Arrow";
+import container from "@/components/services/Container.module.css";
+import ServiceIcon from "@/components/services/ServiceIcon";
+import { TransitionLink } from "@/components/TransitionLink";
+import {
+  ACTIVE_POSITIONS,
+  EMPLOYMENT_LABEL,
+  MODE_LABEL,
+  TRACK_LABEL,
+  departmentLabel,
+} from "../data";
+import { EASE, EASE_SNAP, useAnimeScope } from "./anime";
+import { CTA_HOVER, CTA_TAP, CTA_TRANSITION } from "./motion";
+import styles from "./Openings.module.css";
+
+const MotionLink = motion.create(TransitionLink);
+
+const COPY = {
+  title: ["Every way in.", "Start where you are."] as const,
+  lead: "Entry-level roles need no prior call center experience — we train you. Pick a role to see what it involves.",
+  listLabel: "Open positions",
+  view: "View position and apply",
+  talent: "None of these? Send your CV",
+  responsibilities: "What you would do",
+  emptyTitle: "No openings right now",
+  emptyBody: "We open positions across the operation all year. Leave us your CV and we contact you when a role that fits you opens.",
+  sendCv: "Send your CV",
+};
+
+/* Tercera forma de esta sección, y la que se sostiene. Una rejilla de tarjetas
+   saturaba; una lista de diez filas seguía siendo un muro. Con seis vacantes y
+   cuatro departamentos, lo que el candidato hace de verdad es COMPARAR: mira
+   los títulos, entra en uno, vuelve. Así que la sección es un explorador —
+   índice a la izquierda, detalle a la derecha — y ocupa una pantalla, no tres. */
+export default function Openings({ reduced }: { reduced: boolean }) {
+  const t = COPY;
+  const root = useRef<HTMLElement>(null);
+  const detail = useRef<HTMLDivElement>(null);
+  const marker = useRef<HTMLSpanElement>(null);
+  const items = useRef<Array<HTMLButtonElement | null>>([]);
+  const [active, setActive] = useState(0);
+
+  const position = ACTIVE_POSITIONS[active];
+
+  /* El indicador es UN solo elemento que viaja hasta la fila activa, no un
+     borde que se enciende en cada fila. Esa continuidad es la que hace que el
+     índice se lea como un control y no como seis estados sueltos. */
+  const moveMarker = (index: number, animated: boolean) => {
+    const node = items.current[index];
+    const bar = marker.current;
+    if (!node || !bar) return;
+    const top = node.offsetTop;
+    const height = node.offsetHeight;
+    if (!animated || reduced) {
+      bar.style.transform = `translateY(${top}px)`;
+      bar.style.height = `${height}px`;
+      return;
+    }
+    animate(bar, { y: top, height, duration: 520, ease: EASE_SNAP });
+  };
+
+  const select = (index: number) => {
+    setActive(index);
+    moveMarker(index, true);
+    if (reduced || !detail.current) return;
+    /* El detalle no hace un fade completo: sus piezas entran escalonadas desde
+       abajo. Cambiar de rol tiene que sentirse como pasar una ficha, no como
+       recargar un bloque. */
+    animate(detail.current.children, {
+      opacity: [0, 1],
+      y: [26, 0],
+      x: [10, 0],
+      duration: 520,
+      delay: stagger(55),
+      ease: EASE,
+    });
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const total = ACTIVE_POSITIONS.length;
+    const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const next = (active + step + total) % total;
+    select(next);
+    items.current[next]?.focus();
+  };
+
+  useAnimeScope(
+    root,
+    () => {
+      moveMarker(active, false);
+      if (reduced) return;
+
+      createTimeline({
+        defaults: { ease: EASE },
+        autoplay: onScroll({ enter: "bottom-=80 top", sync: "play", repeat: false }),
+      })
+        .add(`.${styles.head} > *`, { opacity: [0, 1], y: [20, 0], duration: 700, delay: stagger(80) })
+        .add(
+          `.${styles.item}`,
+          { opacity: [0, 1], x: [-36, 0], duration: 560, delay: stagger(75), ease: EASE_SNAP },
+          "-=420",
+        )
+        .add(
+          `.${styles.detail} > *`,
+          { opacity: [0, 1], y: [28, 0], duration: 620, delay: stagger(70) },
+          "-=560",
+        );
+    },
+    [reduced],
+  );
+
+  if (ACTIVE_POSITIONS.length === 0) {
+    return (
+      <section id="openings" ref={root} className={styles.section}>
+        <div className={container.container}>
+          <div className={styles.empty}>
+            <h2 className={styles.emptyTitle}>{t.emptyTitle}</h2>
+            <p className={styles.emptyBody}>{t.emptyBody}</p>
+            <TransitionLink href="/careers/apply" className={styles.emptyCta}>
+              {t.sendCv} <Arrow />
+            </TransitionLink>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="openings" ref={root} className={styles.section}>
+      <div className={container.container}>
+        <div className={styles.head}>
+          <h2 className={styles.title}>
+            {t.title[0]} <strong>{t.title[1]}</strong>
+          </h2>
+          <p className={styles.lead}>{t.lead}</p>
+        </div>
+
+        <div className={styles.explorer}>
+          {/* Patrón de pestañas: el índice manda sobre un único panel, así que
+              es lo que un lector de pantalla debe anunciar. */}
+          <div
+            className={styles.list}
+            role="tablist"
+            aria-label={t.listLabel}
+            aria-orientation="vertical"
+            onKeyDown={onKeyDown}
+          >
+            <span aria-hidden className={styles.markerBar} ref={marker} />
+
+            {ACTIVE_POSITIONS.map((item, index) => (
+              <button
+                key={item.slug}
+                type="button"
+                role="tab"
+                id={`opening-tab-${item.slug}`}
+                aria-selected={index === active}
+                aria-controls="opening-panel"
+                tabIndex={index === active ? 0 : -1}
+                ref={(node) => {
+                  items.current[index] = node;
+                }}
+                className={styles.item}
+                onClick={() => select(index)}
+              >
+                <span className={styles.itemIcon}>
+                  <ServiceIcon name={item.icon} />
+                </span>
+                <span className={styles.itemText}>
+                  <span className={styles.itemTitle}>{item.title}</span>
+                  <span className={styles.itemArea}>{departmentLabel(item.department)}</span>
+                </span>
+                <span className={styles.itemTrack}>{TRACK_LABEL[item.track]}</span>
+              </button>
+            ))}
+          </div>
+
+          <div
+            className={styles.detail}
+            ref={detail}
+            role="tabpanel"
+            id="opening-panel"
+            aria-labelledby={`opening-tab-${position.slug}`}
+            tabIndex={0}
+          >
+            <p className={styles.detailArea}>{departmentLabel(position.department)}</p>
+            <h3 className={styles.detailTitle}>{position.title}</h3>
+            <p className={styles.detailSummary}>{position.summary}</p>
+
+            <ul className={styles.detailFacts}>
+              <li className={styles.tagTrack}>{TRACK_LABEL[position.track]}</li>
+              <li className={styles.tag}>{MODE_LABEL[position.mode]}</li>
+              <li className={styles.tag}>{EMPLOYMENT_LABEL[position.employmentType]}</li>
+              <li className={styles.tag}>{position.location}</li>
+            </ul>
+
+            <div className={styles.detailBlock}>
+              <p className={styles.detailBlockTitle}>{t.responsibilities}</p>
+              <ul className={styles.detailList}>
+                {position.responsibilities.slice(0, 3).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className={styles.detailActions}>
+              <MotionLink
+                href={`/careers/${position.slug}`}
+                className={styles.detailCta}
+                whileHover={reduced ? undefined : CTA_HOVER}
+                whileTap={reduced ? undefined : CTA_TAP}
+                transition={CTA_TRANSITION}
+              >
+                {t.view} <Arrow />
+              </MotionLink>
+              <TransitionLink href="/careers/apply" className={styles.detailGhost}>
+                {t.talent}
+              </TransitionLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

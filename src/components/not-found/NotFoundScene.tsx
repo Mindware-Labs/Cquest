@@ -5,28 +5,19 @@ import CompassMark from "./CompassMark";
 import { textGroupVariants } from "./animation";
 import { EASE_OUT, focusRiseVariants, ruleXVariants } from "@/components/services/motion";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import styles from "./NotFoundScene.module.css";
 
 const COPY = {
-  en: {
-    eyebrow: "404",
-    title: "This page took a different route.",
-    lead: "The page you're looking for doesn't exist, or it moved. Let's get you back on track.",
-    cta: "Back to home",
-  },
-  es: {
-    eyebrow: "404",
-    title: "Esta página tomó otro camino.",
-    lead: "La página que buscas no existe, o se movió. Volvamos a encaminarte.",
-    cta: "Volver al inicio",
-  },
+  eyebrow: "404",
+  title: "This page took a different route.",
+  lead: "The page you're looking for doesn't exist, or it moved. Let's get you back on track.",
+  cta: "Back to home",
 };
 
 export default function NotFoundScene() {
-  const { dict, lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const reduced = useReducedMotion() ?? false;
   const tabVisible = useTabVisibility();
   const ambient = tabVisible && !reduced;
@@ -74,21 +65,21 @@ export default function NotFoundScene() {
 
           <motion.div variants={focusRiseVariants} className="mt-2 flex flex-wrap items-center justify-center gap-3">
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 420, damping: 26 }}>
-              <LocalizedLink
+              <TransitionLink
                 href="/"
                 className="cq-rect-cta inline-flex items-center bg-petroleo px-6 py-3 text-white shadow-[0_2px_10px_-4px_rgba(15,32,40,0.35)] transition-shadow duration-500 hover:shadow-[0_14px_28px_-8px_rgba(15,32,40,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
               >
                 {t.cta}
-              </LocalizedLink>
+              </TransitionLink>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 420, damping: 26 }}>
-              <LocalizedLink
+              <TransitionLink
                 href="/quote"
                 className="cq-rect-cta inline-flex items-center border border-border bg-transparent px-6 py-3 text-foreground transition-colors duration-300 hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo"
               >
                 {dict.common.contactUs}
-              </LocalizedLink>
+              </TransitionLink>
             </motion.div>
           </motion.div>
         </motion.div>

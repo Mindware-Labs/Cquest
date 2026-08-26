@@ -37,7 +37,7 @@ export default function Modal({ open, onClose, eyebrow, title, width, children }
         <div className={styles.body}>
           <div className={styles.head}>
             <span className={styles.eyebrow}>{eyebrow}</span>
-            <button className={styles.close} type="button" onClick={onClose} aria-label="Cerrar">
+            <button className={styles.close} type="button" onClick={onClose} aria-label="Close">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
                 <path d="M3 3l8 8M11 3l-8 8" strokeLinecap="round" />
               </svg>

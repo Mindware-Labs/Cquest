@@ -12,8 +12,8 @@ import styles from "@/components/admin/fields.module.css";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const schema = z.object({
-  email: z.email("Escribe un correo válido."),
-  password: z.string().min(1, "Escribe tu contraseña."),
+  email: z.email("Enter a valid email address."),
+  password: z.string().min(1, "Enter your password."),
 });
 
 /* Solo rutas internas del panel: un `next` externo sería un open redirect. */
@@ -23,16 +23,16 @@ function safeNext(value: string | undefined): string {
 }
 
 function messageFor(status: number | undefined, code: string | undefined): string {
-  if (code === "BANNED_USER") return "Esta cuenta está bloqueada. Habla con un administrador.";
-  if (status === 401 || code === "INVALID_EMAIL_OR_PASSWORD") return "Correo o contraseña incorrectos.";
-  return "No se pudo iniciar sesión. Inténtalo de nuevo.";
+  if (code === "BANNED_USER") return "This account is blocked. Talk to an administrator.";
+  if (status === 401 || code === "INVALID_EMAIL_OR_PASSWORD") return "Wrong email or password.";
+  return "Could not sign in. Try again.";
 }
 
 const LOCK_KEY = "cq.admin.login.lock-until";
 
 /* Texto sin cifras: el número vive en el botón y aquí re-anunciaría cada segundo. */
 const LOCK_NOTICE =
-  "Demasiados intentos seguidos. El acceso se rehabilita cuando termine la cuenta atrás.";
+  "Too many attempts in a row. Access comes back when the countdown ends.";
 
 function AlertIcon() {
   return (
@@ -126,11 +126,11 @@ export default function LoginForm({ next }: { next?: string }) {
   const errorText = locked ? LOCK_NOTICE : formError;
 
   const liveMessage = submitting
-    ? "Verificando credenciales."
+    ? "Checking credentials."
     : errorText
       ? errorText
       : showErrors && !valid
-        ? "Revisa los campos marcados."
+        ? "Check the highlighted fields."
         : "";
 
   const rise = (delay: number) =>
@@ -145,10 +145,10 @@ export default function LoginForm({ next }: { next?: string }) {
   return (
     <>
       <motion.span className={styles.eyebrow} {...rise(0.06)}>
-        Acceso al panel
+        Panel access
       </motion.span>
       <motion.h1 className={styles.heading} {...rise(0.12)}>
-        Inicia sesión
+        Sign in
       </motion.h1>
       <motion.div
         className={styles.headingRule}
@@ -177,7 +177,7 @@ export default function LoginForm({ next }: { next?: string }) {
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={emailId}>
-            Correo
+            Email
           </label>
           <input
             id={emailId}
@@ -204,7 +204,7 @@ export default function LoginForm({ next }: { next?: string }) {
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={passwordId}>
-            Contraseña
+            Password
           </label>
           <div className={styles.inputWrap}>
             <input
@@ -225,7 +225,7 @@ export default function LoginForm({ next }: { next?: string }) {
               className={styles.reveal}
               type="button"
               onClick={() => setRevealed((v) => !v)}
-              aria-label="Mostrar contraseña"
+              aria-label="Show password"
               aria-pressed={revealed}
               aria-controls={passwordId}
             >
@@ -248,26 +248,26 @@ export default function LoginForm({ next }: { next?: string }) {
           data-locked={locked}
           aria-disabled={!valid || locked}
           /* Nombre estable: si cambiara cada segundo, el lector lo repetiría. */
-          aria-label={locked ? "Entrar al panel, bloqueado temporalmente" : undefined}
+          aria-label={locked ? "Sign in to the panel, temporarily locked" : undefined}
         >
           {submitting && <span className={styles.spinner} aria-hidden="true" />}
           {locked ? (
             <>
-              Espera <span className={styles.lockCount}>{clock(secondsLeft)}</span>
+              Wait <span className={styles.lockCount}>{clock(secondsLeft)}</span>
             </>
           ) : submitting ? (
-            "Verificando"
+            "Checking"
           ) : (
-            "Entrar al panel"
+            "Sign in"
           )}
         </button>
       </motion.form>
 
       <motion.div className={styles.footer} {...rise(0.32)}>
         <Link className={styles.link} href="/admin/reset-password">
-          ¿Olvidaste tu contraseña?
+          Forgot your password?
         </Link>
-        <span className={styles.note}>Las cuentas se crean desde dentro.</span>
+        <span className={styles.note}>Accounts are created from the inside.</span>
       </motion.div>
     </>
   );

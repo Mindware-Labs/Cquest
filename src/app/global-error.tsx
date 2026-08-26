@@ -15,12 +15,10 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="es">
+    <html lang="en">
       <body className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
-        <h1 className="text-2xl font-bold">Algo salió mal / Something went wrong</h1>
+        <h1 className="text-2xl font-bold">Something went wrong</h1>
         <p className="max-w-md text-muted">
-          Ocurrió un error inesperado. Intenta de nuevo o recarga la página.
-          <br />
           An unexpected error occurred. Try again or reload the page.
         </p>
         <button
@@ -28,7 +26,7 @@ export default function GlobalError({
           onClick={unstable_retry}
           className="mt-2 inline-flex items-center rounded-[2px] bg-petroleo px-6 py-3 text-sm font-medium text-white"
         >
-          Reintentar / Try again
+          Try again
         </button>
       </body>
     </html>

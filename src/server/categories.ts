@@ -23,7 +23,7 @@ export type ActionResult =
 /* El sitio público es solo en inglés, así que la categoría tiene un nombre.
    El slug no está aquí: lo deriva el servidor y el cliente no lo manda. */
 const schema = z.object({
-  name: z.string().trim().min(2, "El nombre necesita al menos 2 caracteres.").max(60),
+  name: z.string().trim().min(2, "The name needs at least 2 characters.").max(60),
   description: z.string().trim().max(240).optional(),
 });
 
@@ -135,20 +135,20 @@ export async function createCategory(input: CategoryInput): Promise<ActionResult
 
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
+    return { ok: false, message: "Check the highlighted fields.", fields: fieldErrors(parsed.error) };
   }
   const slug = slugify(parsed.data.name);
   if (!slug) {
-    return { ok: false, message: "Ese nombre no produce una URL válida.", fields: { name: "Usa al menos dos letras o números." } };
+    return { ok: false, message: "That name does not produce a valid URL.", fields: { name: "Use at least two letters or numbers." } };
   }
 
   try {
     await db.insert(category).values({ slug, ...fields(parsed.data) });
   } catch (error) {
     if (isUniqueViolation(error)) {
-      return { ok: false, message: "Ya existe una categoría con esa URL.", fields: { name: "Ya hay una categoría que produce esa misma URL." } };
+      return { ok: false, message: "A category with that URL already exists.", fields: { name: "Another category already produces that same URL." } };
     }
-    return { ok: false, message: "No se pudo guardar la categoría." };
+    return { ok: false, message: "Could not save the category." };
   }
 
   revalidateTag("categories", "max");
@@ -158,11 +158,11 @@ export async function createCategory(input: CategoryInput): Promise<ActionResult
 export async function updateCategory(id: string, input: CategoryInput): Promise<ActionResult> {
   await requireAdmin();
 
-  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Categoría inválida." };
+  if (!z.uuid().safeParse(id).success) return { ok: false, message: "Invalid category." };
 
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: "Revisa los campos marcados.", fields: fieldErrors(parsed.error) };
+    return { ok: false, message: "Check the highlighted fields.", fields: fieldErrors(parsed.error) };
   }
   /* El slug queda fuera del update a propósito: cambiarlo rompería cualquier
      URL ya publicada que apunte a esta categoría. */
@@ -172,9 +172,9 @@ export async function updateCategory(id: string, input: CategoryInput): Promise<
       .set(fields(parsed.data))
       .where(eq(category.id, id))
       .returning({ id: category.id });
-    if (done.length === 0) return { ok: false, message: "Esa categoría ya no existe." };
+    if (done.length === 0) return { ok: false, message: "That category no longer exists." };
   } catch {
-    return { ok: false, message: "No se pudo guardar la categoría." };
+    return { ok: false, message: "Could not save the category." };
   }
 
   revalidateTag("categories", "max");
@@ -185,13 +185,13 @@ export async function deleteCategories(ids: string[]): Promise<ActionResult> {
   await requireAdmin();
 
   const valid = ids.filter((id) => z.uuid().safeParse(id).success);
-  if (valid.length === 0) return { ok: false, message: "No hay categorías válidas que eliminar." };
+  if (valid.length === 0) return { ok: false, message: "No valid categories to delete." };
 
   try {
     await db.delete(category).where(inArray(category.id, valid));
   } catch {
     // Cuando `post` exista con clave foránea, borrar una categoría en uso fallará aquí.
-    return { ok: false, message: "No se pudo eliminar. Puede que tenga artículos asociados." };
+    return { ok: false, message: "Could not delete. It may still have articles attached." };
   }
 
   revalidateTag("categories", "max");

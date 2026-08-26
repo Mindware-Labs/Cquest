@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import { INTRO_TAIL_MS, SCENE, sceneAt } from "./animation";
 import styles from "./QuestBotScene.module.css";
 
@@ -41,7 +41,6 @@ export default function QuestBotScene({
 
   pinnedQuestionIndex?: number | null;
 }) {
-  const { dict } = useI18n();
   const questions = dict.hero.questions;
   const [runId, setRunId] = useState(0);
 
@@ -493,7 +492,7 @@ export default function QuestBotScene({
         </svg>
 
         <div className={styles.say}>
-          <LocalizedLink
+          <TransitionLink
             href="/quote"
             aria-label={`${questions[displayIndex]} ${dict.hero.sayCtaSuffix}`}
             className={styles.sayBox}
@@ -524,7 +523,7 @@ export default function QuestBotScene({
               <span ref={typedLineRef} />
               <span className={styles.caret} />
             </div>
-          </LocalizedLink>
+          </TransitionLink>
         </div>
       </div>
 

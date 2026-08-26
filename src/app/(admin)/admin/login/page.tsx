@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth-guard";
 import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = {
-  title: "Iniciar sesión · Panel Center Quest",
+  title: "Sign in · Center Quest Admin",
   robots: { index: false, follow: false },
 };
 
@@ -21,8 +21,8 @@ export default async function LoginPage({
 
   return (
     <AuthShell
-      thesis="La operación no se detiene."
-      lead="Panel interno de Center Quest. Las cuentas se crean desde dentro: si no tienes acceso, pídeselo a un administrador."
+      thesis="The operation never stops."
+      lead="Center Quest internal panel. Accounts are created from the inside: if you do not have access, ask an administrator for it."
     >
       <LoginForm next={next} />
     </AuthShell>

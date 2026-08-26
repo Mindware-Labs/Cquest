@@ -12,7 +12,7 @@ import HeroNav from "@/components/hero/HeroNav";
 import HeroReactiveGrid from "@/components/hero/HeroReactiveGrid";
 import HeroScrollCue from "@/components/hero/HeroScrollCue";
 import QuestBotScene from "@/components/hero/QuestBotScene";
-import { useI18n } from "@/i18n/I18nProvider";
+import { dict } from "@/lib/dictionary";
 import { useTabVisibility } from "@/hooks/useTabVisibility";
 import {
   BEAT,
@@ -25,7 +25,6 @@ import {
 } from "@/components/hero/animation";
 
 export default function HeroImage() {
-  const { dict } = useI18n();
   const reduced = useReducedMotion() ?? false;
 
   /* Lo pone HeroNav al pasar por un link de Servicios y lo lee QuestBotScene

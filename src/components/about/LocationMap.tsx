@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useI18n } from "@/i18n/I18nProvider";
 import {
   HQ,
   LOCATION_COPY,
@@ -14,16 +13,10 @@ import {
 } from "./locationData";
 import styles from "./LocationSection.module.css";
 
-const ES_LOCALE = {
-  "AttributionControl.ToggleAttribution": "Mostrar atribución",
-  "AttributionControl.MapFeedback": "Comentarios sobre el mapa",
-} as const;
-
 const easeInSine = (t: number) => 1 - Math.cos((t * Math.PI) / 2);
 
 export default function LocationMap() {
-  const { lang } = useI18n();
-  const t = LOCATION_COPY[lang];
+  const t = LOCATION_COPY;
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
   const hostRef = useRef<HTMLDivElement>(null);
@@ -46,7 +39,7 @@ export default function LocationMap() {
 
     const applyLanguage = () => {
       try {
-        map?.setLanguage(lang);
+        map?.setLanguage("en");
       } catch (error) {
         void error;
       }
@@ -113,7 +106,6 @@ export default function LocationMap() {
           pitchWithRotate: false,
           touchZoomRotate: true,
           attributionControl: true,
-          locale: lang === "es" ? ES_LOCALE : undefined,
         });
         map.touchZoomRotate?.disableRotation();
         darkQuery.addEventListener("change", onSchemeChange);
@@ -191,7 +183,7 @@ export default function LocationMap() {
       darkQuery.removeEventListener("change", onSchemeChange);
       map?.remove();
     };
-  }, [token, lang]);
+  }, [token]);
 
   if (!token || failed) {
     return (

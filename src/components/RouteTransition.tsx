@@ -43,7 +43,7 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
   }, []);
 
   /* Congela la página saliente durante todo el traspaso: el stopInertiaOnNavigate
-     de Lenis solo engancha <Link> de Next, y LocalizedLink empuja a mano. */
+     de Lenis solo engancha <Link> de Next, y TransitionLink empuja a mano. */
   const beginCover = useCallback(() => {
     window.__lenis?.stop();
     setPhase("covering");

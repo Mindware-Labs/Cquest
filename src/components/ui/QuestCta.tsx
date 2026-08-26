@@ -2,9 +2,9 @@
 
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
 
-const MotionLink = motion.create(LocalizedLink);
+const MotionLink = motion.create(TransitionLink);
 
 export default function QuestCta({
   href,

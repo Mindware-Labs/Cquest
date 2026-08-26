@@ -7,26 +7,17 @@ import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import { EASE_OUT, groupVariants, ruleYVariants, settleVariants, statCardVariants, statLineVariants, stepVariants, VIEWPORT } from "@/components/services/motion";
 import { useCountUp } from "@/hooks/useCountUp";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
 import { gsap } from "@/lib/gsap";
 import { ABOUT_METRICS, TEAM_HR_NOTE } from "./data";
 import { SCRUB, useEnteredOnce, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./MetricsSection.module.css";
 
 const COPY = {
-  en: {
-    eyebrow: "Our team",
-    heading: "The team behind the operation.",
-    cta: "Meet the team",
-    photoAlt: "The Center Quest team outside the company's Santo Domingo offices.",
-  },
-  es: {
-    eyebrow: "Nuestro equipo",
-    heading: "El equipo detrás de la operación.",
-    cta: "Conoce al equipo",
-    photoAlt: "El equipo de Center Quest frente a las oficinas de la empresa en Santo Domingo.",
-  },
+  eyebrow: "Our team",
+  heading: "The team behind the operation.",
+  cta: "Meet the team",
+  photoAlt: "The Center Quest team outside the company's Santo Domingo offices.",
 };
 
 function MetricValue({ value, suffix, reduced }: { value: number; suffix: string; reduced: boolean }) {
@@ -36,8 +27,7 @@ function MetricValue({ value, suffix, reduced }: { value: number; suffix: string
 }
 
 export default function MetricsSection({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const sectionRef = useRef<HTMLElement>(null);
   const fieldRef = useRef<HTMLSpanElement>(null);
   /* La sala se enciende al entrar en ella en vez de llegar ya iluminada. */
@@ -95,12 +85,12 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
               </motion.span>
               <motion.h2 variants={settleVariants}>{t.heading}</motion.h2>
               <motion.p className={styles.lead} variants={settleVariants}>
-                {TEAM_HR_NOTE[lang]}
+                {TEAM_HR_NOTE}
               </motion.p>
               <motion.div variants={settleVariants}>
-                <LocalizedLink href="/team" className={styles.cta}>
+                <TransitionLink href="/team" className={styles.cta}>
                   {t.cta} <Arrow />
-                </LocalizedLink>
+                </TransitionLink>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -145,7 +135,7 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
               <motion.dt variants={statLineVariants}>
 
                 <motion.span aria-hidden className={styles.riser} variants={ruleYVariants} />
-                {metric.label[lang]}
+                {metric.label}
               </motion.dt>
               <motion.div variants={statLineVariants}>
                 <MetricValue value={metric.value} suffix={metric.suffix} reduced={reduced} />

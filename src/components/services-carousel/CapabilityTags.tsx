@@ -4,7 +4,6 @@ import { motion, type Variants } from "motion/react";
 import type { CSSProperties } from "react";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { Service } from "@/components/services/data";
-import { useI18n } from "@/i18n/I18nProvider";
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -36,7 +35,6 @@ export default function CapabilityTags({
   service: Service;
   reduced: boolean;
 }) {
-  const { lang } = useI18n();
   const columns = service.details.length % 3 === 0 ? 3 : 2;
 
   return (
@@ -55,8 +53,8 @@ export default function CapabilityTags({
           className="cq-svc"
         >
           <ServiceIcon name={detail.icon} />
-          <b>{detail.title[lang]}</b>
-          <i>{detail.description[lang]}</i>
+          <b>{detail.title}</b>
+          <i>{detail.description}</i>
         </motion.li>
       ))}
     </motion.ul>

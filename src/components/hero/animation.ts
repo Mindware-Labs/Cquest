@@ -1,6 +1,5 @@
 import type { Variants } from "motion/react";
-import type { Dictionary } from "@/i18n/dictionaries/types";
-import type { Locale } from "@/i18n/config";
+import { dict } from "@/lib/dictionary";
 import { getServiceChildren, type NavLink } from "@/components/navigation/data";
 
 /** ease-out-quint — espeja `--ease-out`. Por defecto para lo que entra. */
@@ -26,12 +25,12 @@ export const REVEAL = {
   headline: 0.18,
   /** 70ms por palabra: se lee como una ola, no como siete eventos. */
   headlineStep: 0.07,
-  /** BASE, no el beat: "el lead llega último" depende del idioma (ver abajo). */
+  /** BASE, no el beat: "el lead llega último" depende del largo del headline. */
   lead: 0.5,
 } as const;
 
 /* El lead 0.2s después de que arranca la última máscara. Fijo en 0.5 llegaba
-   antes que el headline en inglés (9 palabras) e invertía la jerarquía. */
+   antes que un headline largo (9 palabras) e invertía la jerarquía. */
 export function leadDelayFor(wordCount: number): number {
   return Math.max(
     REVEAL.lead,
@@ -57,12 +56,12 @@ export function sceneAt(beat: number): number {
   return (BEAT.scene + beat) * 1000;
 }
 
-export function getHeroNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+export function getHeroNavLinks(): readonly NavLink[] {
   return [
     {
       label: dict.hero.navLinks.services,
       href: "#services",
-      children: getServiceChildren(dict, lang),
+      children: getServiceChildren(),
     },
     { label: dict.hero.navLinks.team, href: "#metrics" },
     { label: dict.hero.navLinks.sectors, href: "#sectors" },

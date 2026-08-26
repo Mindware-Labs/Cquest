@@ -3,15 +3,14 @@
 import { motion } from "motion/react";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import type { Service } from "@/components/services/data";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 
-const MotionLink = motion.create(LocalizedLink);
+const MotionLink = motion.create(TransitionLink);
 
 /* El margen superior ya no vive aquí: lo pone la fila de acciones que contiene
    al CTA, que desde ahora comparte renglón con el enlace secundario. */
 export default function ServiceCta({ service }: { service: Service }) {
-  const { dict, lang } = useI18n();
   const { ref, style, onMouseEnter, onMouseMove, onMouseLeave } =
     useMagnetic<HTMLAnchorElement>(0.2, 3);
 
@@ -32,7 +31,7 @@ export default function ServiceCta({ service }: { service: Service }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
       />
-      <span className="relative z-10">{dict.carousel.explorePrefix} {service.label[lang]}</span>
+      <span className="relative z-10">{dict.carousel.explorePrefix} {service.label}</span>
       <span className="relative z-10 flex h-4 w-4 items-center justify-center text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
         <Chevron />
       </span>

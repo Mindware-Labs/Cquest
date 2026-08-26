@@ -1,6 +1,5 @@
 import { SERVICE_ICON, SERVICES, type ServiceIconName } from "@/components/services/data";
-import type { Dictionary } from "@/i18n/dictionaries/types";
-import type { Locale } from "@/i18n/config";
+import { dict } from "@/lib/dictionary";
 
 export type NavLink = {
   label: string;
@@ -57,15 +56,15 @@ export const NO_FOOTER_PAGES = ["/partnerships/mindware-labs"] as const;
    una vacante no compite con eso. Se declara en un solo sitio porque el mismo
    menú se arma en cinco lugares (nav general, hero, legal, location, hero de
    partnerships) y separarlos es garantizar que se desincronicen. */
-export function getServiceChildren(dict: Dictionary, lang: Locale): readonly NavLink[] {
+export function getServiceChildren(): readonly NavLink[] {
   return [
     ...SERVICES.map((service) => ({
-      label: service.label[lang],
+      label: service.label,
       href: service.href,
-      description: service.strapline[lang],
+      description: service.strapline,
       icon: SERVICE_ICON[service.id],
     })),
-    // Empleos fuera de esta entrega (ver src/app/[lang]/_careers).
+    // Empleos fuera de esta entrega (ver src/app/(site)/_careers).
     // {
     //   label: dict.nav.careers,
     //   href: "/careers",
@@ -75,12 +74,12 @@ export function getServiceChildren(dict: Dictionary, lang: Locale): readonly Nav
   ];
 }
 
-export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+export function getNavLinks(): readonly NavLink[] {
   return [
     {
       label: dict.nav.services,
       href: "/#services",
-      children: getServiceChildren(dict, lang),
+      children: getServiceChildren(),
     },
     { label: dict.nav.team, href: "/team" },
     { label: dict.nav.sectors, href: "/#sectors" },
@@ -91,13 +90,13 @@ export function getNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] 
   ];
 }
 
-function getLegalNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
+function getLegalNavLinks(): readonly NavLink[] {
   return [
     { label: dict.nav.home, href: "/" },
     {
       label: dict.nav.services,
       href: "/#services",
-      children: getServiceChildren(dict, lang),
+      children: getServiceChildren(),
     },
 
     { label: dict.hero.navLinks.team, href: "/team" },
@@ -106,7 +105,7 @@ function getLegalNavLinks(dict: Dictionary, lang: Locale): readonly NavLink[] {
   ];
 }
 
-function getHomeNavLink(dict: Dictionary): NavLink {
+function getHomeNavLink(): NavLink {
   return {
     label: dict.nav.home,
     href: "/",
@@ -120,8 +119,8 @@ function getHomeNavLink(dict: Dictionary): NavLink {
   };
 }
 
-export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<string, readonly NavLink[]> {
-  const home = getHomeNavLink(dict);
+export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
+  const home = getHomeNavLink();
   return {
     "/services/call-center": [
       home,
@@ -166,20 +165,20 @@ export function getServiceNavLinks(dict: Dictionary, lang: Locale): Record<strin
       {
         label: dict.hero.navLinks.services,
         href: "/#services",
-        children: getServiceChildren(dict, lang),
+        children: getServiceChildren(),
       },
       { label: dict.hero.navLinks.team, href: "/#metrics" },
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
     ],
 
-    "/legal/terms": getLegalNavLinks(dict, lang),
-    "/legal/privacy": getLegalNavLinks(dict, lang),
+    "/legal/terms": getLegalNavLinks(),
+    "/legal/privacy": getLegalNavLinks(),
 
     "/location": [
       {
         label: dict.hero.navLinks.services,
         href: "/#services",
-        children: getServiceChildren(dict, lang),
+        children: getServiceChildren(),
       },
       { label: dict.hero.navLinks.team, href: "/#metrics" },
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },

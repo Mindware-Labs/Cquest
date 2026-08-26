@@ -27,13 +27,13 @@ type SortDir = "asc" | "desc";
 const STAGGER_LIMIT = 8;
 
 const STATUS: Record<Badge, { label: string; ink: string; dot: "full" | "half" | "ring" }> = {
-  published: { label: "Publicado", ink: "var(--brand-verde)", dot: "full" },
-  scheduled: { label: "Programado", ink: "var(--brand-petroleo)", dot: "half" },
-  draft: { label: "Borrador", ink: "var(--brand-celeste)", dot: "full" },
-  hidden: { label: "Oculto", ink: "var(--text-tertiary)", dot: "ring" },
+  published: { label: "Published", ink: "var(--brand-verde)", dot: "full" },
+  scheduled: { label: "Scheduled", ink: "var(--brand-petroleo)", dot: "half" },
+  draft: { label: "Draft", ink: "var(--brand-celeste)", dot: "full" },
+  hidden: { label: "Hidden", ink: "var(--text-tertiary)", dot: "ring" },
 };
 
-const stamp = new Intl.DateTimeFormat("es-DO", {
+const stamp = new Intl.DateTimeFormat("en-GB", {
   timeZone: "America/Santo_Domingo",
   day: "2-digit",
   month: "2-digit",
@@ -181,10 +181,10 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     const result = await setPostStatus(row.id, next);
     setBusy(false);
     if (!result.ok) {
-      toast.error("No se pudo cambiar el estado", result.message);
+      toast.error("Could not change the status", result.message);
       return;
     }
-    toast.success(next === "published" ? "Artículo publicado" : "Artículo oculto", row.title);
+    toast.success(next === "published" ? "Article published" : "Article hidden", row.title);
     router.refresh();
   }
 
@@ -193,10 +193,10 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     const result = await deletePosts(ids);
     setBusy(false);
     if (!result.ok) {
-      toast.error("No se pudo eliminar", result.message);
+      toast.error("Could not delete", result.message);
       return;
     }
-    toast.success(`${ids.length} ${ids.length === 1 ? "artículo eliminado" : "artículos eliminados"}`);
+    toast.success(`${ids.length} ${ids.length === 1 ? "article deleted" : "articles deleted"}`);
     setSelected(new Set());
     router.refresh();
   }
@@ -260,8 +260,8 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
         <div className={styles.bulk}>
           <div className={styles.bulkInner}>
             <span className={styles.bulkCount}>
-              {selected.size} {selected.size === 1 ? "seleccionado" : "seleccionados"}
-              <span className={styles.bulkScope}>en esta página</span>
+              {selected.size} {selected.size === 1 ? "selected" : "selected"}
+              <span className={styles.bulkScope}>on this page</span>
             </span>
             <span className={styles.bulkActions}>
               <button
@@ -271,7 +271,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                 disabled={busy}
                 onClick={() => void removeSelected([...selected])}
               >
-                Eliminar
+                Delete
               </button>
               <button
                 className={styles.bulkButton}
@@ -279,7 +279,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                 data-variant="plain"
                 onClick={() => setSelected(new Set())}
               >
-                Quitar selección
+                Clear selection
               </button>
             </span>
           </div>
@@ -289,8 +289,8 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
       <div className={styles.scroller}>
         <table className={styles.table}>
           <caption className={styles.caption}>
-            Artículos del blog, {rows.length} en esta página de {total}, página {page} de{" "}
-            {totalPages}, ordenados por {sortKey === "title" ? "título" : "última edición"}.
+            Blog articles, {rows.length} on this page of {total}, page {page} of {totalPages},
+            sorted by {sortKey === "title" ? "title" : "last edit"}.
           </caption>
 
           <thead>
@@ -302,25 +302,25 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                   type="checkbox"
                   checked={allChecked}
                   onChange={toggleAll}
-                  aria-label="Seleccionar todos los artículos de esta página"
+                  aria-label="Select every article on this page"
                 />
               </th>
               <th className={styles.th} aria-sort={ariaSort("title")}>
                 <button className={styles.sortLink} type="button" onClick={() => sortBy("title")} data-active={sortKey === "title"}>
-                  Artículo
+                  Article
                   <Caret dir={sortKey === "title" ? sortDir : null} />
                 </button>
               </th>
-              <th className={styles.th}>Categoría</th>
-              <th className={styles.th}>Estado</th>
+              <th className={styles.th}>Category</th>
+              <th className={styles.th}>Status</th>
               <th className={styles.th} aria-sort={ariaSort("updatedAt")}>
                 <button className={styles.sortLink} type="button" onClick={() => sortBy("updatedAt")} data-active={sortKey === "updatedAt"}>
-                  Editado
+                  Edited
                   <Caret dir={sortKey === "updatedAt" ? sortDir : null} />
                 </button>
               </th>
               <th className={styles.th}>
-                <span className={styles.caption}>Acciones</span>
+                <span className={styles.caption}>Actions</span>
               </th>
             </tr>
           </thead>
@@ -329,7 +329,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
             {rows.length === 0 && (
               <tr>
                 <td className={styles.empty} colSpan={6}>
-                  Todavía no hay artículos. El primero se crea desde “Nuevo artículo”.
+                  No articles yet. Create the first one from “New article”.
                 </td>
               </tr>
             )}
@@ -350,7 +350,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggle(row.id)}
-                        aria-label={`Seleccionar «${row.title}»`}
+                        aria-label={`Select “${row.title}”`}
                       />
                     </td>
 
@@ -360,7 +360,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                           {row.coverUrl ? (
                             <Image src={row.coverUrl} alt="" width={36} height={36} />
                           ) : (
-                            <span title="Sin portada">
+                            <span title="No cover">
                               <Icon name="image" />
                             </span>
                           )}
@@ -371,7 +371,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                       </span>
                     </td>
 
-                    <td className={`${styles.td} ${styles.inkCell}`}>{row.categoryName ?? "Sin categoría"}</td>
+                    <td className={`${styles.td} ${styles.inkCell}`}>{row.categoryName ?? "No category"}</td>
 
                     <td className={styles.td}>
                       <span className={styles.badge} style={{ "--badge-ink": state.ink } as React.CSSProperties}>
@@ -400,20 +400,20 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                           className={styles.action}
                           href={
                             row.status === "published"
-                              ? `/es/blog/${row.slug}`
-                              : `/es/blog/${row.slug}/preview`
+                              ? `/blog/${row.slug}`
+                              : `/blog/${row.slug}/preview`
                           }
                           target="_blank"
                           rel="noreferrer"
                           title={
                             row.status === "published"
-                              ? `Abrir «${row.title}» en el blog`
-                              : `Previsualizar «${row.title}»`
+                              ? `Open “${row.title}” on the blog`
+                              : `Preview “${row.title}”`
                           }
                           aria-label={
                             row.status === "published"
-                              ? `Abrir «${row.title}» en el blog`
-                              : `Previsualizar «${row.title}»`
+                              ? `Open “${row.title}” on the blog`
+                              : `Preview “${row.title}”`
                           }
                         >
                           <Icon name="external" />
@@ -421,16 +421,16 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                         <Link
                           className={styles.action}
                           href={`/admin/posts/${row.id}`}
-                          title={`Editar «${row.title}»`}
-                          aria-label={`Editar «${row.title}»`}
+                          title={`Edit “${row.title}”`}
+                          aria-label={`Edit “${row.title}”`}
                         >
                           <Icon name="pencil" />
                         </Link>
                         <button
                           className={styles.action}
                           type="button"
-                          title={row.status === "published" ? `Ocultar «${row.title}»` : `Publicar «${row.title}»`}
-                          aria-label={row.status === "published" ? `Ocultar «${row.title}»` : `Publicar «${row.title}»`}
+                          title={row.status === "published" ? `Hide “${row.title}”` : `Publish “${row.title}”`}
+                          aria-label={row.status === "published" ? `Hide “${row.title}”` : `Publish “${row.title}”`}
                           disabled={busy}
                           onClick={() => void toggleVisibility(row)}
                         >
@@ -440,8 +440,8 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                           className={styles.action}
                           type="button"
                           data-tone="danger"
-                          title={`Eliminar «${row.title}»`}
-                          aria-label={`Eliminar «${row.title}»`}
+                          title={`Delete “${row.title}”`}
+                          aria-label={`Delete “${row.title}”`}
                           disabled={busy}
                           onClick={() => void removeSelected([row.id])}
                         >
@@ -461,23 +461,23 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
 
       <div className={t.pagination}>
         <div className={t.perPage}>
-          <span>Mostrar</span>
+          <span>Show</span>
           <Select
             value={String(perPage)}
             options={PER_PAGE_OPTIONS}
             onChange={(next) => changePerPage(Number(next))}
-            label="Artículos por página"
+            label="Articles per page"
           />
-          <span>por página</span>
+          <span>per page</span>
         </div>
 
-        <nav className={t.pages} aria-label="Paginación">
+        <nav className={t.pages} aria-label="Pagination">
           <button
             className={t.pageButton}
             type="button"
             onClick={() => goTo(page - 1)}
             disabled={page === 1 || pending}
-            aria-label="Página anterior"
+            aria-label="Previous page"
           >
             <Icon name="prev" />
           </button>
@@ -494,7 +494,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                 onClick={() => goTo(entry)}
                 disabled={pending}
                 aria-current={entry === page ? "page" : undefined}
-                aria-label={`Página ${entry}`}
+                aria-label={`Page ${entry}`}
               >
                 {entry}
               </button>
@@ -505,7 +505,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
             type="button"
             onClick={() => goTo(page + 1)}
             disabled={page === totalPages || pending}
-            aria-label="Página siguiente"
+            aria-label="Next page"
           >
             <Icon name="next" />
           </button>

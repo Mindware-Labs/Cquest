@@ -4,11 +4,11 @@ import Image from "next/image";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { useMagnetic } from "@/hooks/useMagnetic";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink } from "@/i18n/LocalizedLink";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import { EASE_OUT, REVEAL, chromeRise, getHeroNavLinks } from "./animation";
 
-const MotionLink = motion.create(LocalizedLink);
+const MotionLink = motion.create(TransitionLink);
 
 export default function HeroNav({
   reduced,
@@ -21,8 +21,7 @@ export default function HeroNav({
 
   onServiceHover?: (href: string | null) => void;
 }) {
-  const { dict, lang } = useI18n();
-  const heroNavLinks = getHeroNavLinks(dict, lang);
+  const heroNavLinks = getHeroNavLinks();
   const [open, setOpen] = useState(false);
   const {
     ref: ctaRef,

@@ -3,26 +3,18 @@
 import { useRef } from "react";
 import SectionIntro from "@/components/services/SectionIntro";
 import container from "@/components/services/Container.module.css";
-import { useI18n } from "@/i18n/I18nProvider";
 import { gsap } from "@/lib/gsap";
 import SectorsBeam from "./SectorsBeam";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./StorySection.module.css";
 
 const COPY = {
-  en: {
-    heading: ["Five sectors.", "One operational discipline."],
-    lead: "There's no generic formula. Each sector gets its own SLA, its own protocol, its own trained team.",
-  },
-  es: {
-    heading: ["Cinco sectores.", "Una misma disciplina operativa."],
-    lead: "No tenemos una fórmula genérica. Cada sector tiene su propio SLA, su propio protocolo, su propio equipo capacitado.",
-  },
+  heading: ["Five sectors.", "One operational discipline."],
+  lead: "There's no generic formula. Each sector gets its own SLA, its own protocol, its own trained team.",
 };
 
 export default function StorySection({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const sectionRef = useRef<HTMLElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
 

@@ -7,17 +7,17 @@ import container from "@/components/services/Container.module.css";
 import { useIsomorphicLayoutEffect } from "@/components/about/motion";
 import { NO_FOOTER_PAGES } from "@/components/navigation/data";
 import QuestCta from "@/components/ui/QuestCta";
-import { useI18n } from "@/i18n/I18nProvider";
-import { LocalizedLink, useLocalizedPathname } from "@/i18n/LocalizedLink";
+import { usePathname } from "next/navigation";
+import { TransitionLink } from "@/components/TransitionLink";
+import { dict } from "@/lib/dictionary";
 import { CQ_EASE, gsap } from "@/lib/gsap";
 import { BRAND_LINE, CONTACT, COPY, getBaseLinks, getServiceRows } from "./data";
 import styles from "./SiteFooter.module.css";
 
 export default function SiteFooter() {
-  const { lang, dict } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const reduced = useReducedMotion() ?? false;
-  const pathname = useLocalizedPathname();
+  const pathname = usePathname();
 
   const footerHidden = (NO_FOOTER_PAGES as readonly string[]).includes(pathname);
 
@@ -70,7 +70,7 @@ export default function SiteFooter() {
   }, [reduced]);
 
   const year = new Date().getFullYear();
-  const services = getServiceRows(lang);
+  const services = getServiceRows();
 
   return (
     <footer ref={footerRef} className={styles.footer} hidden={footerHidden}>
@@ -82,7 +82,7 @@ export default function SiteFooter() {
       <div className={`${container.container} ${styles.inner}`}>
         <div className={styles.close}>
           <div className={styles.statementBlock}>
-            <LocalizedLink
+            <TransitionLink
               href="/"
               aria-label={dict.nav.homeLinkAriaLabel}
               className={styles.brandLink}
@@ -96,12 +96,12 @@ export default function SiteFooter() {
                 sizes="92px"
                 className={styles.brandLogo}
               />
-            </LocalizedLink>
+            </TransitionLink>
 
             <span aria-hidden ref={ruleRef} className={`cq-hero-rule ${styles.rule}`} />
 
             <h2 ref={statementRef} className={styles.statement}>
-              {BRAND_LINE[lang].map((line, lineIndex) => (
+              {BRAND_LINE.map((line, lineIndex) => (
                 <span key={line} className={styles.statementLine}>
                   {line.split(" ").map((word, wordIndex) => (
                     <span key={`${lineIndex}-${wordIndex}-${word}`}>
@@ -125,7 +125,7 @@ export default function SiteFooter() {
               <ul className={styles.serviceList}>
                 {services.map((service) => (
                   <li key={service.id}>
-                    <LocalizedLink
+                    <TransitionLink
                       href={service.href}
                       className={styles.serviceRow}
                       style={{ "--svc": service.accent } as CSSProperties}
@@ -135,7 +135,7 @@ export default function SiteFooter() {
                       <span aria-hidden className={styles.serviceChevron}>
                         <Chevron />
                       </span>
-                    </LocalizedLink>
+                    </TransitionLink>
                   </li>
                 ))}
               </ul>
@@ -157,11 +157,11 @@ export default function SiteFooter() {
 
                 <dd>
                   <address className={styles.address}>
-                    <LocalizedLink href="/location">
+                    <TransitionLink href="/location">
                       {CONTACT.street}
                       <br />
-                      {CONTACT.city}, {CONTACT.country[lang]}
-                    </LocalizedLink>
+                      {CONTACT.city}, {CONTACT.country}
+                    </TransitionLink>
                   </address>
                 </dd>
               </dl>
@@ -171,10 +171,10 @@ export default function SiteFooter() {
 
         <div className={styles.base}>
           <nav className={styles.baseNav} aria-label={t.navAriaLabel}>
-            {getBaseLinks(dict, lang).map((link) => (
-              <LocalizedLink key={link.href} href={link.href}>
+            {getBaseLinks().map((link) => (
+              <TransitionLink key={link.href} href={link.href}>
                 {link.label}
-              </LocalizedLink>
+              </TransitionLink>
             ))}
           </nav>
           <p className={styles.copyright}>

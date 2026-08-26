@@ -80,7 +80,7 @@ export default function OtpInput({
   };
 
   return (
-    <div className={styles.group} data-invalid={invalid} role="group" aria-label="Código de seis dígitos">
+    <div className={styles.group} data-invalid={invalid} role="group" aria-label="Six-digit code">
       {SLOTS.map((index) => (
         <input
           key={index}
@@ -99,7 +99,7 @@ export default function OtpInput({
           onPaste={(event) => handlePaste(index, event)}
           onFocus={(event) => event.target.select()}
           disabled={disabled}
-          aria-label={`Dígito ${index + 1} de ${LENGTH}`}
+          aria-label={`Digit ${index + 1} of ${LENGTH}`}
           aria-invalid={invalid}
           aria-describedby={describedBy}
         />

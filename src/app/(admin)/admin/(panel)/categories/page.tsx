@@ -3,7 +3,7 @@ import { listCategories } from "@/server/categories";
 import CategoriesView from "./CategoriesView";
 
 export const metadata: Metadata = {
-  title: "Categorías · Panel Center Quest",
+  title: "Categories · Center Quest Admin",
   robots: { index: false, follow: false },
 };
 

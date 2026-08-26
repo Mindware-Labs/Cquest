@@ -1,8 +1,6 @@
-import type { Locale } from "@/i18n/config";
-
 export const PARTNER_SLOTS: ReadonlyArray<{
   slug: string;
-  name: Record<Locale, string>;
+  name: string;
   logo: {
     src: string;
     width: number;
@@ -11,7 +9,7 @@ export const PARTNER_SLOTS: ReadonlyArray<{
 }> = [
   {
     slug: "mindware-labs",
-    name: { en: "Mindware Labs", es: "Mindware Labs" },
+    name: "Mindware Labs",
     logo: {
       src: "/mindware-labs/logo_white_background.jpg",
       /* Dimensiones reales del archivo (verificadas por header binario), no

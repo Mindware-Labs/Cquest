@@ -9,7 +9,6 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import container from "@/components/services/Container.module.css";
 import { VIEWPORT } from "@/components/services/motion";
 import type { Variants } from "motion/react";
-import { useI18n } from "@/i18n/I18nProvider";
 import { gsap } from "@/lib/gsap";
 import { SCRUB, useIsomorphicLayoutEffect } from "./motion";
 import styles from "./PillarsSection.module.css";
@@ -51,60 +50,33 @@ function DrawIcon({ id }: { id: string }) {
 }
 
 const COPY = {
-  en: {
-    heading: "What we stand for",
-    description: "",
-    cards: [
-      {
-        id: "mission",
-        icon: "flag-mountain" as ServiceIconName,
-        title: "Mission",
-        body: "Help businesses grow by running the operations behind them, with trained people, real technology and support that doesn't disappear after the sale.",
-      },
-      {
-        id: "vision",
-        icon: "eye" as ServiceIconName,
-        title: "Vision",
-        body: "To be the operations partner companies default to, turning every client's vision into results they can measure, not just promises.",
-      },
-      {
-        id: "values",
-        icon: "diamond" as ServiceIconName,
-        title: "Values",
+  heading: "What we stand for",
+  description: "",
+  cards: [
+    {
+      id: "mission",
+      icon: "flag-mountain" as ServiceIconName,
+      title: "Mission",
+      body: "Help businesses grow by running the operations behind them, with trained people, real technology and support that doesn't disappear after the sale.",
+    },
+    {
+      id: "vision",
+      icon: "eye" as ServiceIconName,
+      title: "Vision",
+      body: "To be the operations partner companies default to, turning every client's vision into results they can measure, not just promises.",
+    },
+    {
+      id: "values",
+      icon: "diamond" as ServiceIconName,
+      title: "Values",
 
-        body: "The principles we don't negotiate: who we hire, how we train them, and what we accept as done right. They're applied when we recruit, not framed on a wall.",
-      },
-    ],
-  },
-  es: {
-    heading: "En qué creemos",
-    description: "",
-    cards: [
-      {
-        id: "mission",
-        icon: "flag-mountain" as ServiceIconName,
-        title: "Misión",
-        body: "Ayudar a que las empresas crezcan gestionando la operación detrás de ellas, con gente capacitada, tecnología real y soporte que no desaparece después de la venta.",
-      },
-      {
-        id: "vision",
-        icon: "eye" as ServiceIconName,
-        title: "Visión",
-        body: "Ser el aliado operativo al que recurren por defecto las empresas, convirtiendo la visión de cada cliente en resultados medibles, no solo promesas.",
-      },
-      {
-        id: "values",
-        icon: "diamond" as ServiceIconName,
-        title: "Valores",
-        body: "Los principios que no se negocian: a quién contratamos, cómo lo formamos y qué damos por bien hecho. Se aplican en la selección de personal, no en una pared.",
-      },
-    ],
-  },
+      body: "The principles we don't negotiate: who we hire, how we train them, and what we accept as done right. They're applied when we recruit, not framed on a wall.",
+    },
+  ],
 };
 
 export default function PillarsSection({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = COPY[lang];
+  const t = COPY;
   const sectionRef = useRef<HTMLElement>(null);
   const auraRef = useRef<HTMLSpanElement>(null);
 

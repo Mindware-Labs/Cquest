@@ -18,7 +18,7 @@ import styles from "./PostEditor.module.css";
 // El editor pesa y solo existe en cliente: fuera del bundle de servidor.
 const BlockEditor = dynamic(() => import("@/components/admin/BlockEditor"), {
   ssr: false,
-  loading: () => <div className={styles.editorSkeleton}>Cargando el editor…</div>,
+  loading: () => <div className={styles.editorSkeleton}>Loading the editor…</div>,
 });
 
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
@@ -121,11 +121,11 @@ export default function PostEditor({
 
   async function uploadCover(file: File) {
     if (!ACCEPTED.includes(file.type)) {
-      toast.error("Formato no admitido", "Usa JPG, PNG, WebP o AVIF.");
+      toast.error("Unsupported format", "Use JPG, PNG, WebP or AVIF.");
       return;
     }
     if (file.size > MAX_BYTES) {
-      toast.error("La imagen pesa demasiado", "El máximo son 8 MB.");
+      toast.error("Image too large", "The limit is 8 MB.");
       return;
     }
 
@@ -137,9 +137,9 @@ export default function PostEditor({
       });
       setCover({ url: blob.url, pathname: blob.pathname });
       setDirty(true);
-      toast.success("Portada subida");
+      toast.success("Cover uploaded");
     } catch (error) {
-      toast.error("No se pudo subir la portada", error instanceof Error ? error.message : undefined);
+      toast.error("Could not upload the cover", error instanceof Error ? error.message : undefined);
     } finally {
       setUploading(false);
     }
@@ -158,12 +158,12 @@ export default function PostEditor({
       const result = await savePost(post.id, payload());
       if (!result.ok) {
         setErrors(result.fields ?? {});
-        toast.error("No se pudo guardar", result.message);
+        toast.error("Could not save", result.message);
         return;
       }
       setErrors({});
       setDirty(false);
-      toast.success("Borrador guardado");
+      toast.success("Draft saved");
       router.refresh();
     });
   }
@@ -175,13 +175,13 @@ export default function PostEditor({
         setErrors(result.fields ?? {});
         /* El toast tapa el mensaje del campo: si no dice qué falta, no dice nada. */
         const reasons = Object.values(result.fields ?? {});
-        toast.error("Falta algo para publicar", reasons.join(" ") || result.message);
+        toast.error("Something is missing to publish", reasons.join(" ") || result.message);
         return;
       }
       setErrors({});
       setDirty(false);
       setStatus("published");
-      toast.success("Artículo publicado", "Ya se ve en el blog.");
+      toast.success("Article published", "It is live on the blog.");
       router.refresh();
     });
   }
@@ -190,22 +190,22 @@ export default function PostEditor({
     startSaving(async () => {
       const result = await setPostStatus(post.id, "hidden");
       if (!result.ok) {
-        toast.error("No se pudo ocultar", result.message);
+        toast.error("Could not hide it", result.message);
         return;
       }
       setStatus("hidden");
-      toast.success("Artículo oculto", "Ya no se ve en el blog.");
+      toast.success("Article hidden", "It no longer shows on the blog.");
       router.refresh();
     });
   }
 
   const categoryOptions = [
-    { value: "", label: "Sin categoría" },
+    { value: "", label: "No category" },
     ...categories.map((c) => ({ value: c.id, label: c.name })),
   ];
 
   const statusLabel =
-    status === "published" ? "Publicado" : status === "hidden" ? "Oculto" : "Borrador";
+    status === "published" ? "Published" : status === "hidden" ? "Hidden" : "Draft";
 
   /* Las mismas reglas que aplica el servidor: el botón no promete algo que
      luego se rechaza, ni bloquea algo que sí pasaría. */
@@ -217,7 +217,7 @@ export default function PostEditor({
     coverAlt: coverAlt || null,
   });
   const blocked =
-    missing.length > 0 ? `Falta ${missing.map((rule) => rule.need).join(", ")}.` : undefined;
+    missing.length > 0 ? `Missing ${missing.map((rule) => rule.need).join(", ")}.` : undefined;
 
   return (
     <div className={styles.page}>
@@ -225,26 +225,26 @@ export default function PostEditor({
         <div className={styles.barLeft}>
           <Link className={styles.back} href="/admin/posts">
             <Icon name="back" size={15} />
-            Artículos
+            Articles
           </Link>
           <span
             className={styles.status}
             data-state={status}
-            title={dirty ? "Hay cambios sin guardar" : undefined}
+            title={dirty ? "Unsaved changes" : undefined}
           >
             {statusLabel}
-            {dirty && <span className={styles.dirty} aria-label="Cambios sin guardar" />}
+            {dirty && <span className={styles.dirty} aria-label="Unsaved changes" />}
           </span>
         </div>
 
         <div className={styles.barActions}>
           {status === "published" && (
             <button className={styles.ghost} type="button" onClick={handleHide} disabled={saving}>
-              Ocultar
+              Hide
             </button>
           )}
           <button className={styles.ghost} type="button" onClick={handleSave} disabled={saving}>
-            {saving ? "Guardando" : "Guardar borrador"}
+            {saving ? "Saving" : "Save draft"}
           </button>
           {/* El panel cuelga del botón en vez de usar `title`: una lista se lee
               de un vistazo y el tooltip del navegador ni se estila ni llega al
@@ -256,7 +256,7 @@ export default function PostEditor({
               type="button"
               onClick={() => {
                 if (blocked) {
-                  toast.error("Falta algo para publicar", blocked);
+                  toast.error("Something is missing to publish", blocked);
                   return;
                 }
                 setConfirmOpen(true);
@@ -266,12 +266,12 @@ export default function PostEditor({
               aria-describedby={blocked ? blockedId : undefined}
               data-blocked={blocked ? "" : undefined}
             >
-              {status === "published" ? "Actualizar publicación" : "Publicar"}
+              {status === "published" ? "Update publication" : "Publish"}
             </button>
 
             {missing.length > 0 && (
               <span className={styles.blockedPanel} id={blockedId} role="tooltip">
-                <span className={styles.blockedTitle}>Falta para publicar</span>
+                <span className={styles.blockedTitle}>Missing to publish</span>
                 <ul className={styles.blockedList}>
                   {missing.map((rule) => (
                     <li key={rule.field}>{rule.need}</li>
@@ -286,7 +286,7 @@ export default function PostEditor({
       <div className={styles.columns}>
         <div className={styles.main}>
           <label className={styles.srOnly} htmlFor={titleId}>
-            Título
+            Title
           </label>
           <input
             id={titleId}
@@ -296,7 +296,7 @@ export default function PostEditor({
               setTitle(event.target.value);
               setDirty(true);
             }}
-            placeholder="Título del artículo"
+            placeholder="Article title"
             aria-invalid={Boolean(errors.title)}
           />
           {errors.title && (
@@ -319,7 +319,7 @@ export default function PostEditor({
         <aside className={styles.side}>
           <section className={styles.panel}>
             <h2 className={styles.panelTitle}>
-              Portada <span className={styles.optional}>opcional</span>
+              Cover <span className={styles.optional}>optional</span>
             </h2>
             <div className={styles.cover} data-empty={!cover.url}>
               {cover.url ? (
@@ -327,7 +327,7 @@ export default function PostEditor({
               ) : (
                 <span className={styles.coverEmpty}>
                   <Icon name="image" size={20} />
-                  Sin portada
+                  No cover
                 </span>
               )}
             </div>
@@ -349,7 +349,7 @@ export default function PostEditor({
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
               >
-                {uploading ? "Subiendo" : cover.url ? "Cambiar" : "Subir imagen"}
+                {uploading ? "Uploading" : cover.url ? "Replace" : "Upload image"}
               </button>
               {cover.url && (
                 <button
@@ -359,8 +359,8 @@ export default function PostEditor({
                     setCover({ url: null, pathname: null });
                     setDirty(true);
                   }}
-                  aria-label="Quitar la portada"
-                  title="Quitar"
+                  aria-label="Remove the cover"
+                  title="Remove"
                 >
                   <Icon name="trash" />
                 </button>
@@ -374,7 +374,7 @@ export default function PostEditor({
             )}
 
             <label className={styles.label} htmlFor={altId}>
-              Texto alternativo
+              Alt text
             </label>
             <input
               id={altId}
@@ -384,12 +384,12 @@ export default function PostEditor({
                 setCoverAlt(event.target.value);
                 setDirty(true);
               }}
-              placeholder="Qué muestra la imagen"
+              placeholder="What the image shows"
               aria-invalid={Boolean(errors.coverAlt)}
               aria-describedby={`${altId}-help`}
             />
             <span className={styles.help} id={`${altId}-help`}>
-              Lo lee quien no ve la imagen. Obligatorio si hay portada.
+              Read by anyone who cannot see the image. Required when there is a cover.
             </span>
             {errors.coverAlt && (
               <span className={styles.fieldError} role="alert">
@@ -400,9 +400,9 @@ export default function PostEditor({
           </section>
 
           <section className={styles.panel}>
-            <h2 className={styles.panelTitle}>Publicación</h2>
+            <h2 className={styles.panelTitle}>Publishing</h2>
 
-            <span className={styles.label}>Categoría</span>
+            <span className={styles.label}>Category</span>
             <Select
               value={categoryId}
               options={categoryOptions}
@@ -410,7 +410,7 @@ export default function PostEditor({
                 setCategoryId(next);
                 setDirty(true);
               }}
-              label="Categoría del artículo"
+              label="Article category"
               width="100%"
             />
             {errors.categoryId && (
@@ -421,7 +421,7 @@ export default function PostEditor({
             )}
 
             <label className={styles.label} htmlFor={excerptId}>
-              Extracto
+              Excerpt
             </label>
             <textarea
               id={excerptId}
@@ -433,12 +433,12 @@ export default function PostEditor({
               }}
               rows={3}
               maxLength={300}
-              placeholder="Dos líneas que resuman el artículo."
+              placeholder="Two lines summarising the article."
               aria-invalid={Boolean(errors.excerpt)}
               aria-describedby={`${excerptId}-help`}
             />
             <span className={styles.help} id={`${excerptId}-help`}>
-              Sale en el listado y en buscadores. Mínimo 20 caracteres para publicar.
+              Shows in the listing and in search results. At least 20 characters to publish.
             </span>
             {errors.excerpt && (
               <span className={styles.fieldError} role="alert">
@@ -454,7 +454,7 @@ export default function PostEditor({
             {seoOpen ? (
               <>
                 <label className={styles.label} htmlFor={seoTitleId}>
-                  Título en buscadores <span className={styles.optional}>opcional</span>
+                  Search title <span className={styles.optional}>optional</span>
                 </label>
                 <input
                   id={seoTitleId}
@@ -465,10 +465,10 @@ export default function PostEditor({
                     setDirty(true);
                   }}
                   maxLength={70}
-                  placeholder={title || "Se usa el título del artículo"}
+                  placeholder={title || "The article title is used"}
                 />
                 <label className={styles.label} htmlFor={seoDescId}>
-                  Descripción <span className={styles.optional}>opcional</span>
+                  Description <span className={styles.optional}>optional</span>
                 </label>
                 <textarea
                   id={seoDescId}
@@ -480,7 +480,7 @@ export default function PostEditor({
                   }}
                   rows={3}
                   maxLength={180}
-                  placeholder={excerpt || "Se usa el extracto"}
+                  placeholder={excerpt || "The excerpt is used"}
                 />
                 <button
                   className={styles.seoLink}
@@ -492,18 +492,18 @@ export default function PostEditor({
                     setDirty(true);
                   }}
                 >
-                  Volver a los automáticos
+                  Back to automatic
                 </button>
               </>
             ) : (
               <>
-                <p className={styles.help}>Se arman solos con el artículo. Así se verán:</p>
+                <p className={styles.help}>Built from the article itself. This is how they will look:</p>
                 <p className={styles.seoPreview}>{seoTitleFor(title, null)}</p>
                 <p className={styles.seoPreview} data-muted="">
-                  {seoDescriptionFor(excerpt, null) || "Escribe el extracto y aparecerá aquí."}
+                  {seoDescriptionFor(excerpt, null) || "Write the excerpt and it will show up here."}
                 </p>
                 <button className={styles.seoLink} type="button" onClick={() => setSeoOpen(true)}>
-                  Escribirlos a mano
+                  Write them by hand
                 </button>
               </>
             )}
@@ -514,17 +514,17 @@ export default function PostEditor({
       <Modal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        eyebrow="Confirmar"
-        title={status === "published" ? "Actualizar la publicación" : "Publicar el artículo"}
+        eyebrow="Confirm"
+        title={status === "published" ? "Update the publication" : "Publish the article"}
       >
         <p className={styles.dialogText}>
           {status === "published"
-            ? "Se regenera la versión pública con los cambios actuales. La URL no cambia."
-            : "El artículo pasa a verse en el blog. La URL se fija ahora a partir del título y no vuelve a cambiar."}
+            ? "The public version is rebuilt with the current changes. The URL stays the same."
+            : "The article becomes visible on the blog. The URL is set now from the title and never changes again."}
         </p>
         <div className={styles.dialogFoot}>
           <button className={styles.ghost} type="button" onClick={() => setConfirmOpen(false)}>
-            Cancelar
+            Cancel
           </button>
           <button
             className={styles.primary}
@@ -535,7 +535,7 @@ export default function PostEditor({
             }}
             disabled={saving}
           >
-            {status === "published" ? "Actualizar" : "Publicar"}
+            {status === "published" ? "Update" : "Publish"}
           </button>
         </div>
       </Modal>

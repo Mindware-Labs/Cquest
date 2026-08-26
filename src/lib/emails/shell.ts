@@ -48,7 +48,7 @@ export function emailShell(opts: {
   body: string;
 }): string {
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -63,7 +63,7 @@ export function emailShell(opts: {
         <tr>
           <td style="background:${C.ink};padding:24px 32px;">
             <div style="font-size:15px;font-weight:700;letter-spacing:0.3em;color:#ffffff;text-transform:uppercase;">Center&nbsp;Quest</div>
-            <div style="margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:0.16em;color:${C.celeste};text-transform:uppercase;">Aliado de operaciones</div>
+            <div style="margin-top:6px;font-size:10.5px;font-weight:600;letter-spacing:0.16em;color:${C.celeste};text-transform:uppercase;">Operations partner</div>
           </td>
         </tr>
         <tr><td style="height:3px;background:${opts.accent};font-size:0;line-height:0;">&nbsp;</td></tr>
@@ -71,7 +71,7 @@ export function emailShell(opts: {
         <tr>
           <td style="background:${C.panel};border-top:1px solid ${C.line};padding:22px 32px;">
             <div style="font-size:12px;font-weight:700;letter-spacing:0.24em;color:${C.muted};text-transform:uppercase;">Center Quest</div>
-            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; Operaciones &middot; Desarrollo de Sistemas</div>
+            <div style="margin-top:6px;font-size:12px;color:${C.faint};letter-spacing:0.02em;">Call Center &middot; Operations &middot; Systems Development</div>
           </td>
         </tr>
       </table>

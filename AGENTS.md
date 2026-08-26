@@ -14,7 +14,7 @@ Source copy for the website. Use this as the source of truth for text content wh
 
 Center Quest is a Dominican operations partner built around **three business lines**: **Call Center**, **BPO** (Business Process Outsourcing), and **Systems Development** for operations. The site's job is to attract new clients across these three lines — transmitting trust and professionalism, showing real evidence of our work (case studies, client logos, team size and quality), and letting an interested visitor contact us or request a quote in under a minute.
 
-Primary market: República Dominicana, plus US clients (bilingual ES/EN is a later phase).
+Primary market: República Dominicana, plus US clients. The site is published in English only — no bilingual/ES version.
 
 ### Sectors We Specialize In
 

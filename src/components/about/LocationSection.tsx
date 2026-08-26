@@ -14,14 +14,12 @@ import {
   VIEWPORT,
 } from "@/components/services/motion";
 import { useMagnetic } from "@/hooks/useMagnetic";
-import { useI18n } from "@/i18n/I18nProvider";
 import LocationMap from "./LocationMap";
 import { CONTACT, DIRECTIONS_URL, LOCATION_COPY } from "./locationData";
 import styles from "./LocationSection.module.css";
 
 export default function LocationSection({ reduced }: { reduced: boolean }) {
-  const { lang } = useI18n();
-  const t = LOCATION_COPY[lang];
+  const t = LOCATION_COPY;
   const {
     ref: ctaRef,
     style: ctaStyle,

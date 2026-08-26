@@ -5,7 +5,7 @@ import { getPost } from "@/server/posts";
 import PostEditor from "./PostEditor";
 
 export const metadata: Metadata = {
-  title: "Editar artículo · Panel Center Quest",
+  title: "Edit article · Center Quest Admin",
   robots: { index: false, follow: false },
 };
 
