@@ -38,7 +38,7 @@ export default function ShiftClock() {
   return (
     <div className={styles.clock}>
       <div className={styles.head}>
-        <span className={styles.zone}>Santo Domingo</span>
+        <span className={styles.zone}>Operación 24/7</span>
         <span className={time ? styles.time : `${styles.time} ${styles.pending}`}>
           {time ?? "--:--"}
         </span>

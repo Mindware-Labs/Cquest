@@ -18,28 +18,6 @@
   overflow: hidden;
 }
 
-.wordmark {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.wordmarkName {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.wordmarkRule {
-  width: 2.75rem;
-  height: 2px;
-  background: var(--brand-celeste);
-  transform-origin: left center;
-}
-
 .thesis {
   align-self: center;
   max-width: 22ch;

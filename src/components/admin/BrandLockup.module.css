@@ -1,0 +1,69 @@
+.lockup {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+/* Respaldo: sin soporte de máscara se pinta el logo real en petróleo. */
+.mark {
+  height: 2.4rem;
+  aspect-ratio: 480 / 295;
+  background-image: url("/brand/cq-monogram.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+@supports (mask-image: url("/brand/cq-monogram.png")) or (-webkit-mask-image: url("/brand/cq-monogram.png")) {
+  .mark {
+    background-image: none;
+    background-color: var(--brand-celeste);
+    -webkit-mask-image: url("/brand/cq-monogram.png");
+    mask-image: url("/brand/cq-monogram.png");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: left center;
+    mask-position: left center;
+  }
+}
+
+.divider {
+  width: 1px;
+  height: 2.1rem;
+  background: var(--ink-line-strong);
+  transform-origin: top center;
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  line-height: 1;
+  /* text-transform y no mayúsculas literales: los lectores de pantalla las deletrean. */
+  text-transform: uppercase;
+  color: var(--ink-text-strong);
+}
+
+@media (max-width: 64rem) {
+  .lockup {
+    gap: 0.9rem;
+  }
+
+  .mark {
+    height: 2rem;
+  }
+
+  .divider {
+    height: 1.8rem;
+  }
+
+  .name {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+  }
+}

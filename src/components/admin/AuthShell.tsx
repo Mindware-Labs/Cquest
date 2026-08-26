@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import BrandLockup from "./BrandLockup";
 import ShiftClock from "./ShiftClock";
 import styles from "./AuthShell.module.css";
 
@@ -27,15 +28,7 @@ export default function AuthShell({ thesis, lead, children }: Props) {
   return (
     <div className={styles.shell}>
       <aside className={styles.inkPanel}>
-        <motion.div className={styles.wordmark} {...rise(0)}>
-          <span className={styles.wordmarkName}>Center Quest</span>
-          <motion.span
-            className={styles.wordmarkRule}
-            initial={reduced ? false : { scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: reduced ? 0 : 0.8, delay: 0.12, ease: EASE }}
-          />
-        </motion.div>
+        <BrandLockup />
 
         <motion.div className={styles.thesis} {...rise(0.14)}>
           <p className={styles.thesisLine}>{thesis}</p>
