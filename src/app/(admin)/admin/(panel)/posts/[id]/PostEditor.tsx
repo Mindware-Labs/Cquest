@@ -96,6 +96,13 @@ export default function PostEditor({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
 
+  // BlockEditor la reemplaza apenas monta; el editor vive en el DOM real del
+  // navegador, así que el HTML sale de ahí y no de un jsdom en el servidor.
+  const getHtmlRef = useRef<() => string>(() => "");
+  const exposeGetHtml = useCallback((getHtml: () => string) => {
+    getHtmlRef.current = getHtml;
+  }, []);
+
   // Avisa al cerrar la pestaña con cambios sin guardar.
   useEffect(() => {
     if (!dirty) return;
@@ -155,7 +162,8 @@ export default function PostEditor({
 
   function handleSave() {
     startSaving(async () => {
-      const result = await savePost(post.id, payload());
+      const contentHtml = getHtmlRef.current();
+      const result = await savePost(post.id, { ...payload(), contentHtml });
       if (!result.ok) {
         setErrors(result.fields ?? {});
         toast.error("Could not save", result.message);
@@ -170,7 +178,8 @@ export default function PostEditor({
 
   function handlePublish() {
     startSaving(async () => {
-      const result = await publishPost(post.id, payload());
+      const contentHtml = getHtmlRef.current();
+      const result = await publishPost(post.id, { ...payload(), contentHtml });
       if (!result.ok) {
         setErrors(result.fields ?? {});
         /* El toast tapa el mensaje del campo: si no dice qué falta, no dice nada. */
@@ -313,6 +322,7 @@ export default function PostEditor({
               setDirty(true);
             }}
             onUpload={uploadInline}
+            exposeGetHtml={exposeGetHtml}
           />
         </div>
 

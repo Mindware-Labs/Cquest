@@ -7,18 +7,9 @@ import { db } from "@/db";
 import { category, post } from "@/db/schema/blog";
 import { user } from "@/db/schema/auth";
 import { requireAdmin } from "@/lib/auth-guard";
-import { readingMinutes } from "@/lib/blocks";
+import { readingMinutes, sanitizePostHtml } from "@/lib/blocks";
 import { missingToPublish, type PublishDraft } from "@/lib/publishRules";
 import { slugify } from "@/lib/slugify";
-
-/* Import dinámico a propósito: renderBlocks arrastra BlockNote + jsdom, una
-   cadena de dependencias frágil ante actualizaciones ESM-only aguas abajo (ver
-   incidente 2026-08-26). listPosts, getPost, savePost, createPost y
-   deletePosts no la necesitan — con un import estático la cargarían igual,
-   porque todo este módulo es "use server" y se evalúa entero al importarlo.
-   Aislarla aquí hace que solo publicar (lo único que la usa) pueda romperse
-   por esto, y ya cae en el catch de abajo en vez de tumbar /admin/posts. */
-const loadRenderBlocks = () => import("@/lib/renderBlocks").then((m) => m.renderBlocks);
 
 export type PostStatus = "draft" | "published" | "hidden";
 
@@ -62,6 +53,8 @@ const draftSchema = z.object({
   coverAlt: z.string().trim().max(180).nullable().optional(),
   coverPathname: z.string().trim().max(300).nullable().optional(),
   content: z.array(z.unknown()).optional(),
+  // Lo arma BlockEditor con un DOM real; el servidor solo lo sanea, ver blocks.ts.
+  contentHtml: z.string().optional(),
   seoTitle: z.string().trim().max(70).nullable().optional(),
   seoDescription: z.string().trim().max(180).nullable().optional(),
 });
@@ -249,6 +242,9 @@ export async function savePost(id: string, input: PostInput): Promise<ActionResu
         coverAlt: data.coverAlt ?? null,
         coverPathname: data.coverPathname ?? null,
         content: data.content ?? [],
+        // Se guarda en cada borrador, no solo al publicar: así publishPost y
+        // setPostStatus nunca necesitan generarlo — solo leerlo.
+        contentHtml: data.contentHtml !== undefined ? sanitizePostHtml(data.contentHtml) : null,
         seoTitle: data.seoTitle ?? null,
         seoDescription: data.seoDescription ?? null,
         readingMinutes: readingMinutes(data.content ?? []),
@@ -296,14 +292,11 @@ export async function publishPost(
   if (current.length === 0) return { ok: false, message: "That article no longer exists." };
   const slug = current[0].publishedAt ? current[0].slug : await freeSlug(data.title, id);
 
-  let html: string;
-  try {
-    const renderBlocks = await loadRenderBlocks();
-    html = await renderBlocks(data.content ?? []);
-  } catch (error) {
-    console.error("publishPost: renderBlocks failed:", error);
-    return { ok: false, message: "Could not generate the public version of the content." };
+  // El HTML lo arma el editor en el navegador (DOM real); el servidor solo lo sanea.
+  if (data.contentHtml === undefined) {
+    return { ok: false, message: "Could not read the article content. Reload the editor and try again." };
   }
+  const html = sanitizePostHtml(data.contentHtml);
 
   try {
     await db
@@ -359,7 +352,6 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
       categoryId: post.categoryId,
       coverUrl: post.coverUrl,
       coverAlt: post.coverAlt,
-      content: post.content,
       contentHtml: post.contentHtml,
       publishedAt: post.publishedAt,
     })
@@ -376,16 +368,16 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
   // Estreno: hasta ahora el slug seguía al título y no había versión renderizada.
   const first = row.publishedAt === null;
 
-  let html = row.contentHtml;
-  if (html === null) {
-    try {
-      const renderBlocks = await loadRenderBlocks();
-      html = await renderBlocks(row.content ?? []);
-    } catch (error) {
-      console.error("setPostStatus: renderBlocks failed:", error);
-      return { ok: false, message: "Could not generate the public version of the content." };
-    }
+  /* El HTML lo genera el editor en el navegador al guardar (ver savePost); acá
+     no hay cliente ni DOM para armarlo, así que si todavía no existe hay que
+     mandar a guardar desde el editor en vez de intentar generarlo en el servidor. */
+  if (row.contentHtml === null) {
+    return {
+      ok: false,
+      message: "Open the article in the editor and save it once before publishing from this list.",
+    };
   }
+  const html = row.contentHtml;
 
   try {
     await db

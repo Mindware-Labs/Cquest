@@ -1,13 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Que Node los cargue desde node_modules en vez de empaquetarlos: BlockNote
+  /* Que Node lo cargue desde node_modules en vez de empaquetarlo: BlockNote
      expone su código fuente y el bundler puede resolverlo en lugar del compilado.
-     sanitize-html se queda fuera de esta lista a propósito: su dependencia
-     htmlparser2 se fija en 10.1.0 vía "overrides" (package.json) porque desde
-     la 11 es ESM puro sin build CJS, y require('htmlparser2') revienta en
-     runtime sin importar si el paquete queda externo o empaquetado. */
-  serverExternalPackages: ["@blocknote/server-util", "@blocknote/core"],
+     @blocknote/server-util salió de esta lista el 2026-08-27: ya no lo importa
+     nada del lado del servidor (el HTML del blog lo arma el editor en el
+     navegador, ver BlockEditor.tsx/getHtml). Ese paquete cargaba jsdom vía
+     Node require() en runtime, y su árbol de dependencias (htmlparser2,
+     parse5, css-calc...) rompía cada vez que algo tres niveles abajo publicaba
+     una versión ESM-only — nunca hubo forma de fijarlo de una vez por todas. */
+  serverExternalPackages: ["@blocknote/core"],
 
   turbopack: {
     root: __dirname,

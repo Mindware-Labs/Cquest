@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostForPreview, listPublishedPosts } from "@/lib/blog";
-import { renderBlocks } from "@/lib/renderBlocks";
 import ArticleView from "../ArticleView";
 import styles from "../Article.module.css";
 import banner from "./preview.module.css";
@@ -36,8 +35,9 @@ export default async function ArticlePreviewPage({
     .filter((entry) => entry.slug !== slug)
     .slice(0, 3);
 
-  // El snapshot HTML solo existe tras publicar: en previa se arma al vuelo.
-  const rendered = { ...article, contentHtml: await renderBlocks(article.content ?? []) };
+  // El snapshot se guarda en cada borrador (savePost); si el artículo nunca se
+  // guardó desde el editor todavía no hay nada que mostrar.
+  const rendered = { ...article, contentHtml: article.contentHtml ?? "" };
 
   return (
     <article className={styles.page}>
