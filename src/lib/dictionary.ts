@@ -13,8 +13,6 @@ export interface Dictionary {
     sectors: string;
     team: string;
     blog: string;
-    careers: string;
-    careersStrapline: string;
     contact: string;
     home: string;
     overview: string;
@@ -28,7 +26,6 @@ export interface Dictionary {
     bpo: { disciplines: string; method: string; slas: string; facilities: string };
     systems: { capabilities: string; method: string; commitments: string; work: string };
     team: { departments: string };
-    careers: { culture: string; openings: string; process: string; faq: string };
   };
   footer: {
     tagline: string;
@@ -131,8 +128,6 @@ export const dict: Dictionary = {
     sectors: "Sectors",
     team: "Team",
     blog: "Blog",
-    careers: "Careers",
-    careersStrapline: "Open positions and talent pool",
     contact: "Contact",
     home: "Home",
     overview: "Overview",
@@ -146,7 +141,6 @@ export const dict: Dictionary = {
     bpo: { disciplines: "Disciplines", method: "Method", slas: "SLAs", facilities: "Facilities" },
     systems: { capabilities: "Capabilities", method: "Method", commitments: "Commitments", work: "Work" },
     team: { departments: "Departments" },
-    careers: { culture: "Why CQ", openings: "Openings", process: "Process", faq: "FAQ" },
   },
   footer: {
     tagline: "Call Center · Operations · Systems Development",

@@ -1,10 +1,6 @@
 import { execFileSync } from "node:child_process";
 import type { MetadataRoute } from "next";
 import { listPublishedSlugs } from "@/lib/blog";
-// Careers está fuera del alcance de esta entrega: la sección vive en
-// src/app/(site)/_careers (carpeta privada, no enrutable). Descomentar este
-// import y las rutas /careers de abajo cuando se vuelva a publicar.
-// import { ACTIVE_POSITIONS } from "./(site)/_careers/data/positions";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://centerquest.example").replace(/\/$/, "");
 
@@ -32,15 +28,6 @@ const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   { path: "/services/systems", sources: ["src/app/(site)/services/systems"] },
   { path: "/services/systems/work", sources: ["src/app/(site)/services/systems/work"] },
   { path: "/team", sources: ["src/app/(site)/team"] },
-  // { path: "/careers", sources: ["src/app/(site)/_careers"] },
-  // { path: "/careers/apply", sources: ["src/app/(site)/_careers/apply"] },
-  /* Cada vacante abierta es su propia página indexable con datos estructurados
-     JobPosting — derivada del mismo array que renderiza el listado, así que
-     una requisición retirada (active: false) sale del sitemap con ella. */
-  // ...ACTIVE_POSITIONS.map((position) => ({
-  //   path: `/careers/${position.slug}`,
-  //   sources: ["src/app/(site)/_careers/data/positions.ts"],
-  // })),
   { path: "/quote", sources: ["src/app/(site)/quote"] },
   {
     path: "/location",

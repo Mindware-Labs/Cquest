@@ -19,25 +19,18 @@ export const SERVICE_DETAIL_PAGES = [
 export const DARK_HERO_PAGES = [
   ...SERVICE_DETAIL_PAGES,
   "/team",
-  // "/careers",
   "/partnerships/mindware-labs",
 
   "/location",
 ] as const;
 
 /* Árboles de rutas cuyas páginas abren todas con hero oscuro, comparados por
-   prefijo en vez de por ruta exacta. Careers es el primero: /careers/<slug> es
-   una página por vacante, así que la lista de match exacto no puede
-   enumerarlas — y una vacante con el navbar claro sobre su hero oscuro pone
-   los links encima de su propio color. */
-const DARK_HERO_TREES: readonly string[] = [/* "/careers/" */];
+   prefijo en vez de por ruta exacta. */
+const DARK_HERO_TREES: readonly string[] = [];
 
-/* True en cualquier página que abra con hero oscuro a sangre completa.
-   /careers/apply queda deliberadamente fuera: es un formulario sobre
-   superficie clara y conserva el navbar normal. */
+/* True en cualquier página que abra con hero oscuro a sangre completa. */
 export function isDarkHeroPage(pathname: string): boolean {
   if ((DARK_HERO_PAGES as readonly string[]).includes(pathname)) return true;
-  // if (pathname === "/careers/apply") return false;
   return DARK_HERO_TREES.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -51,27 +44,16 @@ export const ACCENT_CTA_PAGES = ["/partnerships/mindware-labs"] as const;
 
 export const NO_FOOTER_PAGES = ["/partnerships/mindware-labs"] as const;
 
-/* Los hijos del menú Servicios. Empleos vive AQUÍ y no en el primer nivel:
-   la barra principal es para las tres líneas de negocio y la ruta a cotizar;
-   una vacante no compite con eso. Se declara en un solo sitio porque el mismo
+/* Los hijos del menú Servicios. Se declara en un solo sitio porque el mismo
    menú se arma en cinco lugares (nav general, hero, legal, location, hero de
    partnerships) y separarlos es garantizar que se desincronicen. */
 export function getServiceChildren(): readonly NavLink[] {
-  return [
-    ...SERVICES.map((service) => ({
-      label: service.label,
-      href: service.href,
-      description: service.strapline,
-      icon: SERVICE_ICON[service.id],
-    })),
-    // Empleos fuera de esta entrega (ver src/app/(site)/_careers).
-    // {
-    //   label: dict.nav.careers,
-    //   href: "/careers",
-    //   description: dict.nav.careersStrapline,
-    //   icon: "userplus" as ServiceIconName,
-    // },
-  ];
+  return SERVICES.map((service) => ({
+    label: service.label,
+    href: service.href,
+    description: service.strapline,
+    icon: SERVICE_ICON[service.id],
+  }));
 }
 
 export function getNavLinks(): readonly NavLink[] {
@@ -148,18 +130,6 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       home,
       { label: dict.serviceSections.team.departments, href: "#departments" },
     ],
-
-    /* Misma forma "página propia, anclas propias" que /team. Solo la landing
-       de careers lo recibe: una vacante (/careers/<slug>) no tiene índice de
-       secciones que valga la pena navegar, así que cae en los links sitewide,
-       donde "Empleos" es el camino de vuelta al listado. */
-    // "/careers": [
-    //   home,
-    //   { label: dict.serviceSections.careers.culture, href: "#culture" },
-    //   { label: dict.serviceSections.careers.openings, href: "#openings" },
-    //   { label: dict.serviceSections.careers.process, href: "#process" },
-    //   { label: dict.serviceSections.careers.faq, href: "#faq" },
-    // ],
 
     "/partnerships/mindware-labs": [
       {
