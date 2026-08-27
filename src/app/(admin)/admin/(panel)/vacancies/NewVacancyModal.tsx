@@ -25,6 +25,10 @@ const WORK_MODE_OPTIONS = [
   { value: "remote", label: "Remote" },
 ];
 
+// Sugerido, no forzado: una vacante remota puede seguir acotada a un país o
+// huso horario, así que el campo sigue siendo de texto libre.
+const REMOTE_LOCATION = "Remote — anywhere";
+
 const EMPLOYMENT_OPTIONS = [
   { value: "", label: "Not set" },
   { value: "full-time", label: "Full time" },
@@ -121,6 +125,13 @@ export default function NewVacancyModal({ open, onClose, departments }: Props) {
       requirements,
       niceToHave,
     };
+  }
+
+  // Remota sugiere "Remote — anywhere" en vez de exigir una ciudad, pero solo
+  // si el campo está vacío: no pisa una ubicación que ya se haya escrito.
+  function handleWorkModeChange(next: string) {
+    setWorkMode(next);
+    if (next === "remote" && location.trim() === "") setLocation(REMOTE_LOCATION);
   }
 
   function goNext() {
@@ -244,7 +255,7 @@ export default function NewVacancyModal({ open, onClose, departments }: Props) {
         {step === 1 && (
           <>
             <span className={styles.label}>Work mode</span>
-            <Select value={workMode} options={WORK_MODE_OPTIONS} onChange={setWorkMode} label="Work mode" width="100%" />
+            <Select value={workMode} options={WORK_MODE_OPTIONS} onChange={handleWorkModeChange} label="Work mode" width="100%" />
 
             <span className={styles.label}>Employment type</span>
             <Select
@@ -263,8 +274,11 @@ export default function NewVacancyModal({ open, onClose, departments }: Props) {
               className={styles.input}
               value={location}
               onChange={(event) => setLocation(event.target.value)}
-              placeholder="Santo Domingo, DR"
+              placeholder={workMode === "remote" ? REMOTE_LOCATION : "Santo Domingo, DR"}
             />
+            {workMode === "remote" && (
+              <span className={styles.help}>No physical site needed — say where candidates can work from, or leave it as “{REMOTE_LOCATION}”.</span>
+            )}
 
             <label className={styles.label} htmlFor={scheduleId}>
               Schedule <span className={styles.optional}>optional</span>

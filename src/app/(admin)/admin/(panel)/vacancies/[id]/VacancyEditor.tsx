@@ -30,6 +30,10 @@ const WORK_MODE_OPTIONS = [
   { value: "remote", label: "Remote" },
 ];
 
+// Sugerido, no forzado: una vacante remota puede seguir acotada a un país o
+// huso horario, así que el campo sigue siendo de texto libre.
+const REMOTE_LOCATION = "Remote — anywhere";
+
 const EMPLOYMENT_OPTIONS = [
   { value: "", label: "Not set" },
   { value: "full-time", label: "Full time" },
@@ -141,6 +145,14 @@ export default function VacancyEditor({
       setter(value);
       setDirty(true);
     };
+  }
+
+  // Remota sugiere "Remote — anywhere" en vez de exigir una ciudad, pero solo
+  // si el campo está vacío: no pisa una ubicación que ya se haya escrito.
+  function handleWorkModeChange(next: string) {
+    setWorkMode(next);
+    if (next === "remote" && location.trim() === "") setLocation(REMOTE_LOCATION);
+    setDirty(true);
   }
 
   const payload = useCallback(
@@ -375,7 +387,7 @@ export default function VacancyEditor({
             <Select
               value={workMode}
               options={WORK_MODE_OPTIONS}
-              onChange={touch(setWorkMode)}
+              onChange={handleWorkModeChange}
               label="Work mode"
               width="100%"
             />
@@ -409,9 +421,12 @@ export default function VacancyEditor({
               className={styles.input}
               value={location}
               onChange={(event) => touch(setLocation)(event.target.value)}
-              placeholder="Santo Domingo, DR"
+              placeholder={workMode === "remote" ? REMOTE_LOCATION : "Santo Domingo, DR"}
               aria-invalid={Boolean(errors.location)}
             />
+            {workMode === "remote" && (
+              <span className={styles.help}>No physical site needed — say where candidates can work from, or leave it as “{REMOTE_LOCATION}”.</span>
+            )}
             {errors.location && (
               <span className={styles.fieldError} role="alert">
                 <Icon name="alert" />
