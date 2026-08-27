@@ -1,10 +1,39 @@
 import "server-only";
 import { ServerBlockNoteEditor } from "@blocknote/server-util";
-import { sanitizePostHtml } from "@/lib/blocks";
+import sanitizeHtml from "sanitize-html";
 
 /* En su propio módulo: guardar un borrador solo necesita contar palabras, y no
    tiene por qué arrastrar todo BlockNote al cargar la server action. */
 const MEDIA_TYPES = ["image", "video", "audio", "file"];
+
+/* Solo el vocabulario que produce BlockNote. Aunque no emita scripts, el pegado
+   desde otra web entra por su parser de HTML y podría traer un href hostil. */
+const ALLOWED_TAGS = [
+  "h1", "h2", "h3", "h4", "p", "strong", "em", "u", "s", "code", "pre",
+  "ul", "ol", "li", "blockquote", "a", "img", "figure", "figcaption",
+  "table", "thead", "tbody", "tr", "th", "td", "br", "hr", "span", "div",
+];
+
+export function sanitizePostHtml(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: {
+      a: ["href", "title", "target", "rel"],
+      img: ["src", "alt", "width", "height", "loading"],
+      figure: ["data-text-alignment", "data-preview-width"],
+      "*": ["data-level", "data-text-color", "data-background-color", "class"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    /* Red de seguridad para lo que no pasa por el filtro de bloques: un <img>
+       pegado desde fuera sin src es el mismo cuadro roto. */
+    exclusiveFilter: (frame) => frame.tag === "img" && !frame.attribs.src,
+    // Un enlace externo sin noopener deja al destino manipular la pestaña origen.
+    transformTags: {
+      a: sanitizeHtml.simpleTransform("a", { rel: "noopener noreferrer" }),
+      img: sanitizeHtml.simpleTransform("img", { loading: "lazy" }),
+    },
+  });
+}
 
 /* Un bloque de medios sin archivo sale como <img> sin src, que el navegador
    pinta como imagen rota. Se descarta antes de renderizar: el hueco no aporta

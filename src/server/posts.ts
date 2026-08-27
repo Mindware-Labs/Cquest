@@ -9,8 +9,16 @@ import { user } from "@/db/schema/auth";
 import { requireAdmin } from "@/lib/auth-guard";
 import { readingMinutes } from "@/lib/blocks";
 import { missingToPublish, type PublishDraft } from "@/lib/publishRules";
-import { renderBlocks } from "@/lib/renderBlocks";
 import { slugify } from "@/lib/slugify";
+
+/* Import dinámico a propósito: renderBlocks arrastra BlockNote + jsdom, una
+   cadena de dependencias frágil ante actualizaciones ESM-only aguas abajo (ver
+   incidente 2026-08-26). listPosts, getPost, savePost, createPost y
+   deletePosts no la necesitan — con un import estático la cargarían igual,
+   porque todo este módulo es "use server" y se evalúa entero al importarlo.
+   Aislarla aquí hace que solo publicar (lo único que la usa) pueda romperse
+   por esto, y ya cae en el catch de abajo en vez de tumbar /admin/posts. */
+const loadRenderBlocks = () => import("@/lib/renderBlocks").then((m) => m.renderBlocks);
 
 export type PostStatus = "draft" | "published" | "hidden";
 
@@ -290,6 +298,7 @@ export async function publishPost(
 
   let html: string;
   try {
+    const renderBlocks = await loadRenderBlocks();
     html = await renderBlocks(data.content ?? []);
   } catch {
     return { ok: false, message: "Could not generate the public version of the content." };
@@ -369,6 +378,7 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
   let html = row.contentHtml;
   if (html === null) {
     try {
+      const renderBlocks = await loadRenderBlocks();
       html = await renderBlocks(row.content ?? []);
     } catch {
       return { ok: false, message: "Could not generate the public version of the content." };
