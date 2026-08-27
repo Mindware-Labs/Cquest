@@ -131,6 +131,16 @@
   border-top: 1px solid var(--ink-line);
 }
 
+/* Cada grupo repite el mismo rótulo pequeño; solo el primero no necesita aire
+   extra por encima, porque ya lo pone .nav con su padding-top. */
+.navGroup {
+  margin-top: 1.5rem;
+}
+
+.navGroup[data-first] {
+  margin-top: 0;
+}
+
 .navLabel {
   display: block;
   padding: 0 clamp(1.25rem, 2vw, 1.75rem);

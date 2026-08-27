@@ -1,0 +1,313 @@
+/* ---------- Indicador de pasos ---------- */
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  width: 1.1rem;
+  height: 1px;
+  margin-left: 0.4rem;
+  background: var(--border);
+}
+
+.stepDot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  background: var(--surface-raised);
+}
+
+.step[data-state="current"] {
+  color: var(--foreground);
+}
+
+.step[data-state="current"] .stepDot {
+  border-color: var(--brand-petroleo);
+  color: var(--surface-raised);
+  background: var(--brand-petroleo);
+}
+
+.step[data-state="done"] .stepDot {
+  border-color: var(--brand-verde);
+  color: var(--surface-raised);
+  background: var(--brand-verde);
+}
+
+/* ---------- Cuerpo del paso ---------- */
+
+/* gap, no márgenes por tipo de campo: un Select no trae su propio margin-top
+   (ver Select.module.css), así que dejarlo en manos de .input hacía que
+   Select quedara pegado a su etiqueta mientras un input sí tenía aire. Con
+   gap todos los hijos —etiqueta, input, Select, ayuda— quedan parejos, y el
+   margin-top extra de .label es lo que separa un campo del siguiente. */
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 2rem;
+}
+
+.label {
+  margin-top: 1.1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.stepBody > .label:first-child {
+  margin-top: 0;
+}
+
+.optional {
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--text-tertiary) 70%, var(--surface-raised));
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.input {
+  min-height: 2.5rem;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.help {
+  display: block;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--danger-text);
+}
+
+/* ---------- Revisión ---------- */
+
+.review {
+  margin: 0;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+}
+
+.reviewRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reviewRow + .reviewRow {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.reviewRow dt {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.reviewRow dd {
+  margin: 0;
+  max-width: 65%;
+  text-align: right;
+  font-size: 0.85rem;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.missing {
+  margin-top: 1.1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--border));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-raised));
+}
+
+.missingTitle {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--danger-text);
+}
+
+.missingList {
+  margin: 0.5rem 0 0;
+  padding-left: 1.05rem;
+  list-style: disc;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.missingList li::first-letter {
+  text-transform: uppercase;
+}
+
+.missing .help {
+  margin-top: 0.5rem;
+}
+
+/* ---------- Pie ---------- */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 2.2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.footRight {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.24s var(--ease-out), border-color 0.24s var(--ease-out);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.ghost:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.primary:focus-visible,
+.ghost:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .textarea,
+  .primary,
+  .ghost {
+    transition: none;
+  }
+}

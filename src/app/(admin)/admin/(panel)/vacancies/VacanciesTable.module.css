@@ -1,0 +1,543 @@
+/* Disposición según la especificación; paleta y tipografía, las nuestras. */
+
+.container {
+  margin-top: 2rem;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+/* Se apaga en escritorio a propósito: un overflow distinto de visible crea un
+   contenedor de scroll y el encabezado se pegaría a él en vez de a la página. */
+.scroller {
+  overflow-x: auto;
+}
+
+@media (min-width: 64rem) {
+  .scroller {
+    overflow-x: visible;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Encabezado ---------- */
+
+.th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.sortLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sortLink:hover {
+  color: var(--foreground);
+}
+
+.sortLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.caret {
+  opacity: 0.45;
+}
+
+.sortLink[data-active="true"] {
+  color: var(--foreground);
+}
+
+.sortLink[data-active="true"] .caret {
+  opacity: 1;
+}
+
+/* ---------- Filas ---------- */
+
+.row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+/* El lavado es acento al 4%: sobre blanco, un gris al 4% no se ve. */
+.row:hover,
+.row:focus-within {
+  background: color-mix(in srgb, var(--brand-petroleo) 4%, var(--surface-raised));
+}
+
+.row[data-selected="true"] {
+  background: color-mix(in srgb, var(--brand-petroleo) 9%, var(--surface-raised));
+}
+
+.enter {
+  animation: rowIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i) * 30ms);
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.td {
+  min-height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+  font-size: 0.84375rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.selectCell {
+  width: 2.25rem;
+}
+
+.titleCell {
+  max-width: 34rem;
+}
+
+.inkCell {
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.actionsCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- Casilla ---------- */
+
+.checkbox {
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--foreground) 22%, var(--border));
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  cursor: pointer;
+  appearance: none;
+  transition: background 0.18s var(--ease-out), border-color 0.18s var(--ease-out), transform 0.12s var(--ease-out);
+}
+
+.checkbox:hover {
+  border-color: var(--brand-petroleo);
+}
+
+.checkbox:active {
+  transform: scale(0.88);
+}
+
+.checkbox:checked,
+.checkbox:indeterminate {
+  background: var(--brand-petroleo);
+  border-color: var(--brand-petroleo);
+}
+
+.checkbox::after {
+  content: "";
+  width: 0.6875rem;
+  height: 0.6875rem;
+  background: var(--surface-raised);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
+  clip-path: polygon(14% 52%, 8% 60%, 40% 88%, 92% 26%, 84% 19%, 39% 73%);
+}
+
+.checkbox:checked::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checkbox:indeterminate::after {
+  opacity: 1;
+  transform: scale(1);
+  clip-path: polygon(16% 42%, 84% 42%, 84% 58%, 16% 58%);
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Artículo ---------- */
+
+.article {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.thumb {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.articleTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.articleTitle:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.articleTitle:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Insignia de estado ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--badge-ink);
+  background: color-mix(in srgb, var(--badge-ink) 10%, var(--surface-raised));
+}
+
+.badgeDate {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Chip de idioma ---------- */
+
+.lang {
+  display: inline-block;
+  padding: 0 0.25rem;
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Fecha ---------- */
+
+.edited {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.edited svg {
+  flex: none;
+  color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+}
+
+/* Una sola familia: el papel de identificador lo hacen las cifras tabulares. */
+.stamp {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.author {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* ---------- Acciones ---------- */
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.action {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.18s var(--ease-out), background 0.18s var(--ease-out);
+}
+
+.action:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.action[data-tone="danger"]:hover {
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-raised));
+  color: var(--danger-text);
+}
+
+/* Un solo anillo para todo el panel, incluido el destructivo. */
+.action:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Barra de selección ---------- */
+
+.bulk {
+  display: grid;
+  grid-template-rows: 1fr;
+  border-bottom: 1px solid var(--brand-petroleo);
+  background: color-mix(in srgb, var(--brand-petroleo) 9%, var(--surface-raised));
+  /* Anima el alto además de la opacidad: sin eso la tabla pega un salto al soltar. */
+  animation: bulkIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes bulkIn {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+.bulkInner {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.75rem;
+}
+
+.bulkCount {
+  font-size: 0.84375rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.bulkScope {
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+.bulkActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bulkButton {
+  min-height: 2rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s var(--ease-out);
+}
+
+.bulkButton:hover {
+  background: var(--surface-sunken);
+}
+
+.bulkButton[data-variant="plain"] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.bulkButton[data-variant="plain"]:hover {
+  color: var(--foreground);
+}
+
+.bulkButton:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Error por fila ---------- */
+
+.errorRow td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-raised));
+  color: var(--danger-text);
+  font-size: 0.8125rem;
+}
+
+.errorInner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty {
+  padding: 3rem 0.75rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Se apaga la entrada, no el hover ni el foco: eso es respuesta, no adorno. */
+  .enter,
+  .bulk {
+    animation: none;
+  }
+}
+
+/* ---------- Confirmación ---------- */
+
+.dialogText {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.dialogFoot {
+  margin-top: 1.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.ghost {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.ghost:hover {
+  background: var(--surface-sunken);
+}
+
+.confirm {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: var(--danger);
+  color: var(--surface-raised);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.confirm:hover:not(:disabled) {
+  background: var(--danger-text);
+}
+
+.confirm:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.ghost:focus-visible,
+.confirm:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost,
+  .confirm {
+    transition: none;
+  }
+}
