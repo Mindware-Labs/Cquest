@@ -300,7 +300,8 @@ export async function publishPost(
   try {
     const renderBlocks = await loadRenderBlocks();
     html = await renderBlocks(data.content ?? []);
-  } catch {
+  } catch (error) {
+    console.error("publishPost: renderBlocks failed:", error);
     return { ok: false, message: "Could not generate the public version of the content." };
   }
 
@@ -380,7 +381,8 @@ export async function setPostStatus(id: string, status: PostStatus): Promise<Act
     try {
       const renderBlocks = await loadRenderBlocks();
       html = await renderBlocks(row.content ?? []);
-    } catch {
+    } catch (error) {
+      console.error("setPostStatus: renderBlocks failed:", error);
       return { ok: false, message: "Could not generate the public version of the content." };
     }
   }
