@@ -374,12 +374,6 @@
   max-width: 44ch;
 }
 
-.byline {
-  margin: 1.1rem 0 0;
-  font-size: 0.82rem;
-  color: var(--text-tertiary);
-}
-
 /* ---------- Vacío ---------- */
 
 .empty {

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import { useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
+import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
 import { useToast } from "@/components/admin/Toaster";
 import { deletePosts, setPostStatus, type PostListRow } from "@/server/posts";
@@ -174,6 +175,8 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
   const { pending, setParams } = useTableParams();
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
 
   async function toggleVisibility(row: PostListRow) {
     setBusy(true);
@@ -188,16 +191,25 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     router.refresh();
   }
 
-  async function removeSelected(ids: string[]) {
+  function askDelete(ids: string[]) {
+    setPendingIds(ids);
+    setConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
     setBusy(true);
-    const result = await deletePosts(ids);
+    const result = await deletePosts(pendingIds);
     setBusy(false);
+    setConfirmOpen(false);
+
     if (!result.ok) {
       toast.error("Could not delete", result.message);
       return;
     }
-    toast.success(`${ids.length} ${ids.length === 1 ? "article deleted" : "articles deleted"}`);
+    const n = pendingIds.length;
+    toast.success(`${n} ${n === 1 ? "article deleted" : "articles deleted"}`);
     setSelected(new Set());
+    setPendingIds([]);
     router.refresh();
   }
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -253,6 +265,8 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     return sortDir === "asc" ? ("ascending" as const) : ("descending" as const);
   }
 
+  const pendingTitles = rows.filter((row) => pendingIds.includes(row.id)).map((row) => row.title);
+
   return (
     <>
       <div className={styles.container}>
@@ -269,7 +283,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                 type="button"
                 data-tone="danger"
                 disabled={busy}
-                onClick={() => void removeSelected([...selected])}
+                onClick={() => askDelete([...selected])}
               >
                 Delete
               </button>
@@ -443,7 +457,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
                           title={`Delete “${row.title}”`}
                           aria-label={`Delete “${row.title}”`}
                           disabled={busy}
-                          onClick={() => void removeSelected([row.id])}
+                          onClick={() => askDelete([row.id])}
                         >
                           <Icon name="trash" />
                         </button>
@@ -511,6 +525,27 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
           </button>
         </nav>
       </div>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        eyebrow="Confirm"
+        title={pendingIds.length === 1 ? "Delete the article" : `Delete ${pendingIds.length} articles`}
+      >
+        <p className={styles.dialogText}>
+          {pendingIds.length === 1
+            ? `“${pendingTitles[0] ?? ""}” is deleted and this cannot be undone.`
+            : `${pendingIds.length} articles are deleted and this cannot be undone.`}
+        </p>
+        <div className={styles.dialogFoot}>
+          <button className={styles.ghost} type="button" onClick={() => setConfirmOpen(false)}>
+            Cancel
+          </button>
+          <button className={styles.confirm} type="button" onClick={() => void confirmDelete()} disabled={busy}>
+            Delete
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

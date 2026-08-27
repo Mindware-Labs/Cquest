@@ -71,7 +71,6 @@ function Entry({ post, shape, base }: { post: PublicPost; shape: "lead" | "grid"
 
         <h2 className={styles.title}>{post.title}</h2>
         {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
-        {post.authorName && <p className={styles.byline}>By {post.authorName}</p>}
       </div>
     </Link>
   );

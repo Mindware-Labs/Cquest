@@ -16,11 +16,6 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/Santo_Domingo",
 });
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  return (parts[0]?.[0] ?? "?").concat(parts[1]?.[0] ?? "").toUpperCase();
-}
-
 export default function ArticleView({
   article,
   siblings,
@@ -61,15 +56,6 @@ export default function ArticleView({
 
           <h1 className={styles.title}>{article.title}</h1>
           {article.excerpt && <p className={styles.excerpt}>{article.excerpt}</p>}
-
-          {article.authorName && (
-            <div className={styles.byline}>
-              <span className={styles.avatar} aria-hidden="true">
-                {initials(article.authorName)}
-              </span>
-              <span>By {article.authorName}</span>
-            </div>
-          )}
         </header>
 
         {article.coverUrl && (

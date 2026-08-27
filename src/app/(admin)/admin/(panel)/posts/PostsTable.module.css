@@ -465,3 +465,79 @@
     animation: none;
   }
 }
+
+/* ---------- Confirmación ---------- */
+
+.dialogText {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.dialogFoot {
+  margin-top: 1.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.ghost {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.ghost:hover {
+  background: var(--surface-sunken);
+}
+
+.confirm {
+  min-height: 2.75rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: var(--danger);
+  color: var(--surface-raised);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.confirm:hover:not(:disabled) {
+  background: var(--danger-text);
+}
+
+.confirm:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.ghost:focus-visible,
+.confirm:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost,
+  .confirm {
+    transition: none;
+  }
+}
