@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Modal from "@/components/admin/Modal";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import Select from "@/components/admin/Select";
@@ -146,6 +147,7 @@ type Props = {
 export default function ApplicationsTable({ rows, total, page, perPage, sortKey, sortDir, query, status, scope, counts, scopes }: Props) {
   const toast = useToast();
   const router = useRouter();
+  const reduced = useReducedMotion();
   const { pending, setParams } = useTableParams();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [text, setText] = useDebouncedSearch(query, (next) => {
@@ -297,33 +299,44 @@ export default function ApplicationsTable({ rows, total, page, perPage, sortKey,
           })}
         </div>
 
-        {selected.size > 0 && (
-          <div className={t.bulk}>
-            <span className={t.bulkCount}>
-              {selected.size} selected
-              <span className={t.bulkScope}>on this page</span>
-            </span>
-            <span className={t.bulkActions}>
-              <span className={styles.bulkStatus}>
-                <Select
-                  value=""
-                  options={[{ value: "", label: "Set status…" }, ...STATUS_OPTIONS]}
-                  onChange={(next) => {
-                    if (next) void changeStatus([...selected], next as ApplicationStatus);
-                  }}
-                  label="Set status for selected"
-                  width="11rem"
-                />
-              </span>
-              <button className={t.bulkButton} type="button" data-tone="danger" disabled={busy} onClick={() => askDelete([...selected])}>
-                Delete
-              </button>
-              <button className={t.bulkButton} type="button" data-variant="plain" onClick={() => setSelected(new Set())}>
-                Clear selection
-              </button>
-            </span>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {selected.size > 0 && (
+            <motion.div
+              key="bulk"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className={t.bulk}>
+                <span className={t.bulkCount}>
+                  {selected.size} selected
+                  <span className={t.bulkScope}>on this page</span>
+                </span>
+                <span className={t.bulkActions}>
+                  <span className={styles.bulkStatus}>
+                    <Select
+                      value=""
+                      options={[{ value: "", label: "Set status…" }, ...STATUS_OPTIONS]}
+                      onChange={(next) => {
+                        if (next) void changeStatus([...selected], next as ApplicationStatus);
+                      }}
+                      label="Set status for selected"
+                      width="11rem"
+                    />
+                  </span>
+                  <button className={t.bulkButton} type="button" data-tone="danger" disabled={busy} onClick={() => askDelete([...selected])}>
+                    Delete
+                  </button>
+                  <button className={t.bulkButton} type="button" data-variant="plain" onClick={() => setSelected(new Set())}>
+                    Clear selection
+                  </button>
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className={t.scroller}>
           <table className={t.table}>

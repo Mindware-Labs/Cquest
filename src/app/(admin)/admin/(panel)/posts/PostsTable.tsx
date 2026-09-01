@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
@@ -180,6 +181,7 @@ type Props = {
 export default function PostsTable({ rows, total, page, perPage, sortKey, sortDir, query }: Props) {
   const toast = useToast();
   const router = useRouter();
+  const reduced = useReducedMotion();
   const { pending, setParams } = useTableParams();
   const [text, setText] = useDebouncedSearch(query, (next) => navigate({ q: next || null, page: 1 }));
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -296,35 +298,45 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
         </div>
       </div>
 
-      {selected.size > 0 && (
-        <div className={styles.bulk}>
-          <div className={styles.bulkInner}>
-            <span className={styles.bulkCount}>
-              {selected.size} {selected.size === 1 ? "selected" : "selected"}
-              <span className={styles.bulkScope}>on this page</span>
-            </span>
-            <span className={styles.bulkActions}>
-              <button
-                className={styles.bulkButton}
-                type="button"
-                data-tone="danger"
-                disabled={busy}
-                onClick={() => askDelete([...selected])}
-              >
-                Delete
-              </button>
-              <button
-                className={styles.bulkButton}
-                type="button"
-                data-variant="plain"
-                onClick={() => setSelected(new Set())}
-              >
-                Clear selection
-              </button>
-            </span>
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {selected.size > 0 && (
+          <motion.div
+            key="bulk"
+            className={styles.bulk}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <div className={styles.bulkInner}>
+              <span className={styles.bulkCount}>
+                {selected.size} {selected.size === 1 ? "selected" : "selected"}
+                <span className={styles.bulkScope}>on this page</span>
+              </span>
+              <span className={styles.bulkActions}>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-tone="danger"
+                  disabled={busy}
+                  onClick={() => askDelete([...selected])}
+                >
+                  Delete
+                </button>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-variant="plain"
+                  onClick={() => setSelected(new Set())}
+                >
+                  Clear selection
+                </button>
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className={styles.scroller}>
         <table className={styles.table}>

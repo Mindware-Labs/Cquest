@@ -10,6 +10,9 @@ import { department } from "@/db/schema/department";
 import { requireAdmin } from "@/lib/auth-guard";
 import { missingToPublishVacancy, type VacancyPublishDraft } from "@/lib/vacancyPublishRules";
 import { slugify } from "@/lib/slugify";
+import { getVacancyReportData, type VacancyReport } from "./vacancyReport";
+
+export type { VacancyReport, VacancyReportCandidate } from "./vacancyReport";
 
 export type VacancyStatus = "draft" | "published" | "hidden";
 
@@ -235,6 +238,12 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
     publishedAt: row.publishedAt?.toISOString() ?? null,
     applications,
   };
+}
+
+export async function getVacancyReport(id: string): Promise<VacancyReport | null> {
+  await requireAdmin();
+  if (!z.uuid().safeParse(id).success) return null;
+  return getVacancyReportData(id);
 }
 
 /* Un solo insert con lo que ya se llenó en el asistente por pasos (ver

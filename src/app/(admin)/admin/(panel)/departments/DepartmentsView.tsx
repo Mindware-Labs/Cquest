@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Modal from "@/components/admin/Modal";
 import InfoHint from "@/components/admin/InfoHint";
 import ListField from "@/components/admin/ListField";
@@ -89,6 +90,7 @@ function Icon({ name, size = 16 }: { name: string; size?: number }) {
 export default function DepartmentsView({ departments }: { departments: DepartmentRow[] }) {
   const router = useRouter();
   const toast = useToast();
+  const reduced = useReducedMotion();
   const formRef = useRef<HTMLFormElement>(null);
   const shortLabelId = useId();
   const labelId = useId();
@@ -248,32 +250,42 @@ export default function DepartmentsView({ departments }: { departments: Departme
           </div>
         </div>
 
-        {selected.size > 0 && (
-          <div className={styles.bulk}>
-            <div className={styles.bulkInner}>
-              <span className={styles.bulkCount}>{selected.size} selected</span>
-              <span className={styles.bulkActions}>
-                <button
-                  className={styles.bulkButton}
-                  type="button"
-                  data-tone="danger"
-                  disabled={busy}
-                  onClick={() => askDelete([...selected])}
-                >
-                  Delete
-                </button>
-                <button
-                  className={styles.bulkButton}
-                  type="button"
-                  data-variant="plain"
-                  onClick={() => setSelected(new Set())}
-                >
-                  Clear selection
-                </button>
-              </span>
-            </div>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {selected.size > 0 && (
+            <motion.div
+              key="bulk"
+              className={styles.bulk}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className={styles.bulkInner}>
+                <span className={styles.bulkCount}>{selected.size} selected</span>
+                <span className={styles.bulkActions}>
+                  <button
+                    className={styles.bulkButton}
+                    type="button"
+                    data-tone="danger"
+                    disabled={busy}
+                    onClick={() => askDelete([...selected])}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className={styles.bulkButton}
+                    type="button"
+                    data-variant="plain"
+                    onClick={() => setSelected(new Set())}
+                  >
+                    Clear selection
+                  </button>
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {visible.length === 0 ? (
           <div className={t.empty}>

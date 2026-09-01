@@ -2,11 +2,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin: 1.5rem 0;
+  /* Variables, no la propiedad directa: así un consumidor con su propio
+     espaciado (un panel con flex + gap, por ejemplo) las pisa vía className
+     sin pelear con el orden de los módulos CSS ni la especificidad. */
+  margin: var(--list-margin, 1.5rem 0);
 }
 
 .label {
-  margin-top: 0.6rem;
+  margin-top: var(--list-label-gap, 0.6rem);
   display: flex;
   align-items: baseline;
   gap: 0.4rem;

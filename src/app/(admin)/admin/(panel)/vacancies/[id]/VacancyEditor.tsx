@@ -169,6 +169,7 @@ export default function VacancyEditor({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
 
   useEffect(() => {
@@ -256,6 +257,7 @@ export default function VacancyEditor({
   }
 
   function handleHide() {
+    setHideConfirmOpen(false);
     startSaving(async () => {
       const result = await setVacancyStatus(vacancy.id, "hidden");
       if (!result.ok) {
@@ -307,11 +309,14 @@ export default function VacancyEditor({
         </div>
 
         <div className={styles.barActions}>
-          <Link className={styles.ghost} href={`/admin/applications?vacancy=${vacancy.id}`}>
+          <Link className={styles.ghost} href={`/admin/vacancies/${vacancy.id}/report`}>
+            Report
+          </Link>
+          <Link className={styles.ghost} href={`/admin/applications?vacancy=${vacancy.id}&from=editor`}>
             Applications · {vacancy.applications}
           </Link>
           {status === "published" && (
-            <button className={styles.ghost} type="button" onClick={handleHide} disabled={saving}>
+            <button className={styles.ghost} type="button" onClick={() => setHideConfirmOpen(true)} disabled={saving}>
               Hide
             </button>
           )}
@@ -573,6 +578,18 @@ export default function VacancyEditor({
             disabled={saving}
           >
             {status === "published" ? "Update" : scheduledFuture ? "Schedule" : "Publish"}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal open={hideConfirmOpen} onClose={() => setHideConfirmOpen(false)} eyebrow="Confirm" title="Hide the vacancy">
+        <p className={styles.dialogText}>It stops showing on Join Us right away. You can publish it again at any time.</p>
+        <div className={styles.dialogFoot}>
+          <button className={styles.ghost} type="button" onClick={() => setHideConfirmOpen(false)}>
+            Cancel
+          </button>
+          <button className={styles.primary} type="button" onClick={handleHide} disabled={saving}>
+            Hide
           </button>
         </div>
       </Modal>

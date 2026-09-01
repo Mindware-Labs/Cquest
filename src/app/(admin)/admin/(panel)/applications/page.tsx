@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import InfoHint from "@/components/admin/InfoHint";
 import { isApplicationStatus } from "@/lib/applicationStatus";
 import { listApplicationScopes, listApplications } from "@/server/applications";
@@ -22,6 +23,7 @@ export default async function ApplicationsPage({
     q?: string;
     status?: string;
     vacancy?: string;
+    from?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -31,6 +33,16 @@ export default async function ApplicationsPage({
   const query = params.q ?? "";
   const status = params.status && isApplicationStatus(params.status) ? params.status : null;
   const scope = params.vacancy || null;
+
+  /* Se llega aquí desde la lista de vacantes o desde el editor de una en
+     particular (ver VacanciesTable.tsx y VacancyEditor.tsx): el link de
+     vuelta apunta a donde el admin realmente estaba, no siempre a la lista. */
+  const isVacancyScope = Boolean(scope && scope !== "pool");
+  const back = isVacancyScope
+    ? params.from === "editor"
+      ? { href: `/admin/vacancies/${scope}`, label: "Back to vacancy" }
+      : { href: "/admin/vacancies", label: "Back to vacancies" }
+    : null;
 
   const [{ rows, total, page, perPage, counts }, scopes] = await Promise.all([
     listApplications({
@@ -47,6 +59,15 @@ export default async function ApplicationsPage({
 
   return (
     <div className={styles.page}>
+      {back && (
+        <Link className={styles.back} href={back.href}>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+            <path d="M9.8 3.6 5.4 8l4.4 4.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {back.label}
+        </Link>
+      )}
+
       <div className={styles.head}>
         <div className={styles.titleGroup}>
           <h1 className={styles.title}>Applications</h1>

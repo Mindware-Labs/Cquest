@@ -2,6 +2,31 @@
   width: 100%;
 }
 
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  margin: 0 0 0.75rem -0.55rem;
+  padding-inline: 0.55rem;
+  border-radius: 2px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.18s var(--ease-out), background 0.18s var(--ease-out);
+}
+
+.back:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
 .head {
   display: flex;
   align-items: flex-start;

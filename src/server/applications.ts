@@ -250,14 +250,25 @@ export async function setApplicationStatus(ids: string[], status: ApplicationSta
   return { ok: true };
 }
 
-export async function saveApplicationNotes(id: string, notes: string): Promise<ActionResult> {
+// Cada línea es una viñeta (ver ListField): se guardan como texto plano
+// unido por saltos de línea en vez de sumar una columna jsonb para esto.
+const notesLinesSchema = z
+  .array(z.string().max(500, "Keep each note under 500 characters."))
+  .max(50, "That's too many notes — trim the list.")
+  .transform((lines) => lines.map((line) => line.trim()).filter(Boolean));
+
+export async function saveApplicationNotes(id: string, notes: string[]): Promise<ActionResult> {
   await requireAdmin();
   if (!z.uuid().safeParse(id).success) return { ok: false, message: "Invalid application." };
 
-  const parsed = z.string().max(4000, "Keep notes under 4,000 characters.").safeParse(notes);
+  const parsed = notesLinesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid notes." };
 
-  const done = await db.update(application).set({ notes: parsed.data.trim() }).where(eq(application.id, id)).returning({ id: application.id });
+  const done = await db
+    .update(application)
+    .set({ notes: parsed.data.join("\n") })
+    .where(eq(application.id, id))
+    .returning({ id: application.id });
   if (done.length === 0) return { ok: false, message: "That application no longer exists." };
   return { ok: true };
 }

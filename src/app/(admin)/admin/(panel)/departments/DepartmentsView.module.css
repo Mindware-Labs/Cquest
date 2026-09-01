@@ -207,24 +207,15 @@
 
 /* ---------- Barra de selección ---------- */
 
+/* La animación de entrada/salida la maneja motion.div en el componente
+   (ver DepartmentsView.tsx): así también anima al soltar la selección, no
+   solo al aparecer. */
 .bulk {
-  display: grid;
-  grid-template-rows: 1fr;
   border-bottom: 1px solid var(--brand-petroleo);
   background: color-mix(in srgb, var(--brand-petroleo) 9%, var(--surface-raised));
-  /* Anima el alto además de la opacidad: sin eso la tabla pega un salto al soltar. */
-  animation: bulkIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes bulkIn {
-  from {
-    grid-template-rows: 0fr;
-    opacity: 0;
-  }
 }
 
 .bulkInner {
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -509,8 +500,7 @@
     transition: none;
   }
 
-  .enter,
-  .bulk {
+  .enter {
     animation: none;
   }
 }

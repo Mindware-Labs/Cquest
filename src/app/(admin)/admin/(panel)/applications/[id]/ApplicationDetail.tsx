@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ListField from "@/components/admin/ListField";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import { useToast } from "@/components/admin/Toaster";
@@ -103,8 +104,9 @@ export default function ApplicationDetail({ application }: { application: Detail
   const toast = useToast();
   const router = useRouter();
   const [status, setStatus] = useState<ApplicationStatus>(application.status);
-  const [notes, setNotes] = useState(application.notes);
-  const [savedNotes, setSavedNotes] = useState(application.notes);
+  const initialNotes = application.notes ? application.notes.split("\n") : [];
+  const [notes, setNotes] = useState<string[]>(initialNotes);
+  const [savedNotes, setSavedNotes] = useState<string[]>(initialNotes);
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -112,7 +114,7 @@ export default function ApplicationDetail({ application }: { application: Detail
   const resumeHref = `/api/admin/applications/${application.id}/resume`;
   const isPdf = application.resumeType === "application/pdf";
   const phoneDigits = application.phone.replace(/\D/g, "");
-  const dirty = notes !== savedNotes;
+  const dirty = JSON.stringify(notes) !== JSON.stringify(savedNotes);
 
   async function changeStatus(next: ApplicationStatus) {
     const previous = status;
@@ -295,15 +297,12 @@ export default function ApplicationDetail({ application }: { application: Detail
           </div>
 
           <div className={styles.panel}>
-            <span className={styles.panelTitle}>Internal notes</span>
-            <textarea
-              className={styles.textarea}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={6}
-              maxLength={4000}
+            <ListField
+              className={styles.notesList}
+              label="Internal notes"
               placeholder="Call outcome, interview date, anything the team should know."
-              aria-label="Internal notes"
+              items={notes}
+              onChange={setNotes}
             />
             <div className={styles.notesFoot}>
               <span className={styles.help}>Only visible in the panel.</span>

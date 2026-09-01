@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
@@ -104,6 +105,13 @@ function Icon({ name }: { name: string }) {
           <path d="M11.2 2.6 13.4 4.8 5.6 12.6 2.6 13.4l.8-3z" strokeLinejoin="round" />
         </svg>
       );
+    case "chart":
+      return (
+        <svg {...c} aria-hidden="true">
+          <path d="M2.6 13.4V2.6M2.6 13.4h10.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 13.4V9M8 13.4V6M11 13.4V7.6" strokeLinecap="round" />
+        </svg>
+      );
     case "trash":
       return (
         <svg {...c} aria-hidden="true">
@@ -163,6 +171,7 @@ type Props = {
 export default function VacanciesTable({ rows, total, page, perPage, sortKey, sortDir, query }: Props) {
   const toast = useToast();
   const router = useRouter();
+  const reduced = useReducedMotion();
   const { pending, setParams } = useTableParams();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [text, setText] = useDebouncedSearch(query, (next) => {
@@ -173,12 +182,20 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [visibilityRow, setVisibilityRow] = useState<VacancyListRow | null>(null);
 
-  async function toggleVisibility(row: VacancyListRow) {
+  function askToggleVisibility(row: VacancyListRow) {
+    setVisibilityRow(row);
+  }
+
+  async function confirmToggleVisibility() {
+    if (!visibilityRow) return;
+    const row = visibilityRow;
     setBusy(true);
     const next = row.status === "published" ? "hidden" : "published";
     const result = await setVacancyStatus(row.id, next);
     setBusy(false);
+    setVisibilityRow(null);
     if (!result.ok) {
       toast.error("Could not change the status", result.message);
       return;
@@ -276,35 +293,45 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
           </div>
         </div>
 
-        {selected.size > 0 && (
-          <div className={styles.bulk}>
-            <div className={styles.bulkInner}>
-              <span className={styles.bulkCount}>
-                {selected.size} {selected.size === 1 ? "selected" : "selected"}
-                <span className={styles.bulkScope}>on this page</span>
-              </span>
-              <span className={styles.bulkActions}>
-                <button
-                  className={styles.bulkButton}
-                  type="button"
-                  data-tone="danger"
-                  disabled={busy}
-                  onClick={() => askDelete([...selected])}
-                >
-                  Delete
-                </button>
-                <button
-                  className={styles.bulkButton}
-                  type="button"
-                  data-variant="plain"
-                  onClick={() => setSelected(new Set())}
-                >
-                  Clear selection
-                </button>
-              </span>
-            </div>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {selected.size > 0 && (
+            <motion.div
+              key="bulk"
+              className={styles.bulk}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className={styles.bulkInner}>
+                <span className={styles.bulkCount}>
+                  {selected.size} {selected.size === 1 ? "selected" : "selected"}
+                  <span className={styles.bulkScope}>on this page</span>
+                </span>
+                <span className={styles.bulkActions}>
+                  <button
+                    className={styles.bulkButton}
+                    type="button"
+                    data-tone="danger"
+                    disabled={busy}
+                    onClick={() => askDelete([...selected])}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className={styles.bulkButton}
+                    type="button"
+                    data-variant="plain"
+                    onClick={() => setSelected(new Set())}
+                  >
+                    Clear selection
+                  </button>
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className={styles.scroller}>
           <table className={styles.table}>
@@ -390,7 +417,7 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
 
                       <td className={styles.td}>
                         {row.applications > 0 ? (
-                          <Link className={styles.applicants} href={`/admin/applications?vacancy=${row.id}`}>
+                          <Link className={styles.applicants} href={`/admin/applications?vacancy=${row.id}&from=list`}>
                             {row.applications} {row.applications === 1 ? "applicant" : "applicants"}
                           </Link>
                         ) : (
@@ -426,13 +453,21 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
                           >
                             <Icon name="pencil" />
                           </Link>
+                          <Link
+                            className={styles.action}
+                            href={`/admin/vacancies/${row.id}/report`}
+                            title={`Report for “${row.title}”`}
+                            aria-label={`Report for “${row.title}”`}
+                          >
+                            <Icon name="chart" />
+                          </Link>
                           <button
                             className={styles.action}
                             type="button"
                             title={row.status === "published" ? `Hide “${row.title}”` : `Publish “${row.title}”`}
                             aria-label={row.status === "published" ? `Hide “${row.title}”` : `Publish “${row.title}”`}
                             disabled={busy}
-                            onClick={() => void toggleVisibility(row)}
+                            onClick={() => askToggleVisibility(row)}
                           >
                             <Icon name={row.status === "published" ? "eyeOff" : "eye"} />
                           </button>
@@ -528,6 +563,33 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
           </button>
           <button className={styles.confirm} type="button" onClick={() => void confirmDelete()} disabled={busy}>
             Delete
+          </button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={visibilityRow !== null}
+        onClose={() => setVisibilityRow(null)}
+        eyebrow="Confirm"
+        title={visibilityRow?.status === "published" ? "Hide the vacancy" : "Publish the vacancy"}
+      >
+        <p className={styles.dialogText}>
+          {visibilityRow?.status === "published"
+            ? `“${visibilityRow?.title ?? ""}” stops showing on Join Us right away. You can publish it again at any time.`
+            : `“${visibilityRow?.title ?? ""}” becomes visible on Join Us right away.`}
+        </p>
+        <div className={styles.dialogFoot}>
+          <button className={styles.ghost} type="button" onClick={() => setVisibilityRow(null)}>
+            Cancel
+          </button>
+          <button
+            className={styles.confirm}
+            type="button"
+            data-tone={visibilityRow?.status === "published" ? undefined : "default"}
+            onClick={() => void confirmToggleVisibility()}
+            disabled={busy}
+          >
+            {visibilityRow?.status === "published" ? "Hide" : "Publish"}
           </button>
         </div>
       </Modal>
