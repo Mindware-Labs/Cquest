@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
-import { useTableParams } from "@/components/admin/useTableParams";
+import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
 import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
@@ -61,6 +61,13 @@ function StatusDot({ shape }: { shape: "full" | "half" | "ring" }) {
 function Icon({ name }: { name: string }) {
   const c = { width: 14, height: 14, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
   switch (name) {
+    case "search":
+      return (
+        <svg {...c} width="15" height="15" aria-hidden="true">
+          <circle cx="7.1" cy="7.1" r="4.5" />
+          <path d="m10.5 10.5 3 3" strokeLinecap="round" />
+        </svg>
+      );
     case "clock":
       return (
         <svg {...c} aria-hidden="true">
@@ -150,12 +157,18 @@ type Props = {
   perPage: number;
   sortKey: SortKey;
   sortDir: SortDir;
+  query: string;
 };
 
-export default function VacanciesTable({ rows, total, page, perPage, sortKey, sortDir }: Props) {
+export default function VacanciesTable({ rows, total, page, perPage, sortKey, sortDir, query }: Props) {
   const toast = useToast();
   const router = useRouter();
   const { pending, setParams } = useTableParams();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [text, setText] = useDebouncedSearch(query, (next) => {
+    setSelected(new Set());
+    setParams({ q: next || null, page: 1 });
+  });
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -195,12 +208,11 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
     setPendingIds([]);
     router.refresh();
   }
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const allRef = useRef<HTMLInputElement>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-  function navigate(next: Record<string, string | number>) {
+  function navigate(next: Record<string, string | number | null>) {
     setSelected(new Set());
     setParams(next);
   }
@@ -248,6 +260,22 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
   return (
     <>
       <div className={styles.container}>
+        <div className={t.toolbar}>
+          <div className={t.search}>
+            <span className={t.searchIcon}>
+              <Icon name="search" />
+            </span>
+            <input
+              className={t.searchInput}
+              type="search"
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Search by title or department"
+              aria-label="Search vacancies"
+            />
+          </div>
+        </div>
+
         {selected.size > 0 && (
           <div className={styles.bulk}>
             <div className={styles.bulkInner}>
@@ -321,7 +349,7 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
               {rows.length === 0 && (
                 <tr>
                   <td className={styles.empty} colSpan={6}>
-                    No vacancies yet. Create the first one from “New vacancy”.
+                    {query ? `No vacancy matches “${query}”.` : "No vacancies yet. Create the first one from “New vacancy”."}
                   </td>
                 </tr>
               )}

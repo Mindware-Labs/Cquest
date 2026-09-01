@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -111,6 +111,11 @@ function isUniqueViolation(error: unknown): boolean {
   return (error as { cause?: { code?: string } })?.cause?.code === "23505";
 }
 
+// El backslash es el escape por defecto de LIKE en Postgres.
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 async function freeSlug(base: string, ignoreId?: string): Promise<string> {
   const root = slugify(base) || "vacante";
   for (let i = 0; i < 40; i++) {
@@ -126,6 +131,7 @@ export type VacancyListQuery = {
   perPage?: number;
   sortKey?: "title" | "updatedAt";
   sortDir?: "asc" | "desc";
+  query?: string;
 };
 
 export type VacancyListPage = {
@@ -144,7 +150,21 @@ export async function listVacancies(query: VacancyListQuery = {}): Promise<Vacan
   const column = query.sortKey === "title" ? vacancy.title : vacancy.updatedAt;
   const direction = query.sortDir === "asc" ? asc : desc;
 
-  const [{ total }] = await db.select({ total: count() }).from(vacancy);
+  const needle = query.query?.trim();
+  // Busca por título o departamento: son las dos columnas de texto que se ven
+  // en la tabla, igual que en /admin/categories (nombre + slug).
+  const where = needle
+    ? or(
+        ilike(vacancy.title, `%${escapeLike(needle)}%`),
+        ilike(department.shortLabel, `%${escapeLike(needle)}%`),
+      )
+    : undefined;
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(vacancy)
+    .leftJoin(department, eq(vacancy.departmentId, department.id))
+    .where(where);
 
   const pages = Math.max(1, Math.ceil(total / perPage));
   const page = Math.min(Math.max(query.page ?? 1, 1), pages);
@@ -164,6 +184,7 @@ export async function listVacancies(query: VacancyListQuery = {}): Promise<Vacan
     .from(vacancy)
     .leftJoin(user, eq(vacancy.authorId, user.id))
     .leftJoin(department, eq(vacancy.departmentId, department.id))
+    .where(where)
     .orderBy(direction(column), desc(vacancy.id))
     .limit(perPage)
     .offset((page - 1) * perPage);

@@ -1,9 +1,8 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/admin/Modal";
-import Select from "@/components/admin/Select";
 import InfoHint from "@/components/admin/InfoHint";
 import ListField from "@/components/admin/ListField";
 import { useToast } from "@/components/admin/Toaster";
@@ -19,42 +18,14 @@ import styles from "./DepartmentsView.module.css";
 
 const STAGGER_LIMIT = 8;
 
-/* Mismo set que ServiceIcon (src/components/services/ServiceIcon.tsx): son
-   los únicos íconos que el sitio sabe dibujar. Sin vista previa en vivo acá
-   porque ese componente usa clases de Tailwind, que el panel no carga. */
-const ICON_OPTIONS = [
-  "headset",
-  "trend",
-  "banknote",
-  "gauge",
-  "userplus",
-  "shield",
-  "clipboard-check",
-  "wrench",
-  "settings",
-  "layers",
-  "database",
-  "messages",
-  "layout",
-  "chart",
-  "workflow",
-  "brain",
-  "code",
-  "phone",
-  "mail",
-  "share",
-  "flag-mountain",
-  "eye",
-  "diamond",
-].map((value) => ({
-  value,
-  label: value
-    .split("-")
-    .map((w) => w[0].toUpperCase() + w.slice(1))
-    .join(" "),
-}));
+/* El ícono no se elige a mano: el selector obligaba a adivinar cómo se ve un
+   nombre como "clipboard-check" sin vista previa (ese SVG vive en
+   ServiceIcon.tsx, que usa clases de Tailwind que el panel no carga). Todo
+   departamento nuevo usa el mismo ícono genérico; uno ya creado conserva el
+   suyo, solo que ya no es editable desde aquí. */
+const DEFAULT_ICON = "workflow";
 
-const EMPTY = { shortLabel: "", label: "", icon: "workflow", responsibilities: [""] };
+const EMPTY = { shortLabel: "", label: "", icon: DEFAULT_ICON, responsibilities: [""] };
 
 function Icon({ name, size = 16 }: { name: string; size?: number }) {
   const c = { viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
@@ -98,6 +69,14 @@ function Icon({ name, size = 16 }: { name: string; size?: number }) {
           <path d="M8 12.6V3.4M4 7.4 8 3.4l4 4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
+    case "layers":
+      return (
+        <svg {...c} width={16} height={16} aria-hidden="true">
+          <path d="M8 2.4 13.6 5.6 8 8.8 2.4 5.6 8 2.4Z" strokeLinejoin="round" />
+          <path d="m2.4 8.4 5.6 3.2 5.6-3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="m2.4 11.2 5.6 3.2 5.6-3.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
     default:
       return (
         <svg {...c} width={14} height={14} aria-hidden="true">
@@ -120,9 +99,11 @@ export default function DepartmentsView({ departments }: { departments: Departme
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingRow, setPendingRow] = useState<DepartmentRow | null>(null);
+  const [pendingIds, setPendingIds] = useState<string[]>([]);
   const [saving, startSaving] = useTransition();
   const [busy, setBusy] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const allRef = useRef<HTMLInputElement>(null);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -131,6 +112,33 @@ export default function DepartmentsView({ departments }: { departments: Departme
       (d) => d.label.toLowerCase().includes(needle) || d.shortLabel.toLowerCase().includes(needle),
     );
   }, [departments, query]);
+
+  // La búsqueda cambia qué filas se ven, así que la selección se limpia con
+  // ella: si no, quedan ids seleccionados que ya no aparecen en pantalla.
+  function handleQueryChange(next: string) {
+    setQuery(next);
+    setSelected(new Set());
+  }
+
+  const allChecked = visible.length > 0 && visible.every((row) => selected.has(row.id));
+  const someChecked = selected.size > 0 && !allChecked;
+
+  useEffect(() => {
+    if (allRef.current) allRef.current.indeterminate = someChecked;
+  }, [someChecked]);
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected(allChecked ? new Set() : new Set(visible.map((row) => row.id)));
+  }
 
   function openCreate() {
     setEditing(null);
@@ -171,15 +179,14 @@ export default function DepartmentsView({ departments }: { departments: Departme
     });
   }
 
-  function askDelete(row: DepartmentRow) {
-    setPendingRow(row);
+  function askDelete(ids: string[]) {
+    setPendingIds(ids);
     setConfirmOpen(true);
   }
 
   async function confirmDelete() {
-    if (!pendingRow) return;
     setBusy(true);
-    const result = await deleteDepartments([pendingRow.id]);
+    const result = await deleteDepartments(pendingIds);
     setBusy(false);
     setConfirmOpen(false);
 
@@ -187,8 +194,10 @@ export default function DepartmentsView({ departments }: { departments: Departme
       toast.error("Could not delete", result.message);
       return;
     }
-    toast.success("Department deleted", pendingRow.shortLabel);
-    setPendingRow(null);
+    const n = pendingIds.length;
+    toast.success(n === 1 ? "Department deleted" : `${n} departments deleted`, n === 1 ? pendingNames[0] : undefined);
+    setSelected(new Set());
+    setPendingIds([]);
     router.refresh();
   }
 
@@ -203,6 +212,8 @@ export default function DepartmentsView({ departments }: { departments: Departme
     router.refresh();
   }
 
+  const pendingNames = departments.filter((d) => pendingIds.includes(d.id)).map((d) => d.shortLabel);
+
   return (
     <div className={t.page}>
       <header className={t.pageHead}>
@@ -214,29 +225,55 @@ export default function DepartmentsView({ departments }: { departments: Departme
             the arrows to move one up or down.
           </InfoHint>
         </div>
-        <div className={t.search}>
-          <span className={t.searchIcon}>
-            <Icon name="search" size={15} />
-          </span>
-          <input
-            className={t.searchInput}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name"
-            aria-label="Search departments"
-          />
-        </div>
+        <button className={t.primary} type="button" onClick={openCreate}>
+          <Icon name="plus" size={15} />
+          Add department
+        </button>
       </header>
 
-      <div className={t.container}>
+      <div className={styles.container}>
         <div className={t.toolbar}>
-          <span />
-          <button className={t.primary} type="button" onClick={openCreate}>
-            <Icon name="plus" size={15} />
-            Add department
-          </button>
+          <div className={t.search}>
+            <span className={t.searchIcon}>
+              <Icon name="search" size={15} />
+            </span>
+            <input
+              className={t.searchInput}
+              type="search"
+              value={query}
+              onChange={(event) => handleQueryChange(event.target.value)}
+              placeholder="Search by name"
+              aria-label="Search departments"
+            />
+          </div>
         </div>
+
+        {selected.size > 0 && (
+          <div className={styles.bulk}>
+            <div className={styles.bulkInner}>
+              <span className={styles.bulkCount}>{selected.size} selected</span>
+              <span className={styles.bulkActions}>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-tone="danger"
+                  disabled={busy}
+                  onClick={() => askDelete([...selected])}
+                >
+                  Delete
+                </button>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-variant="plain"
+                  onClick={() => setSelected(new Set())}
+                >
+                  Clear selection
+                </button>
+              </span>
+            </div>
+          </div>
+        )}
 
         {visible.length === 0 ? (
           <div className={t.empty}>
@@ -252,86 +289,112 @@ export default function DepartmentsView({ departments }: { departments: Departme
             )}
           </div>
         ) : (
-          <div className={t.scroller}>
-            <table className={t.table}>
+          <div className={styles.scroller}>
+            <table className={styles.table}>
               <caption className={t.srOnly}>Departments, {visible.length} in total.</caption>
               <thead>
                 <tr>
-                  <th className={t.th}>
+                  <th className={`${styles.th} ${styles.selectCell}`}>
+                    <input
+                      ref={allRef}
+                      className={styles.checkbox}
+                      type="checkbox"
+                      checked={allChecked}
+                      onChange={toggleAll}
+                      aria-label="Select every department"
+                    />
+                  </th>
+                  <th className={styles.th}>
                     <span className={t.srOnly}>Order</span>
                   </th>
-                  <th className={t.th}>Department</th>
-                  <th className={t.th}>Icon</th>
-                  <th className={t.th}>Responsibilities</th>
-                  <th className={t.th}>
+                  <th className={styles.th}>Department</th>
+                  <th className={styles.th}>Responsibilities</th>
+                  <th className={styles.th}>
                     <span className={t.srOnly}>Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {visible.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className={`${t.row} ${t.enter}`}
-                    style={{ "--i": Math.min(index, STAGGER_LIMIT) } as React.CSSProperties}
-                  >
-                    <td className={t.td}>
-                      <span className={styles.reorder}>
-                        <button
-                          className={styles.reorderButton}
-                          type="button"
-                          onClick={() => move(row, "up")}
-                          disabled={busy || index === 0 || query !== ""}
-                          aria-label={`Move “${row.shortLabel}” up`}
-                          title="Move up"
-                        >
-                          <Icon name="up" />
-                        </button>
-                        <button
-                          className={styles.reorderButton}
-                          type="button"
-                          onClick={() => move(row, "down")}
-                          disabled={busy || index === visible.length - 1 || query !== ""}
-                          aria-label={`Move “${row.shortLabel}” down`}
-                          title="Move down"
-                        >
-                          <Icon name="down" />
-                        </button>
-                      </span>
-                    </td>
-                    <td className={t.td}>
-                      <span className={styles.name}>{row.shortLabel}</span>
-                      <span className={styles.fullTitle}>{row.label}</span>
-                    </td>
-                    <td className={t.td}>
-                      <span className={styles.iconChip}>{ICON_OPTIONS.find((o) => o.value === row.icon)?.label ?? row.icon}</span>
-                    </td>
-                    <td className={t.td}>{row.responsibilities.length}</td>
-                    <td className={`${t.td} ${t.actionsCell}`}>
-                      <span className={t.actions}>
-                        <button
-                          className={t.action}
-                          type="button"
-                          onClick={() => openEdit(row)}
-                          aria-label={`Edit “${row.shortLabel}”`}
-                          title="Edit"
-                        >
-                          <Icon name="pencil" />
-                        </button>
-                        <button
-                          className={t.action}
-                          type="button"
-                          data-tone="danger"
-                          onClick={() => askDelete(row)}
-                          aria-label={`Delete “${row.shortLabel}”`}
-                          title="Delete"
-                        >
-                          <Icon name="trash" />
-                        </button>
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {visible.map((row, index) => {
+                  const isSelected = selected.has(row.id);
+                  return (
+                    <tr
+                      key={row.id}
+                      className={`${styles.row} ${styles.enter}`}
+                      style={{ "--i": Math.min(index, STAGGER_LIMIT) } as React.CSSProperties}
+                      data-selected={isSelected}
+                    >
+                      <td className={`${styles.td} ${styles.selectCell}`}>
+                        <input
+                          className={styles.checkbox}
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggle(row.id)}
+                          aria-label={`Select “${row.shortLabel}”`}
+                        />
+                      </td>
+                      <td className={styles.td}>
+                        <span className={styles.reorder}>
+                          <button
+                            className={styles.reorderButton}
+                            type="button"
+                            onClick={() => move(row, "up")}
+                            disabled={busy || index === 0 || query !== ""}
+                            aria-label={`Move “${row.shortLabel}” up`}
+                            title="Move up"
+                          >
+                            <Icon name="up" />
+                          </button>
+                          <button
+                            className={styles.reorderButton}
+                            type="button"
+                            onClick={() => move(row, "down")}
+                            disabled={busy || index === visible.length - 1 || query !== ""}
+                            aria-label={`Move “${row.shortLabel}” down`}
+                            title="Move down"
+                          >
+                            <Icon name="down" />
+                          </button>
+                        </span>
+                      </td>
+                      <td className={styles.td}>
+                        <span className={styles.article}>
+                          <span className={styles.thumb}>
+                            <Icon name="layers" />
+                          </span>
+                          <span>
+                            <span className={styles.name}>{row.shortLabel}</span>
+                            <span className={styles.fullTitle}>{row.label}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td className={styles.td}>{row.responsibilities.length}</td>
+                      <td className={`${styles.td} ${styles.actionsCell}`}>
+                        <span className={styles.actions}>
+                          <button
+                            className={styles.action}
+                            type="button"
+                            onClick={() => openEdit(row)}
+                            aria-label={`Edit “${row.shortLabel}”`}
+                            title="Edit"
+                          >
+                            <Icon name="pencil" />
+                          </button>
+                          <button
+                            className={styles.action}
+                            type="button"
+                            data-tone="danger"
+                            onClick={() => askDelete([row.id])}
+                            aria-label={`Delete “${row.shortLabel}”`}
+                            title="Delete"
+                          >
+                            <Icon name="trash" />
+                          </button>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -398,19 +461,9 @@ export default function DepartmentsView({ departments }: { departments: Departme
             )}
           </div>
 
-          <div className={styles.field}>
-            <span className={styles.label}>Icon</span>
-            <Select
-              value={form.icon}
-              options={ICON_OPTIONS}
-              onChange={(next) => setForm((f) => ({ ...f, icon: next }))}
-              label="Icon"
-              width="100%"
-            />
-          </div>
-
           <ListField
             label="Responsibilities"
+            help="Optional — what this department owns, shown on the public Team page."
             placeholder="One thing this department owns"
             items={form.responsibilities}
             onChange={(next) => setForm((f) => ({ ...f, responsibilities: next }))}
@@ -427,10 +480,17 @@ export default function DepartmentsView({ departments }: { departments: Departme
         </form>
       </Modal>
 
-      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} eyebrow="Confirm" title="Delete the department">
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        eyebrow="Confirm"
+        title={pendingIds.length === 1 ? "Delete the department" : `Delete ${pendingIds.length} departments`}
+      >
         <p className={styles.dialogText}>
-          {pendingRow && `“${pendingRow.shortLabel}” is deleted and this cannot be undone.`} Vacancies using it are
-          left without a department, and it disappears from the Team page.
+          {pendingIds.length === 1
+            ? `“${pendingNames[0] ?? ""}” is deleted and this cannot be undone.`
+            : `${pendingIds.length} departments are deleted and this cannot be undone.`}{" "}
+          Vacancies using them are left without a department, and they disappear from the Team page.
         </p>
         <div className={styles.dialogFoot}>
           <button className={styles.ghost} type="button" onClick={() => setConfirmOpen(false)}>

@@ -52,6 +52,13 @@
   color: var(--brand-petroleo);
 }
 
+/* El texto se remonta (key={value}) cada vez que cambia la selección, así
+   que esta animación se dispara sola en cada cambio, sin estado extra. */
+.labelText {
+  display: inline-block;
+  animation: labelIn 0.2s var(--ease-out);
+}
+
 /* Panel flotante: sombra ambiental, la única elevación real del control. */
 .panel {
   position: absolute;
@@ -65,16 +72,38 @@
   border-radius: 2px;
   background: var(--surface-raised);
   box-shadow: 0 18px 44px -20px rgba(10, 17, 22, 0.4);
-  animation: openDown 0.16s var(--ease-out);
+  transform-origin: top center;
 }
 
 .panel[data-drop="up"] {
   bottom: calc(100% + 0.35rem);
-  animation-name: openUp;
+  transform-origin: bottom center;
 }
 
 .panel[data-drop="down"] {
   top: calc(100% + 0.35rem);
+}
+
+/* Cerrando: se desmonta un instante después, disolviéndose en vez de
+   desaparecer de golpe. */
+.panel[data-state="closing"] {
+  pointer-events: none;
+}
+
+.panel[data-state="open"][data-drop="down"] {
+  animation: openDown 0.16s var(--ease-out);
+}
+
+.panel[data-state="open"][data-drop="up"] {
+  animation: openUp 0.16s var(--ease-out);
+}
+
+.panel[data-state="closing"][data-drop="down"] {
+  animation: closeDown 0.14s var(--ease-out) forwards;
+}
+
+.panel[data-state="closing"][data-drop="up"] {
+  animation: closeUp 0.14s var(--ease-out) forwards;
 }
 
 .option {
@@ -91,6 +120,9 @@
   color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+  transition:
+    background 0.12s var(--ease-out),
+    color 0.12s var(--ease-out);
 }
 
 .option[data-active="true"] {
@@ -107,33 +139,69 @@
   flex: none;
   color: var(--brand-petroleo);
   opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.15s var(--ease-out),
+    transform 0.15s var(--ease-out);
 }
 
 .option[aria-selected="true"] .check {
   opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes labelIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
 }
 
 @keyframes openDown {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-4px) scaleY(0.96);
   }
 }
 
 @keyframes openUp {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(4px) scaleY(0.96);
+  }
+}
+
+@keyframes closeDown {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.96);
+  }
+}
+
+@keyframes closeUp {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scaleY(0.96);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .trigger,
-  .caret {
+  .caret,
+  .option,
+  .check {
     transition: none;
   }
 
-  .panel {
+  .labelText,
+  .panel[data-state="open"][data-drop="down"],
+  .panel[data-state="open"][data-drop="up"] {
     animation: none;
+  }
+
+  .panel[data-state="closing"][data-drop="down"],
+  .panel[data-state="closing"][data-drop="up"] {
+    animation: none;
+    opacity: 0;
   }
 }

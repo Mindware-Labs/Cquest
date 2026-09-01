@@ -28,6 +28,20 @@ export default function Select({ value, options, onChange, label, width }: Props
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(selectedIndex);
   const [drop, setDrop] = useState<"down" | "up">("down");
+  // El panel se cierra con una animación propia en vez de desmontarse de
+  // golpe: se queda pintado un instante más mientras se desvanece.
+  const [closing, setClosing] = useState(false);
+  const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (open) {
+      wasOpenRef.current = true;
+      setClosing(false);
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+      setClosing(true);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -45,6 +59,8 @@ export default function Select({ value, options, onChange, label, width }: Props
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open, options.length]);
+
+  const showPanel = open || closing;
 
   function commit(index: number) {
     const option = options[index];
@@ -115,14 +131,28 @@ export default function Select({ value, options, onChange, label, width }: Props
         }}
         onKeyDown={handleKeyDown}
       >
-        {options[selectedIndex]?.label ?? ""}
+        {/* key={value}: al cambiar la selección, React remonta el span y la
+            animación de entrada se dispara sola, sin estado extra. */}
+        <span key={value} className={styles.labelText}>
+          {options[selectedIndex]?.label ?? ""}
+        </span>
         <svg className={styles.caret} width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
           <path d="m4 6.4 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      {open && (
-        <ul className={styles.panel} id={listId} role="listbox" aria-label={label} data-drop={drop}>
+      {showPanel && (
+        <ul
+          className={styles.panel}
+          id={listId}
+          role="listbox"
+          aria-label={label}
+          data-drop={drop}
+          data-state={closing ? "closing" : "open"}
+          onAnimationEnd={() => {
+            if (closing) setClosing(false);
+          }}
+        >
           {options.map((option, index) => (
             <li
               key={option.value}

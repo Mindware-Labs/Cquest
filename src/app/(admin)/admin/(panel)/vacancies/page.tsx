@@ -15,12 +15,13 @@ export const metadata: Metadata = {
 export default async function VacanciesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string; q?: string }>;
 }) {
   const params = await searchParams;
 
   const sortKey = params.sort === "title" ? "title" : "updatedAt";
   const sortDir = params.dir === "asc" ? "asc" : "desc";
+  const query = params.q ?? "";
 
   const [{ rows, total, page, perPage }, departments] = await Promise.all([
     listVacancies({
@@ -28,6 +29,7 @@ export default async function VacanciesPage({
       perPage: Number(params.perPage) || 10,
       sortKey,
       sortDir,
+      query,
     }),
     listAllDepartments(),
   ]);
@@ -42,6 +44,7 @@ export default async function VacanciesPage({
         perPage={perPage}
         sortKey={sortKey}
         sortDir={sortDir}
+        query={query}
       />
     </div>
   );
