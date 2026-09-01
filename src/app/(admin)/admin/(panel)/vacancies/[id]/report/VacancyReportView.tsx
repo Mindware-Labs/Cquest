@@ -3,6 +3,7 @@ import t from "@/components/admin/dataTable.module.css";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_META } from "@/lib/applicationStatus";
 import type { VacancyReport } from "@/server/vacancies";
 import { AVAILABILITY_OPTIONS, ENGLISH_OPTIONS, EXPERIENCE_OPTIONS, optionLabel } from "@/app/(site)/join-us/apply/data";
+import ExportButton from "./ExportButton";
 import styles from "./VacancyReport.module.css";
 
 const stamp = new Intl.DateTimeFormat("en-GB", {
@@ -84,13 +85,10 @@ export default function VacancyReportView({ report }: { report: VacancyReport })
             {vacancy.departmentLabel ?? "No department"} · {vacancy.status === "published" ? "Published" : vacancy.status === "hidden" ? "Hidden" : "Draft"}
           </span>
         </div>
-        <a className={styles.export} href={`/api/admin/vacancies/${vacancy.id}/report/export`}>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
-            <path d="M8 2.6v7.2M5.2 7l2.8 2.8L10.8 7" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M3 11v2.4h10V11" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Export CSV
-        </a>
+        <ExportButton
+          href={`/api/admin/vacancies/${vacancy.id}/report/export`}
+          fallbackFilename={`${vacancy.title.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "vacancy"}-candidates.xlsx`}
+        />
       </div>
 
       <div className={styles.stats}>
