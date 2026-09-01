@@ -1,4 +1,4 @@
-import { index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { department } from "./department";
 
@@ -44,3 +44,49 @@ export const vacancy = pgTable(
 );
 
 export type Vacancy = typeof vacancy.$inferSelect;
+
+export const applicationStatus = pgEnum("application_status", ["new", "reviewing", "shortlisted", "rejected", "hired"]);
+
+export const application = pgTable(
+  "application",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Null = candidatura abierta (banco de talento). Si se borra la vacante la
+    // postulación sobrevive con el título que tenía copiado.
+    vacancyId: uuid("vacancy_id").references(() => vacancy.id, { onDelete: "set null" }),
+    vacancyTitle: text("vacancy_title"),
+    departmentId: uuid("department_id").references(() => department.id, { onDelete: "set null" }),
+
+    fullName: text("full_name").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone").notNull(),
+    city: text("city").notNull(),
+    experience: text("experience").notNull(),
+    english: text("english").notNull(),
+    availability: text("availability").notNull(),
+    message: text("message").notNull().default(""),
+
+    // Blob privado: la URL no sirve en público, el panel lo sirve por /api.
+    resumeUrl: text("resume_url").notNull(),
+    resumePathname: text("resume_pathname").notNull(),
+    resumeName: text("resume_name").notNull(),
+    resumeSize: integer("resume_size").notNull(),
+    resumeType: text("resume_type").notNull(),
+
+    status: applicationStatus("status").notNull().default("new"),
+    notes: text("notes").notNull().default(""),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("application_vacancyId_idx").on(table.vacancyId),
+    index("application_status_createdAt_idx").on(table.status, table.createdAt),
+    index("application_email_idx").on(table.email),
+  ],
+);
+
+export type Application = typeof application.$inferSelect;

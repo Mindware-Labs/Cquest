@@ -10,6 +10,7 @@ import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
 import { useToast } from "@/components/admin/Toaster";
 import { deleteVacancies, setVacancyStatus, type VacancyListRow } from "@/server/vacancies";
+import VacancyApplicantsModal from "./VacancyApplicantsModal";
 import styles from "./VacanciesTable.module.css";
 
 type Badge = "published" | "scheduled" | "draft" | "hidden";
@@ -173,6 +174,7 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
+  const [applicantsFor, setApplicantsFor] = useState<VacancyListRow | null>(null);
 
   async function toggleVisibility(row: VacancyListRow) {
     setBusy(true);
@@ -332,6 +334,7 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
                   </button>
                 </th>
                 <th className={styles.th}>Department</th>
+                <th className={styles.th}>Applicants</th>
                 <th className={styles.th}>Status</th>
                 <th className={styles.th} aria-sort={ariaSort("updatedAt")}>
                   <button className={styles.sortLink} type="button" onClick={() => sortBy("updatedAt")} data-active={sortKey === "updatedAt"}>
@@ -348,7 +351,7 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td className={styles.empty} colSpan={6}>
+                  <td className={styles.empty} colSpan={7}>
                     {query ? `No vacancy matches “${query}”.` : "No vacancies yet. Create the first one from “New vacancy”."}
                   </td>
                 </tr>
@@ -386,6 +389,16 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
                       </td>
 
                       <td className={`${styles.td} ${styles.inkCell}`}>{row.departmentLabel ?? "No department"}</td>
+
+                      <td className={styles.td}>
+                        {row.applications > 0 ? (
+                          <button className={styles.applicants} type="button" onClick={() => setApplicantsFor(row)}>
+                            {row.applications} {row.applications === 1 ? "applicant" : "applicants"}
+                          </button>
+                        ) : (
+                          <span className={styles.applicantsNone}>—</span>
+                        )}
+                      </td>
 
                       <td className={styles.td}>
                         <span className={styles.badge} style={{ "--badge-ink": state.ink } as React.CSSProperties}>
@@ -520,6 +533,13 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
           </button>
         </div>
       </Modal>
+
+      <VacancyApplicantsModal
+        vacancyId={applicantsFor?.id ?? ""}
+        vacancyTitle={applicantsFor?.title ?? ""}
+        open={applicantsFor !== null}
+        onClose={() => setApplicantsFor(null)}
+      />
     </>
   );
 }

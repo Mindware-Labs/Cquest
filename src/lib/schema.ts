@@ -176,6 +176,8 @@ export function jobPostingNode(vacancy: {
     title: vacancy.title,
     description: vacancy.summary || vacancy.title,
     datePosted: vacancy.publishedAt,
+    url: `${SITE_URL}/join-us/apply/${vacancy.slug}`,
+    directApply: true,
     employmentType: vacancy.employmentType === "part-time" ? "PART_TIME" : "FULL_TIME",
     hiringOrganization: { "@id": ORG_ID },
     ...(remote

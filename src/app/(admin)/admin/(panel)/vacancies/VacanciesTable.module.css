@@ -541,3 +541,36 @@
     transition: none;
   }
 }
+
+/* ---------- Postulantes ---------- */
+
+.applicants {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--brand-petroleo) 10%, var(--surface-raised));
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  white-space: nowrap;
+  color: var(--brand-petroleo);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s var(--ease-out);
+}
+
+.applicants:hover {
+  background: color-mix(in srgb, var(--brand-petroleo) 18%, var(--surface-raised));
+}
+
+.applicants:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.applicantsNone {
+  color: color-mix(in srgb, var(--text-tertiary) 60%, var(--surface-raised));
+}

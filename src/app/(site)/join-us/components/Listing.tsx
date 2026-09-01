@@ -1,132 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "motion/react";
-import Arrow from "@/components/services/Arrow";
+import { useMemo, useState, type ReactNode } from "react";
 import container from "@/components/services/Container.module.css";
+import { TransitionLink } from "@/components/TransitionLink";
 import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceIconName } from "@/components/services/data";
-import { EASE_OUT, VIEWPORT, focusRiseVariants, groupVariants } from "@/components/services/motion";
-import { CONTACT } from "@/components/footer/data";
 import type { PublicVacancy } from "@/lib/vacancies";
 import type { Hiring } from "../JoinUsExperience";
+import Intro from "./Intro";
+import VacancyTable from "./VacancyTable";
+import { OPEN_APPLICATION_HREF, PinIcon, type LocationOption } from "./shared";
 import styles from "./Listing.module.css";
 
-const WORK_MODE_LABEL: Record<string, string> = {
-  onsite: "On site",
-  hybrid: "Hybrid",
-  remote: "Remote",
-};
-
-const EMPLOYMENT_LABEL: Record<string, string> = {
-  "full-time": "Full time",
-  "part-time": "Part time",
-};
-
-const TRACK_LABEL: Record<string, string> = {
-  entry: "Entry level",
-  professional: "Professional",
-};
-
-const dateFormat = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Santo_Domingo",
-});
-
-function applyHref(title: string): string {
-  return `mailto:${CONTACT.email}?subject=${encodeURIComponent(`Application — ${title}`)}`;
-}
-
-function VacancyCard({ vacancy }: { vacancy: PublicVacancy }) {
-  const hasDetails = vacancy.responsibilities.length > 0 || vacancy.requirements.length > 0 || vacancy.niceToHave.length > 0;
-  const meta = [
-    vacancy.workMode && WORK_MODE_LABEL[vacancy.workMode],
-    vacancy.employmentType && EMPLOYMENT_LABEL[vacancy.employmentType],
-    vacancy.location,
-    vacancy.schedule,
-  ].filter((entry): entry is string => Boolean(entry));
-
+function Chip({
+  label,
+  count,
+  icon,
+  pressed,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  icon?: ReactNode;
+  pressed: boolean;
+  onClick: () => void;
+}) {
   return (
-    <motion.article className={styles.card} variants={focusRiseVariants}>
-      <div className={styles.cardHead}>
-        {vacancy.departmentShortLabel && (
-          <span className={styles.deptChip}>
-            {vacancy.departmentIcon && (
-              <span className={styles.deptChipIcon} aria-hidden="true">
-                <ServiceIcon name={vacancy.departmentIcon as ServiceIconName} />
-              </span>
-            )}
-            {vacancy.departmentShortLabel}
-          </span>
-        )}
-        {vacancy.track && <span className={styles.trackChip}>{TRACK_LABEL[vacancy.track]}</span>}
-      </div>
-
-      <h3 className={styles.title}>{vacancy.title}</h3>
-
-      {meta.length > 0 && (
-        <ul className={styles.meta}>
-          {meta.map((entry) => (
-            <li key={entry}>{entry}</li>
-          ))}
-        </ul>
-      )}
-
-      {vacancy.summary && <p className={styles.summary}>{vacancy.summary}</p>}
-
-      {hasDetails && (
-        <details className={styles.details}>
-          <summary>
-            View responsibilities &amp; requirements
-            <Arrow direction="down" className={styles.detailsArrow} />
-          </summary>
-
-          <div className={styles.detailsBody}>
-            {vacancy.responsibilities.length > 0 && (
-              <div className={styles.detailsGroup}>
-                <span className={styles.detailsLabel}>Responsibilities</span>
-                <ul className={styles.detailsList}>
-                  {vacancy.responsibilities.map((line, index) => (
-                    <li key={`${index}-${line}`}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {vacancy.requirements.length > 0 && (
-              <div className={styles.detailsGroup}>
-                <span className={styles.detailsLabel}>Requirements</span>
-                <ul className={styles.detailsList}>
-                  {vacancy.requirements.map((line, index) => (
-                    <li key={`${index}-${line}`}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {vacancy.niceToHave.length > 0 && (
-              <div className={styles.detailsGroup}>
-                <span className={styles.detailsLabel}>Nice to have</span>
-                <ul className={styles.detailsList}>
-                  {vacancy.niceToHave.map((line, index) => (
-                    <li key={`${index}-${line}`}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </details>
-      )}
-
-      <div className={styles.cardFoot}>
-        <time className={styles.posted} dateTime={vacancy.publishedAt}>
-          Posted {dateFormat.format(new Date(vacancy.publishedAt))}
-        </time>
-        <a className={styles.applyCta} href={applyHref(vacancy.title)}>
-          Apply <Arrow />
-        </a>
-      </div>
-    </motion.article>
+    <button type="button" className={styles.chip} aria-pressed={pressed} onClick={onClick}>
+      {icon}
+      {label}
+      <span className={styles.chipCount}>{count}</span>
+    </button>
   );
 }
 
@@ -139,109 +43,166 @@ export default function Listing({
   openings: PublicVacancy[];
   hiring: Hiring[];
 }) {
-  const [department, setDepartment] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<Set<string>>(new Set());
+  const [locations, setLocations] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
 
-  const visible = useMemo(
-    () => (department ? openings.filter((entry) => entry.departmentSlug === department) : openings),
-    [openings, department],
+  const count = openings.length;
+
+  // Las regiones no vienen catalogadas como los departamentos: se derivan de
+  // lo que hay publicado ahora mismo, igual que "hiring" pero para location.
+  const locationOptions = useMemo<LocationOption[]>(() => {
+    const counts = new Map<string, number>();
+    for (const entry of openings) {
+      if (!entry.location) continue;
+      counts.set(entry.location, (counts.get(entry.location) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([location, total]) => ({ location, count: total }))
+      .sort((a, b) => b.count - a.count || a.location.localeCompare(b.location));
+  }, [openings]);
+
+  const updatedAt = useMemo(
+    () => openings.reduce<string | null>((latest, entry) => (!latest || entry.publishedAt > latest ? entry.publishedAt : latest), null),
+    [openings],
   );
 
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return openings.filter((entry) => {
+      if (departments.size > 0 && (!entry.departmentSlug || !departments.has(entry.departmentSlug))) return false;
+      if (locations.size > 0 && (!entry.location || !locations.has(entry.location))) return false;
+      if (q) {
+        const haystack = `${entry.title} ${entry.summary} ${entry.departmentLabel ?? ""} ${entry.location ?? ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [openings, departments, locations, query]);
+
+  const filtered = departments.size > 0 || locations.size > 0 || query.trim().length > 0;
+
+  function toggle(setter: typeof setDepartments, value: string) {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+  }
+
+  function clearFilters() {
+    setDepartments(new Set());
+    setLocations(new Set());
+    setQuery("");
+  }
+
+  // Desde el panel se aterriza en un solo departamento, no se acumula.
+  function pickDepartment(slug: string) {
+    setDepartments(new Set([slug]));
+    setLocations(new Set());
+    setQuery("");
+  }
+
+  const hasFilters = hiring.length > 1 || locationOptions.length > 1;
+
   return (
-    <section id="openings" className={styles.section}>
+    <section className={styles.page}>
       <div className={container.container}>
-        <motion.header
-          className={styles.intro}
-          initial={reduced ? false : { opacity: 0, y: 18 }}
-          whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
-          viewport={VIEWPORT}
-          transition={{ duration: 0.62, ease: EASE_OUT }}
-        >
-          <span className={styles.eyebrow}>Open positions</span>
-          <h2 className={styles.headline}>Where you&rsquo;d fit in</h2>
-          <p className={styles.lead}>
-            Every role below is real and open right now — no third-party boards, no stale postings.
-            Pick a department to narrow the list.
-          </p>
-        </motion.header>
+        <Intro
+          reduced={reduced}
+          count={count}
+          hiring={hiring}
+          locations={locationOptions}
+          updatedAt={updatedAt}
+          query={query}
+          onQueryChange={setQuery}
+          onPickDepartment={pickDepartment}
+        />
 
-        <div className={styles.layout}>
-          {hiring.length > 1 && (
-            <aside className={styles.sidebar}>
-              <nav aria-label="Filter by department">
-                <span className={styles.sidebarTitle}>Departments</span>
-                <ul className={styles.deptList}>
-                  <li>
-                    <button
-                      type="button"
-                      className={styles.deptButton}
-                      aria-current={department === null ? "true" : undefined}
-                      onClick={() => setDepartment(null)}
-                    >
-                      All
-                      <span className={styles.deptCount}>{openings.length}</span>
-                    </button>
-                  </li>
-                  {hiring.map((entry) => (
-                    <li key={entry.slug}>
-                      <button
-                        type="button"
-                        className={styles.deptButton}
-                        aria-current={department === entry.slug ? "true" : undefined}
-                        onClick={() => setDepartment(entry.slug)}
-                      >
-                        {entry.shortLabel}
-                        <span className={styles.deptCount}>{entry.count}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+        <div id="openings" className={styles.board}>
+          <div className={styles.toolbar}>
+            {hasFilters && (
+              <div className={styles.filters}>
+                {hiring.length > 1 && (
+                  <div className={styles.filterGroup} role="group" aria-label="Filter by department">
+                    <span className={styles.filterLabel}>Department</span>
+                    <Chip label="All" count={count} pressed={departments.size === 0} onClick={() => setDepartments(new Set())} />
+                    {hiring.map((entry) => (
+                      <Chip
+                        key={entry.slug}
+                        label={entry.shortLabel}
+                        count={entry.count}
+                        icon={
+                          <span className={styles.chipIcon} aria-hidden="true">
+                            <ServiceIcon name={entry.icon as ServiceIconName} />
+                          </span>
+                        }
+                        pressed={departments.has(entry.slug)}
+                        onClick={() => toggle(setDepartments, entry.slug)}
+                      />
+                    ))}
+                  </div>
+                )}
 
-              <section className={styles.pitch}>
-                <p className={styles.pitchText}>Don&rsquo;t see a fit yet? We keep resumes on file for the next opening.</p>
-                <a className={styles.pitchCta} href={applyHref("Open application")}>
-                  Send your resume
-                </a>
-              </section>
-            </aside>
-          )}
-
-          <div className={styles.main}>
-            {visible.length === 0 ? (
-              <div className={styles.empty}>
-                <span className={styles.emptyMark} aria-hidden="true">
-                  <ServiceIcon name="userplus" />
-                </span>
-                <h3 className={styles.emptyTitle}>
-                  {openings.length === 0 ? "Nothing open right now" : "Nothing open in that department"}
-                </h3>
-                <p className={styles.emptyText}>
-                  {openings.length === 0
-                    ? "We are not actively hiring at this exact moment, but our team keeps growing. Send us your resume and we will reach out when a fit opens up."
-                    : "That department has no open positions today. The rest of the list is one click away."}
-                </p>
-                <a
-                  className={styles.emptyCta}
-                  href={openings.length === 0 ? applyHref("Open application") : "#openings"}
-                  onClick={openings.length > 0 ? () => setDepartment(null) : undefined}
-                >
-                  {openings.length === 0 ? "Send your resume" : "See all open positions"}
-                </a>
+                {locationOptions.length > 1 && (
+                  <div className={styles.filterGroup} role="group" aria-label="Filter by location">
+                    <span className={styles.filterLabel}>Location</span>
+                    {locationOptions.map((entry) => (
+                      <Chip
+                        key={entry.location}
+                        label={entry.location}
+                        count={entry.count}
+                        icon={
+                          <span className={styles.chipIcon} aria-hidden="true">
+                            <PinIcon />
+                          </span>
+                        }
+                        pressed={locations.has(entry.location)}
+                        onClick={() => toggle(setLocations, entry.location)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <motion.div
-                className={styles.list}
-                variants={groupVariants}
-                initial={reduced ? false : "hidden"}
-                whileInView={reduced ? undefined : "visible"}
-                viewport={VIEWPORT}
-              >
-                {visible.map((vacancy) => (
-                  <VacancyCard key={vacancy.id} vacancy={vacancy} />
-                ))}
-              </motion.div>
             )}
+
+            <div className={styles.results}>
+              {filtered && (
+                <button type="button" className={styles.resultsReset} onClick={clearFilters}>
+                  Clear filters
+                </button>
+              )}
+              <span className={styles.resultsCount} aria-live="polite">
+                {filtered ? `Showing ${visible.length} of ${count}` : `${count} open position${count === 1 ? "" : "s"}`}
+              </span>
+            </div>
           </div>
+
+          {visible.length === 0 ? (
+            <div className={styles.empty}>
+              <span className={styles.emptyMark} aria-hidden="true">
+                <ServiceIcon name="userplus" />
+              </span>
+              <h2 className={styles.emptyTitle}>{count === 0 ? "Nothing open right now" : "No matches for that search"}</h2>
+              <p className={styles.emptyText}>
+                {count === 0
+                  ? "We are not actively hiring at this exact moment, but our team keeps growing. Send us your resume and we will reach out when a fit opens up."
+                  : "Try a different keyword, or clear the filters to see every open position."}
+              </p>
+              {count === 0 ? (
+                <TransitionLink className={styles.emptyCta} href={OPEN_APPLICATION_HREF}>
+                  Send your resume
+                </TransitionLink>
+              ) : (
+                <button type="button" className={styles.emptyCta} onClick={clearFilters}>
+                  Clear filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <VacancyTable reduced={reduced} vacancies={visible} />
+          )}
         </div>
       </div>
     </section>

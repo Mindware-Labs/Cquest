@@ -64,6 +64,13 @@
       "when": 1787843886179,
       "tag": "0008_dry_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788291619657,
+      "tag": "0009_applications",
+      "breakpoints": true
     }
   ]
 }

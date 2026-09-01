@@ -16,6 +16,7 @@ import {
 } from "@/server/vacancies";
 import type { DepartmentRow } from "@/server/departments";
 import ListField from "@/components/admin/ListField";
+import VacancyApplicantsModal from "../VacancyApplicantsModal";
 import styles from "./VacancyEditor.module.css";
 
 const TRACK_OPTIONS = [
@@ -170,6 +171,7 @@ export default function VacancyEditor({
   const [dirty, setDirty] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
+  const [applicantsOpen, setApplicantsOpen] = useState(false);
 
   useEffect(() => {
     if (!dirty) return;
@@ -307,6 +309,9 @@ export default function VacancyEditor({
         </div>
 
         <div className={styles.barActions}>
+          <button className={styles.ghost} type="button" onClick={() => setApplicantsOpen(true)}>
+            Applications · {vacancy.applications}
+          </button>
           {status === "published" && (
             <button className={styles.ghost} type="button" onClick={handleHide} disabled={saving}>
               Hide
@@ -573,6 +578,13 @@ export default function VacancyEditor({
           </button>
         </div>
       </Modal>
+
+      <VacancyApplicantsModal
+        vacancyId={vacancy.id}
+        vacancyTitle={title || vacancy.title}
+        open={applicantsOpen}
+        onClose={() => setApplicantsOpen(false)}
+      />
     </div>
   );
 }

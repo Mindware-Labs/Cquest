@@ -22,7 +22,6 @@ export const DARK_HERO_PAGES = [
   "/partnerships/mindware-labs",
 
   "/location",
-  "/join-us",
 ] as const;
 
 /* Árboles de rutas cuyas páginas abren todas con hero oscuro, comparados por
@@ -74,7 +73,8 @@ export function getNavLinks(): readonly NavLink[] {
   ];
 }
 
-function getLegalNavLinks(): readonly NavLink[] {
+/* Nav completa con Inicio delante: páginas sin secciones propias que ancle. */
+function getFullNavLinks(): readonly NavLink[] {
   return [
     { label: dict.nav.home, href: "/" },
     {
@@ -134,10 +134,7 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.serviceSections.team.departments, href: "#departments" },
     ],
 
-    "/join-us": [
-      home,
-      { label: dict.serviceSections.joinUs.openings, href: "#openings" },
-    ],
+    "/join-us": getFullNavLinks(),
 
     "/partnerships/mindware-labs": [
       {
@@ -149,8 +146,8 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
     ],
 
-    "/legal/terms": getLegalNavLinks(),
-    "/legal/privacy": getLegalNavLinks(),
+    "/legal/terms": getFullNavLinks(),
+    "/legal/privacy": getFullNavLinks(),
 
     "/location": [
       {
@@ -164,6 +161,15 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.nav.blog, href: "/blog" },
     ],
   };
+}
+
+/* Ruta exacta primero; las páginas colgadas de /join-us (postulación) no
+   tienen entrada propia y heredan la nav completa del listado. */
+export function getNavLinksFor(pathname: string): readonly NavLink[] {
+  const exact = getServiceNavLinks()[pathname];
+  if (exact) return exact;
+  if (pathname.startsWith("/join-us/")) return getFullNavLinks();
+  return getNavLinks();
 }
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;

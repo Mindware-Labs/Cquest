@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks, isDarkHeroPage } from "@/components/navigation/data";
+import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinksFor, isDarkHeroPage } from "@/components/navigation/data";
 
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
@@ -57,7 +57,7 @@ export default function Navbar() {
     darkPage || (isDarkHeroPage(pathname) && !scrolled && !open);
 
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
-  const navLinks = getServiceNavLinks()[pathname] ?? getNavLinks();
+  const navLinks = getNavLinksFor(pathname);
 
   const quoteHref = serviceDetailPage
     ? `/quote?servicio=${pathname.split("/").pop()}`

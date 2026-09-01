@@ -4,7 +4,7 @@ import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
-import { vacancy } from "@/db/schema/careers";
+import { application, vacancy } from "@/db/schema/careers";
 import { user } from "@/db/schema/auth";
 import { department } from "@/db/schema/department";
 import { requireAdmin } from "@/lib/auth-guard";
@@ -23,6 +23,7 @@ export type VacancyListRow = {
   publishedAt: string | null;
   updatedAt: string;
   authorName: string | null;
+  applications: number;
 };
 
 export type VacancyDetail = {
@@ -41,6 +42,7 @@ export type VacancyDetail = {
   niceToHave: string[];
   status: VacancyStatus;
   publishedAt: string | null;
+  applications: number;
 };
 
 export type ActionResult<T = undefined> =
@@ -180,6 +182,7 @@ export async function listVacancies(query: VacancyListQuery = {}): Promise<Vacan
       publishedAt: vacancy.publishedAt,
       updatedAt: vacancy.updatedAt,
       authorName: user.name,
+      applications: sql<number>`(select count(*) from ${application} a where a.vacancy_id = ${vacancy.id})::int`,
     })
     .from(vacancy)
     .leftJoin(user, eq(vacancy.authorId, user.id))
@@ -209,6 +212,11 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
   const row = rows[0];
   if (!row) return null;
 
+  const [{ applications }] = await db
+    .select({ applications: count() })
+    .from(application)
+    .where(eq(application.vacancyId, id));
+
   return {
     id: row.id,
     slug: row.slug,
@@ -225,6 +233,7 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
     niceToHave: (row.niceToHave as string[]) ?? [],
     status: row.status,
     publishedAt: row.publishedAt?.toISOString() ?? null,
+    applications,
   };
 }
 

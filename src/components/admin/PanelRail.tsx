@@ -30,6 +30,7 @@ const NAV_GROUPS = [
     label: "Vacancies",
     items: [
       { href: "/admin/vacancies", label: "Vacancies", icon: "briefcase" },
+      { href: "/admin/applications", label: "Applications", icon: "inbox" },
       { href: "/admin/departments", label: "Departments", icon: "building" },
     ],
   },
@@ -63,6 +64,13 @@ function NavIcon({ name }: { name: NavIconName }) {
         <rect x="2.2" y="5.2" width="11.6" height="8" strokeLinejoin="round" />
         <path d="M5.6 5.2V3.6h4.8v1.6" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M2.2 9h11.6" strokeLinecap="round" />
+      </svg>
+    );
+  if (name === "inbox")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M2.4 9.2 4.2 3.4h7.6l1.8 5.8v3.4H2.4V9.2Z" strokeLinejoin="round" />
+        <path d="M2.4 9.2h3.4l.9 1.6h2.6l.9-1.6h3.4" strokeLinejoin="round" />
       </svg>
     );
   if (name === "building")
