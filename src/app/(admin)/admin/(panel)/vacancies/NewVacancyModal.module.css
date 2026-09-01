@@ -1,18 +1,69 @@
+/* ---------- Título del paso + volver ---------- */
+
+/* Back va pegado al título del paso (dentro del <h2> de Modal, que ahora
+   acepta ReactNode), no en la franja de pasos ni en el pie: ahí competía
+   por ancho con los nombres de los pasos o con Draft/Schedule/Publish. Acá
+   no compite con nada. */
+.titleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 0.18s var(--ease-out),
+    border-color 0.18s var(--ease-out),
+    background 0.18s var(--ease-out);
+}
+
+.backIcon:hover:not(:disabled) {
+  color: var(--brand-petroleo);
+  border-color: var(--border);
+  background: var(--surface-sunken);
+}
+
+.backIcon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.backIcon:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
 /* ---------- Indicador de pasos ---------- */
 
 .steps {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   margin: 1.5rem 0 0;
   padding: 0;
   list-style: none;
+  /* Cinco pasos son justos a 34rem — si algún zoom o ajuste de fuente igual
+     no los deja entrar, que se pueda scrollear con la barra a la vista en
+     vez de cortar "Review" a secas, sin ninguna señal de que sigue ahí. */
+  overflow-x: auto;
 }
 
 .step {
   display: inline-flex;
+  flex: none;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  white-space: nowrap;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-tertiary);
@@ -20,9 +71,9 @@
 
 .step:not(:last-child)::after {
   content: "";
-  width: 1.1rem;
+  width: 0.8rem;
   height: 1px;
-  margin-left: 0.4rem;
+  margin-left: 0.3rem;
   background: var(--border);
 }
 
@@ -112,8 +163,12 @@
   min-height: 2.5rem;
 }
 
+/* Crece con el texto (ver autosize() en NewVacancyModal.tsx) en vez de
+   scrollear adentro de una caja de alto fijo — el resize manual queda
+   redundante y peleaba con eso, así que se quita. */
 .textarea {
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
 }
 
 .input:focus,
@@ -220,20 +275,28 @@
 
 /* ---------- Pie ---------- */
 
+/* Back ya no vive acá (ver .stepsRow): este pie queda solo para las
+   acciones que avanzan, todas agrupadas a la derecha. flex-wrap por si
+   algún zoom extremo no deja entrar las tres juntas. */
 .foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.6rem;
   margin-top: 2.2rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
 
-.footRight {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+/* Draft/Schedule/Publish: la decisión real del asistente, así que ocupan
+   todo el ancho a partes iguales en vez de agruparse chico a la derecha. */
+.foot[data-variant="final"] {
+  justify-content: center;
+}
+
+.foot[data-variant="final"] > button {
+  flex: 1 1 8rem;
 }
 
 .primary {
@@ -297,8 +360,42 @@
   cursor: progress;
 }
 
+/* Entre .primary y .ghost: "Schedule" es una acción real, no una salida
+   (como Back o Save as draft), pero no es la acción por defecto del paso —
+   ese lugar es de Publish. */
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--brand-petroleo);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-petroleo) 10%, var(--surface-raised));
+}
+
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .primary:focus-visible,
-.ghost:focus-visible {
+.ghost:focus-visible,
+.secondary:focus-visible {
   outline: 2px solid var(--brand-petroleo);
   outline-offset: 2px;
 }
@@ -307,7 +404,9 @@
   .input,
   .textarea,
   .primary,
-  .ghost {
+  .ghost,
+  .secondary,
+  .backIcon {
     transition: none;
   }
 }

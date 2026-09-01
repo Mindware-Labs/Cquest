@@ -15,18 +15,20 @@ export const metadata: Metadata = {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string; q?: string }>;
 }) {
   const params = await searchParams;
 
   const sortKey = params.sort === "title" ? "title" : "updatedAt";
   const sortDir = params.dir === "asc" ? "asc" : "desc";
+  const query = params.q ?? "";
 
   const { rows, total, page, perPage } = await listPosts({
     page: Number(params.page) || 1,
     perPage: Number(params.perPage) || 10,
     sortKey,
     sortDir,
+    query,
   });
 
   return (
@@ -39,6 +41,7 @@ export default async function PostsPage({
         perPage={perPage}
         sortKey={sortKey}
         sortDir={sortDir}
+        query={query}
       />
     </div>
   );

@@ -38,21 +38,6 @@ function Icon({ name, size = 16 }: { name: string; size?: number }) {
           <path d="m10.5 10.5 3 3" strokeLinecap="round" />
         </svg>
       );
-    case "list":
-      return (
-        <svg {...c} width={size} height={size} aria-hidden="true">
-          <path d="M5.4 4.2h8.2M5.4 8h8.2M5.4 11.8h8.2M2.4 4.2h.7M2.4 8h.7M2.4 11.8h.7" strokeLinecap="round" />
-        </svg>
-      );
-    case "grid":
-      return (
-        <svg {...c} width={size} height={size} aria-hidden="true">
-          <rect x="2.4" y="2.4" width="4.8" height="4.8" />
-          <rect x="8.8" y="2.4" width="4.8" height="4.8" />
-          <rect x="2.4" y="8.8" width="4.8" height="4.8" />
-          <rect x="8.8" y="8.8" width="4.8" height="4.8" />
-        </svg>
-      );
     case "plus":
       return (
         <svg {...c} width={size} height={size} aria-hidden="true">
@@ -135,7 +120,6 @@ export default function CategoriesView({
   const nameId = useId();
   const descriptionId = useId();
 
-  const [view, setView] = useState<"list" | "grid">("list");
   const { pending, setParams } = useTableParams();
   const [text, setText] = useDebouncedSearch(query, (next) =>
     navigate({ q: next || null, page: 1 }),
@@ -291,40 +275,29 @@ export default function CategoriesView({
             shows in the URL, so it is best left alone once published.
           </InfoHint>
         </div>
-        <div className={t.search}>
-          <span className={t.searchIcon}>
-            <Icon name="search" size={15} />
-          </span>
-          <input
-            className={t.searchInput}
-            type="search"
-            value={text}
-            onChange={(event) => {
-              setText(event.target.value);
-            }}
-            placeholder="Search by name or slug"
-            aria-label="Search categories"
-          />
-        </div>
+        <button className={t.primary} type="button" onClick={openCreate}>
+          <Icon name="plus" size={15} />
+          Add category
+        </button>
       </header>
 
       <div className={t.container}>
         <div className={t.toolbar}>
-          <div className={t.viewToggle} role="group" aria-label="Category view mode">
-            <button className={t.viewButton} type="button" onClick={() => setView("list")} aria-pressed={view === "list"}>
-              <Icon name="list" size={15} />
-              List
-            </button>
-            <button className={t.viewButton} type="button" onClick={() => setView("grid")} aria-pressed={view === "grid"}>
-              <Icon name="grid" size={15} />
-              Grid
-            </button>
+          <div className={t.search}>
+            <span className={t.searchIcon}>
+              <Icon name="search" size={15} />
+            </span>
+            <input
+              className={t.searchInput}
+              type="search"
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+              placeholder="Search by name or slug"
+              aria-label="Search categories"
+            />
           </div>
-
-          <button className={t.primary} type="button" onClick={openCreate}>
-            <Icon name="plus" size={15} />
-            Add category
-          </button>
         </div>
 
         <AnimatePresence initial={false}>
@@ -379,7 +352,7 @@ export default function CategoriesView({
               </>
             )}
           </div>
-        ) : view === "list" ? (
+        ) : (
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
@@ -445,40 +418,6 @@ export default function CategoriesView({
                 ))}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <div className={t.grid}>
-            {visible.map((row, index) => (
-              <article
-                key={row.id}
-                className={`${t.card} ${t.enter}`}
-                style={{ "--i": Math.min(index, STAGGER_LIMIT) } as React.CSSProperties}
-                data-selected={selected.has(row.id)}
-              >
-                <div className={t.cardHead}>
-                  <input
-                    className={t.checkbox}
-                    type="checkbox"
-                    checked={selected.has(row.id)}
-                    onChange={() => toggle(row.id)}
-                    aria-label={`Select “${row.name}”`}
-                  />
-                  <span className={t.cardIdentity}>
-                    <span className={styles.name}>{row.name}</span>
-                    <span className={t.cardMeta}>/{row.slug}</span>
-                  </span>
-                </div>
-
-                {row.description && <p className={styles.cardDescription}>{row.description}</p>}
-
-                <div className={t.cardFoot}>
-                  <span className={styles.count}>
-                    {dateFormat.format(new Date(row.createdAt))}
-                  </span>
-                  {rowActions(row)}
-                </div>
-              </article>
-            ))}
           </div>
         )}
       </div>

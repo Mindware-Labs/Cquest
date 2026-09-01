@@ -61,10 +61,11 @@
 
 /* Panel flotante: sombra ambiental, la única elevación real del control. */
 .panel {
-  position: absolute;
+  /* fixed (no absolute): así queda fuera del cálculo de overflow del
+     <dialog> que lo contiene y no le dispara scroll a la modal. La
+     posición (top/bottom/left/width) la calcula el JS del componente. */
+  position: fixed;
   z-index: 30;
-  left: 0;
-  min-width: 100%;
   margin: 0;
   padding: 0.25rem;
   list-style: none;
@@ -73,15 +74,13 @@
   background: var(--surface-raised);
   box-shadow: 0 18px 44px -20px rgba(10, 17, 22, 0.4);
   transform-origin: top center;
+  max-height: 13.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .panel[data-drop="up"] {
-  bottom: calc(100% + 0.35rem);
   transform-origin: bottom center;
-}
-
-.panel[data-drop="down"] {
-  top: calc(100% + 0.35rem);
 }
 
 /* Cerrando: se desmonta un instante después, disolviéndose en vez de
@@ -150,10 +149,12 @@
   transform: scale(1);
 }
 
+/* Sin opacity: 0 en el "from" — a full dip a invisible antes de repintar se
+   ve como un parpadeo. El texto queda siempre visible; solo asienta su
+   posición. */
 @keyframes labelIn {
   from {
-    opacity: 0;
-    transform: translateY(2px);
+    transform: translateY(3px);
   }
 }
 

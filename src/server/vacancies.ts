@@ -1,7 +1,7 @@
 "use server";
 
 import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
 import { vacancy } from "@/db/schema/careers";
@@ -262,6 +262,10 @@ export async function createVacancyDraft(input: VacancyInput): Promise<ActionRes
     .returning({ id: vacancy.id });
 
   revalidateTag("vacancies", "max");
+  // db.select() no pasa por el fetch cache de Next: revalidatePath es lo que
+  // de verdad saca la vacante (o su baja) del listado público, igual que
+  // /team con revalidatePath en src/server/departments.ts.
+  revalidatePath("/join-us");
   return { ok: true, data: { id: created[0].id } };
 }
 
@@ -303,6 +307,7 @@ export async function saveVacancy(id: string, input: VacancyInput): Promise<Acti
   }
 
   revalidateTag("vacancies", "max");
+  revalidatePath("/join-us");
   return { ok: true };
 }
 
@@ -357,6 +362,7 @@ export async function publishVacancy(
   }
 
   revalidateTag("vacancies", "max");
+  revalidatePath("/join-us");
   return { ok: true };
 }
 
@@ -372,6 +378,7 @@ export async function setVacancyStatus(id: string, status: VacancyStatus): Promi
     if (done.length === 0) return { ok: false, message: "That vacancy no longer exists." };
 
     revalidateTag("vacancies", "max");
+    revalidatePath("/join-us");
     return { ok: true };
   }
 
@@ -420,6 +427,7 @@ export async function setVacancyStatus(id: string, status: VacancyStatus): Promi
   }
 
   revalidateTag("vacancies", "max");
+  revalidatePath("/join-us");
   return { ok: true };
 }
 
@@ -432,5 +440,6 @@ export async function deleteVacancies(ids: string[]): Promise<ActionResult> {
   await db.delete(vacancy).where(inArray(vacancy.id, valid));
 
   revalidateTag("vacancies", "max");
+  revalidatePath("/join-us");
   return { ok: true };
 }

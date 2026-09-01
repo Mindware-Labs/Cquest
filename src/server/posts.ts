@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -105,6 +105,11 @@ function isUniqueViolation(error: unknown): boolean {
   return (error as { cause?: { code?: string } })?.cause?.code === "23505";
 }
 
+// El backslash es el escape por defecto de LIKE en Postgres.
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 // Un slug repetido no debe frenar al autor: se desambigua solo.
 async function freeSlug(base: string, ignoreId?: string): Promise<string> {
   const root = slugify(base) || "articulo";
@@ -125,6 +130,7 @@ export type PostListQuery = {
   perPage?: number;
   sortKey?: "title" | "updatedAt";
   sortDir?: "asc" | "desc";
+  query?: string;
 };
 
 export type PostListPage = {
@@ -145,7 +151,21 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
   const column = query.sortKey === "title" ? post.title : post.updatedAt;
   const direction = query.sortDir === "asc" ? asc : desc;
 
-  const [{ total }] = await db.select({ total: count() }).from(post);
+  const needle = query.query?.trim();
+  // Busca por título o categoría: son las dos columnas de texto que se ven
+  // en la tabla, igual que en /admin/vacancies (título + departamento).
+  const where = needle
+    ? or(
+        ilike(post.title, `%${escapeLike(needle)}%`),
+        ilike(category.name, `%${escapeLike(needle)}%`),
+      )
+    : undefined;
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(post)
+    .leftJoin(category, eq(post.categoryId, category.id))
+    .where(where);
 
   // Pedir una página que ya no existe (tras borrar) devolvería una tabla vacía.
   const pages = Math.max(1, Math.ceil(total / perPage));
@@ -166,6 +186,7 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
     .from(post)
     .leftJoin(category, eq(post.categoryId, category.id))
     .leftJoin(user, eq(post.authorId, user.id))
+    .where(where)
     /* Desempate por id: sin un orden total, dos filas con el mismo timestamp
        pueden cambiar de sitio entre páginas y una se vería dos veces. */
     .orderBy(direction(column), desc(post.id))

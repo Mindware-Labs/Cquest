@@ -1,0 +1,326 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    border-color 0.18s var(--ease-out),
+    box-shadow 0.18s var(--ease-out);
+}
+
+.trigger:hover {
+  background: var(--surface-sunken);
+}
+
+.trigger[aria-expanded="true"] {
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.trigger svg {
+  flex: none;
+  color: var(--text-tertiary);
+}
+
+.triggerText[data-empty] {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+/* ---------- Panel flotante ---------- */
+
+/* fixed (no absolute): igual que Select.tsx — dentro de un <dialog> con
+   overflow-y:auto no cuenta como contenido desbordado, así que no le
+   dispara scroll a la modal. Posición calculada por el componente. */
+.panel {
+  position: fixed;
+  z-index: 30;
+  width: 19rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+  box-shadow: 0 18px 44px -20px rgba(10, 17, 22, 0.4);
+  transform-origin: top center;
+  animation: openDown 0.16s var(--ease-out);
+}
+
+.panel[data-drop="up"] {
+  transform-origin: bottom center;
+}
+
+.panel[data-state="closing"] {
+  pointer-events: none;
+  animation: closeDown 0.14s var(--ease-out) forwards;
+}
+
+.panel[data-drop="up"][data-state="closing"] {
+  animation-name: closeUp;
+}
+
+.panel[data-drop="up"] {
+  animation-name: openUp;
+}
+
+/* ---------- Calendario ---------- */
+
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.calTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.navBtn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.16s var(--ease-out), background 0.16s var(--ease-out);
+}
+
+.navBtn:hover {
+  color: var(--brand-petroleo);
+  background: var(--surface-sunken);
+}
+
+.navBtn:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 0.7rem;
+  padding-bottom: 0.3rem;
+}
+
+.weekdays span {
+  display: grid;
+  place-items: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.dayGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 0.15rem;
+}
+
+.day {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.14s var(--ease-out), color 0.14s var(--ease-out), border-color 0.14s var(--ease-out);
+}
+
+.day[data-in-month] {
+  color: var(--foreground);
+}
+
+.day:hover {
+  background: var(--surface-sunken);
+}
+
+.day[aria-current="date"] {
+  border-color: var(--brand-petroleo);
+}
+
+.day[data-selected] {
+  border-color: var(--brand-petroleo);
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-weight: 700;
+}
+
+.day:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Hora ---------- */
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.timeLabel {
+  margin-right: 0.1rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.timeSep {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Pie ---------- */
+
+.panelFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
+
+.panelFootRight {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.textBtn {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--brand-petroleo);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s var(--ease-out), color 0.16s var(--ease-out);
+}
+
+.textBtn:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.textBtn:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.textBtn:focus-visible,
+.doneBtn:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.doneBtn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s var(--ease-out), border-color 0.18s var(--ease-out);
+}
+
+.doneBtn:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+@keyframes openDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.97);
+  }
+}
+
+@keyframes openUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scaleY(0.97);
+  }
+}
+
+@keyframes closeDown {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.97);
+  }
+}
+
+@keyframes closeUp {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scaleY(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .navBtn,
+  .day,
+  .textBtn,
+  .doneBtn {
+    transition: none;
+  }
+
+  .panel {
+    animation: none;
+  }
+
+  /* No "animation: none" en el cierre: el componente espera el evento
+     animationend para terminar de desmontar el panel (mismo motivo que en
+     ListField.module.css). Una animación de 1ms no se ve, pero sigue
+     disparando ese evento. */
+  .panel[data-state="closing"] {
+    animation-duration: 1ms;
+  }
+}

@@ -29,6 +29,15 @@
   flex-direction: column;
 }
 
+/* A partir de ~5 líneas deja de estirar el formulario: scrollea dentro de su
+   propio rectángulo, mismo tope que el panel del Select en esta misma modal. */
+.listRows[data-capped] {
+  max-height: 13.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.35rem;
+}
+
 /* Grid de una sola pista: al quitar una fila se anima 1fr → 0fr en vez de
    desmontarla de golpe, mismo truco que la barra de selección de las tablas. */
 .listRow {

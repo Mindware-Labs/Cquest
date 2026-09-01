@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
-import { useTableParams } from "@/components/admin/useTableParams";
+import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
 import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
@@ -64,6 +64,13 @@ function StatusDot({ shape }: { shape: "full" | "half" | "ring" }) {
 function Icon({ name }: { name: string }) {
   const c = { width: 14, height: 14, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
   switch (name) {
+    case "search":
+      return (
+        <svg {...c} width={16} height={16} aria-hidden="true">
+          <circle cx="7.1" cy="7.1" r="4.5" />
+          <path d="m10.5 10.5 3 3" strokeLinecap="round" />
+        </svg>
+      );
     case "clock":
       return (
         <svg {...c} aria-hidden="true">
@@ -167,12 +174,23 @@ type Props = {
   perPage: number;
   sortKey: SortKey;
   sortDir: SortDir;
+  query: string;
 };
 
-export default function PostsTable({ rows, total, page, perPage, sortKey, sortDir }: Props) {
+export default function PostsTable({ rows, total, page, perPage, sortKey, sortDir, query }: Props) {
   const toast = useToast();
   const router = useRouter();
   const { pending, setParams } = useTableParams();
+  const [text, setText] = useDebouncedSearch(query, (next) => navigate({ q: next || null, page: 1 }));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  /* Cada cambio de página, orden o búsqueda es una navegación: el servidor
+     vuelve a consultar con los parámetros nuevos y devuelve solo esas filas. */
+  function navigate(next: Record<string, string | number | null>) {
+    setSelected(new Set());
+    setParams(next);
+  }
+
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -212,17 +230,9 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     setPendingIds([]);
     router.refresh();
   }
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+
   const allRef = useRef<HTMLInputElement>(null);
-
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-
-  /* Cada cambio de página u orden es una navegación: el servidor vuelve a
-     consultar con los parámetros nuevos y devuelve solo esas filas. */
-  function navigate(next: Record<string, string | number>) {
-    setSelected(new Set());
-    setParams(next);
-  }
 
   const allChecked = rows.length > 0 && rows.every((row) => selected.has(row.id));
   const someChecked = selected.size > 0 && !allChecked;
@@ -270,6 +280,22 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
   return (
     <>
       <div className={styles.container}>
+      <div className={t.toolbar}>
+        <div className={t.search}>
+          <span className={t.searchIcon}>
+            <Icon name="search" />
+          </span>
+          <input
+            className={t.searchInput}
+            type="search"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Search by title or category"
+            aria-label="Search articles"
+          />
+        </div>
+      </div>
+
       {selected.size > 0 && (
         <div className={styles.bulk}>
           <div className={styles.bulkInner}>
@@ -343,7 +369,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
             {rows.length === 0 && (
               <tr>
                 <td className={styles.empty} colSpan={6}>
-                  No articles yet. Create the first one from “New article”.
+                  {query ? `No article matches “${query}”.` : "No articles yet. Create the first one from “New article”."}
                 </td>
               </tr>
             )}

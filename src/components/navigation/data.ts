@@ -22,6 +22,7 @@ export const DARK_HERO_PAGES = [
   "/partnerships/mindware-labs",
 
   "/location",
+  "/join-us",
 ] as const;
 
 /* Árboles de rutas cuyas páginas abren todas con hero oscuro, comparados por
@@ -69,6 +70,7 @@ export function getNavLinks(): readonly NavLink[] {
        #why-us, no a #about, para que las dos barras lleven al mismo sitio. */
     { label: dict.hero.navLinks.whyUs, href: "/#why-us" },
     { label: dict.nav.blog, href: "/blog" },
+    { label: dict.nav.joinUs, href: "/join-us" },
   ];
 }
 
@@ -84,6 +86,7 @@ function getLegalNavLinks(): readonly NavLink[] {
     { label: dict.hero.navLinks.team, href: "/team" },
     { label: dict.nav.sectors, href: "/#sectors" },
     { label: dict.nav.blog, href: "/blog" },
+    { label: dict.nav.joinUs, href: "/join-us" },
   ];
 }
 
@@ -129,6 +132,11 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
     "/team": [
       home,
       { label: dict.serviceSections.team.departments, href: "#departments" },
+    ],
+
+    "/join-us": [
+      home,
+      { label: dict.serviceSections.joinUs.openings, href: "#openings" },
     ],
 
     "/partnerships/mindware-labs": [

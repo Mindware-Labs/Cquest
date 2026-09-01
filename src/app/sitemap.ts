@@ -28,6 +28,7 @@ const ROUTES: ReadonlyArray<{ path: string; sources: readonly string[] }> = [
   { path: "/services/systems", sources: ["src/app/(site)/services/systems"] },
   { path: "/services/systems/work", sources: ["src/app/(site)/services/systems/work"] },
   { path: "/team", sources: ["src/app/(site)/team"] },
+  { path: "/join-us", sources: ["src/app/(site)/join-us", "src/lib/vacancies.ts"] },
   { path: "/quote", sources: ["src/app/(site)/quote"] },
   {
     path: "/location",

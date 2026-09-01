@@ -34,6 +34,10 @@ type Props = {
   items: string[];
   onChange: (next: string[]) => void;
   error?: string;
+  // Para listas que pueden crecer mucho (ver el asistente de vacantes): el
+  // bloque deja de estirarse a partir de ~5 líneas y esas pasan a scrollear
+  // dentro de su propio rectángulo, en vez de alargar el formulario entero.
+  capped?: boolean;
 };
 
 /* Lista editable de líneas de texto: responsabilidades, requisitos y
@@ -50,7 +54,7 @@ type Props = {
    durante el render, y la key de cada fila se decide ahí. Enfocar la fila
    recién creada tampoco espera un efecto — flushSync aplica el nuevo estado
    ya mismo para poder enfocar el input apenas existe en el DOM. */
-export default function ListField({ label, help, placeholder, items, onChange, error }: Props) {
+export default function ListField({ label, help, placeholder, items, onChange, error, capped }: Props) {
   const helpId = useId();
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const nextIdRef = useRef(items.length);
@@ -127,7 +131,7 @@ export default function ListField({ label, help, placeholder, items, onChange, e
       )}
 
       {items.length > 0 && (
-        <div className={styles.listRows}>
+        <div className={styles.listRows} data-capped={capped ? "" : undefined}>
           {items.map((line, index) => (
             <div
               className={styles.listRow}

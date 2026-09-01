@@ -13,6 +13,7 @@ export interface Dictionary {
     sectors: string;
     team: string;
     blog: string;
+    joinUs: string;
     contact: string;
     home: string;
     overview: string;
@@ -26,6 +27,7 @@ export interface Dictionary {
     bpo: { disciplines: string; method: string; slas: string; facilities: string };
     systems: { capabilities: string; method: string; commitments: string; work: string };
     team: { departments: string };
+    joinUs: { openings: string };
   };
   footer: {
     tagline: string;
@@ -128,6 +130,7 @@ export const dict: Dictionary = {
     sectors: "Sectors",
     team: "Team",
     blog: "Blog",
+    joinUs: "Join us",
     contact: "Contact",
     home: "Home",
     overview: "Overview",
@@ -141,6 +144,7 @@ export const dict: Dictionary = {
     bpo: { disciplines: "Disciplines", method: "Method", slas: "SLAs", facilities: "Facilities" },
     systems: { capabilities: "Capabilities", method: "Method", commitments: "Commitments", work: "Work" },
     team: { departments: "Departments" },
+    joinUs: { openings: "Open positions" },
   },
   footer: {
     tagline: "Call Center · Operations · Systems Development",

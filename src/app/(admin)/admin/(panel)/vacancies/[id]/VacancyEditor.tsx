@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import DateTimePicker from "@/components/admin/DateTimePicker";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import { useToast } from "@/components/admin/Toaster";
@@ -40,6 +41,24 @@ const EMPLOYMENT_OPTIONS = [
   { value: "part-time", label: "Part time" },
 ];
 
+const SCHEDULE_PRESETS = [
+  "Mon–Fri, business hours",
+  "Rotating shifts, 5 days a week",
+  "Rotating shifts, 6 days a week",
+  "24/7 coverage, rotating shifts",
+  "Weekends included",
+];
+
+// Sentinel, no un horario real: separa "no encontré el mío" de un valor que
+// termine guardándose tal cual en el campo de texto libre.
+const CUSTOM_SCHEDULE = "__custom__";
+
+const SCHEDULE_OPTIONS = [
+  { value: "", label: "Not set" },
+  ...SCHEDULE_PRESETS.map((s) => ({ value: s, label: s })),
+  { value: CUSTOM_SCHEDULE, label: "Custom…" },
+];
+
 // El input datetime-local trabaja en hora local del navegador, no en UTC.
 function toLocalInputValue(iso: string | null): string {
   if (!iso) return "";
@@ -52,6 +71,21 @@ function fromLocalInputValue(value: string): string | null {
   if (!value) return null;
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function formatPublishDate(iso: string): string {
+  const d = new Date(iso);
+  const datePart = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(d);
+  const timePart = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).format(d);
+  return `${datePart} · ${timePart}`;
+}
+
+// Crece con el texto en vez de scrollear adentro de una caja chica: se
+// resetea a "auto" antes de medir para que también se achique al borrar.
+function autosize(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
 }
 
 function Icon({ name, size = 16 }: { name: string; size?: number }) {
@@ -99,7 +133,6 @@ export default function VacancyEditor({
   const summaryId = useId();
   const locationId = useId();
   const scheduleId = useId();
-  const scheduledAtId = useId();
   const blockedId = useId();
 
   const departmentOptions = [
@@ -115,6 +148,11 @@ export default function VacancyEditor({
   const [employmentType, setEmploymentType] = useState(vacancy.employmentType ?? "");
   const [location, setLocation] = useState(vacancy.location);
   const [schedule, setSchedule] = useState(vacancy.schedule);
+  // Un horario ya guardado que no calza con ningún preset (dato histórico,
+  // o texto libre de antes de este cambio) abre directo en modo "Custom…".
+  const [scheduleChoice, setScheduleChoice] = useState(
+    vacancy.schedule === "" || SCHEDULE_PRESETS.includes(vacancy.schedule) ? vacancy.schedule : CUSTOM_SCHEDULE,
+  );
   const [responsibilities, setResponsibilities] = useState<string[]>(
     vacancy.responsibilities.length ? vacancy.responsibilities : [""],
   );
@@ -152,6 +190,15 @@ export default function VacancyEditor({
   function handleWorkModeChange(next: string) {
     setWorkMode(next);
     if (next === "remote" && location.trim() === "") setLocation(REMOTE_LOCATION);
+    setDirty(true);
+  }
+
+  // Elegir un preset lo guarda tal cual; elegir "Custom…" solo cambia de
+  // modo — deja el texto como esté, así el preset anterior sirve de punto de
+  // partida en vez de forzar a escribir desde cero.
+  function handleScheduleChange(next: string) {
+    setScheduleChoice(next);
+    if (next !== CUSTOM_SCHEDULE) setSchedule(next);
     setDirty(true);
   }
 
@@ -240,6 +287,11 @@ export default function VacancyEditor({
     return Boolean(iso && new Date(iso).getTime() > now);
   })();
 
+  // A propósito lee vacancy.publishedAt (lo ya guardado), no scheduledAt (lo
+  // que se esté editando sin guardar todavía): la nota de estado dice lo que
+  // ES ahora mismo, no lo que va a pasar si tocan "Update publication".
+  const publishedFuture = Boolean(vacancy.publishedAt && new Date(vacancy.publishedAt).getTime() > now);
+
   return (
     <div className={styles.page}>
       <header className={styles.bar}>
@@ -321,9 +373,13 @@ export default function VacancyEditor({
           </label>
           <textarea
             id={summaryId}
+            ref={autosize}
             className={styles.textarea}
             value={summary}
-            onChange={(event) => touch(setSummary)(event.target.value)}
+            onChange={(event) => {
+              touch(setSummary)(event.target.value);
+              autosize(event.target);
+            }}
             rows={4}
             maxLength={600}
             placeholder="One or two sentences a candidate reads first — what the role does and who it serves."
@@ -434,31 +490,45 @@ export default function VacancyEditor({
               </span>
             )}
 
-            <label className={styles.label} htmlFor={scheduleId}>
+            <span className={styles.label}>
               Schedule <span className={styles.optional}>optional</span>
-            </label>
-            <input
-              id={scheduleId}
-              className={styles.input}
-              value={schedule}
-              onChange={(event) => touch(setSchedule)(event.target.value)}
-              placeholder="Rotating shifts, 5 days a week"
-            />
+            </span>
+            <Select value={scheduleChoice} options={SCHEDULE_OPTIONS} onChange={handleScheduleChange} label="Schedule" width="100%" />
+            {scheduleChoice === CUSTOM_SCHEDULE && (
+              <>
+                <label className={styles.label} htmlFor={scheduleId}>
+                  Custom schedule
+                </label>
+                <input
+                  id={scheduleId}
+                  className={styles.input}
+                  value={schedule}
+                  onChange={(event) => touch(setSchedule)(event.target.value)}
+                  placeholder="Describe the schedule for this role"
+                  autoFocus
+                />
+              </>
+            )}
           </section>
 
           <section className={styles.panel}>
             <h2 className={styles.panelTitle}>Publishing</h2>
 
-            <label className={styles.label} htmlFor={scheduledAtId}>
+            {/* Dice lo que YA es cierto (guardado), no lo que el campo de
+                abajo va a hacer si lo tocan — así queda claro si esto ya se
+                publicó/agendó, no solo la fecha en un campo editable suelto. */}
+            {status === "published" && vacancy.publishedAt && (
+              <span className={styles.publishNote} data-scheduled={publishedFuture ? "" : undefined}>
+                {publishedFuture
+                  ? `Scheduled — goes live on Join Us on ${formatPublishDate(vacancy.publishedAt)}.`
+                  : `Live on Join Us since ${formatPublishDate(vacancy.publishedAt)}.`}
+              </span>
+            )}
+
+            <span className={styles.label}>
               Scheduled for <span className={styles.optional}>optional</span>
-            </label>
-            <input
-              id={scheduledAtId}
-              className={styles.input}
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(event) => touch(setScheduledAt)(event.target.value)}
-            />
+            </span>
+            <DateTimePicker value={scheduledAt} onChange={touch(setScheduledAt)} label="Scheduled for" width="100%" />
             <span className={styles.help}>
               Leave empty to publish immediately. A future date keeps it off Join Us and shows it as
               “Scheduled” here until that moment.

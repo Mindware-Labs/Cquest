@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import styles from "./Select.module.css";
 
 export type SelectOption = { value: string; label: string };
@@ -28,12 +28,22 @@ export default function Select({ value, options, onChange, label, width }: Props
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(selectedIndex);
   const [drop, setDrop] = useState<"down" | "up">("down");
+  // Posición en viewport: el panel es position:fixed (no absolute) para que,
+  // dentro de un <dialog>, no cuente como contenido desbordado del modal y
+  // le dispare su propio scroll — solo el panel scrollea, no la modal.
+  const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   // El panel se cierra con una animación propia en vez de desmontarse de
   // golpe: se queda pintado un instante más mientras se desvanece.
   const [closing, setClosing] = useState(false);
   const wasOpenRef = useRef(false);
 
-  useEffect(() => {
+  // useLayoutEffect (no useEffect): tiene que decidir si el panel sigue
+  // montado ANTES de que el navegador pinte. Con useEffect hay un frame de
+  // por medio donde open ya es false y closing todavía no es true — el panel
+  // se desmonta de golpe y vuelve a aparecer al iniciar el cierre, lo que se
+  // ve como un parpadeo (más notorio al seleccionar, porque coincide con el
+  // cambio de texto del trigger).
+  useLayoutEffect(() => {
     if (open) {
       wasOpenRef.current = true;
       setClosing(false);
@@ -46,18 +56,27 @@ export default function Select({ value, options, onChange, label, width }: Props
   useEffect(() => {
     if (!open) return;
 
-    // Si abajo no cabe, abre hacia arriba: en el pie de página siempre pasa.
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (rect) {
+    function reposition() {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setCoords({ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width });
+      // Si abajo no cabe, abre hacia arriba: en el pie de página siempre pasa.
       const needed = Math.min(options.length, 6) * 34 + 16;
       setDrop(window.innerHeight - rect.bottom < needed ? "up" : "down");
     }
+    reposition();
 
     const onPointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
     };
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    window.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
+    };
   }, [open, options.length]);
 
   const showPanel = open || closing;
@@ -141,7 +160,7 @@ export default function Select({ value, options, onChange, label, width }: Props
         </svg>
       </button>
 
-      {showPanel && (
+      {showPanel && coords && (
         <ul
           className={styles.panel}
           id={listId}
@@ -149,6 +168,13 @@ export default function Select({ value, options, onChange, label, width }: Props
           aria-label={label}
           data-drop={drop}
           data-state={closing ? "closing" : "open"}
+          style={{
+            left: coords.left,
+            minWidth: coords.width,
+            ...(drop === "down"
+              ? { top: coords.bottom + 6 }
+              : { bottom: window.innerHeight - coords.top + 6 }),
+          }}
           onAnimationEnd={() => {
             if (closing) setClosing(false);
           }}

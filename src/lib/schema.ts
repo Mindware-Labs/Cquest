@@ -156,6 +156,46 @@ export function servicePageGraph(serviceId: string) {
   );
 }
 
+/* Una vacante publicada. Sin validThrough ni baseSalary: nadie los da, y un
+   dato inventado en JobPosting es la misma penalización esperando que ya
+   evita organizationNode más arriba. jobLocationType solo para remoto —
+   Google exige uno de los dos (ese campo o jobLocation), nunca ambos. */
+export function jobPostingNode(vacancy: {
+  slug: string;
+  title: string;
+  summary: string;
+  workMode: "onsite" | "hybrid" | "remote" | null;
+  employmentType: "full-time" | "part-time" | null;
+  location: string | null;
+  publishedAt: string;
+}) {
+  const remote = vacancy.workMode === "remote";
+  return {
+    "@type": "JobPosting",
+    "@id": `${SITE_URL}/join-us#${vacancy.slug}`,
+    title: vacancy.title,
+    description: vacancy.summary || vacancy.title,
+    datePosted: vacancy.publishedAt,
+    employmentType: vacancy.employmentType === "part-time" ? "PART_TIME" : "FULL_TIME",
+    hiringOrganization: { "@id": ORG_ID },
+    ...(remote
+      ? {
+          jobLocationType: "TELECOMMUTE",
+          applicantLocationRequirements: { "@type": "Country", name: "Dominican Republic" },
+        }
+      : {
+          jobLocation: {
+            "@type": "Place",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: vacancy.location || CONTACT.city,
+              addressCountry: CONTACT.countryCode,
+            },
+          },
+        }),
+  };
+}
+
 /* Páginas sin una entidad propia que modelar (contacto, equipo, legal): un
    WebPage/AboutPage/ContactPage mínimo que solo referencia el negocio y el
    sitio por @id, en vez de dejarlas sin dato estructurado alguno. */

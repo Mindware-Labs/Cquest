@@ -7,7 +7,9 @@ type Props = {
   open: boolean;
   onClose: () => void;
   eyebrow: string;
-  title: string;
+  // ReactNode, no string: algunos llamadores (el asistente de vacantes)
+  // necesitan meter un control junto al título, como el ícono de "volver".
+  title: React.ReactNode;
   width?: string;
   children: React.ReactNode;
 };

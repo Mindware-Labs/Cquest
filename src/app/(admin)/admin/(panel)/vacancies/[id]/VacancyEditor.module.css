@@ -222,8 +222,12 @@
   min-height: 2.5rem;
 }
 
+/* Crece con el texto (ver autosize() en VacancyEditor.tsx) en vez de
+   scrollear adentro de una caja de alto fijo — el resize manual queda
+   redundante y peleaba con eso, así que se quita. */
 .textarea {
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
 }
 
 .input:focus,
@@ -242,6 +246,26 @@
   font-size: 0.74rem;
   line-height: 1.5;
   color: var(--text-tertiary);
+}
+
+/* Verde = ya está en vivo (mismo tono que .status[data-state="published"]);
+   petroleo = agendado, todavía pendiente de esa fecha. */
+.publishNote {
+  display: block;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--brand-verde) 30%, var(--border));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--brand-verde) 8%, var(--surface-raised));
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--brand-verde) 65%, var(--foreground));
+}
+
+.publishNote[data-scheduled] {
+  border-color: color-mix(in srgb, var(--brand-petroleo) 30%, var(--border));
+  background: color-mix(in srgb, var(--brand-petroleo) 8%, var(--surface-raised));
+  color: color-mix(in srgb, var(--brand-petroleo) 75%, var(--foreground));
 }
 
 .fieldError {
