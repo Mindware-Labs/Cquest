@@ -7,6 +7,7 @@ import ServiceIcon from "@/components/services/ServiceIcon";
 import type { ServiceIconName } from "@/components/services/data";
 import { EASE_OUT } from "@/components/services/motion";
 import { TransitionLink } from "@/components/TransitionLink";
+import { formatPhone } from "@/lib/formatPhone";
 import type { ApplyDepartment } from "./ApplyExperience";
 import {
   AVAILABILITY_OPTIONS,
@@ -500,11 +501,11 @@ export default function ApplicationForm({
             inputMode="tel"
             label="Phone / WhatsApp"
             value={values.phone}
-            onChange={(next) => set("phone", next)}
+            onChange={(next) => set("phone", formatPhone(next))}
             onBlur={() => touch("phone")}
             error={visible("phone")}
             autoComplete="tel"
-            placeholder="(809) 000-0000"
+            placeholder="809-000-0000"
           />
           <TextField
             id={`${uid}-city`}

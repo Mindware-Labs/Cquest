@@ -1,6 +1,7 @@
 "use client";
 
 import ServiceIcon from "@/components/services/ServiceIcon";
+import { formatPhone } from "@/lib/formatPhone";
 import type { Choice, Question } from "../data";
 import styles from "./fields.module.css";
 import { Alert } from "./icons";
@@ -84,22 +85,6 @@ const AUTOCOMPLETE: Record<string, string> = {
   email: "email",
   phone: "tel",
 };
-
-function formatPhone(raw: string): string {
-  let digits = raw.replace(/\D/g, "");
-  let prefix = "";
-  if (digits.length > 10 && digits.startsWith("1")) {
-    prefix = "+1 ";
-    digits = digits.slice(1);
-  }
-  digits = digits.slice(0, 10);
-  const groups = [
-    digits.slice(0, 3),
-    digits.slice(3, 6),
-    digits.slice(6, 10),
-  ].filter(Boolean);
-  return prefix + groups.join("-");
-}
 
 export function Field({
   field,

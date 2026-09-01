@@ -9,14 +9,6 @@
   box-shadow: 0 32px 64px -48px rgba(13, 30, 41, 0.4);
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--brand-petroleo), var(--brand-celeste));
-}
-
 .honeypot {
   position: absolute;
   left: -9999px;

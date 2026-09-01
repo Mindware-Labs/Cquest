@@ -10,7 +10,6 @@ import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
 import { useToast } from "@/components/admin/Toaster";
 import { deleteVacancies, setVacancyStatus, type VacancyListRow } from "@/server/vacancies";
-import VacancyApplicantsModal from "./VacancyApplicantsModal";
 import styles from "./VacanciesTable.module.css";
 
 type Badge = "published" | "scheduled" | "draft" | "hidden";
@@ -174,7 +173,6 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
-  const [applicantsFor, setApplicantsFor] = useState<VacancyListRow | null>(null);
 
   async function toggleVisibility(row: VacancyListRow) {
     setBusy(true);
@@ -392,9 +390,9 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
 
                       <td className={styles.td}>
                         {row.applications > 0 ? (
-                          <button className={styles.applicants} type="button" onClick={() => setApplicantsFor(row)}>
+                          <Link className={styles.applicants} href={`/admin/applications?vacancy=${row.id}`}>
                             {row.applications} {row.applications === 1 ? "applicant" : "applicants"}
-                          </button>
+                          </Link>
                         ) : (
                           <span className={styles.applicantsNone}>—</span>
                         )}
@@ -533,13 +531,6 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
           </button>
         </div>
       </Modal>
-
-      <VacancyApplicantsModal
-        vacancyId={applicantsFor?.id ?? ""}
-        vacancyTitle={applicantsFor?.title ?? ""}
-        open={applicantsFor !== null}
-        onClose={() => setApplicantsFor(null)}
-      />
     </>
   );
 }
