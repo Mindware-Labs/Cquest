@@ -35,6 +35,13 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
         ],
       },
+      {
+        /* El panel previsualiza el CV en un <iframe> same-origin
+           (ApplicationDetail.tsx). DENY global bloquea ese frame aunque
+           sea del mismo sitio, así que esta ruta necesita SAMEORIGIN. */
+        source: "/api/admin/applications/:id/resume",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+      },
     ];
   },
   images: {
