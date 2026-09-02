@@ -8,11 +8,17 @@ type Props = {
   // Mismo contrato que <input type="datetime-local">: "" o "yyyy-MM-ddTHH:mm"
   // en hora local, sin zona horaria. Reemplazo directo, sin tocar los
   // conversores a ISO que ya tiene cada pantalla (fromLocalInputValue).
+  // Con showTime=false el valor es solo "yyyy-MM-dd", como <input type="date">.
   value: string;
   onChange: (value: string) => void;
   label: string;
   width?: string;
   autoFocus?: boolean;
+  showTime?: boolean;
+  placeholder?: string;
+  // Mismo formato que value: acotan qué días se pueden elegir en la grilla.
+  min?: string;
+  max?: string;
 };
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -28,18 +34,29 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
+// "yyyy-MM-dd" a secas se parsea aparte, a mano: new Date("2026-01-15") lo
+// lee como medianoche UTC, y en un huso negativo (República Dominicana,
+// UTC-4) eso cae en el día anterior en hora local — el mismo día que
+// selecciona la grilla se mostraría corrido.
 function parseValue(value: string): Date | null {
   if (!value) return null;
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (dateOnly) return new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function toValue(date: Date): string {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+function toValue(date: Date, showTime: boolean): string {
+  const base = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return showTime ? `${base}T${pad(date.getHours())}:${pad(date.getMinutes())}` : base;
 }
 
 function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function dayOnly(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function monthGrid(year: number, month: number): Date[] {
@@ -48,9 +65,10 @@ function monthGrid(year: number, month: number): Date[] {
   return Array.from({ length: 42 }, (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i));
 }
 
-function formatTrigger(date: Date | null): string {
-  if (!date) return "Not scheduled";
+function formatTrigger(date: Date | null, showTime: boolean, placeholder: string): string {
+  if (!date) return placeholder;
   const datePart = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date);
+  if (!showTime) return datePart;
   const timePart = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).format(date);
   return `${datePart} · ${timePart}`;
 }
@@ -81,13 +99,29 @@ function Icon({ name }: { name: "calendar" | "chevronLeft" | "chevronRight" }) {
    selector que pinta el sistema operativo, imposible de estilar (mismo
    problema que resolvió Select.tsx para el <select>). Reutiliza ese mismo
    componente para hora y minuto, en vez de reinventar otro listbox. */
-export default function DateTimePicker({ value, onChange, label, width, autoFocus }: Props) {
+export default function DateTimePicker({
+  value,
+  onChange,
+  label,
+  width,
+  autoFocus,
+  showTime = true,
+  placeholder = "Not scheduled",
+  min,
+  max,
+}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dayRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panelId = useId();
 
   const selected = parseValue(value);
+  const minDay = min ? dayOnly(parseValue(min)!) : null;
+  const maxDay = max ? dayOnly(parseValue(max)!) : null;
+  const isOutOfRange = (date: Date) => {
+    const d = dayOnly(date);
+    return Boolean((minDay && d < minDay) || (maxDay && d > maxDay));
+  };
   // Fijado una vez al montar: leer el reloj en cada render es una llamada
   // impura durante el render (mismo criterio que en NewVacancyModal/VacancyEditor).
   const [today] = useState(() => new Date());
@@ -163,25 +197,27 @@ export default function DateTimePicker({ value, onChange, label, width, autoFocu
   }
 
   function selectDay(date: Date) {
-    const h = selected ? selected.getHours() : 9;
-    const m = selected ? selected.getMinutes() : 0;
-    onChange(toValue(new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m)));
+    if (isOutOfRange(date)) return;
+    const h = showTime && selected ? selected.getHours() : 9;
+    const m = showTime && selected ? selected.getMinutes() : 0;
+    onChange(toValue(new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m), showTime));
   }
 
   function setHour(h: string) {
     const base = selected ?? today;
-    onChange(toValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), Number(h), base.getMinutes())));
+    onChange(toValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), Number(h), base.getMinutes()), true));
   }
 
   function setMinute(m: string) {
     const base = selected ?? today;
-    onChange(toValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), base.getHours(), Number(m))));
+    onChange(toValue(new Date(base.getFullYear(), base.getMonth(), base.getDate(), base.getHours(), Number(m)), true));
   }
 
   function goToday() {
     const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), selected?.getHours() ?? 9, selected?.getMinutes() ?? 0);
-    onChange(toValue(next));
+    if (isOutOfRange(now)) return;
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), showTime ? (selected?.getHours() ?? 9) : 0, showTime ? (selected?.getMinutes() ?? 0) : 0);
+    onChange(toValue(next, showTime));
     setView({ year: next.getFullYear(), month: next.getMonth() });
   }
 
@@ -230,7 +266,7 @@ export default function DateTimePicker({ value, onChange, label, width, autoFocu
         onClick={openPanel}
       >
         <span className={styles.triggerText} data-empty={selected ? undefined : ""}>
-          {formatTrigger(selected)}
+          {formatTrigger(selected, showTime, placeholder)}
         </span>
         <Icon name="calendar" />
       </button>
@@ -274,6 +310,7 @@ export default function DateTimePicker({ value, onChange, label, width, autoFocu
               const inMonth = date.getMonth() === view.month;
               const isSelected = selected ? sameDay(date, selected) : false;
               const isToday = sameDay(date, today);
+              const disabled = isOutOfRange(date);
               return (
                 <button
                   key={date.toISOString()}
@@ -286,7 +323,9 @@ export default function DateTimePicker({ value, onChange, label, width, autoFocu
                   tabIndex={index === activeIndex ? 0 : -1}
                   data-in-month={inMonth ? "" : undefined}
                   data-selected={isSelected ? "" : undefined}
+                  disabled={disabled}
                   aria-current={isToday ? "date" : undefined}
+                  aria-disabled={disabled || undefined}
                   aria-label={new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(date)}
                   onClick={() => selectDay(date)}
                   onKeyDown={(event) => handleGridKeyDown(event, index, cells)}
@@ -297,19 +336,21 @@ export default function DateTimePicker({ value, onChange, label, width, autoFocu
             })}
           </div>
 
-          <div className={styles.timeRow}>
-            <span className={styles.timeLabel}>Time</span>
-            <Select value={selected ? pad(selected.getHours()) : "09"} options={HOUR_OPTIONS} onChange={setHour} label="Hour" width="4.5rem" />
-            <span className={styles.timeSep}>:</span>
-            <Select value={selected ? pad(selected.getMinutes()) : "00"} options={MINUTE_OPTIONS} onChange={setMinute} label="Minute" width="4.5rem" />
-          </div>
+          {showTime && (
+            <div className={styles.timeRow}>
+              <span className={styles.timeLabel}>Time</span>
+              <Select value={selected ? pad(selected.getHours()) : "09"} options={HOUR_OPTIONS} onChange={setHour} label="Hour" width="4.5rem" />
+              <span className={styles.timeSep}>:</span>
+              <Select value={selected ? pad(selected.getMinutes()) : "00"} options={MINUTE_OPTIONS} onChange={setMinute} label="Minute" width="4.5rem" />
+            </div>
+          )}
 
           <div className={styles.panelFoot}>
             <button type="button" className={styles.textBtn} onClick={clear} disabled={!selected}>
               Clear
             </button>
             <span className={styles.panelFootRight}>
-              <button type="button" className={styles.textBtn} onClick={goToday}>
+              <button type="button" className={styles.textBtn} onClick={goToday} disabled={isOutOfRange(today)}>
                 Today
               </button>
               <button

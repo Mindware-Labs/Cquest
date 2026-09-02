@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ExportButton from "@/components/admin/ExportButton";
 import InfoHint from "@/components/admin/InfoHint";
 import { isApplicationStatus } from "@/lib/applicationStatus";
 import { listApplicationScopes, listApplications } from "@/server/applications";
@@ -24,6 +25,8 @@ export default async function ApplicationsPage({
     status?: string;
     vacancy?: string;
     from?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -33,6 +36,8 @@ export default async function ApplicationsPage({
   const query = params.q ?? "";
   const status = params.status && isApplicationStatus(params.status) ? params.status : null;
   const scope = params.vacancy || null;
+  const dateFrom = params.dateFrom || null;
+  const dateTo = params.dateTo || null;
 
   /* Se llega aquí desde la lista de vacantes o desde el editor de una en
      particular (ver VacanciesTable.tsx y VacancyEditor.tsx): el link de
@@ -53,9 +58,20 @@ export default async function ApplicationsPage({
       query,
       status,
       scope,
+      dateFrom,
+      dateTo,
     }),
     listApplicationScopes(),
   ]);
+
+  const exportParams = new URLSearchParams();
+  if (query) exportParams.set("q", query);
+  if (status) exportParams.set("status", status);
+  if (scope) exportParams.set("vacancy", scope);
+  if (dateFrom) exportParams.set("dateFrom", dateFrom);
+  if (dateTo) exportParams.set("dateTo", dateTo);
+  const exportQs = exportParams.toString();
+  const exportHref = `/api/admin/applications/export${exportQs ? `?${exportQs}` : ""}`;
 
   return (
     <div className={styles.page}>
@@ -77,6 +93,8 @@ export default async function ApplicationsPage({
             status, and keep private notes on each one. Deleting an application also deletes its resume.
           </InfoHint>
         </div>
+
+        <ExportButton className={styles.primary} href={exportHref} fallbackFilename="applications.xlsx" />
       </div>
 
       <ApplicationsTable
@@ -89,6 +107,8 @@ export default async function ApplicationsPage({
         query={query}
         status={status}
         scope={scope}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
         counts={counts}
         scopes={scopes}
       />

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import DateTimePicker from "@/components/admin/DateTimePicker";
 import Modal from "@/components/admin/Modal";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import Select from "@/components/admin/Select";
@@ -98,6 +99,12 @@ function Icon({ name }: { name: string }) {
           <path d="M6.2 3.6 10.6 8l-4.4 4.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
+    case "clear":
+      return (
+        <svg {...c} width="12" height="12" aria-hidden="true">
+          <path d="M3 3l10 10M13 3 3 13" strokeLinecap="round" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -140,11 +147,27 @@ type Props = {
   query: string;
   status: ApplicationStatus | null;
   scope: string | null;
+  dateFrom: string | null;
+  dateTo: string | null;
   counts: Record<ApplicationStatus | "all", number>;
   scopes: ApplicationScope[];
 };
 
-export default function ApplicationsTable({ rows, total, page, perPage, sortKey, sortDir, query, status, scope, counts, scopes }: Props) {
+export default function ApplicationsTable({
+  rows,
+  total,
+  page,
+  perPage,
+  sortKey,
+  sortDir,
+  query,
+  status,
+  scope,
+  dateFrom,
+  dateTo,
+  counts,
+  scopes,
+}: Props) {
   const toast = useToast();
   const router = useRouter();
   const reduced = useReducedMotion();
@@ -164,6 +187,24 @@ export default function ApplicationsTable({ rows, total, page, perPage, sortKey,
   function navigate(next: Record<string, string | number | null>) {
     setSelected(new Set());
     setParams(next);
+  }
+
+  // Comparación como texto ("aaaa-mm-dd" de un <input type="date">): ordena
+  // igual que como fecha real, sin pasar por el huso horario del navegador.
+  function changeDateFrom(value: string) {
+    if (value && dateTo && value > dateTo) {
+      toast.error("Invalid date range", "The start date can't be after the end date.");
+      return;
+    }
+    navigate({ dateFrom: value || null, page: 1 });
+  }
+
+  function changeDateTo(value: string) {
+    if (value && dateFrom && value < dateFrom) {
+      toast.error("Invalid date range", "The end date can't be before the start date.");
+      return;
+    }
+    navigate({ dateTo: value || null, page: 1 });
   }
 
   const allChecked = rows.length > 0 && rows.every((row) => selected.has(row.id));
@@ -264,15 +305,49 @@ export default function ApplicationsTable({ rows, total, page, perPage, sortKey,
             />
           </div>
 
-          <div className={styles.scope}>
-            <span className={styles.scopeLabel}>Show</span>
-            <Select
-              value={scope ?? ""}
-              options={scopeOptions}
-              onChange={(next) => navigate({ vacancy: next || null, page: 1 })}
-              label="Filter by vacancy"
-              width="16rem"
-            />
+          <div className={styles.filters}>
+            <div className={styles.scope}>
+              <span className={styles.scopeLabel}>Show</span>
+              <Select
+                value={scope ?? ""}
+                options={scopeOptions}
+                onChange={(next) => navigate({ vacancy: next || null, page: 1 })}
+                label="Filter by vacancy"
+                width="15rem"
+              />
+            </div>
+
+            <div className={styles.dates}>
+              <DateTimePicker
+                value={dateFrom ?? ""}
+                onChange={changeDateFrom}
+                label="From date"
+                placeholder="From"
+                showTime={false}
+                max={dateTo ?? undefined}
+                width="9.5rem"
+              />
+              <span className={styles.datesSep}>–</span>
+              <DateTimePicker
+                value={dateTo ?? ""}
+                onChange={changeDateTo}
+                label="To date"
+                placeholder="To"
+                showTime={false}
+                min={dateFrom ?? undefined}
+                width="9.5rem"
+              />
+              {(dateFrom || dateTo) && (
+                <button
+                  className={styles.datesClear}
+                  type="button"
+                  onClick={() => navigate({ dateFrom: null, dateTo: null, page: 1 })}
+                  aria-label="Clear date filter"
+                >
+                  <Icon name="clear" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -415,9 +490,20 @@ export default function ApplicationsTable({ rows, total, page, perPage, sortKey,
                           {initials(row.fullName)}
                         </span>
                         <span className={styles.identity}>
-                          <Link className={styles.name} href={`/admin/applications/${row.id}`}>
-                            {row.fullName}
-                          </Link>
+                          <span className={styles.nameRow}>
+                            <Link className={styles.name} href={`/admin/applications/${row.id}`}>
+                              {row.fullName}
+                            </Link>
+                            {row.duplicateCount > 1 && (
+                              <Link
+                                className={styles.duplicate}
+                                href={`/admin/applications?q=${encodeURIComponent(row.email)}`}
+                                title={`${row.duplicateCount} applications from ${row.email}`}
+                              >
+                                ×{row.duplicateCount}
+                              </Link>
+                            )}
+                          </span>
                           <span className={styles.contact}>
                             {row.email} · {row.city}
                           </span>

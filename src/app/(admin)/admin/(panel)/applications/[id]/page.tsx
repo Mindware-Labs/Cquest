@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getApplication } from "@/server/applications";
+import { getApplication, getApplicationStatusHistory } from "@/server/applications";
 import ApplicationDetail from "./ApplicationDetail";
 
 export const metadata: Metadata = {
@@ -13,5 +13,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
   const application = await getApplication(id);
   if (!application) notFound();
 
-  return <ApplicationDetail application={application} />;
+  const history = await getApplicationStatusHistory(id);
+
+  return <ApplicationDetail application={application} history={history} />;
 }

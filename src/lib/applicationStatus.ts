@@ -20,3 +20,13 @@ export const APPLICATION_STATUS_META: Record<
 export function isApplicationStatus(value: string): value is ApplicationStatus {
   return (APPLICATION_STATUSES as readonly string[]).includes(value);
 }
+
+// Mismos tonos que APPLICATION_STATUS_META.ink, pero en hex: los exports a
+// Excel (exceljs) no pueden leer var(--brand-...), necesitan el valor final.
+export const APPLICATION_STATUS_EXCEL_COLOR: Record<ApplicationStatus, string> = {
+  new: "3F738D",
+  reviewing: "74C3D5",
+  shortlisted: "6AAA00",
+  rejected: "6B7280",
+  hired: "3D7A2A",
+};

@@ -3,7 +3,7 @@
 import { del, put } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { application } from "@/db/schema/careers";
+import { application, applicationStatusHistory } from "@/db/schema/careers";
 import { department } from "@/db/schema/department";
 import { sendEmail } from "@/lib/emails/send";
 import { requireEnv, siteUrl } from "@/lib/env";
@@ -65,6 +65,12 @@ async function departmentIdBySlug(slug: string | null | undefined): Promise<stri
   return rows[0]?.id ?? null;
 }
 
+// Solo utm_source (o "ref" como alias corto): un candidato nunca lo escribe
+// a mano, así que basta con acotar el charset y el largo.
+function readSource(raw: string): string {
+  return raw.trim().slice(0, 60).replace(/[^a-zA-Z0-9._-]/g, "");
+}
+
 export async function submitApplication(form: FormData): Promise<ApplicationResult> {
   /* El bot recibe un ok: decirle qué lo delató es enseñarle a pasar. */
   const startedAt = Number(readString(form, "startedAt"));
@@ -94,6 +100,7 @@ export async function submitApplication(form: FormData): Promise<ApplicationResu
 
   const departmentId = await departmentIdBySlug(vacancy ? vacancy.departmentSlug : data.departmentSlug);
   const departmentLabel = vacancy?.departmentShortLabel ?? null;
+  const source = readSource(readString(form, "source"));
 
   const id = crypto.randomUUID();
   const resumeName = safeFileName(cv.name, cvCheck.ext);
@@ -116,24 +123,28 @@ export async function submitApplication(form: FormData): Promise<ApplicationResu
   }
 
   try {
-    await db.insert(application).values({
-      id,
-      vacancyId: vacancy?.id ?? null,
-      vacancyTitle: vacancy?.title ?? null,
-      departmentId,
-      fullName: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      city: data.city,
-      experience: data.experience,
-      english: data.english,
-      availability: data.availability,
-      message: data.message,
-      resumeUrl: blob.url,
-      resumePathname: blob.pathname,
-      resumeName,
-      resumeSize: cv.size,
-      resumeType: contentType,
+    await db.transaction(async (tx) => {
+      await tx.insert(application).values({
+        id,
+        vacancyId: vacancy?.id ?? null,
+        vacancyTitle: vacancy?.title ?? null,
+        departmentId,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        city: data.city,
+        experience: data.experience,
+        english: data.english,
+        availability: data.availability,
+        message: data.message,
+        source,
+        resumeUrl: blob.url,
+        resumePathname: blob.pathname,
+        resumeName,
+        resumeSize: cv.size,
+        resumeType: contentType,
+      });
+      await tx.insert(applicationStatusHistory).values({ applicationId: id, fromStatus: null, toStatus: "new" });
     });
   } catch (error) {
     console.error("[apply] insert failed:", error);

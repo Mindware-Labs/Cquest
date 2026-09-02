@@ -324,8 +324,13 @@ export default function ApplicationForm({
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLHeadingElement>(null);
   const startedAt = useRef(0);
+  // Origen del candidato: se lee una sola vez, al montar — si no viene en la
+  // URL con la que se abrió esta página, no hay forma de recuperarlo después.
+  const source = useRef("");
   useEffect(() => {
     startedAt.current = Date.now();
+    const params = new URLSearchParams(window.location.search);
+    source.current = params.get("utm_source") ?? params.get("ref") ?? "";
   }, []);
 
   const [values, setValues] = useState<ApplicationValues>(EMPTY_VALUES);
@@ -387,6 +392,7 @@ export default function ApplicationForm({
     data.set("vacancySlug", vacancySlug ?? "");
     data.set("company_website", honeypot);
     data.set("startedAt", String(startedAt.current));
+    data.set("source", source.current);
     data.set("recaptchaToken", (await getRecaptchaToken()) ?? "");
 
     let result: Awaited<ReturnType<typeof submitApplication>>;

@@ -20,6 +20,10 @@ type Props = { name: string; email: string };
    del otro apenas se agreguen más pantallas (aplicaciones, etc.) a cada uno. */
 const NAV_GROUPS = [
   {
+    label: "Overview",
+    items: [{ href: "/admin", label: "Dashboard", icon: "chart" }],
+  },
+  {
     label: "Blog",
     items: [
       { href: "/admin/posts", label: "Articles", icon: "doc" },
@@ -44,6 +48,13 @@ type NavIconName = (typeof NAV_GROUPS)[number]["items"][number]["icon"];
 
 function NavIcon({ name }: { name: NavIconName }) {
   const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
+  if (name === "chart")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M2.6 13.4V2.6M2.6 13.4h10.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M5 13.4V9M8 13.4V6M11 13.4V7.6" strokeLinecap="round" />
+      </svg>
+    );
   if (name === "doc")
     return (
       <svg {...common} aria-hidden="true">
@@ -178,7 +189,10 @@ export default function PanelRail({ name, email }: Props) {
               <span className={styles.navLabel}>{group.label}</span>
               <ul className={styles.list}>
                 {group.items.map((entry) => {
-                  const active = pathname.startsWith(entry.href);
+                  // "/admin" es prefijo de toda otra ruta del panel: sin el
+                  // caso especial, "Dashboard" quedaría marcado activo en
+                  // cualquier pantalla, no solo en la suya.
+                  const active = entry.href === "/admin" ? pathname === "/admin" : pathname.startsWith(entry.href);
                   return (
                     <li key={entry.href}>
                       <Link

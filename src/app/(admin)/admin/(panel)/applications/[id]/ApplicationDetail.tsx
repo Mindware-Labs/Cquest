@@ -13,6 +13,7 @@ import {
   saveApplicationNotes,
   setApplicationStatus,
   type ApplicationDetail as Detail,
+  type ApplicationStatusHistoryRow,
 } from "@/server/applications";
 import { AVAILABILITY_OPTIONS, ENGLISH_OPTIONS, EXPERIENCE_OPTIONS, formatBytes, optionLabel } from "@/app/(site)/join-us/apply/data";
 import { initials } from "../ApplicationsTable";
@@ -100,7 +101,7 @@ function StatusDot({ shape }: { shape: "full" | "half" | "ring" }) {
   );
 }
 
-export default function ApplicationDetail({ application }: { application: Detail }) {
+export default function ApplicationDetail({ application, history }: { application: Detail; history: ApplicationStatusHistoryRow[] }) {
   const toast = useToast();
   const router = useRouter();
   const [status, setStatus] = useState<ApplicationStatus>(application.status);
@@ -189,6 +190,11 @@ export default function ApplicationDetail({ application }: { application: Detail
             <div className={styles.candidateText}>
               <span className={styles.eyebrow}>{application.vacancyId ? "Applied for" : "Open application"}</span>
               <h1 className={styles.name}>{application.fullName}</h1>
+              {application.duplicateCount > 1 && (
+                <Link className={styles.duplicateNote} href={`/admin/applications?q=${encodeURIComponent(application.email)}`}>
+                  This email has {application.duplicateCount} applications — view all
+                </Link>
+              )}
               <div className={styles.contacts}>
                 <a className={styles.contactChip} href={`mailto:${application.email}`}>
                   <Icon name="mail" />
@@ -253,6 +259,10 @@ export default function ApplicationDetail({ application }: { application: Detail
                 <dt>Availability</dt>
                 <dd>{optionLabel(AVAILABILITY_OPTIONS, application.availability)}</dd>
               </div>
+              <div className={styles.stat}>
+                <dt>Source</dt>
+                <dd>{application.source || "Direct"}</dd>
+              </div>
             </dl>
           </section>
 
@@ -314,16 +324,33 @@ export default function ApplicationDetail({ application }: { application: Detail
 
           <div className={styles.panel}>
             <span className={styles.panelTitle}>Timeline</span>
-            <dl className={styles.timeline}>
-              <div>
-                <dt>Received</dt>
-                <dd>{stamp.format(new Date(application.createdAt))}</dd>
-              </div>
-              <div>
-                <dt>Last updated</dt>
-                <dd>{stamp.format(new Date(application.updatedAt))}</dd>
-              </div>
-            </dl>
+            <ol className={styles.historyList}>
+              <li className={styles.historyItem}>
+                <span className={styles.historyDot} aria-hidden="true" />
+                <span className={styles.historyText}>
+                  <span className={styles.historyLabel}>Applied</span>
+                  <span className={styles.historyMeta}>{stamp.format(new Date(application.createdAt))}</span>
+                </span>
+              </li>
+              {history
+                .filter((entry) => entry.fromStatus !== null)
+                .map((entry) => {
+                  const meta = APPLICATION_STATUS_META[entry.toStatus];
+                  return (
+                    <li key={entry.id} className={styles.historyItem}>
+                      <span className={styles.historyDot} aria-hidden="true" style={{ "--dot-ink": meta.ink } as React.CSSProperties} />
+                      <span className={styles.historyText}>
+                        <span className={styles.historyLabel}>Marked as {meta.label}</span>
+                        <span className={styles.historyMeta}>
+                          {stamp.format(new Date(entry.changedAt))}
+                          {entry.changedByName ? ` · ${entry.changedByName}` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  );
+                })}
+            </ol>
+            <p className={styles.help}>Last updated {stamp.format(new Date(application.updatedAt))}.</p>
           </div>
         </aside>
       </div>

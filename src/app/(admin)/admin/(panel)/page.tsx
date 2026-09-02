@@ -1,9 +1,13 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { getDashboard } from "@/server/dashboard";
+import DashboardView from "./DashboardView";
 
-/* El resumen todavía no existe, pero /admin sí es el destino del login y de
-   varios redirects: en vez de borrar la ruta, entra por la primera sección
-   real. Cuando el resumen esté listo, esta redirección se cae y vuelve la
-   pantalla. */
-export default function PanelHomePage() {
-  redirect("/admin/posts");
+export const metadata: Metadata = {
+  title: "Dashboard · Center Quest Admin",
+  robots: { index: false, follow: false },
+};
+
+export default async function PanelHomePage() {
+  const data = await getDashboard();
+  return <DashboardView data={data} />;
 }

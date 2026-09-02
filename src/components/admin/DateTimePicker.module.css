@@ -185,6 +185,15 @@
   outline-offset: 2px;
 }
 
+.day:disabled {
+  color: color-mix(in srgb, var(--text-tertiary) 45%, transparent);
+  cursor: not-allowed;
+}
+
+.day:disabled:hover {
+  background: transparent;
+}
+
 /* ---------- Hora ---------- */
 
 .timeRow {

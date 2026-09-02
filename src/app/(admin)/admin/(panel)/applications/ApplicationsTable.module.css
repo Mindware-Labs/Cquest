@@ -1,5 +1,16 @@
 /* Solo lo específico de postulaciones; el chasis sale de dataTable.module.css. */
 
+/* Un solo grupo empujado a la derecha (margin-left: auto): así el buscador
+   se queda pegado a la izquierda y "Show" + el rango de fechas quedan juntos
+   en vez de repartidos por todo el ancho con justify-content: space-between. */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
 .scope {
   display: flex;
   align-items: center;
@@ -10,6 +21,46 @@
 
 .scopeLabel {
   white-space: nowrap;
+}
+
+/* ---------- Rango de fechas ---------- */
+
+/* DateTimePicker (showTime=false) trae su propio trigger con el mismo
+   lenguaje visual que el Select de al lado — nada de <input type="date">
+   nativo, que abre el calendario del sistema operativo sin poder estilarlo. */
+.dates {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.datesSep {
+  font-size: 0.76rem;
+  color: var(--text-tertiary);
+}
+
+.datesClear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-left: 0.1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.datesClear:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.datesClear:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
 }
 
 /* ---------- Pestañas de estado ---------- */
@@ -91,6 +142,36 @@
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Mismo correo aplicó más de una vez: enlaza a esa búsqueda para verlas
+   todas, en vez de que el admin evalúe al mismo candidato dos veces sin
+   saberlo. */
+.duplicate {
+  flex: none;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface-raised));
+  color: var(--danger-text);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.duplicate:hover {
+  background: color-mix(in srgb, var(--danger) 20%, var(--surface-raised));
+}
+
+.duplicate:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
 }
 
 .name {

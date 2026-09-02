@@ -3,7 +3,7 @@ import t from "@/components/admin/dataTable.module.css";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_META } from "@/lib/applicationStatus";
 import type { VacancyReport } from "@/server/vacancies";
 import { AVAILABILITY_OPTIONS, ENGLISH_OPTIONS, EXPERIENCE_OPTIONS, optionLabel } from "@/app/(site)/join-us/apply/data";
-import ExportButton from "./ExportButton";
+import ExportButton from "@/components/admin/ExportButton";
 import styles from "./VacancyReport.module.css";
 
 const stamp = new Intl.DateTimeFormat("en-GB", {
@@ -86,6 +86,7 @@ export default function VacancyReportView({ report }: { report: VacancyReport })
           </span>
         </div>
         <ExportButton
+          className={styles.export}
           href={`/api/admin/vacancies/${vacancy.id}/report/export`}
           fallbackFilename={`${vacancy.title.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "vacancy"}-candidates.xlsx`}
         />

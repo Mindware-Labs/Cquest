@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useToast } from "@/components/admin/Toaster";
-import fields from "@/components/admin/fields.module.css";
-import styles from "./VacancyReport.module.css";
+import { useToast } from "./Toaster";
+import fields from "./fields.module.css";
 
 function filenameFrom(response: Response, fallback: string): string {
   const disposition = response.headers.get("Content-Disposition") ?? "";
@@ -11,10 +10,22 @@ function filenameFrom(response: Response, fallback: string): string {
   return match?.[1] ?? fallback;
 }
 
-/* Botón propio (no un <a> plano): así se puede mostrar el spinner mientras el
-   .xlsx se arma en el servidor y avisar si algo falla, en vez de que el
-   candidato de la descarga sea el único que se entera si truena en silencio. */
-export default function ExportButton({ href, fallbackFilename }: { href: string; fallbackFilename: string }) {
+/* Botón propio (no un <a> plano): así se puede mostrar el spinner mientras
+   el .xlsx se arma en el servidor y avisar si algo falla, en vez de que el
+   único aviso de un error silencioso sea "nunca bajó el archivo". */
+export default function ExportButton({
+  href,
+  fallbackFilename,
+  className,
+  idleLabel = "Export Excel",
+  busyLabel = "Preparing…",
+}: {
+  href: string;
+  fallbackFilename: string;
+  className: string;
+  idleLabel?: string;
+  busyLabel?: string;
+}) {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +53,7 @@ export default function ExportButton({ href, fallbackFilename }: { href: string;
   }
 
   return (
-    <a className={styles.export} href={href} onClick={handleClick} aria-busy={loading} data-busy={loading || undefined}>
+    <a className={className} href={href} onClick={handleClick} aria-busy={loading} data-busy={loading || undefined}>
       {loading ? (
         <span className={fields.spinner} aria-hidden="true" />
       ) : (
@@ -51,7 +62,7 @@ export default function ExportButton({ href, fallbackFilename }: { href: string;
           <path d="M3 11v2.4h10V11" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )}
-      {loading ? "Preparing…" : "Export Excel"}
+      {loading ? busyLabel : idleLabel}
     </a>
   );
 }

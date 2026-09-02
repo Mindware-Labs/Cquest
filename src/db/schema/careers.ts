@@ -76,6 +76,11 @@ export const application = pgTable(
     status: applicationStatus("status").notNull().default("new"),
     notes: text("notes").notNull().default(""),
 
+    // De dónde vino: utm_source de la URL al abrir /join-us/apply, o "" si
+    // llegó directo. Se captura una sola vez al enviar — no se puede
+    // reconstruir después si no se guardó entonces.
+    source: text("source").notNull().default(""),
+
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -90,3 +95,27 @@ export const application = pgTable(
 );
 
 export type Application = typeof application.$inferSelect;
+
+/* Auditoría de cambios de estado: application.updatedAt se pisa con
+   cualquier cambio (estado O notas), así que no sirve para medir cuánto
+   tiempo pasó un candidato en cada etapa. Esta tabla sí lo permite —
+   fromStatus null es la fila que se crea junto con la postulación misma. */
+export const applicationStatusHistory = pgTable(
+  "application_status_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => application.id, { onDelete: "cascade" }),
+    fromStatus: applicationStatus("from_status"),
+    toStatus: applicationStatus("to_status").notNull(),
+    changedBy: text("changed_by").references(() => user.id, { onDelete: "set null" }),
+    changedAt: timestamp("changed_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("application_status_history_applicationId_idx").on(table.applicationId),
+    index("application_status_history_toStatus_idx").on(table.toStatus, table.changedAt),
+  ],
+);
+
+export type ApplicationStatusHistoryRow = typeof applicationStatusHistory.$inferSelect;
