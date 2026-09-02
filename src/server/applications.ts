@@ -1,7 +1,7 @@
 "use server";
 
 import { del } from "@vercel/blob";
-import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { application, applicationStatusHistory, vacancy } from "@/db/schema/careers";
@@ -11,6 +11,13 @@ import { requireAdmin } from "@/lib/auth-guard";
 import { APPLICATION_STATUSES, isApplicationStatus, type ApplicationStatus } from "@/lib/applicationStatus";
 import { requireEnv } from "@/lib/env";
 import { dateRangeWhere, listSelection, scopeWhere, searchWhere, toRow, type ApplicationListRow } from "./applicationQuery";
+import {
+  getTalentPoolForExport,
+  getTalentPoolPageData,
+  type TalentPoolCandidate,
+  type TalentPoolListPage,
+  type TalentPoolListQuery,
+} from "./talentPoolQuery";
 
 export type { ApplicationListRow } from "./applicationQuery";
 
@@ -255,5 +262,62 @@ export async function deleteApplications(ids: string[]): Promise<ActionResult> {
     }
   }
 
+  return { ok: true };
+}
+
+/* ---------- Banco de talento ---------- */
+
+export type { TalentPoolCandidate, TalentPoolFilters, TalentPoolListQuery, TalentPoolListPage } from "./talentPoolQuery";
+
+export async function listTalentPool(): Promise<TalentPoolCandidate[]> {
+  await requireAdmin();
+  return (await getTalentPoolForExport({})) as TalentPoolCandidate[];
+}
+
+export async function listTalentPoolPage(query: TalentPoolListQuery = {}): Promise<TalentPoolListPage> {
+  await requireAdmin();
+  return getTalentPoolPageData(query);
+}
+
+export async function countTalentPool(departmentId?: string | null): Promise<{ total: number; matching: number }> {
+  await requireAdmin();
+
+  const [{ total }] = await db.select({ total: count() }).from(application).where(isNull(application.vacancyId));
+  if (!departmentId) return { total, matching: 0 };
+
+  const [{ matching }] = await db
+    .select({ matching: count() })
+    .from(application)
+    .where(and(isNull(application.vacancyId), eq(application.departmentId, departmentId)));
+  return { total, matching };
+}
+
+// Saca al candidato del banco de talento y lo deja como postulante de esa
+// vacante — no es un cambio de estado (por eso no toca applicationStatusHistory),
+// es mover la postulación abierta a un puesto concreto.
+export async function assignToVacancy(applicationId: string, vacancyId: string): Promise<ActionResult> {
+  await requireAdmin();
+  if (!z.uuid().safeParse(applicationId).success || !z.uuid().safeParse(vacancyId).success) {
+    return { ok: false, message: "Invalid id." };
+  }
+
+  const vacancyRows = await db
+    .select({ id: vacancy.id, title: vacancy.title, departmentId: vacancy.departmentId })
+    .from(vacancy)
+    .where(eq(vacancy.id, vacancyId))
+    .limit(1);
+  const target = vacancyRows[0];
+  if (!target) return { ok: false, message: "That vacancy no longer exists." };
+
+  // El where incluye isNull(vacancyId): si dos admins revisan el banco a la
+  // vez, el segundo en guardar se entera de que ya no estaba libre, en vez
+  // de pisar la asignación del primero.
+  const done = await db
+    .update(application)
+    .set({ vacancyId: target.id, vacancyTitle: target.title, departmentId: target.departmentId })
+    .where(and(eq(application.id, applicationId), isNull(application.vacancyId)))
+    .returning({ id: application.id });
+
+  if (done.length === 0) return { ok: false, message: "That candidate is no longer in the talent pool." };
   return { ok: true };
 }

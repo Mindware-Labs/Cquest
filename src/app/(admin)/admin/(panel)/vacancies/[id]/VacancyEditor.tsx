@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import DateTimePicker from "@/components/admin/DateTimePicker";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
@@ -128,6 +128,7 @@ export default function VacancyEditor({
   departments: DepartmentRow[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const titleId = useId();
   const summaryId = useId();
@@ -171,6 +172,12 @@ export default function VacancyEditor({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [hideConfirmOpen, setHideConfirmOpen] = useState(false);
   const [saving, startSaving] = useTransition();
+  // Solo se abre al llegar recién creada (?created=1) y si hay alguien en el
+  // banco a quien valga la pena ofrecerle: lazy initializer, no un efecto —
+  // no hace falta re-evaluarlo en cada render.
+  const [poolPromptOpen, setPoolPromptOpen] = useState(
+    () => searchParams.get("created") === "1" && vacancy.talentPoolMatches > 0,
+  );
 
   useEffect(() => {
     if (!dirty) return;
@@ -178,6 +185,15 @@ export default function VacancyEditor({
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+
+  // Saca el ?created=1 de la URL: sin esto, refrescar la página o volver con
+  // el botón atrás reabriría el aviso cada vez.
+  useEffect(() => {
+    if (searchParams.get("created") === "1") {
+      router.replace(`/admin/vacancies/${vacancy.id}`, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo debe correr una vez, al montar
+  }, []);
 
   function touch<T>(setter: (v: T) => void) {
     return (value: T) => {
@@ -314,6 +330,9 @@ export default function VacancyEditor({
           </Link>
           <Link className={styles.ghost} href={`/admin/applications?vacancy=${vacancy.id}&from=editor`}>
             Applications · {vacancy.applications}
+          </Link>
+          <Link className={styles.ghost} href={`/admin/vacancies/${vacancy.id}/talent-pool`}>
+            Talent pool{vacancy.talentPoolMatches > 0 ? ` · ${vacancy.talentPoolMatches}` : ""}
           </Link>
           {status === "published" && (
             <button className={styles.ghost} type="button" onClick={() => setHideConfirmOpen(true)} disabled={saving}>
@@ -590,6 +609,22 @@ export default function VacancyEditor({
           </button>
           <button className={styles.primary} type="button" onClick={handleHide} disabled={saving}>
             Hide
+          </button>
+        </div>
+      </Modal>
+
+      <Modal open={poolPromptOpen} onClose={() => setPoolPromptOpen(false)} eyebrow="Vacancy created" title="Check the talent pool?">
+        <p className={styles.dialogText}>
+          {vacancy.talentPoolMatches} {vacancy.talentPoolMatches === 1 ? "candidate" : "candidates"} in the talent pool{" "}
+          {vacancy.talentPoolMatches === 1 ? "is" : "are"} already interested in this department. Review them for this role
+          before it goes out?
+        </p>
+        <div className={styles.dialogFoot}>
+          <button className={styles.ghost} type="button" onClick={() => setPoolPromptOpen(false)}>
+            Not now
+          </button>
+          <button className={styles.primary} type="button" onClick={() => router.push(`/admin/vacancies/${vacancy.id}/talent-pool`)}>
+            Review talent pool
           </button>
         </div>
       </Modal>

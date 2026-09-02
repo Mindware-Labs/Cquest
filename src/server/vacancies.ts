@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -46,6 +46,7 @@ export type VacancyDetail = {
   status: VacancyStatus;
   publishedAt: string | null;
   applications: number;
+  talentPoolMatches: number;
 };
 
 export type ActionResult<T = undefined> =
@@ -220,6 +221,15 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
     .from(application)
     .where(eq(application.vacancyId, id));
 
+  const talentPoolMatches = row.departmentId
+    ? (
+        await db
+          .select({ n: count() })
+          .from(application)
+          .where(and(isNull(application.vacancyId), eq(application.departmentId, row.departmentId)))
+      )[0].n
+    : 0;
+
   return {
     id: row.id,
     slug: row.slug,
@@ -237,6 +247,7 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
     status: row.status,
     publishedAt: row.publishedAt?.toISOString() ?? null,
     applications,
+    talentPoolMatches,
   };
 }
 

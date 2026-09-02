@@ -254,7 +254,9 @@ export default function NewVacancyModal({ open, onClose, departments }: Props) {
       }
 
       onClose();
-      router.push(`/admin/vacancies/${id}`);
+      // ?created=1: le dice al editor que recién se llegó de crearla, así
+      // decide si vale la pena ofrecer el banco de talento (ver VacancyEditor.tsx).
+      router.push(`/admin/vacancies/${id}?created=1`);
     });
   }
 
