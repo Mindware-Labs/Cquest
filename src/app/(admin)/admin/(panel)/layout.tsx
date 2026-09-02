@@ -1,12 +1,19 @@
+import { Suspense } from "react";
+import PanelIdentity, { PanelIdentityFallback } from "@/components/admin/PanelIdentity";
 import PanelRail from "@/components/admin/PanelRail";
 import ToastProvider from "@/components/admin/Toaster";
 import { RAIL_BOOT_SCRIPT } from "@/components/admin/railState";
-import { requireAdmin } from "@/lib/auth-guard";
 import styles from "./layout.module.css";
 
-// Verificación real de sesión: el guard del proxy solo mira que la cookie exista.
-export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireAdmin();
+/* El layout no espera la sesión: la lee PanelIdentity dentro de su propio
+   Suspense y cada página la vuelve a exigir en sus consultas (requireAdmin).
+   Si el layout la esperara, loading.tsx no podría mostrarse al entrar. */
+export default function PanelLayout({ children }: { children: React.ReactNode }) {
+  const identity = (
+    <Suspense fallback={<PanelIdentityFallback />}>
+      <PanelIdentity />
+    </Suspense>
+  );
 
   return (
     <>
@@ -14,7 +21,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <script dangerouslySetInnerHTML={{ __html: RAIL_BOOT_SCRIPT }} />
       <ToastProvider>
         <div className={styles.shell}>
-          <PanelRail name={session.user.name ?? ""} email={session.user.email} />
+          <PanelRail identity={identity} />
           <main className={styles.content}>{children}</main>
         </div>
       </ToastProvider>

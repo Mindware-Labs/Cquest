@@ -78,12 +78,27 @@ export async function listApplications(query: ApplicationListQuery = {}): Promis
   const where = and(scope, search, dateRange, status);
 
   // Los conteos por estado ignoran el filtro de estado: son las pestañas.
-  const countRows = await db
+  const countQuery = db
     .select({ status: application.status, total: count() })
     .from(application)
     .leftJoin(vacancy, eq(application.vacancyId, vacancy.id))
     .where(and(scope, search, dateRange))
     .groupBy(application.status);
+
+  const pageQuery = (page: number) =>
+    db
+      .select(listSelection)
+      .from(application)
+      .leftJoin(vacancy, eq(application.vacancyId, vacancy.id))
+      .leftJoin(department, eq(application.departmentId, department.id))
+      .where(where)
+      .orderBy(direction(column), desc(application.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
+
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [countRows, requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
 
   const counts = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, 0])) as Record<ApplicationStatus | "all", number>;
   counts.all = 0;
@@ -94,17 +109,8 @@ export async function listApplications(query: ApplicationListQuery = {}): Promis
 
   const total = status ? counts[query.status as ApplicationStatus] : counts.all;
   const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
-
-  const rows = await db
-    .select(listSelection)
-    .from(application)
-    .leftJoin(vacancy, eq(application.vacancyId, vacancy.id))
-    .leftJoin(department, eq(application.departmentId, department.id))
-    .where(where)
-    .orderBy(direction(column), desc(application.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return { rows: rows.map(toRow), total, page, perPage, counts };
 }

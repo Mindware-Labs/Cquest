@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import BusyBar from "@/components/admin/BusyBar";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import DateTimePicker from "@/components/admin/DateTimePicker";
@@ -340,7 +341,8 @@ export default function PostsTable({
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles.container} aria-busy={pending || undefined}>
+        <BusyBar active={pending} />
       <div className={t.toolbar}>
         <div className={t.search}>
           <span className={t.searchIcon}>

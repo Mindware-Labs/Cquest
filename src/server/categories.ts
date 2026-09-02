@@ -88,19 +88,25 @@ export async function listCategories(query: CategoryListQuery = {}): Promise<Cat
   const column = query.sortKey === "createdAt" ? category.createdAt : category.name;
   const direction = query.sortDir === "desc" ? desc : asc;
 
-  const [{ total }] = await db.select({ total: count() }).from(category).where(where);
+  const countQuery = db.select({ total: count() }).from(category).where(where);
+
+  const pageQuery = (page: number) =>
+    db
+      .select()
+      .from(category)
+      .where(where)
+      // Desempate estable: sin él, dos nombres iguales pueden saltar de página.
+      .orderBy(direction(column), asc(category.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
+
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [[{ total }], requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
 
   const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
-
-  const rows = await db
-    .select()
-    .from(category)
-    .where(where)
-    // Desempate estable: sin él, dos nombres iguales pueden saltar de página.
-    .orderBy(direction(column), asc(category.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return {
     rows: rows.map((row) => ({

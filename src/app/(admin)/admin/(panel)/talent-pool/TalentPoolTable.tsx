@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import BusyBar from "@/components/admin/BusyBar";
 import DateTimePicker from "@/components/admin/DateTimePicker";
 import Modal from "@/components/admin/Modal";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
@@ -319,7 +320,8 @@ export default function TalentPoolTable({
 
   return (
     <>
-      <div className={t.container}>
+      <div className={t.container} aria-busy={pending || undefined}>
+        <BusyBar active={pending} />
         <div className={t.toolbar}>
           <div className={t.search}>
             <span className={t.searchIcon}>

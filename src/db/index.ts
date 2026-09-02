@@ -9,7 +9,15 @@ const globalForDb = globalThis as unknown as { cqPool?: Pool };
 
 const pool =
   globalForDb.cqPool ??
-  new Pool({ connectionString: requireEnv("DATABASE_URL"), max: 10 });
+  new Pool({
+    connectionString: requireEnv("DATABASE_URL"),
+    max: 10,
+    /* pg cierra las conexiones ociosas a los 10 s: con la base en Railway, cada
+       clic tras una pausa pagaba TCP + TLS + auth de nuevo. */
+    idleTimeoutMillis: 5 * 60_000,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000,
+  });
 
 if (process.env.NODE_ENV !== "production") globalForDb.cqPool = pool;
 

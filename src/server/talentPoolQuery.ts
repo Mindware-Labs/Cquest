@@ -125,7 +125,21 @@ export async function getTalentPoolPageData(query: TalentPoolListQuery = {}): Pr
   const where = and(filters, status);
 
   // Los conteos por estado ignoran el filtro de estado: son las pestañas.
-  const countRows = await db.select({ status: application.status, total: count() }).from(application).where(filters).groupBy(application.status);
+  const countQuery = db.select({ status: application.status, total: count() }).from(application).where(filters).groupBy(application.status);
+
+  const pageQuery = (page: number) =>
+    db
+      .select(talentPoolSelection)
+      .from(application)
+      .leftJoin(department, eq(application.departmentId, department.id))
+      .where(where)
+      .orderBy(direction(column), desc(application.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
+
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [countRows, requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
 
   const counts = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, 0])) as Record<ApplicationStatus | "all", number>;
   counts.all = 0;
@@ -136,16 +150,8 @@ export async function getTalentPoolPageData(query: TalentPoolListQuery = {}): Pr
 
   const total = status ? counts[query.status as ApplicationStatus] : counts.all;
   const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
-
-  const rows = await db
-    .select(talentPoolSelection)
-    .from(application)
-    .leftJoin(department, eq(application.departmentId, department.id))
-    .where(where)
-    .orderBy(direction(column), desc(application.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return { rows: rows.map(toTalentPoolCandidate), total, page, perPage, counts };
 }

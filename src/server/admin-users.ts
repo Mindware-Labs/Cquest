@@ -145,25 +145,31 @@ export async function listAdminUsers(query: AdminUserQuery = {}): Promise<AdminU
   const column = query.sortKey === "name" ? user.name : user.createdAt;
   const direction = query.sortDir === "asc" ? asc : desc;
 
-  const [{ total }] = await db.select({ total: count() }).from(user).where(where);
+  const countQuery = db.select({ total: count() }).from(user).where(where);
+
+  const pageQuery = (page: number) =>
+    db
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        banned: user.banned,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .where(where)
+      // Desempate estable: sin él una fila puede repetirse entre dos páginas.
+      .orderBy(direction(column), asc(user.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
+
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [[{ total }], requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
 
   const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
-
-  const rows = await db
-    .select({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      banned: user.banned,
-      createdAt: user.createdAt,
-    })
-    .from(user)
-    .where(where)
-    // Desempate estable: sin él una fila puede repetirse entre dos páginas.
-    .orderBy(direction(column), asc(user.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return {
     rows: rows.map((row) => ({

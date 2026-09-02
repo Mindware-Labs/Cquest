@@ -200,11 +200,38 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
   // Las pestañas ignoran el filtro de estado (son ellas): se cuenta sobre
   // baseFilters y se deriva "scheduled" en JS, en vez de armar cuatro
   // consultas agrupadas para un estado que ni siquiera vive en la columna.
-  const countRows = await db
+  const countQuery = db
     .select({ status: post.status, publishedAt: post.publishedAt })
     .from(post)
     .leftJoin(category, eq(post.categoryId, category.id))
     .where(baseFilters);
+
+  const pageQuery = (page: number) =>
+    db
+      .select({
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        coverUrl: post.coverUrl,
+        categoryName: category.name,
+        status: post.status,
+        publishedAt: post.publishedAt,
+        updatedAt: post.updatedAt,
+        authorName: user.name,
+      })
+      .from(post)
+      .leftJoin(category, eq(post.categoryId, category.id))
+      .leftJoin(user, eq(post.authorId, user.id))
+      .where(where)
+      /* Desempate por id: sin un orden total, dos filas con el mismo timestamp
+         pueden cambiar de sitio entre páginas y una se vería dos veces. */
+      .orderBy(direction(column), desc(post.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
+
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [countRows, requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
 
   const counts: PostListCounts = { draft: 0, published: 0, scheduled: 0, hidden: 0, all: countRows.length };
   for (const row of countRows) {
@@ -217,31 +244,10 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
   }
 
   const total = query.status ? (counts[query.status as keyof PostListCounts] ?? 0) : counts.all;
-  // Pedir una página que ya no existe (tras borrar) devolvería una tabla vacía.
+  // Una página que ya no existe (tras borrar) se corrige con una segunda consulta.
   const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
-
-  const rows = await db
-    .select({
-      id: post.id,
-      slug: post.slug,
-      title: post.title,
-      coverUrl: post.coverUrl,
-      categoryName: category.name,
-      status: post.status,
-      publishedAt: post.publishedAt,
-      updatedAt: post.updatedAt,
-      authorName: user.name,
-    })
-    .from(post)
-    .leftJoin(category, eq(post.categoryId, category.id))
-    .leftJoin(user, eq(post.authorId, user.id))
-    .where(where)
-    /* Desempate por id: sin un orden total, dos filas con el mismo timestamp
-       pueden cambiar de sitio entre páginas y una se vería dos veces. */
-    .orderBy(direction(column), desc(post.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return {
     rows: rows.map((row) => ({

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
+import { asc, count, desc, eq, getTableColumns, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -166,35 +166,41 @@ export async function listVacancies(query: VacancyListQuery = {}): Promise<Vacan
       )
     : undefined;
 
-  const [{ total }] = await db
+  const countQuery = db
     .select({ total: count() })
     .from(vacancy)
     .leftJoin(department, eq(vacancy.departmentId, department.id))
     .where(where);
 
-  const pages = Math.max(1, Math.ceil(total / perPage));
-  const page = Math.min(Math.max(query.page ?? 1, 1), pages);
+  const pageQuery = (page: number) =>
+    db
+      .select({
+        id: vacancy.id,
+        slug: vacancy.slug,
+        title: vacancy.title,
+        departmentId: vacancy.departmentId,
+        departmentLabel: department.shortLabel,
+        status: vacancy.status,
+        publishedAt: vacancy.publishedAt,
+        updatedAt: vacancy.updatedAt,
+        authorName: user.name,
+        applications: sql<number>`(select count(*) from ${application} a where a.vacancy_id = ${vacancy.id})::int`,
+      })
+      .from(vacancy)
+      .leftJoin(user, eq(vacancy.authorId, user.id))
+      .leftJoin(department, eq(vacancy.departmentId, department.id))
+      .where(where)
+      .orderBy(direction(column), desc(vacancy.id))
+      .limit(perPage)
+      .offset((page - 1) * perPage);
 
-  const rows = await db
-    .select({
-      id: vacancy.id,
-      slug: vacancy.slug,
-      title: vacancy.title,
-      departmentId: vacancy.departmentId,
-      departmentLabel: department.shortLabel,
-      status: vacancy.status,
-      publishedAt: vacancy.publishedAt,
-      updatedAt: vacancy.updatedAt,
-      authorName: user.name,
-      applications: sql<number>`(select count(*) from ${application} a where a.vacancy_id = ${vacancy.id})::int`,
-    })
-    .from(vacancy)
-    .leftJoin(user, eq(vacancy.authorId, user.id))
-    .leftJoin(department, eq(vacancy.departmentId, department.id))
-    .where(where)
-    .orderBy(direction(column), desc(vacancy.id))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  // Conteo y página viajan juntos: la base es remota y cada ida cuesta lo mismo.
+  const requested = Math.max(query.page ?? 1, 1);
+  const [[{ total }], requestedRows] = await Promise.all([countQuery, pageQuery(requested)]);
+
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  const page = Math.min(requested, pages);
+  const rows = page === requested ? requestedRows : await pageQuery(page);
 
   return {
     rows: rows.map((row) => ({
@@ -212,23 +218,18 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
   await requireAdmin();
   if (!z.uuid().safeParse(id).success) return null;
 
-  const rows = await db.select().from(vacancy).where(eq(vacancy.id, id)).limit(1);
+  // Los dos conteos van como subconsultas de la misma fila: un viaje en vez de tres.
+  const rows = await db
+    .select({
+      ...getTableColumns(vacancy),
+      applications: sql<number>`(select count(*) from ${application} a where a.vacancy_id = ${vacancy.id})::int`,
+      talentPoolMatches: sql<number>`(select count(*) from ${application} a where a.vacancy_id is null and a.department_id = ${vacancy.departmentId})::int`,
+    })
+    .from(vacancy)
+    .where(eq(vacancy.id, id))
+    .limit(1);
   const row = rows[0];
   if (!row) return null;
-
-  const [{ applications }] = await db
-    .select({ applications: count() })
-    .from(application)
-    .where(eq(application.vacancyId, id));
-
-  const talentPoolMatches = row.departmentId
-    ? (
-        await db
-          .select({ n: count() })
-          .from(application)
-          .where(and(isNull(application.vacancyId), eq(application.departmentId, row.departmentId)))
-      )[0].n
-    : 0;
 
   return {
     id: row.id,
@@ -246,8 +247,8 @@ export async function getVacancy(id: string): Promise<VacancyDetail | null> {
     niceToHave: (row.niceToHave as string[]) ?? [],
     status: row.status,
     publishedAt: row.publishedAt?.toISOString() ?? null,
-    applications,
-    talentPoolMatches,
+    applications: row.applications,
+    talentPoolMatches: row.talentPoolMatches,
   };
 }
 

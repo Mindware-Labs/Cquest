@@ -1,0 +1,45 @@
+.bar {
+  display: block;
+  position: relative;
+  z-index: 1;
+  height: 2px;
+  margin-bottom: -2px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--brand-petroleo);
+  transform: translateX(-100%);
+}
+
+/* Aparece con retraso: una respuesta inmediata no debe parpadear. */
+.bar[data-active] {
+  opacity: 1;
+  transition-delay: 0.15s;
+}
+
+.bar[data-active]::before {
+  animation: slide 1.1s var(--ease-in-out-strong) infinite;
+}
+
+@keyframes slide {
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar[data-active]::before {
+    width: 100%;
+    transform: none;
+    opacity: 0.6;
+    animation: none;
+  }
+}

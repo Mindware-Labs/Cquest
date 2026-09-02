@@ -19,7 +19,7 @@ export const viewport: Viewport = { themeColor: "#0a1116" };
 /* Root layout propio: el panel no hereda Lenis, cortina, navbar ni footer. */
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${josefin.variable} h-full antialiased`}>
+    <html lang="en" className={`${josefin.variable} h-full antialiased`} data-scroll-behavior="smooth">
       <body className="cq-admin min-h-full">{children}</body>
     </html>
   );

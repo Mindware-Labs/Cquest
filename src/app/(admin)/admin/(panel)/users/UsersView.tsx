@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState, useTransition } from "reac
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { z } from "zod";
+import BusyBar from "@/components/admin/BusyBar";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import InfoHint from "@/components/admin/InfoHint";
@@ -492,7 +493,9 @@ export default function UsersView({
         </button>
       </header>
 
-      <div className={t.container}>
+      <div className={t.container} aria-busy={navigating || undefined}>
+
+        <BusyBar active={navigating} />
         <div className={t.toolbar}>
           <div className={t.search}>
             <span className={t.searchIcon}>

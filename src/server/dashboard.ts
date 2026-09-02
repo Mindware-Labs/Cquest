@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, count, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { application, applicationStatusHistory, vacancy } from "@/db/schema/careers";
 import { department } from "@/db/schema/department";
@@ -62,10 +62,15 @@ export async function getDashboard(): Promise<DashboardData> {
       .from(applicationStatusHistory)
       .where(and(eq(applicationStatusHistory.toStatus, "hired"), gte(applicationStatusHistory.changedAt, startOfMonth))),
     db
-      .select({ applicationId: applicationStatusHistory.applicationId, changedAt: sql<Date>`max(${applicationStatusHistory.changedAt})` })
+      .select({
+        applicationId: applicationStatusHistory.applicationId,
+        createdAt: application.createdAt,
+        changedAt: sql<Date>`max(${applicationStatusHistory.changedAt})`,
+      })
       .from(applicationStatusHistory)
+      .innerJoin(application, eq(application.id, applicationStatusHistory.applicationId))
       .where(eq(applicationStatusHistory.toStatus, "hired"))
-      .groupBy(applicationStatusHistory.applicationId),
+      .groupBy(applicationStatusHistory.applicationId, application.createdAt),
     db.select({ createdAt: application.createdAt }).from(application).where(gte(application.createdAt, eightWeeksAgo)),
     db
       .select({ label: department.shortLabel, count: count() })
@@ -103,21 +108,11 @@ export async function getDashboard(): Promise<DashboardData> {
       .limit(8),
   ]);
 
-  // Promedio de días para contratar: se cruza en JS (el set de contratados
-  // suele ser chico) en vez de un JOIN con subconsulta para no depender de
-  // cómo tipa cada driver un execute() con SQL crudo.
+  // Promedio de días para contratar: la fecha de alta viene en la misma consulta.
   let avgDaysToHire: number | null = null;
   if (hiredHistory.length > 0) {
-    const ids = hiredHistory.map((row) => row.applicationId);
-    const createdRows = await db.select({ id: application.id, createdAt: application.createdAt }).from(application).where(inArray(application.id, ids));
-    const createdMap = new Map(createdRows.map((row) => [row.id, row.createdAt]));
-    const diffs = hiredHistory
-      .map((row) => {
-        const created = createdMap.get(row.applicationId);
-        return created ? (new Date(row.changedAt).getTime() - created.getTime()) / 86_400_000 : null;
-      })
-      .filter((value): value is number => value !== null);
-    if (diffs.length > 0) avgDaysToHire = diffs.reduce((sum, value) => sum + value, 0) / diffs.length;
+    const diffs = hiredHistory.map((row) => (new Date(row.changedAt).getTime() - row.createdAt.getTime()) / 86_400_000);
+    avgDaysToHire = diffs.reduce((sum, value) => sum + value, 0) / diffs.length;
   }
 
   // 8 semanas corridas terminando hoy, no semanas calendario: así siempre

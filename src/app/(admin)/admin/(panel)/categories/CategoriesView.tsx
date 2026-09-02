@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import BusyBar from "@/components/admin/BusyBar";
 import Modal from "@/components/admin/Modal";
 import Select from "@/components/admin/Select";
 import InfoHint from "@/components/admin/InfoHint";
@@ -281,7 +282,9 @@ export default function CategoriesView({
         </button>
       </header>
 
-      <div className={t.container}>
+      <div className={t.container} aria-busy={pending || undefined}>
+
+        <BusyBar active={pending} />
         <div className={t.toolbar}>
           <div className={t.search}>
             <span className={t.searchIcon}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import BrandLockup from "./BrandLockup";
@@ -13,7 +13,7 @@ import {
 } from "./railState";
 import styles from "./PanelRail.module.css";
 
-type Props = { name: string; email: string };
+type Props = { identity: React.ReactNode };
 
 /* Agrupado por área, no una lista plana: Blog y Vacantes son los dos módulos
    de contenido del panel, y separarlos evita que uno se pierda entre las filas
@@ -108,6 +108,13 @@ function NavIcon({ name }: { name: NavIconName }) {
   );
 }
 
+/* Solo se ve si la ruta aún no está precargada: un pulso junto al rótulo
+   mientras llega la respuesta. */
+function NavPending() {
+  const { pending } = useLinkStatus();
+  return <span className={styles.pending} data-pending={pending || undefined} aria-hidden="true" />;
+}
+
 function FoldIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
@@ -118,13 +125,7 @@ function FoldIcon() {
   );
 }
 
-function initials(name: string, email: string): string {
-  const source = name.trim() || email;
-  const parts = source.split(/[\s@.]+/).filter(Boolean);
-  return (parts[0]?.[0] ?? "?").concat(parts[1]?.[0] ?? "").toUpperCase();
-}
-
-export default function PanelRail({ name, email }: Props) {
+export default function PanelRail({ identity }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -211,6 +212,7 @@ export default function PanelRail({ name, email }: Props) {
                       >
                         <NavIcon name={entry.icon} />
                         <span className={styles.itemLabel}>{entry.label}</span>
+                        <NavPending />
                       </Link>
                     </li>
                   );
@@ -221,13 +223,7 @@ export default function PanelRail({ name, email }: Props) {
         </nav>
 
         <div className={styles.user}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initials(name, email)}
-          </span>
-          <span className={styles.identity}>
-            <span className={styles.name}>{name || "No name"}</span>
-            <span className={styles.email}>{email}</span>
-          </span>
+          {identity}
           <button
             className={styles.signOut}
             type="button"

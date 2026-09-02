@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import BusyBar from "@/components/admin/BusyBar";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
 import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
 import Select from "@/components/admin/Select";
@@ -276,7 +277,8 @@ export default function VacanciesTable({ rows, total, page, perPage, sortKey, so
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles.container} aria-busy={pending || undefined}>
+        <BusyBar active={pending} />
         <div className={t.toolbar}>
           <div className={t.search}>
             <span className={t.searchIcon}>

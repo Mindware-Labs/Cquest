@@ -10,10 +10,8 @@ export const metadata: Metadata = {
 
 export default async function ApplicationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const application = await getApplication(id);
+  const [application, history] = await Promise.all([getApplication(id), getApplicationStatusHistory(id)]);
   if (!application) notFound();
-
-  const history = await getApplicationStatusHistory(id);
 
   return <ApplicationDetail application={application} history={history} />;
 }
