@@ -95,3 +95,23 @@
   color: var(--brand-petroleo);
   flex-shrink: 0;
 }
+
+/* Salida para quien llegó buscando trabajo, no una cotización: discreta,
+   fuera del <form>, después de los sellos de confianza. */
+.joinUsNote {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.joinUsLink {
+  color: var(--brand-petroleo);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.joinUsLink:hover {
+  color: var(--ink);
+}

@@ -58,17 +58,6 @@
   animation: open 0.16s var(--ease-out);
 }
 
-/* Filete de acento a la izquierda: marca que el panel cuelga del control. */
-.panel::before {
-  content: "";
-  position: absolute;
-  top: 0.9rem;
-  bottom: 0.9rem;
-  left: -1px;
-  width: 2px;
-  background: var(--brand-petroleo);
-}
-
 @keyframes open {
   from {
     opacity: 0;

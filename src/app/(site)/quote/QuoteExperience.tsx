@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import Navbar from "@/components/Navbar";
+import { TransitionLink } from "@/components/TransitionLink";
 import { EASE_OUT } from "@/components/services/motion";
 import type { ServiceId } from "@/components/services/data";
 import { dict } from "@/lib/dictionary";
@@ -73,6 +74,18 @@ export default function QuoteExperience({
             </li>
           ))}
         </motion.ul>
+
+        <motion.p
+          className={styles.joinUsNote}
+          initial={reduced ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: EASE_OUT }}
+        >
+          {dict.quoteExperience.joinUsPrompt}{" "}
+          <TransitionLink href="/join-us" className={styles.joinUsLink}>
+            {dict.quoteExperience.joinUsLink}
+          </TransitionLink>
+        </motion.p>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ const COPY = {
   eyebrow: "Our team",
   heading: "The team behind the operation.",
   cta: "Meet the team",
+  joinUs: "Join us",
   photoAlt: "The Center Quest team outside the company's Santo Domingo offices.",
 };
 
@@ -87,9 +88,12 @@ export default function MetricsSection({ reduced }: { reduced: boolean }) {
               <motion.p className={styles.lead} variants={settleVariants}>
                 {TEAM_HR_NOTE}
               </motion.p>
-              <motion.div variants={settleVariants}>
+              <motion.div className={styles.ctaRow} variants={settleVariants}>
                 <TransitionLink href="/team" className={styles.cta}>
                   {t.cta} <Arrow />
+                </TransitionLink>
+                <TransitionLink href="/join-us" className={styles.ctaSecondary}>
+                  {t.joinUs} <Arrow />
                 </TransitionLink>
               </motion.div>
             </motion.div>

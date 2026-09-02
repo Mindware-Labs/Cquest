@@ -13,8 +13,7 @@ export interface Dictionary {
     sectors: string;
     team: string;
     blog: string;
-    careers: string;
-    careersStrapline: string;
+    joinUs: string;
     contact: string;
     home: string;
     overview: string;
@@ -28,7 +27,7 @@ export interface Dictionary {
     bpo: { disciplines: string; method: string; slas: string; facilities: string };
     systems: { capabilities: string; method: string; commitments: string; work: string };
     team: { departments: string };
-    careers: { culture: string; openings: string; process: string; faq: string };
+    joinUs: { openings: string };
   };
   footer: {
     tagline: string;
@@ -112,6 +111,8 @@ export interface Dictionary {
     titleWithService: readonly [string, string];
     titleGeneric: string;
     lead: string;
+    joinUsPrompt: string;
+    joinUsLink: string;
   };
   quoteContact: {
     meta: string;
@@ -131,8 +132,7 @@ export const dict: Dictionary = {
     sectors: "Sectors",
     team: "Team",
     blog: "Blog",
-    careers: "Careers",
-    careersStrapline: "Open positions and talent pool",
+    joinUs: "Join us",
     contact: "Contact",
     home: "Home",
     overview: "Overview",
@@ -146,7 +146,7 @@ export const dict: Dictionary = {
     bpo: { disciplines: "Disciplines", method: "Method", slas: "SLAs", facilities: "Facilities" },
     systems: { capabilities: "Capabilities", method: "Method", commitments: "Commitments", work: "Work" },
     team: { departments: "Departments" },
-    careers: { culture: "Why CQ", openings: "Openings", process: "Process", faq: "FAQ" },
+    joinUs: { openings: "Open positions" },
   },
   footer: {
     tagline: "Call Center · Operations · Systems Development",
@@ -230,6 +230,8 @@ export const dict: Dictionary = {
     titleWithService: ["Let's scope your ", " operation."],
     titleGeneric: "Let's scope your operation.",
     lead: "Answer a few quick questions and we'll come back with a tailored proposal — usually within one business day.",
+    joinUsPrompt: "Looking for a job instead of a quote?",
+    joinUsLink: "See our open positions",
   },
   quoteContact: {
     meta: "3 steps · about 2 minutes",

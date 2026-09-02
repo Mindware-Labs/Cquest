@@ -76,21 +76,6 @@ function Icon({ name, size = 16 }: { name: string; size?: number }) {
           <path d="m10.5 10.5 3 3" strokeLinecap="round" />
         </svg>
       );
-    case "list":
-      return (
-        <svg {...c} width={size} height={size} aria-hidden="true">
-          <path d="M5.4 4.2h8.2M5.4 8h8.2M5.4 11.8h8.2M2.4 4.2h.7M2.4 8h.7M2.4 11.8h.7" strokeLinecap="round" />
-        </svg>
-      );
-    case "grid":
-      return (
-        <svg {...c} width={size} height={size} aria-hidden="true">
-          <rect x="2.4" y="2.4" width="4.8" height="4.8" />
-          <rect x="8.8" y="2.4" width="4.8" height="4.8" />
-          <rect x="2.4" y="8.8" width="4.8" height="4.8" />
-          <rect x="8.8" y="8.8" width="4.8" height="4.8" />
-        </svg>
-      );
     case "plus":
       return (
         <svg {...c} width={size} height={size} aria-hidden="true">
@@ -202,7 +187,6 @@ export default function UsersView({
   const formRef = useRef<HTMLFormElement>(null);
   const allRef = useRef<HTMLInputElement>(null);
 
-  const [view, setView] = useState<"list" | "grid">("list");
   const { pending: navigating, setParams } = useTableParams();
   const [text, setText] = useDebouncedSearch(query, (next) =>
     navigate({ q: next || null, page: 1 }),
@@ -498,46 +482,33 @@ export default function UsersView({
             six-digit code and sets their own password, which nobody else ever sees.
           </InfoHint>
         </div>
-        <div className={t.search}>
-          <span className={t.searchIcon}>
-            <Icon name="search" size={15} />
-          </span>
-          <input
-            className={t.searchInput}
-            type="search"
-            value={text}
-            onChange={(event) => {
-              setText(event.target.value);
-            }}
-            placeholder="Search by name or email"
-            aria-label="Search users"
-          />
-        </div>
+        <button
+          className={t.primary}
+          type="button"
+          onClick={() => setCreateOpen(true)}
+        >
+          <Icon name="plus" size={15} />
+          Add user
+        </button>
       </header>
-
-
 
       <div className={t.container}>
         <div className={t.toolbar}>
-          <div className={t.viewToggle} role="group" aria-label="User view mode">
-            <button className={t.viewButton} type="button" onClick={() => setView("list")} aria-pressed={view === "list"}>
-              <Icon name="list" size={15} />
-              List
-            </button>
-            <button className={t.viewButton} type="button" onClick={() => setView("grid")} aria-pressed={view === "grid"}>
-              <Icon name="grid" size={15} />
-              Grid
-            </button>
+          <div className={t.search}>
+            <span className={t.searchIcon}>
+              <Icon name="search" size={15} />
+            </span>
+            <input
+              className={t.searchInput}
+              type="search"
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+              placeholder="Search by name or email"
+              aria-label="Search users"
+            />
           </div>
-
-          <button
-            className={t.primary}
-            type="button"
-            onClick={() => setCreateOpen(true)}
-          >
-            <Icon name="plus" size={15} />
-            Add user
-          </button>
         </div>
 
         {/* Alto y opacidad en los dos sentidos: al soltar la selección la tabla
@@ -609,7 +580,7 @@ export default function UsersView({
           <p className={t.empty}>
             {query ? `No user matches “${query}”.` : "No accounts yet."}
           </p>
-        ) : view === "list" ? (
+        ) : (
           <div className={t.scroller}>
             <table className={t.table}>
               <caption className={t.srOnly}>
@@ -683,50 +654,6 @@ export default function UsersView({
                 ))}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <div className={t.grid}>
-            {visible.map((user, index) => (
-              <article
-                key={user.id}
-                className={`${t.card} ${t.enter}`}
-                style={{ "--i": Math.min(index, STAGGER_LIMIT) } as React.CSSProperties}
-                data-selected={selected.has(user.id)}
-              >
-                <div className={t.cardHead}>
-                  <input
-                    className={t.checkbox}
-                    type="checkbox"
-                    checked={selected.has(user.id)}
-                    onChange={() => toggle(user.id)}
-                    aria-label={`Select “${user.name || user.email}”`}
-                  />
-                  <span className={t.avatar} aria-hidden="true">
-                    {initials(user.name, user.email)}
-                  </span>
-                  <span className={t.cardIdentity}>
-                    {personCell(user)}
-                    <span className={t.cardMeta}>{user.email}</span>
-                  </span>
-                </div>
-
-                <div className={t.cardRows}>
-                  <div className={t.cardRow}>
-                    <span className={t.cardRowLabel}>Added</span>
-                    {stampCell(user)}
-                  </div>
-                  <div className={t.cardRow}>
-                    <span className={t.cardRowLabel}>Role</span>
-                    <span className={t.chip}>Admin</span>
-                  </div>
-                </div>
-
-                <div className={t.cardFoot}>
-                  {statusBadge(user)}
-                  {rowActions(user)}
-                </div>
-              </article>
-            ))}
           </div>
         )}
       </div>

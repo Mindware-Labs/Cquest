@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileNav from "@/components/navigation/MobileNav";
-import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getNavLinks, getServiceNavLinks, isDarkHeroPage } from "@/components/navigation/data";
+import { ACCENT_CTA_PAGES, DARK_PAGES, NAV_EASE_OUT, NAV_HEIGHT_PX, SERVICE_DETAIL_PAGES, getCtaOverride, getNavLinksFor, isDarkHeroPage } from "@/components/navigation/data";
 
 import container from "@/components/services/Container.module.css";
 import { useMagnetic } from "@/hooks/useMagnetic";
@@ -57,11 +57,15 @@ export default function Navbar() {
     darkPage || (isDarkHeroPage(pathname) && !scrolled && !open);
 
   const accentCta = (ACCENT_CTA_PAGES as readonly string[]).includes(pathname);
-  const navLinks = getServiceNavLinks()[pathname] ?? getNavLinks();
+  const navLinks = getNavLinksFor(pathname);
 
   const quoteHref = serviceDetailPage
     ? `/quote?servicio=${pathname.split("/").pop()}`
     : "/quote";
+
+  const ctaOverride = getCtaOverride(pathname);
+  const ctaHref = ctaOverride?.href ?? quoteHref;
+  const ctaLabel = ctaOverride?.label ?? dict.common.contactUs;
 
   const activeHref = useSectionSpy(
     navLinks.map((link) => link.href),
@@ -109,7 +113,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <MotionLink
             ref={ctaRef}
-            href={quoteHref}
+            href={ctaHref}
             onMouseEnter={onMouseEnter}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
@@ -128,7 +132,7 @@ export default function Navbar() {
             }`}
           >
             <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/0 transition-[background-color] duration-500 ease-out group-hover/cta:bg-black/10" />
-            <span className="relative z-10">{dict.common.contactUs}</span>
+            <span className="relative z-10">{ctaLabel}</span>
           </MotionLink>
 
           <button
@@ -158,7 +162,8 @@ export default function Navbar() {
         reduced={reduced}
         onClose={() => setOpen(false)}
         links={navLinks}
-        ctaHref={quoteHref}
+        ctaHref={ctaHref}
+        ctaLabel={ctaOverride?.label}
         theme={darkPage ? "dark" : "light"}
       />
     </motion.header>

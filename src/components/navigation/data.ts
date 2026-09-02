@@ -19,25 +19,18 @@ export const SERVICE_DETAIL_PAGES = [
 export const DARK_HERO_PAGES = [
   ...SERVICE_DETAIL_PAGES,
   "/team",
-  // "/careers",
   "/partnerships/mindware-labs",
 
   "/location",
 ] as const;
 
 /* Árboles de rutas cuyas páginas abren todas con hero oscuro, comparados por
-   prefijo en vez de por ruta exacta. Careers es el primero: /careers/<slug> es
-   una página por vacante, así que la lista de match exacto no puede
-   enumerarlas — y una vacante con el navbar claro sobre su hero oscuro pone
-   los links encima de su propio color. */
-const DARK_HERO_TREES: readonly string[] = [/* "/careers/" */];
+   prefijo en vez de por ruta exacta. */
+const DARK_HERO_TREES: readonly string[] = [];
 
-/* True en cualquier página que abra con hero oscuro a sangre completa.
-   /careers/apply queda deliberadamente fuera: es un formulario sobre
-   superficie clara y conserva el navbar normal. */
+/* True en cualquier página que abra con hero oscuro a sangre completa. */
 export function isDarkHeroPage(pathname: string): boolean {
   if ((DARK_HERO_PAGES as readonly string[]).includes(pathname)) return true;
-  // if (pathname === "/careers/apply") return false;
   return DARK_HERO_TREES.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -51,27 +44,16 @@ export const ACCENT_CTA_PAGES = ["/partnerships/mindware-labs"] as const;
 
 export const NO_FOOTER_PAGES = ["/partnerships/mindware-labs"] as const;
 
-/* Los hijos del menú Servicios. Empleos vive AQUÍ y no en el primer nivel:
-   la barra principal es para las tres líneas de negocio y la ruta a cotizar;
-   una vacante no compite con eso. Se declara en un solo sitio porque el mismo
+/* Los hijos del menú Servicios. Se declara en un solo sitio porque el mismo
    menú se arma en cinco lugares (nav general, hero, legal, location, hero de
    partnerships) y separarlos es garantizar que se desincronicen. */
 export function getServiceChildren(): readonly NavLink[] {
-  return [
-    ...SERVICES.map((service) => ({
-      label: service.label,
-      href: service.href,
-      description: service.strapline,
-      icon: SERVICE_ICON[service.id],
-    })),
-    // Empleos fuera de esta entrega (ver src/app/(site)/_careers).
-    // {
-    //   label: dict.nav.careers,
-    //   href: "/careers",
-    //   description: dict.nav.careersStrapline,
-    //   icon: "userplus" as ServiceIconName,
-    // },
-  ];
+  return SERVICES.map((service) => ({
+    label: service.label,
+    href: service.href,
+    description: service.strapline,
+    icon: SERVICE_ICON[service.id],
+  }));
 }
 
 export function getNavLinks(): readonly NavLink[] {
@@ -87,10 +69,12 @@ export function getNavLinks(): readonly NavLink[] {
        #why-us, no a #about, para que las dos barras lleven al mismo sitio. */
     { label: dict.hero.navLinks.whyUs, href: "/#why-us" },
     { label: dict.nav.blog, href: "/blog" },
+    { label: dict.nav.joinUs, href: "/join-us" },
   ];
 }
 
-function getLegalNavLinks(): readonly NavLink[] {
+/* Nav completa con Inicio delante: páginas sin secciones propias que ancle. */
+function getFullNavLinks(): readonly NavLink[] {
   return [
     { label: dict.nav.home, href: "/" },
     {
@@ -102,6 +86,7 @@ function getLegalNavLinks(): readonly NavLink[] {
     { label: dict.hero.navLinks.team, href: "/team" },
     { label: dict.nav.sectors, href: "/#sectors" },
     { label: dict.nav.blog, href: "/blog" },
+    { label: dict.nav.joinUs, href: "/join-us" },
   ];
 }
 
@@ -144,22 +129,15 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.serviceSections.systems.work, href: "#work" },
     ],
 
-    "/team": [
-      home,
-      { label: dict.serviceSections.team.departments, href: "#departments" },
-    ],
+    /* La nav completa, no la reducida con solo "Departments": desde /team se
+       puede llegar sin haber pasado por el inicio (ver MetricsSection "Meet
+       the team" y el nav general), así que necesita el mismo camino de
+       vuelta a Home que /join-us. Sin "Join us" en la lista: en esta página
+       ese destino ya lo ofrece el CTA de la barra (ver getCtaOverride), y
+       repetirlo en el menú es lo mismo dos veces. */
+    "/team": getFullNavLinks().filter((link) => link.href !== "/join-us"),
 
-    /* Misma forma "página propia, anclas propias" que /team. Solo la landing
-       de careers lo recibe: una vacante (/careers/<slug>) no tiene índice de
-       secciones que valga la pena navegar, así que cae en los links sitewide,
-       donde "Empleos" es el camino de vuelta al listado. */
-    // "/careers": [
-    //   home,
-    //   { label: dict.serviceSections.careers.culture, href: "#culture" },
-    //   { label: dict.serviceSections.careers.openings, href: "#openings" },
-    //   { label: dict.serviceSections.careers.process, href: "#process" },
-    //   { label: dict.serviceSections.careers.faq, href: "#faq" },
-    // ],
+    "/join-us": getFullNavLinks(),
 
     "/partnerships/mindware-labs": [
       {
@@ -171,8 +149,8 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.hero.navLinks.sectors, href: "/#sectors" },
     ],
 
-    "/legal/terms": getLegalNavLinks(),
-    "/legal/privacy": getLegalNavLinks(),
+    "/legal/terms": getFullNavLinks(),
+    "/legal/privacy": getFullNavLinks(),
 
     "/location": [
       {
@@ -186,6 +164,24 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.nav.blog, href: "/blog" },
     ],
   };
+}
+
+/* Ruta exacta primero; las páginas colgadas de /join-us (postulación) no
+   tienen entrada propia y heredan la nav completa del listado. */
+export function getNavLinksFor(pathname: string): readonly NavLink[] {
+  const exact = getServiceNavLinks()[pathname];
+  if (exact) return exact;
+  if (pathname.startsWith("/join-us/")) return getFullNavLinks();
+  return getNavLinks();
+}
+
+/* Casos puntuales donde el CTA persistente de la navbar no debe ser
+   "Contact us" → /quote: en /team el cierre de la página ya ofrece hablar de
+   negocio ("Discuss your operation" en OrgChart), así que arriba y en el
+   hero conviene empujar hacia postularse en su lugar. */
+export function getCtaOverride(pathname: string): { label: string; href: string } | null {
+  if (pathname === "/team") return { label: dict.nav.joinUs, href: "/join-us" };
+  return null;
 }
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;

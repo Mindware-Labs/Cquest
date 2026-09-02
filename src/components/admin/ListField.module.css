@@ -1,0 +1,222 @@
+.listField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* Variables, no la propiedad directa: así un consumidor con su propio
+     espaciado (un panel con flex + gap, por ejemplo) las pisa vía className
+     sin pelear con el orden de los módulos CSS ni la especificidad. */
+  margin: var(--list-margin, 1.5rem 0);
+}
+
+.label {
+  margin-top: var(--list-label-gap, 0.6rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.help {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.listRows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A partir de ~5 líneas deja de estirar el formulario: scrollea dentro de su
+   propio rectángulo, mismo tope que el panel del Select en esta misma modal. */
+.listRows[data-capped] {
+  max-height: 13.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.35rem;
+}
+
+/* Grid de una sola pista: al quitar una fila se anima 1fr → 0fr en vez de
+   desmontarla de golpe, mismo truco que la barra de selección de las tablas. */
+.listRow {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.listRow[data-removing] {
+  animation: listRowOut 0.18s var(--ease-out) forwards;
+}
+
+.listRowInner {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0;
+}
+
+.index {
+  flex: none;
+  width: 1.1rem;
+  text-align: right;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+  opacity: 0.55;
+}
+
+.listInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  transition:
+    background 0.16s var(--ease-out),
+    border-color 0.16s var(--ease-out),
+    box-shadow 0.16s var(--ease-out);
+}
+
+.listInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.listInput:hover {
+  background: var(--surface-sunken);
+}
+
+.listInput:focus {
+  outline: none;
+  background: var(--surface-raised);
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 18%, transparent);
+}
+
+/* Discreto por defecto: se recupera al pasar el mouse por la fila, al entrar
+   por teclado, o al enfocar el botón mismo — nunca desaparece del todo. */
+.listRemove {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-tertiary);
+  opacity: 0.4;
+  cursor: pointer;
+  transition:
+    opacity 0.16s var(--ease-out),
+    color 0.16s var(--ease-out),
+    background 0.16s var(--ease-out);
+}
+
+.listRow:hover .listRemove,
+.listRow:focus-within .listRemove {
+  opacity: 1;
+}
+
+.listRemove:hover {
+  color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-raised));
+}
+
+.listRemove:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.listFoot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.listAdd {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.1rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.18s var(--ease-out),
+    border-color 0.18s var(--ease-out),
+    background 0.18s var(--ease-out);
+}
+
+.listAdd:hover {
+  color: var(--brand-petroleo);
+  border-color: var(--brand-petroleo);
+  background: color-mix(in srgb, var(--brand-petroleo) 8%, var(--surface-raised));
+}
+
+.listAdd:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.hint {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+}
+
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--danger-text);
+}
+
+@keyframes listRowOut {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listInput,
+  .listRemove,
+  .listAdd {
+    transition: none;
+  }
+
+  /* No a "animation: none": el código espera el evento animationend para
+     recortar el array. Una animación de 1ms no se ve, pero sigue disparando
+     ese evento. */
+  .listRow[data-removing] {
+    animation-duration: 1ms;
+  }
+}

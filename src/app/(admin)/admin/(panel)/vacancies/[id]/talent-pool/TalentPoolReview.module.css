@@ -1,0 +1,275 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  min-height: 2.25rem;
+  margin-left: -0.55rem;
+  padding-inline: 0.55rem;
+  border-radius: 2px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.18s var(--ease-out), background 0.18s var(--ease-out);
+}
+
+.back:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.lead {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+.empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+}
+
+/* ---------- Tarjetas ---------- */
+
+/* Grilla, no una sola columna: con el ancho completo (sin max-width en
+   .page) una lista de una columna dejaba casi toda la pantalla vacía a la
+   derecha de cada tarjeta. auto-fit (no auto-fill): auto-fill reserva
+   columnas vacías aunque no haya tarjetas para llenarlas — con 1 sola
+   tarjeta se veía angosta, pegada a la izquierda, con espacio muerto al
+   lado. auto-fit colapsa esas columnas vacías y deja que la(s) tarjeta(s)
+   que sí hay ocupen el 1fr disponible. */
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  align-items: start;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-raised);
+}
+
+.cardMain {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  color: var(--brand-petroleo);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.matchBadge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-verde) 15%, var(--surface-raised));
+  color: var(--brand-verde);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.contact {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tag {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  background: var(--surface-sunken);
+}
+
+.message {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-left: 2px solid var(--border);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+}
+
+.meta {
+  font-size: 0.74rem;
+  color: var(--text-tertiary);
+}
+
+/* ---------- Acciones ---------- */
+
+/* flex-wrap sin condicionarlo a un breakpoint de viewport: en una grilla de
+   varias columnas la tarjeta puede quedar angosta aun en pantallas anchas,
+   así que lo que importa es el ancho de la tarjeta, no el de la ventana. */
+/* "Discard" y "Save" viven en su propio grupo (.decision) para que, si no
+   entran junto a "View resume", pasen a la siguiente línea JUNTOS — antes
+   cada botón envolvía por su cuenta y terminaban repartidos por la tarjeta. */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.decision {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.ghost,
+.discard,
+.save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+
+.ghost {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+}
+
+.ghost:hover {
+  background: var(--surface-sunken);
+}
+
+.discard {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.discard:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.save {
+  border: 1px solid var(--brand-petroleo);
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+}
+
+.save:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.discard:disabled,
+.save:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.ghost:focus-visible,
+.discard:focus-visible,
+.save:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}

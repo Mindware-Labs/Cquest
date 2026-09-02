@@ -1,0 +1,487 @@
+/* ---------- Cabecera en dos columnas: copy + panel de contratación ---------- */
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(19rem, 0.85fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: end;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--brand-petroleo);
+}
+
+.pulse {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--text-tertiary);
+}
+
+.pulse[data-state="on"] {
+  background: var(--brand-verde);
+  animation: pulse 2.2s var(--ease-out) infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-verde) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--brand-verde) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-verde) 0%, transparent);
+  }
+}
+
+.headline {
+  margin: 1.2rem 0 0;
+  max-width: 14ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.6rem, 5.6vw, 4.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  color: var(--foreground);
+}
+
+.lead {
+  margin: 1.5rem 0 0;
+  max-width: 50ch;
+  font-size: clamp(0.98rem, 1.25vw, 1.1rem);
+  line-height: 1.7;
+  text-wrap: pretty;
+  color: var(--text-secondary);
+}
+
+/* ---------- Buscador ---------- */
+
+.searchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.75rem;
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 22rem;
+  max-width: 34rem;
+  min-height: 3.35rem;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  transition: border-color 0.22s var(--ease-out), box-shadow 0.22s var(--ease-out);
+}
+
+.search:focus-within {
+  border-color: var(--brand-petroleo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-petroleo) 14%, transparent);
+}
+
+.searchIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3rem;
+  color: var(--brand-petroleo);
+}
+
+.searchIcon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0.5rem 0 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.94rem;
+  color: var(--foreground);
+}
+
+.searchInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.searchInput:focus-visible {
+  outline: none;
+}
+
+.searchClear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-right: 0.45rem;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.searchClear svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.searchClear:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.searchClear:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: -3px;
+}
+
+.resumeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--brand-petroleo);
+  text-decoration: none;
+  transition: color 0.2s var(--ease-out);
+}
+
+.resumeLink:hover {
+  color: var(--ink);
+}
+
+.resumeLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+/* ---------- Panel: la contratación en vivo, no fotos ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  box-shadow: 0 32px 64px -48px rgba(13, 30, 41, 0.45);
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.95rem 1.4rem;
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.panelStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.panelHead .pulse {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.panelHead .pulse[data-state="on"] {
+  background: var(--brand-celeste);
+}
+
+.panelUpdated {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.panelStat {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.1rem;
+  padding: 1.6rem 1.4rem 1.35rem;
+}
+
+.panelCount {
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(3.6rem, 6vw, 5rem);
+  font-weight: 500;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.panelCountLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-bottom: 0.15rem;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  color: var(--text-secondary);
+}
+
+.panelCountLabel strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.panelList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+.panelList li + li {
+  border-top: 1px solid var(--border);
+}
+
+.panelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 1.4rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.panelRow:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.panelRow:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: -2px;
+}
+
+.panelRowIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-sunken);
+  color: var(--brand-petroleo);
+  transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.panelRowIcon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.panelRow:hover .panelRowIcon {
+  border-color: var(--brand-petroleo);
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+}
+
+.panelRowLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.panelRowCount {
+  flex: none;
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.panelRowArrow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1rem;
+  color: var(--brand-petroleo);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+
+.panelRow:hover .panelRowArrow {
+  opacity: 1;
+  transform: none;
+}
+
+.panelFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.9rem 1.4rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-sunken);
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.panelLocations {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.panelLocations svg {
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  color: var(--brand-petroleo);
+}
+
+.panelFootLink {
+  font-weight: 600;
+  color: var(--brand-petroleo);
+  text-decoration: none;
+  transition: color 0.2s var(--ease-out);
+}
+
+.panelFootLink:hover {
+  color: var(--ink);
+}
+
+.panelFootLink:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+.panelEmpty {
+  padding: 1.6rem 1.4rem 1.5rem;
+}
+
+.panelEmptyText {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.panelCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 1.25rem;
+  padding: 0.8rem 1.25rem;
+  border: 1px solid var(--brand-petroleo);
+  border-radius: 2px;
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.24s var(--ease-out), border-color 0.24s var(--ease-out);
+}
+
+.panelCta:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.panelCta:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 3px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 64rem) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .headline {
+    max-width: 16ch;
+  }
+
+  .panel {
+    max-width: 36rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .headline {
+    font-size: clamp(2.2rem, 10vw, 2.8rem);
+  }
+
+  .search {
+    max-width: none;
+  }
+
+  .panel {
+    max-width: none;
+  }
+
+  .panelStat,
+  .panelRow,
+  .panelHead,
+  .panelFoot,
+  .panelEmpty {
+    padding-inline: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse[data-state="on"] {
+    animation: none;
+  }
+
+  .search,
+  .searchClear,
+  .resumeLink,
+  .panelRow,
+  .panelRowIcon,
+  .panelRowArrow,
+  .panelFootLink,
+  .panelCta {
+    transition: none;
+  }
+}

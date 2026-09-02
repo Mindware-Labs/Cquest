@@ -139,12 +139,19 @@
   text-wrap: pretty;
 }
 
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.85rem;
+}
+
 .cta {
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
   gap: 0.75rem;
-  margin-top: 1.85rem;
   padding: 0.85rem 1.35rem;
   border-radius: 2px;
   background: var(--ab-celeste);
@@ -171,6 +178,43 @@
 }
 
 .cta:focus-visible {
+  outline: 2px solid var(--ab-celeste);
+  outline-offset: 3px;
+}
+
+/* Segunda intención junto a "Meet the team": contorno, no relleno, para que
+   la principal (conocer al equipo) siga leyéndose primero. */
+.ctaSecondary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--ab-celeste) 45%, transparent);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ab-celeste);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  transition:
+    background-color 260ms var(--ease-out),
+    border-color 260ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+.ctaSecondary:hover {
+  background: color-mix(in srgb, var(--ab-celeste) 12%, transparent);
+  border-color: var(--ab-celeste);
+}
+
+.ctaSecondary:active {
+  transform: scale(0.96);
+}
+
+.ctaSecondary:focus-visible {
   outline: 2px solid var(--ab-celeste);
   outline-offset: 3px;
 }

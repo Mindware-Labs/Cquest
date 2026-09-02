@@ -4,9 +4,10 @@ import { motion } from "motion/react";
 import Arrow from "@/components/services/Arrow";
 import container from "@/components/services/Container.module.css";
 import ServiceIcon from "@/components/services/ServiceIcon";
+import type { ServiceIconName } from "@/components/services/data";
 import { EASE_OUT } from "@/components/services/motion";
 import { TransitionLink } from "@/components/TransitionLink";
-import { DEPARTMENTS } from "../data";
+import type { PublicDepartment } from "@/lib/departments";
 import styles from "./OrgChart.module.css";
 
 const COPY = {
@@ -16,9 +17,16 @@ const COPY = {
   closeTitle: "Build the right operation for your business.",
   closeBody: "Tell us what needs to run. We will help you define the team, process and technology behind it.",
   closeAction: "Discuss your operation",
+  closeSecondary: "Looking to join the team instead?",
 };
 
-export default function DepartmentDirectory({ reduced }: { reduced: boolean }) {
+export default function DepartmentDirectory({
+  reduced,
+  departments,
+}: {
+  reduced: boolean;
+  departments: PublicDepartment[];
+}) {
   const t = COPY;
 
   return (
@@ -44,7 +52,7 @@ export default function DepartmentDirectory({ reduced }: { reduced: boolean }) {
         </header>
 
         <div className={styles.directory} role="list" aria-label={t.listLabel}>
-          {DEPARTMENTS.map((department, index) => (
+          {departments.map((department, index) => (
             <motion.article
               key={department.id}
               className={styles.department}
@@ -56,7 +64,7 @@ export default function DepartmentDirectory({ reduced }: { reduced: boolean }) {
             >
               <header className={styles.departmentHeader}>
                 <span className={styles.icon}>
-                  <ServiceIcon name={department.icon} />
+                  <ServiceIcon name={department.icon as ServiceIconName} />
                 </span>
                 <h3>{department.label}</h3>
               </header>
@@ -83,6 +91,9 @@ export default function DepartmentDirectory({ reduced }: { reduced: boolean }) {
           <div>
             <h2>{t.closeTitle}</h2>
             <p>{t.closeBody}</p>
+            <TransitionLink href="/join-us" className={styles.closeSecondary}>
+              {t.closeSecondary} <Arrow />
+            </TransitionLink>
           </div>
           <TransitionLink href="/quote" className={styles.closeAction}>
             {t.closeAction} <Arrow />

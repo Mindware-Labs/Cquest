@@ -4,13 +4,16 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { PER_PAGE_OPTIONS, pageList } from "@/components/admin/pagination";
-import { useTableParams } from "@/components/admin/useTableParams";
+import { useDebouncedSearch, useTableParams } from "@/components/admin/useTableParams";
+import DateTimePicker from "@/components/admin/DateTimePicker";
 import Select from "@/components/admin/Select";
 import Modal from "@/components/admin/Modal";
 import t from "@/components/admin/dataTable.module.css";
 import { useToast } from "@/components/admin/Toaster";
-import { deletePosts, setPostStatus, type PostListRow } from "@/server/posts";
+import { deletePosts, setPostStatus, type PostListCounts, type PostListRow } from "@/server/posts";
+import type { CategoryRow } from "@/server/categories";
 import styles from "./PostsTable.module.css";
 
 type Badge = "published" | "scheduled" | "draft" | "hidden";
@@ -64,6 +67,13 @@ function StatusDot({ shape }: { shape: "full" | "half" | "ring" }) {
 function Icon({ name }: { name: string }) {
   const c = { width: 14, height: 14, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
   switch (name) {
+    case "search":
+      return (
+        <svg {...c} width={16} height={16} aria-hidden="true">
+          <circle cx="7.1" cy="7.1" r="4.5" />
+          <path d="m10.5 10.5 3 3" strokeLinecap="round" />
+        </svg>
+      );
     case "clock":
       return (
         <svg {...c} aria-hidden="true">
@@ -133,6 +143,12 @@ function Icon({ name }: { name: string }) {
           <path d="M6.2 3.6 10.6 8l-4.4 4.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
+    case "clear":
+      return (
+        <svg {...c} width="12" height="12" aria-hidden="true">
+          <path d="M3 3l10 10M13 3 3 13" strokeLinecap="round" />
+        </svg>
+      );
     default:
       return (
         <svg {...c} aria-hidden="true">
@@ -167,12 +183,60 @@ type Props = {
   perPage: number;
   sortKey: SortKey;
   sortDir: SortDir;
+  query: string;
+  status: string | null;
+  categoryId: string | null;
+  publishedFrom: string | null;
+  publishedTo: string | null;
+  counts: PostListCounts;
+  categories: CategoryRow[];
 };
 
-export default function PostsTable({ rows, total, page, perPage, sortKey, sortDir }: Props) {
+export default function PostsTable({
+  rows,
+  total,
+  page,
+  perPage,
+  sortKey,
+  sortDir,
+  query,
+  status,
+  categoryId,
+  publishedFrom,
+  publishedTo,
+  counts,
+  categories,
+}: Props) {
   const toast = useToast();
   const router = useRouter();
+  const reduced = useReducedMotion();
   const { pending, setParams } = useTableParams();
+  const [text, setText] = useDebouncedSearch(query, (next) => navigate({ q: next || null, page: 1 }));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  /* Cada cambio de página, orden o búsqueda es una navegación: el servidor
+     vuelve a consultar con los parámetros nuevos y devuelve solo esas filas. */
+  function navigate(next: Record<string, string | number | null>) {
+    setSelected(new Set());
+    setParams(next);
+  }
+
+  function changePublishedFrom(value: string) {
+    if (value && publishedTo && value > publishedTo) {
+      toast.error("Invalid date range", "The start date can't be after the end date.");
+      return;
+    }
+    navigate({ publishedFrom: value || null, page: 1 });
+  }
+
+  function changePublishedTo(value: string) {
+    if (value && publishedFrom && value < publishedFrom) {
+      toast.error("Invalid date range", "The end date can't be before the start date.");
+      return;
+    }
+    navigate({ publishedTo: value || null, page: 1 });
+  }
+
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -212,17 +276,9 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
     setPendingIds([]);
     router.refresh();
   }
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+
   const allRef = useRef<HTMLInputElement>(null);
-
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-
-  /* Cada cambio de página u orden es una navegación: el servidor vuelve a
-     consultar con los parámetros nuevos y devuelve solo esas filas. */
-  function navigate(next: Record<string, string | number>) {
-    setSelected(new Set());
-    setParams(next);
-  }
 
   const allChecked = rows.length > 0 && rows.every((row) => selected.has(row.id));
   const someChecked = selected.size > 0 && !allChecked;
@@ -267,38 +323,144 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
 
   const pendingTitles = rows.filter((row) => pendingIds.includes(row.id)).map((row) => row.title);
 
+  const categoryOptions = [
+    { value: "", label: "All categories" },
+    ...categories.map((entry) => ({ value: entry.id, label: entry.name })),
+  ];
+
+  const hasFilters = Boolean(query || status || categoryId || publishedFrom || publishedTo);
+
+  const tabs: { key: Badge | "all"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "draft", label: "Draft" },
+    { key: "scheduled", label: "Scheduled" },
+    { key: "published", label: "Published" },
+    { key: "hidden", label: "Hidden" },
+  ];
+
   return (
     <>
       <div className={styles.container}>
-      {selected.size > 0 && (
-        <div className={styles.bulk}>
-          <div className={styles.bulkInner}>
-            <span className={styles.bulkCount}>
-              {selected.size} {selected.size === 1 ? "selected" : "selected"}
-              <span className={styles.bulkScope}>on this page</span>
-            </span>
-            <span className={styles.bulkActions}>
+      <div className={t.toolbar}>
+        <div className={t.search}>
+          <span className={t.searchIcon}>
+            <Icon name="search" />
+          </span>
+          <input
+            className={t.searchInput}
+            type="search"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Search by title or category"
+            aria-label="Search articles"
+          />
+        </div>
+
+        <div className={styles.filters}>
+          <Select
+            value={categoryId ?? ""}
+            options={categoryOptions}
+            onChange={(next) => navigate({ category: next || null, page: 1 })}
+            label="Filter by category"
+            width="12rem"
+          />
+
+          <div className={styles.dates}>
+            <DateTimePicker
+              value={publishedFrom ?? ""}
+              onChange={changePublishedFrom}
+              label="Published from"
+              placeholder="From"
+              showTime={false}
+              max={publishedTo ?? undefined}
+              width="9.5rem"
+            />
+            <span className={styles.datesSep}>–</span>
+            <DateTimePicker
+              value={publishedTo ?? ""}
+              onChange={changePublishedTo}
+              label="Published to"
+              placeholder="To"
+              showTime={false}
+              min={publishedFrom ?? undefined}
+              width="9.5rem"
+            />
+            {(publishedFrom || publishedTo) && (
               <button
-                className={styles.bulkButton}
+                className={styles.datesClear}
                 type="button"
-                data-tone="danger"
-                disabled={busy}
-                onClick={() => askDelete([...selected])}
+                onClick={() => navigate({ publishedFrom: null, publishedTo: null, page: 1 })}
+                aria-label="Clear published date filter"
               >
-                Delete
+                <Icon name="clear" />
               </button>
-              <button
-                className={styles.bulkButton}
-                type="button"
-                data-variant="plain"
-                onClick={() => setSelected(new Set())}
-              >
-                Clear selection
-              </button>
-            </span>
+            )}
           </div>
         </div>
-      )}
+      </div>
+
+      <div className={styles.tabs} role="group" aria-label="Filter by status">
+        {tabs.map((tab) => {
+          const active = tab.key === "all" ? status === null : status === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={styles.tab}
+              aria-pressed={active}
+              onClick={() => navigate({ status: tab.key === "all" ? null : tab.key, page: 1 })}
+            >
+              {tab.key !== "all" && (
+                <span className={styles.tabDot} style={{ color: STATUS[tab.key].ink }}>
+                  <StatusDot shape={STATUS[tab.key].dot} />
+                </span>
+              )}
+              {tab.label}
+              <span className={styles.tabCount}>{counts[tab.key]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <AnimatePresence initial={false}>
+        {selected.size > 0 && (
+          <motion.div
+            key="bulk"
+            className={styles.bulk}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <div className={styles.bulkInner}>
+              <span className={styles.bulkCount}>
+                {selected.size} {selected.size === 1 ? "selected" : "selected"}
+                <span className={styles.bulkScope}>on this page</span>
+              </span>
+              <span className={styles.bulkActions}>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-tone="danger"
+                  disabled={busy}
+                  onClick={() => askDelete([...selected])}
+                >
+                  Delete
+                </button>
+                <button
+                  className={styles.bulkButton}
+                  type="button"
+                  data-variant="plain"
+                  onClick={() => setSelected(new Set())}
+                >
+                  Clear selection
+                </button>
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className={styles.scroller}>
         <table className={styles.table}>
@@ -343,7 +505,7 @@ export default function PostsTable({ rows, total, page, perPage, sortKey, sortDi
             {rows.length === 0 && (
               <tr>
                 <td className={styles.empty} colSpan={6}>
-                  No articles yet. Create the first one from “New article”.
+                  {hasFilters ? "No article matches these filters." : "No articles yet. Create the first one from “New article”."}
                 </td>
               </tr>
             )}

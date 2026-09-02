@@ -15,14 +15,53 @@ import styles from "./PanelRail.module.css";
 
 type Props = { name: string; email: string };
 
-const NAV = [
-  { href: "/admin/posts", label: "Articles", icon: "doc" },
-  { href: "/admin/categories", label: "Categories", icon: "tag" },
-  { href: "/admin/users", label: "Users", icon: "people" },
+/* Agrupado por área, no una lista plana: Blog y Vacantes son los dos módulos
+   de contenido del panel, y separarlos evita que uno se pierda entre las filas
+   del otro apenas se agreguen más pantallas (aplicaciones, etc.) a cada uno. */
+const NAV_GROUPS = [
+  {
+    label: "Overview",
+    items: [{ href: "/admin", label: "Dashboard", icon: "chart" }],
+  },
+  {
+    label: "Blog",
+    items: [
+      { href: "/admin/posts", label: "Articles", icon: "doc" },
+      { href: "/admin/categories", label: "Categories", icon: "tag" },
+    ],
+  },
+  {
+    label: "Vacancies",
+    items: [
+      { href: "/admin/vacancies", label: "Vacancies", icon: "briefcase" },
+      { href: "/admin/applications", label: "Applications", icon: "inbox" },
+      { href: "/admin/talent-pool", label: "Talent pool", icon: "star" },
+      { href: "/admin/departments", label: "Departments", icon: "building" },
+    ],
+  },
+  {
+    label: "Accounts",
+    items: [{ href: "/admin/users", label: "Users", icon: "people" }],
+  },
 ] as const;
 
-function NavIcon({ name }: { name: (typeof NAV)[number]["icon"] }) {
+type NavIconName = (typeof NAV_GROUPS)[number]["items"][number]["icon"];
+
+function NavIcon({ name }: { name: NavIconName }) {
   const common = { width: 16, height: 16, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor", strokeWidth: 1.3 };
+  if (name === "chart")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M2.6 13.4V2.6M2.6 13.4h10.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M5 13.4V9M8 13.4V6M11 13.4V7.6" strokeLinecap="round" />
+      </svg>
+    );
+  if (name === "star")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M8 2.4l1.7 3.6 3.9.5-2.9 2.7.7 3.9L8 11.2l-3.4 1.9.7-3.9-2.9-2.7 3.9-.5L8 2.4Z" strokeLinejoin="round" />
+      </svg>
+    );
   if (name === "doc")
     return (
       <svg {...common} aria-hidden="true">
@@ -35,6 +74,29 @@ function NavIcon({ name }: { name: (typeof NAV)[number]["icon"] }) {
       <svg {...common} aria-hidden="true">
         <path d="M2.4 7.3V2.4h4.9l6.3 6.3-4.9 4.9L2.4 7.3Z" strokeLinejoin="round" />
         <circle cx="5.1" cy="5.1" r="1" />
+      </svg>
+    );
+  if (name === "briefcase")
+    return (
+      <svg {...common} aria-hidden="true">
+        <rect x="2.2" y="5.2" width="11.6" height="8" strokeLinejoin="round" />
+        <path d="M5.6 5.2V3.6h4.8v1.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2.2 9h11.6" strokeLinecap="round" />
+      </svg>
+    );
+  if (name === "inbox")
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M2.4 9.2 4.2 3.4h7.6l1.8 5.8v3.4H2.4V9.2Z" strokeLinejoin="round" />
+        <path d="M2.4 9.2h3.4l.9 1.6h2.6l.9-1.6h3.4" strokeLinejoin="round" />
+      </svg>
+    );
+  if (name === "building")
+    return (
+      <svg {...common} aria-hidden="true">
+        <rect x="3.4" y="2.2" width="9.2" height="11.6" strokeLinejoin="round" />
+        <path d="M5.8 4.8h.01M8 4.8h.01M10.2 4.8h.01M5.8 7.4h.01M8 7.4h.01M10.2 7.4h.01M5.8 10h.01M10.2 10h.01" strokeLinecap="round" />
+        <path d="M6.8 13.8v-2.4h2.4v2.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   return (
@@ -129,26 +191,33 @@ export default function PanelRail({ name, email }: Props) {
 
         {/* En compacto el rail tapa el contenido: navegar tiene que cerrarlo. */}
         <nav className={styles.nav} aria-label="Panel sections">
-          <span className={styles.navLabel}>Panel</span>
-          <ul className={styles.list}>
-            {NAV.map((entry) => {
-              const active = pathname.startsWith(entry.href);
-              return (
-                <li key={entry.href}>
-                  <Link
-                    className={styles.item}
-                    href={entry.href}
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setOpen(false)}
-                    title={collapsed ? entry.label : undefined}
-                  >
-                    <NavIcon name={entry.icon} />
-                    <span className={styles.itemLabel}>{entry.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          {NAV_GROUPS.map((group, groupIndex) => (
+            <div key={group.label} className={styles.navGroup} data-first={groupIndex === 0 || undefined}>
+              <span className={styles.navLabel}>{group.label}</span>
+              <ul className={styles.list}>
+                {group.items.map((entry) => {
+                  // "/admin" es prefijo de toda otra ruta del panel: sin el
+                  // caso especial, "Dashboard" quedaría marcado activo en
+                  // cualquier pantalla, no solo en la suya.
+                  const active = entry.href === "/admin" ? pathname === "/admin" : pathname.startsWith(entry.href);
+                  return (
+                    <li key={entry.href}>
+                      <Link
+                        className={styles.item}
+                        href={entry.href}
+                        aria-current={active ? "page" : undefined}
+                        onClick={() => setOpen(false)}
+                        title={collapsed ? entry.label : undefined}
+                      >
+                        <NavIcon name={entry.icon} />
+                        <span className={styles.itemLabel}>{entry.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
         <div className={styles.user}>
