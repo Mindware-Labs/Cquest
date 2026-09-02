@@ -111,6 +111,8 @@ export interface Dictionary {
     titleWithService: readonly [string, string];
     titleGeneric: string;
     lead: string;
+    joinUsPrompt: string;
+    joinUsLink: string;
   };
   quoteContact: {
     meta: string;
@@ -228,6 +230,8 @@ export const dict: Dictionary = {
     titleWithService: ["Let's scope your ", " operation."],
     titleGeneric: "Let's scope your operation.",
     lead: "Answer a few quick questions and we'll come back with a tailored proposal — usually within one business day.",
+    joinUsPrompt: "Looking for a job instead of a quote?",
+    joinUsLink: "See our open positions",
   },
   quoteContact: {
     meta: "3 steps · about 2 minutes",

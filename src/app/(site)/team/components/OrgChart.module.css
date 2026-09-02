@@ -201,6 +201,29 @@
   text-wrap: pretty;
 }
 
+/* Salida discreta para quien llegó buscando trabajo, no una cotización: no
+   puede competir en peso visual con closeAction, es la puerta secundaria. */
+.closeSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+  color: var(--brand-celeste);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.closeSecondary:hover {
+  color: white;
+}
+
+.closeSecondary svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
 .closeAction {
   display: inline-flex;
   min-height: 3rem;

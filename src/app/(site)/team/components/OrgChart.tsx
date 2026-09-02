@@ -17,6 +17,7 @@ const COPY = {
   closeTitle: "Build the right operation for your business.",
   closeBody: "Tell us what needs to run. We will help you define the team, process and technology behind it.",
   closeAction: "Discuss your operation",
+  closeSecondary: "Looking to join the team instead?",
 };
 
 export default function DepartmentDirectory({
@@ -90,6 +91,9 @@ export default function DepartmentDirectory({
           <div>
             <h2>{t.closeTitle}</h2>
             <p>{t.closeBody}</p>
+            <TransitionLink href="/join-us" className={styles.closeSecondary}>
+              {t.closeSecondary} <Arrow />
+            </TransitionLink>
           </div>
           <TransitionLink href="/quote" className={styles.closeAction}>
             {t.closeAction} <Arrow />

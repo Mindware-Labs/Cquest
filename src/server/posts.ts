@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -131,16 +131,51 @@ export type PostListQuery = {
   sortKey?: "title" | "updatedAt";
   sortDir?: "asc" | "desc";
   query?: string;
+  // "draft" | "published" | "scheduled" | "hidden" | null (todas). "scheduled"
+  // no es un valor real de la columna: se deriva de published + fecha futura,
+  // igual que badgeOf() en PostsTable.tsx — ver statusWhere más abajo.
+  status?: string | null;
+  categoryId?: string | null;
+  publishedFrom?: string | null;
+  publishedTo?: string | null;
 };
+
+export type PostListCounts = Record<PostStatus | "scheduled" | "all", number>;
 
 export type PostListPage = {
   rows: PostListRow[];
   total: number;
   page: number;
   perPage: number;
+  counts: PostListCounts;
 };
 
 const PER_PAGE_ALLOWED = [10, 25, 50];
+
+function publishedRangeWhere(from?: string | null, to?: string | null) {
+  const clauses = [];
+  if (from) {
+    const date = new Date(from);
+    if (!Number.isNaN(date.getTime())) clauses.push(gte(post.publishedAt, date));
+  }
+  if (to) {
+    const date = new Date(to);
+    if (!Number.isNaN(date.getTime())) {
+      date.setHours(23, 59, 59, 999);
+      clauses.push(lte(post.publishedAt, date));
+    }
+  }
+  return clauses.length ? and(...clauses) : undefined;
+}
+
+// "scheduled" es published + publishedAt en el futuro; "published" de verdad
+// es published + publishedAt ya pasado (o sin fecha, caso raro pero posible).
+function statusWhere(status: string | null | undefined, now: Date) {
+  if (status === "draft" || status === "hidden") return eq(post.status, status);
+  if (status === "published") return and(eq(post.status, "published"), or(isNull(post.publishedAt), lte(post.publishedAt, now)));
+  if (status === "scheduled") return and(eq(post.status, "published"), gt(post.publishedAt, now));
+  return undefined;
+}
 
 /* La página se pide a Postgres, no se recorta en el cliente: traer la tabla
    entera para mostrar diez filas escala con el blog y no con la pantalla. */
@@ -150,23 +185,38 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
   const perPage = PER_PAGE_ALLOWED.includes(query.perPage ?? 0) ? query.perPage! : 10;
   const column = query.sortKey === "title" ? post.title : post.updatedAt;
   const direction = query.sortDir === "asc" ? asc : desc;
+  const now = new Date();
 
   const needle = query.query?.trim();
   // Busca por título o categoría: son las dos columnas de texto que se ven
   // en la tabla, igual que en /admin/vacancies (título + departamento).
-  const where = needle
-    ? or(
-        ilike(post.title, `%${escapeLike(needle)}%`),
-        ilike(category.name, `%${escapeLike(needle)}%`),
-      )
+  const searchClause = needle
+    ? or(ilike(post.title, `%${escapeLike(needle)}%`), ilike(category.name, `%${escapeLike(needle)}%`))
     : undefined;
+  const categoryClause = query.categoryId ? eq(post.categoryId, query.categoryId) : undefined;
+  const baseFilters = and(searchClause, categoryClause, publishedRangeWhere(query.publishedFrom, query.publishedTo));
+  const where = and(baseFilters, statusWhere(query.status, now));
 
-  const [{ total }] = await db
-    .select({ total: count() })
+  // Las pestañas ignoran el filtro de estado (son ellas): se cuenta sobre
+  // baseFilters y se deriva "scheduled" en JS, en vez de armar cuatro
+  // consultas agrupadas para un estado que ni siquiera vive en la columna.
+  const countRows = await db
+    .select({ status: post.status, publishedAt: post.publishedAt })
     .from(post)
     .leftJoin(category, eq(post.categoryId, category.id))
-    .where(where);
+    .where(baseFilters);
 
+  const counts: PostListCounts = { draft: 0, published: 0, scheduled: 0, hidden: 0, all: countRows.length };
+  for (const row of countRows) {
+    if (row.status !== "published") {
+      counts[row.status] += 1;
+      continue;
+    }
+    const isScheduled = row.publishedAt !== null && row.publishedAt.getTime() > now.getTime();
+    counts[isScheduled ? "scheduled" : "published"] += 1;
+  }
+
+  const total = query.status ? (counts[query.status as keyof PostListCounts] ?? 0) : counts.all;
   // Pedir una página que ya no existe (tras borrar) devolvería una tabla vacía.
   const pages = Math.max(1, Math.ceil(total / perPage));
   const page = Math.min(Math.max(query.page ?? 1, 1), pages);
@@ -202,6 +252,7 @@ export async function listPosts(query: PostListQuery = {}): Promise<PostListPage
     total,
     page,
     perPage,
+    counts,
   };
 }
 

@@ -12,7 +12,7 @@ const COPY = {
   title: ["Six departments.", "One coordinated operation."],
   lead: "Our team is organized around clear responsibilities, so operations, technology, people and finance move in the same direction.",
   explore: "Explore the departments",
-  talk: "Talk to us",
+  openRoles: "See open roles",
   peopleLabel: "The people behind the operation — Center Quest team at work.",
 };
 
@@ -37,8 +37,8 @@ export default function Hero({ reduced }: { reduced: boolean }) {
             <a href="#departments" className={styles.primaryCta}>
               {t.explore} <Arrow direction="down" />
             </a>
-            <TransitionLink href="/quote" className={styles.secondaryCta}>
-              {t.talk} <Arrow />
+            <TransitionLink href="/join-us" className={styles.secondaryCta}>
+              {t.openRoles} <Arrow />
             </TransitionLink>
           </div>
         </motion.div>

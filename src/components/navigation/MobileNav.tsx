@@ -7,6 +7,7 @@ type MobileNavProps = {
   onClose: () => void;
   links: readonly NavLink[];
   ctaHref?: string;
+  ctaLabel?: string;
 
   /* Lo decide la página, no el componente: sobre una página oscura entera un
      panel blanco es el mismo salto de superficie que la barra clara. */
@@ -19,6 +20,7 @@ export default function MobileNav({
   onClose,
   links,
   ctaHref = "#",
+  ctaLabel,
   theme = "light",
 }: MobileNavProps) {
   return (
@@ -29,6 +31,7 @@ export default function MobileNav({
       onClose={onClose}
       links={links}
       ctaHref={ctaHref}
+      ctaLabel={ctaLabel}
       theme={theme}
     />
   );

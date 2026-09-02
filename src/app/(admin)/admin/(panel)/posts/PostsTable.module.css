@@ -6,6 +6,118 @@
   background: var(--surface-raised);
 }
 
+/* Un solo grupo empujado a la derecha: el buscador se queda pegado a la
+   izquierda y categoría + rango de fechas quedan juntos, no repartidos por
+   todo el ancho con justify-content: space-between. */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* ---------- Rango de fechas ---------- */
+
+.dates {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.datesSep {
+  font-size: 0.76rem;
+  color: var(--text-tertiary);
+}
+
+.datesClear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-left: 0.1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.datesClear:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.datesClear:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+/* ---------- Pestañas de estado ---------- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.1rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out), border-color 0.18s var(--ease-out);
+}
+
+.tab:hover {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.tab[aria-pressed="true"] {
+  border-color: var(--border);
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--brand-petroleo);
+  outline-offset: 2px;
+}
+
+.tabDot {
+  display: grid;
+  place-items: center;
+}
+
+.tabCount {
+  padding: 0 0.35rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--foreground) 6%, var(--surface-raised));
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.tab[aria-pressed="true"] .tabCount {
+  background: var(--brand-petroleo);
+  color: var(--surface-raised);
+}
+
 /* Se apaga en escritorio a propósito: un overflow distinto de visible crea un
    contenedor de scroll y el encabezado se pegaría a él en vez de a la página. */
 .scroller {
@@ -527,7 +639,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ghost,
-  .confirm {
+  .confirm,
+  .tab {
     transition: none;
   }
 }

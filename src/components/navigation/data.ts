@@ -129,10 +129,13 @@ export function getServiceNavLinks(): Record<string, readonly NavLink[]> {
       { label: dict.serviceSections.systems.work, href: "#work" },
     ],
 
-    "/team": [
-      home,
-      { label: dict.serviceSections.team.departments, href: "#departments" },
-    ],
+    /* La nav completa, no la reducida con solo "Departments": desde /team se
+       puede llegar sin haber pasado por el inicio (ver MetricsSection "Meet
+       the team" y el nav general), así que necesita el mismo camino de
+       vuelta a Home que /join-us. Sin "Join us" en la lista: en esta página
+       ese destino ya lo ofrece el CTA de la barra (ver getCtaOverride), y
+       repetirlo en el menú es lo mismo dos veces. */
+    "/team": getFullNavLinks().filter((link) => link.href !== "/join-us"),
 
     "/join-us": getFullNavLinks(),
 
@@ -170,6 +173,15 @@ export function getNavLinksFor(pathname: string): readonly NavLink[] {
   if (exact) return exact;
   if (pathname.startsWith("/join-us/")) return getFullNavLinks();
   return getNavLinks();
+}
+
+/* Casos puntuales donde el CTA persistente de la navbar no debe ser
+   "Contact us" → /quote: en /team el cierre de la página ya ofrece hablar de
+   negocio ("Discuss your operation" en OrgChart), así que arriba y en el
+   hero conviene empujar hacia postularse en su lugar. */
+export function getCtaOverride(pathname: string): { label: string; href: string } | null {
+  if (pathname === "/team") return { label: dict.nav.joinUs, href: "/join-us" };
+  return null;
 }
 
 export const NAV_EASE_OUT = [0.22, 1, 0.36, 1] as const;

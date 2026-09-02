@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { listPosts } from "@/server/posts";
+import { listAllCategories } from "@/server/categories";
 import PostsTable from "./PostsTable";
 import PostsHeader from "./PostsHeader";
 import styles from "./page.module.css";
@@ -15,21 +16,42 @@ export const metadata: Metadata = {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; perPage?: string; sort?: string; dir?: string; q?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    perPage?: string;
+    sort?: string;
+    dir?: string;
+    q?: string;
+    status?: string;
+    category?: string;
+    publishedFrom?: string;
+    publishedTo?: string;
+  }>;
 }) {
   const params = await searchParams;
 
   const sortKey = params.sort === "title" ? "title" : "updatedAt";
   const sortDir = params.dir === "asc" ? "asc" : "desc";
   const query = params.q ?? "";
+  const status = params.status || null;
+  const categoryId = params.category || null;
+  const publishedFrom = params.publishedFrom || null;
+  const publishedTo = params.publishedTo || null;
 
-  const { rows, total, page, perPage } = await listPosts({
-    page: Number(params.page) || 1,
-    perPage: Number(params.perPage) || 10,
-    sortKey,
-    sortDir,
-    query,
-  });
+  const [{ rows, total, page, perPage, counts }, categories] = await Promise.all([
+    listPosts({
+      page: Number(params.page) || 1,
+      perPage: Number(params.perPage) || 10,
+      sortKey,
+      sortDir,
+      query,
+      status,
+      categoryId,
+      publishedFrom,
+      publishedTo,
+    }),
+    listAllCategories(),
+  ]);
 
   return (
     <div className={styles.page}>
@@ -42,6 +64,12 @@ export default async function PostsPage({
         sortKey={sortKey}
         sortDir={sortDir}
         query={query}
+        status={status}
+        categoryId={categoryId}
+        publishedFrom={publishedFrom}
+        publishedTo={publishedTo}
+        counts={counts}
+        categories={categories}
       />
     </div>
   );
