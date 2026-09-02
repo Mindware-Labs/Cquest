@@ -466,7 +466,11 @@ export async function deleteVacancies(ids: string[]): Promise<ActionResult> {
   const valid = ids.filter((id) => z.uuid().safeParse(id).success);
   if (valid.length === 0) return { ok: false, message: "No valid vacancies to delete." };
 
-  await db.delete(vacancy).where(inArray(vacancy.id, valid));
+  try {
+    await db.delete(vacancy).where(inArray(vacancy.id, valid));
+  } catch {
+    return { ok: false, message: "Could not delete the selected vacancies." };
+  }
 
   revalidateTag("vacancies", "max");
   revalidatePath("/join-us");
