@@ -35,6 +35,18 @@ export default function Intro({
 }) {
   const state = count > 0 ? "on" : "off";
 
+  // El panel es ancho: la columna derecha del contador se llena con el desglose
+  // que ya tenemos (ubicaciones, o departamentos si no hay ninguna publicada).
+  const byLocation = locations.length > 0;
+  const metaSource = byLocation
+    ? locations.map((entry) => ({ key: entry.location, label: entry.location, count: entry.count }))
+    : hiring.length > 1
+      ? hiring.map((entry) => ({ key: entry.slug, label: entry.shortLabel, count: entry.count }))
+      : [];
+  const metaItems = metaSource.slice(0, 3);
+  const metaMore = metaSource.length - metaItems.length;
+  const metaCaption = byLocation ? (metaSource.length === 1 ? "Location" : "Locations") : "Departments";
+
   return (
     <div className={styles.intro}>
       <motion.header
@@ -100,11 +112,29 @@ export default function Intro({
         {count > 0 ? (
           <>
             <div className={styles.panelStat}>
-              <span className={styles.panelCount}>{count}</span>
-              <span className={styles.panelCountLabel}>
-                <strong>open position{count === 1 ? "" : "s"}</strong>
-                <span>{hiring.length === 1 ? `in ${hiring[0].shortLabel}` : `across ${plural(hiring.length, "department")}`}</span>
-              </span>
+              <div className={styles.panelStatMain}>
+                <span className={styles.panelCount}>{count}</span>
+                <span className={styles.panelCountLabel}>
+                  <strong>open position{count === 1 ? "" : "s"}</strong>
+                  <span>{hiring.length === 1 ? `in ${hiring[0].shortLabel}` : `across ${plural(hiring.length, "department")}`}</span>
+                </span>
+              </div>
+
+              {metaItems.length > 0 && (
+                <div className={styles.panelMeta}>
+                  <span className={styles.panelMetaCaption}>
+                    {byLocation && <PinIcon />}
+                    {metaCaption}
+                  </span>
+                  {metaItems.map((item) => (
+                    <span key={item.key} className={styles.panelMetaItem}>
+                      <span className={styles.panelMetaLabel}>{item.label}</span>
+                      {metaSource.length > 1 && <span className={styles.panelMetaCount}>{item.count}</span>}
+                    </span>
+                  ))}
+                  {metaMore > 0 && <span className={styles.panelMetaMore}>+{metaMore} more</span>}
+                </div>
+              )}
             </div>
 
             {hiring.length > 0 && (
@@ -126,17 +156,12 @@ export default function Intro({
               </ul>
             )}
 
-            <div className={styles.panelFoot}>
-              {locations.length > 0 && (
-                <span className={styles.panelLocations}>
-                  <PinIcon />
-                  {locations.map((entry) => entry.location).join(" · ")}
-                </span>
-              )}
-              <TransitionLink className={styles.panelFootLink} href={OPEN_APPLICATION_HREF}>
-                Send your resume
-              </TransitionLink>
-            </div>
+            <TransitionLink className={styles.panelFoot} href={OPEN_APPLICATION_HREF}>
+              <span className={styles.panelFootText}>Don&rsquo;t see your role? Send your resume</span>
+              <span className={styles.panelFootArrow} aria-hidden="true">
+                <Arrow />
+              </span>
+            </TransitionLink>
           </>
         ) : (
           <div className={styles.panelEmpty}>
